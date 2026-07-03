@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE sailpoint PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+
+<sailpoint>
+
+  <Policy name="No Manager Policy" type="ActiveManagers" certificationActions="Mitigated,Delegated" configPage="genericpolicy.xhtml" executor="com.demo.policy.ManagerPolicy" state="Active" violationOwnerType="Identity">
+    <Attributes>
+      <Map>
+        <entry key="pluginName" value="ActiveManagers" />
+        <entry key="atLeastManager" value="1" />
+        <entry key="sysDescriptions">
+          <value>
+            <Map>
+              <entry key="en_US" value="Check the identity should have at lease one Manager"/>
+            </Map>
+          </value>
+        </entry>
+      </Map>
+    </Attributes>
+    
+    <Signature>
+      <Inputs>
+        <Argument helpKey="The identity should be at least one manager." name="atLeastManager" type="int">
+          <Prompt>At Least One Manager</Prompt>
+        </Argument>
+      </Inputs>
+    </Signature>
+    <Owner>
+      <Reference class="sailpoint.object.Identity" name="spadmin"/>
+    </Owner>
+    <ViolationOwner>
+      <Reference class="sailpoint.object.Identity" name="spadmin"/>
+    </ViolationOwner>
+  </Policy>
+
+</sailpoint>
+

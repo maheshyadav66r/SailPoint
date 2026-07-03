@@ -1,0 +1,20 @@
+        <!-- Data entry form with button -->
+        <form  class="form-inline"> 
+           <select ng-model="object" style="width: 180px;" ng-options="x for x in objects"     
+                   class="form-control input-sm" ></select>
+           <input  placeholder="Enter Search Term" style="width: 180px;" 
+                   class="form-control input-sm" ng-keypress="searchEnter($event)" 
+                   ng-model="search"></input> 
+           <button type="button" role="button" class="btn btn-white btn-sm" 
+                   ng-click="getSearch(object,search)">Search</button>
+        </form> 
+        <!-- End Data entry form -->
+    
+        <!-- Results display section -->
+        <div class="panel-body"> 
+           <div  style="strong" id="directions">{{directions}}</div>
+           <div style="strong" ng-repeat="result in results"> 
+              {{result}} 
+           </div>
+        </div>
+        <!-- End Results display section -->  

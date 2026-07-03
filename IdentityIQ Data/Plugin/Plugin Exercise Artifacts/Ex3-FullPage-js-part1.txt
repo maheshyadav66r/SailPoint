@@ -1,0 +1,20 @@
+   //Variable declarations
+   $scope.results = "";
+   $scope.objects = "";   
+   //-----------
+   // populate list of searchable objects from plugin database
+   $http({
+      method: 'GET',
+	     url: PluginHelper.getPluginRestUrl("TrainingPlugin/search/objectNames")
+    }).then(function successCallback(response) {
+		   try {
+		          $scope.objects = response.data;
+	       }  catch(err) {
+               $scope.directions= "Search error!";
+               $scope.objects = ["Search error: could not parse response"];           
+           }
+	   }, function errorCallback(response) {
+             $scope.directions= "Search error: unable to get list of objects!";
+           
+	   });
+   

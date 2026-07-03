@@ -1,0 +1,3277 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule   language="beanshell"  name="Attribute Rule Library">
+  <AssignedScope>
+    <Reference class="sailpoint.object.Scope"  name="TMNA"/>
+  </AssignedScope>
+  <ReferencedRules>
+    <Reference class="sailpoint.object.Rule"  name="AzureAD-RuleLibrary"/>
+    <Reference class="sailpoint.object.Rule"  name="Toyota Database Logger"/>
+  </ReferencedRules>
+  <Source>
+  /*******
+  *   Attribute Rule Library                                                          *
+  *                                                                                   *
+  *   This is a collection of utility methods that can be called from other Rules     *
+  *   and Workflows to work with Identity and Account Attribute values.               *
+  *                                                                                   *
+  *   To include a library in another Rule, use this format:                          *
+  *     &lt;Rule ......>                                                                 *
+  *       &lt;ReferencedRules>                                                           *
+  *         &lt;Reference class="sailpoint.object.Rule" name="Attribute Rule Library"/>  *
+  *       &lt;/ReferencedRules>                                                          *
+  *       ..                                                                          *
+  *       ..                                                                          *
+  *     &lt;/Rule>                                                                       *
+  *                                                                                   *
+  *   To include a library in a Workflow, use this format:                            *
+  *                                                                                   *
+  *     &lt;Workflow ......>                                                             *
+  *       &lt;RuleLibraries>                                                             *
+  *         &lt;Reference class="sailpoint.object.Rule" name="Attribute Rule Library" /> *
+  *       &lt;/RuleLibraries>                                                            *
+  *       ..                                                                          *
+  *       ..                                                                          *
+  *     &lt;/Workflow>                                                                   *
+  ******/
+
+  import sailpoint.api.SailPointContext;
+  import sailpoint.object.ProvisioningProject;
+  import sailpoint.object.Application;
+  import sailpoint.object.Identity;
+  import sailpoint.object.Attributes;
+  import sailpoint.api.IdentityService;
+  import sailpoint.object.AttributeAssignment;
+  import sailpoint.object.Link;
+  import sailpoint.object.ObjectConfig;
+  import sailpoint.object.IdentityTypeDefinition;
+  import sailpoint.object.AttributeTarget;
+  import sailpoint.object.ObjectAttribute;
+  import sailpoint.object.GroupDefinition;
+  import sailpoint.tools.Util;
+  import java.util.List;
+  import sailpoint.object.Filter;
+  import sailpoint.object.QueryOptions;
+  import java.util.UUID;
+  import org.apache.log4j.Logger;
+  import org.apache.log4j.Level;
+  import java.lang.Object;
+  import com.google.common.base.Splitter;
+  import java.time.Instant;
+  import java.time.ZoneId;
+  import java.time.ZonedDateTime;
+  import java.time.format.DateTimeFormatter;
+  import java.text.SimpleDateFormat;
+  import java.text.DateFormat;
+  import java.util.Date;
+  import java.util.regex.Matcher;
+  import java.util.regex.Pattern;
+  import java.text.ParseException;
+  import sailpoint.object.Custom;
+  import sailpoint.api.ObjectUtil;
+  import sailpoint.object.Link;
+  import sailpoint.object.ProvisioningPlan;
+  import sailpoint.object.ProvisioningPlan.AccountRequest;
+  import sailpoint.object.ProvisioningPlan.AttributeRequest;
+  import sailpoint.object.ProvisioningPlan.Operation;
+  import java.util.List;
+  import java.util.ArrayList;
+  import java.util.Map;
+  import sailpoint.object.EmailTemplate;
+  import sailpoint.object.EmailOptions;
+  import sailpoint.object.Form;
+  import sailpoint.object.Field;
+  import java.util.Calendar;
+  import sailpoint.object.WorkflowLaunch;
+  import sailpoint.object.Workflow;
+  import sailpoint.api.Workflower;
+  import org.apache.commons.collections4.ListUtils;
+  import java.text.Normalizer;
+  import java.util.regex.Pattern; 
+
+  Logger plog = Logger.getLogger( "rule.Attribute-Rule-Library" );
+  String msgSeparator = "*********************************************";
+  
+  /*****
+    Method to validate the phone number
+   *****/
+  public boolean validatePhoneNumber(String phoneNumber){
+    if ( plog.isTraceEnabled() ){
+      plog.trace( "ARL-SE-004::Entering Attribute Rule Library - validatePhoneNumber ");
+    }
+    Pattern regexValidPhoneNum = Pattern.compile("^\\s*(?:\\+?(\\d{1,3}))?[-. (]*(\\d{2,4})[-. )]*(\\d{2,4})[-. ]*(\\d{2,4})(?: *x(\\d+))?\\s*$", Pattern.CASE_INSENSITIVE);
+    Matcher phonematcher = regexValidPhoneNum.matcher(phoneNumber);
+    return phonematcher.find();
+  }
+  
+  /*****
+    Method to validate the email string
+   *****/
+  public boolean validateEmail(String emailStr){
+    if ( plog.isTraceEnabled() ){
+      plog.trace( "ARL-SE-003::Entering Attribute Rule Library - validateEmail ");
+    }
+    Pattern regexValidEmail = Pattern.compile("^[A-Za-z_0-9\\.'-]{1,64}@[A-Za-z_0-9\\.'-]+\\.[A-Za-z_\\.]{2,7}$", Pattern.CASE_INSENSITIVE);
+    Matcher mailMatcher = regexValidEmail.matcher(emailStr);
+    return mailMatcher.find();
+  }
+  
+  /*****
+    Method to sendemail notification based on the arguments provided
+   *****/
+  public sendEmailNotification(String emailTemplateName, Map argMaps,String toAdress){
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-SE-001::Entering Attribute Rule Library - sendEmailNotification "  );
+    }
+    if(null != emailTemplateName &amp;&amp; null != toAdress){
+      EmailTemplate emailTemplate = context.getObjectByName(EmailTemplate.class,emailTemplateName);
+      if(null != emailTemplate){
+        EmailOptions emailOptions = new EmailOptions(toAdress,argMaps);
+        context.sendEmailNotification(emailTemplate, emailOptions);
+      }
+    }
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-SE-002 ::Exiting- sendEmailNotification "  );
+    }
+  }
+  
+  /*******
+    Get Workday TMNA Org Attribute. This is for multiple account. to be picked from the before operation rule from jobnavi sup org
+  *******/
+  public static Object getWorkDayTMNAOrgAttribute( SailPointContext context, Identity identity, String applicationName, String attributeName, String nativeId ) {
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( msgSeparator );
+      plog.trace( "ARL-GWTOA-001 Entering Attribute Rule Library - Get Application Attribute: " + attributeName );
+    }
+    IdentityService identityService = new IdentityService(context);
+
+    Object attributeValue;
+    try {
+      if(Util.isNotNullOrEmpty(nativeId)){
+        List links =  identityService.getLinks( identity, context.getObjectByName( Application.class, applicationName ) );
+
+        if ( links != null &amp;&amp; !links.isEmpty() ) {
+          Attributes wdAtts = new Attributes();
+
+          for ( Link account : links ) {
+            String orgId = account.getAttribute("OrganizationalReferenceID");
+            if(nativeId.equalsIgnoreCase(orgId)){
+              if(null != account.getAttribute(attributeName)){
+                attributeValue = account.getAttribute(attributeName);
+              }
+            }
+          }
+
+          if( plog.isTraceEnabled() ) {
+            if ( attributeValue != null ) {
+              plog.trace( "ARL-GWTOA-002 Attribute " + attributeName + ": " + attributeValue.toString() );
+            }
+          }
+        }
+      }
+    } catch ( Exception e ) {
+      plog.error( "ARL-GWTOA-003 Error Fetching Attribute" + e.toString() );
+      return null;
+    }
+
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-GWTOA-004 Exiting Attribute Rule Library - Get Application Attribute" );
+      plog.trace( msgSeparator );
+    }
+
+    if ( attributeValue != null ) {
+      if ( attributeValue instanceof String ) {
+        attributeValue = attributeValue.toString().trim();
+      }
+      else if ( attributeValue instanceof List ) {
+        attributeValue = new ArrayList(attributeValue);
+      }
+    }
+    return attributeValue;
+  }
+  /*******
+    Get Identity Status as Y (active) or N (inactive)
+  *******/
+  public static Object getIdentityStatusYN(SailPointContext context, Identity identity){
+    String isActive = "";
+    Boolean inactive = identity.isInactive();
+    if(inactive == true){
+      isActive="N";
+    }else{
+      isActive="Y";
+    }
+    return isActive;
+  }
+  
+  /*******
+    Get Identity Attribute
+  *******/
+  public static Object getIdentityAttribute( SailPointContext context, Identity identity, String attributeName ) {
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( msgSeparator );
+      plog.trace( "ARL-GIA-001 Entering Attribute Rule Library - Get Identity Attribute: " + attributeName );
+    }
+
+    Object attributeValue;
+    try {
+      attributeValue = identity.getAttribute( attributeName );
+      if( plog.isTraceEnabled() ) {
+        if ( attributeValue != null ) {
+          plog.trace( "ARL-GIA-002 Attribute " + attributeName + ": " + attributeValue.toString() );
+        } else {
+          plog.trace( "ARL-GIA-003 Attribute " + attributeName + ": is NULL" );
+        }
+      }
+    } catch ( Exception e ) {
+      plog.error( "ARL-GIA-004 Error Fetching Attribute" + e.toString() );
+      return null;
+    }
+
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-GIA-005 Exiting Attribute Rule Library - Get Identity Attribute" );
+      plog.trace( msgSeparator );
+    }
+
+    if ( attributeValue != null ) {
+      if ( attributeValue instanceof String ) {
+        attributeValue = attributeValue.toString().trim();
+      }
+      else if ( attributeValue instanceof List ) {
+        attributeValue = new ArrayList(attributeValue);
+      }
+    }
+
+    return attributeValue;
+  }
+  
+  /*******
+    Get Identity Display Name
+  *******/
+  public static String getIdentityDisplayName(Identity identity) {
+    String displayName = getIdentityAttribute(context, identity, "displayName") != null ? getIdentityAttribute(context, identity, "displayName") : "";
+    displayName = (String) displayName.split(" \\(")[0];
+    return displayName;
+  }
+  
+   /*******
+  Generate First Name for SAP
+  ********/
+  public String getIdentitySAPFirstname(Identity identity) {
+    String firstName = getIdentityAttribute(context, identity, "firstname") != null ? getIdentityAttribute(context, identity, "firstname") : "";
+    String middleName = getIdentityAttribute(context, identity, "middleName") != null ? getIdentityAttribute(context, identity, "middleName") : "";
+    String sapFirstName;
+    if (!middleName.isEmpty()) {
+      sapFirstName = firstName + " " + middleName;
+    }
+    else {
+      sapFirstName = firstName;
+    }
+    return sapFirstName;
+  }
+  /*******
+    Get String Attribute Value
+  *******/
+  public static String getLinkAttribtueStringValue( Link appLink, String attributeName ) {
+    String newValue = null;
+    if(Util.isNotNullOrEmpty(appLink.getAttribute(attributeName))){
+      newValue = appLink.getAttribute(attributeName);
+    }
+    if(plog.isTraceEnabled()){
+      plog.trace("ARL-GSAV-001 :: method getLinkAttribtueStringValue in Attribute Rule Library is returning value == "+newValue);
+    }
+    return newValue;  
+  }
+  /*******
+    Get Application Attribute
+  *******/
+  public static Object getApplicationAttribute( SailPointContext context, Identity identity, String applicationName, String attributeName ) {
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( msgSeparator );
+      plog.trace( "ARL-GAA-001 Entering Attribute Rule Library - Get Application Attribute: " + attributeName );
+    }
+    IdentityService identityService = new IdentityService(context);
+
+    Object attributeValue;
+    try {
+
+      List links =  identityService.getLinks( identity, context.getObjectByName( Application.class, applicationName ) );
+
+      if ( links != null &amp;&amp; !links.isEmpty() ) {
+        Attributes wdAtts = new Attributes();
+
+        for ( Link account : links ) {
+          wdAtts = account.getAttributes();
+        }
+        if(null != wdAtts.get( attributeName )) {
+          attributeValue = wdAtts.get( attributeName );
+        }
+        if( plog.isTraceEnabled() ) {
+          if ( attributeValue != null ) {
+            plog.trace( "ARL-GAA-002 Attribute " + attributeName + ": " + attributeValue.toString() );
+          }
+        }
+      }
+    } catch ( Exception e ) {
+      plog.error( "ARL-GAA-003 Error Fetching Attribute" + e.toString() );
+      return null;
+    }
+
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-GAA-004 Exiting Attribute Rule Library - Get Application Attribute" );
+      plog.trace( msgSeparator );
+    }
+    
+    if ( attributeValue != null ) {
+      if ( attributeValue instanceof String ) {
+        attributeValue = attributeValue.toString().trim();
+      }
+      else if ( attributeValue instanceof List ) {
+        attributeValue = new ArrayList(attributeValue);
+      }
+    }
+
+    return attributeValue;
+
+  }
+  
+ /*******
+    Get UpperCase attribute value
+  *******/  
+  public static String getUpperCaseAttributeValue(String attributeValue){
+    if(Util.isNotNullOrEmpty(attributeValue)){
+        attributeValue= attributeValue.toUpperCase();
+      }
+    return attributeValue;  
+  }
+
+ /*******
+    Get Capital Case attribute value
+  *******/  
+  public static String getCapitalCaseAttributeValue(String attributeValue){
+    if(Util.isNotNullOrEmpty(attributeValue)){
+      final String delimeters = " '-.’("; // the character following this special char to be capitalized   
+      StringBuilder sb = new StringBuilder();
+      boolean capNext = true;
+      for (char c : attributeValue.toCharArray()) {
+        c = (capNext) ? Character.toUpperCase(c) : Character.toLowerCase(c);
+        sb.append(c);
+        capNext = (delimeters.indexOf((int) c) >= 0); // explicit cast not needed
+      }
+      return sb.toString();
+    }
+    return attributeValue;  
+  }
+  
+  /*******
+    Get Attribute from Identity then Application
+  *******/
+  public static Object getAttribute( SailPointContext context, Identity identity, String applicationName, String attributeName ) {
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( msgSeparator );
+      plog.trace( "ARL-GA-001 Entering Attribute Rule Library - Get Attribute" );
+    }
+
+    Object attributeValue = null;
+    try {
+
+      attributeValue = getIdentityAttribute( context, identity, attributeName );
+
+      if ( ( attributeValue == null ) || ( (String)attributeValue.length() == 0 ) ) {
+        attributeValue = getApplicationAttribute( context, identity, applicationName, attributeName );
+      }
+
+      if( plog.isTraceEnabled() ) {
+        if ( attributeValue != null ) {
+          plog.trace( "ARL-GA-002 Attribute " + attributeName + ": " + attributeValue.toString() );
+        }
+      }
+
+    } catch ( Exception e ) {
+      plog.error( "ARL-GA-003 Error Fetching Attribute" + e.toString() );
+      return null;
+    }
+
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-GA-004 Exiting Attribute Rule Library - Get Attribute" );
+      plog.trace( msgSeparator );
+    }
+    
+    if ( attributeValue != null ) {
+      if ( attributeValue instanceof String ) {
+        attributeValue = attributeValue.toString().trim();
+      }
+      else if ( attributeValue instanceof List ) {
+        attributeValue = new ArrayList(attributeValue);
+      }
+    }
+
+    return attributeValue;
+
+  }
+
+  /*******
+    Get userProncipalName or mail from Azure for Identity Attribute
+  *******/
+  public static String getUPNOrMail( SailPointContext context, Link link ) {
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( msgSeparator );
+      plog.trace( "ARL-GUM-001 Entering Attribute Rule Library - getUPNOrMail" );
+    }
+
+    String azureEmail = "";
+    String azureUserPrincipalName = "";
+
+    try {
+      azureEmail = link.getAttribute( "mail" );
+      azureEmail = azureEmail != null ? azureEmail : "";
+      if ( plog.isTraceEnabled() ) {
+        plog.trace( "ARL-GUM-002 Azure mail: " + azureEmail );
+      }
+
+      azureUserPrincipalName = link.getAttribute( "userPrincipalName" );
+      azureUserPrincipalName = azureUserPrincipalName != null ? azureUserPrincipalName : "";
+      if ( plog.isTraceEnabled() ) {
+        plog.trace( "ARL-GUM-003 Azure userPrincipalName: " + azureUserPrincipalName );
+      }
+
+    } catch ( Exception ex ) {
+      plog.error( "ARL-GUM-004 ERROR Fetching Azure Attributes: " + e.toString() );
+      return null;
+    }
+
+    if ( azureUserPrincipalName.contains( "#EXT#" ) ) {
+      azureUserPrincipalName = azureEmail;
+    }
+
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-GUM-005 Returning: " + azureUserPrincipalName + " as userPrincipalName" );
+    }
+
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-GUM-006 Exiting Attribute Rule Library - getUPNOrMail" );
+      plog.trace( msgSeparator );
+    }
+
+    return azureUserPrincipalName;
+  }
+
+  /*******
+    Select the primary UPN from Azure AD accounts
+  *******/
+  public static String getUPNOrMailSelect( SailPointContext context, Link link, Identity identity )
+  {
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( msgSeparator );
+      plog.trace( "ARL-GUMS-001 Entering Attribute Rule Library - getUPNOrMailSelect" );
+    }
+
+    Boolean primayAccount = false;
+    Boolean otherMemberPresent = false;
+    Boolean otherPrimaryAccountPresent = false;
+    IdentityService idService=new IdentityService(context);
+    Application azureApp=context.getObjectByName(Application.class,"Azure AD");
+    List azureLinks=idService.getLinks(identity,azureApp);
+    String upn = null;
+
+    if (azureLinks != null) {
+      int linkCount = azureLinks.size();
+      String userType = link.getAttribute( "userType" );
+      List assignedLicenses = link.getAttribute("assignedLicenses");
+      String linkObjectID = link.getNativeIdentity();
+
+      if ( plog.isTraceEnabled() ) {
+        plog.trace("ARL-GUMS-002 getUPNOrMailSelect : identityName : "+ identity.getName());
+        plog.trace("ARL-GUMS-003 getUPNOrMailSelect : Native Identity : "+ linkObjectID);
+      }
+
+      if (linkCount == 1) {
+        primayAccount = true;
+      }
+      else if (linkCount > 1) // User with more than one Azure account
+      {
+        if (assignedLicenses != null &amp;&amp; assignedLicenses.contains("ENTERPRISEPREMIUM") &amp;&amp; userType != null &amp;&amp; userType.equalsIgnoreCase( "Member" ))
+        {
+          // In case there are more than one account with userType Member and a valid mail attribute
+          // both accounts would return UPN for update. This usually implies bad data
+          primayAccount = true;
+        }
+        else
+        {
+          for (Link azureLink : azureLinks) // Scan link for other member accounts
+          {
+            String userTypeAzure = azureLink.getAttribute( "userType" );
+            List assignedAzureLicenses = azureLink.getAttribute("assignedLicenses");
+            String azureLinkObjectID = azureLink.getNativeIdentity();
+
+            if (assignedAzureLicenses != null &amp;&amp; assignedAzureLicenses.contains("ENTERPRISEPREMIUM") &amp;&amp; userTypeAzure !=null &amp;&amp; userTypeAzure.equalsIgnoreCase( "Member" ) &amp;&amp; !linkObjectID.equalsIgnoreCase( azureLinkObjectID ) )
+            {
+              // In case there exists atleast one other account with userType Member and a valid mail attribute.
+              // currentUPN is not to be sent.
+              otherPrimaryAccountPresent = true;
+            }
+            else if (userTypeAzure !=null &amp;&amp; userTypeAzure.equalsIgnoreCase( "Member" ) &amp;&amp; !linkObjectID.equalsIgnoreCase( azureLinkObjectID ))
+            {
+              // To be used to check for users who have member type and guest type accounts
+              // UPN from Member type to be used
+              otherMemberPresent = true;
+            }
+          }
+          if (userType !=null &amp;&amp; userType.equalsIgnoreCase( "Guest" ) &amp;&amp; otherMemberPresent) {
+            primayAccount = false;
+          }
+          else if (!otherPrimaryAccountPresent)
+          {
+            // Applicable if there exists a different account that matches the primary account critiera
+            primayAccount = true;
+          }
+        }
+      }
+      if (primayAccount) {
+        upn = getUPNOrMail( context, link );
+        if ( plog.isTraceEnabled() ) {
+          plog.trace("ARL-GUMS-004 getUPNOrMailSelect : Primary Account Identified : " + linkObjectID);
+        }
+      }
+      if ( plog.isTraceEnabled() ) {
+        String upnLog = (upn != null)? upn : "NULL";
+        plog.trace("ARL-GUMS-006 getUPNOrMailSelect : UPN Selected : "+ upnLog);
+      }
+
+    }
+
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-GUMS-007 Exiting Attribute Rule Library - getUPNOrMailSelect" );
+      plog.trace( msgSeparator );
+    }
+    return upn;
+  }
+      /*******
+    Get time stamp based on the zone as required format either dd-mm-yyyy or yyyy/mm/dd
+  *******/
+  public static String getTimeStamp(String zone, String format)
+  {
+
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( msgSeparator );
+      plog.trace( "ARL-GTS-001 Entering Attribute Rule Library - get TimeStamp()" );
+      plog.trace( "ARL-GTS-002 Zone : "+zone+" required format is "+format );
+    }
+    if ( zone != null &amp;&amp; format != null ) {
+      ZoneId z = ZoneId.of(zone);
+      Instant instant = Instant.now();
+      ZonedDateTime zdt = instant.atZone( z );
+      DateTimeFormatter format = DateTimeFormatter.ofPattern(format); //yyyy-mm-dd format
+      return format.format(zdt).toString();
+    }
+  }
+
+  /*******
+    Get requester/requestee from provisioning plan or project
+  *******/
+  public static String getAccessRequstAttributes(ProvisioningProject project, String requestValue) {
+    if ( plog.isTraceEnabled() ) {
+    plog.trace( msgSeparator );
+    plog.trace( "ARL-GARA-001 Entering Attribute Rule Library - getAccessRequstAttributes" );
+    plog.trace( "ARL-GARA-002 request attributeValue : "+requestValue);
+    }
+    if( project != null ) {
+      if( requestValue != null &amp;&amp; requestValue.equalsIgnoreCase("requester") )
+        return project.getRequester();
+
+        if( requestValue != null &amp;&amp; requestValue.equalsIgnoreCase("requestee") )
+          return project.getIdentity();
+    }
+  }
+
+  /*******
+    Generate GUID
+  *******/
+  public static String generateGUID() {
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( msgSeparator );
+      plog.trace( "ARL-GGUID-001 Entering Attribute Rule Library - generateGUID" );
+    }
+
+    String randomHexGUID = UUID.randomUUID().toString().replaceAll("-", "").toUpperCase();
+
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-GGUID-002 Generated GUID: " + randomHexGUID );
+      plog.trace( "ARL-GGUID-003 Exiting Attribute Rule Library - generateGUID" );
+      plog.trace( msgSeparator );
+    }
+
+    return randomHexGUID;
+  }
+
+  /*******
+    Get User Types
+  *******/
+  public static Object getUserTypes( SailPointContext context ) {
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( msgSeparator );
+      plog.trace( "ARL-GUT-001 Entering Attribute Rule Library - getUserTypes" );
+    }
+
+    List userTypes = new ArrayList();
+    List userTypeObjects = new ArrayList();
+
+    ObjectConfig identityConfig = context.getObjectByName( ObjectConfig.class, "Identity" );
+
+    userTypeObjects = identityConfig.getIdentityTypesList();
+
+    if ( userTypeObjects != null &amp;&amp; !userTypeObjects.isEmpty() ) {
+      for ( IdentityTypeDefinition identityTypeDef : userTypeObjects ) {
+        if ( plog.isTraceEnabled() ) {
+          plog.trace( "ARL-GUT-002 Identity Type: \n" + identityTypeDef.toXml() );
+        }
+        String userType = identityTypeDef.getName();
+        userTypes.add( userType );
+      }
+    }
+
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-GUT-003 Identity Types" + userTypes.toString() );
+      plog.trace( "ARL-GUT-004 Exiting Attribute Rule Library - getUserTypes" );
+      plog.trace( msgSeparator );
+    }
+
+    return userTypes;
+  }
+  
+  /*******
+    Get fetch Time from the String
+  *******/
+  public static String getTime( String shiftDateTime ) {
+    String strTime = "";
+    String dateTimeFormatted = "";
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-GT-001 Entering Attribute Rule Library - getTime" );
+    }
+    try {
+      if(shiftDateTime!=null)
+      {
+        List&lt;String> resultList = Splitter.on(' ').trimResults().omitEmptyStrings().splitToList(shiftDateTime);
+        for(String splittedString : resultList) {
+          if(splittedString.contains(":")) {
+            strTime = splittedString;
+            break;
+          }
+        }
+        DateFormat inDateFormat = new SimpleDateFormat( "H:m:s");
+        Date dateTime = inDateFormat.parse(strTime);
+        DateFormat outDateFormat = new SimpleDateFormat( "HH:mm:ss");
+        dateTimeFormatted = outDateFormat.format(dateTime);
+        if ( plog.isTraceEnabled() ) {
+          plog.trace( "ARL-GT-002 dateTimeFormatted: " + dateTimeFormatted );
+        }
+      }
+    }
+    catch ( Exception ex ) {
+      plog.error( "ARL-GT-003 ERROR Fetching SupplierPlant ShiftTime Attributes: " + ex.toString() );
+      return null;
+    }
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-GT-004 Exiting Attribute Rule Library - getTime" );
+      plog.trace( msgSeparator );
+    }
+    return dateTimeFormatted;
+  }
+
+  /*******
+    Generate New mailNicknames
+    This will generate a Hash of new email nicknames for a user in order priority for use
+  *******/
+  public static Object generateMailNicknames( SailPointContext context, String firstname, String lastname, String middlename, Integer startNumber ) {
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( msgSeparator );
+      plog.trace( "ARL-GMNN-001 Entering Attribute Rule Library - generateMailNicknames" );
+    }
+    Map mailNicknameHash = new TreeMap();
+    String mailNickname = "";
+    int maxLength = 64;
+
+    String middleInitial = "";
+
+    firstname = firstname != null ? firstname : "";
+    lastname = lastname != null ? lastname : "";
+    middlename = middlename != null ? middlename : "";
+
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-GMNN-002 First Name : " + firstname );
+      plog.trace( "ARL-GMNN-003 Last Name  : " + lastname );
+      plog.trace( "ARL-GMNN-004 Middle Name: " + middlename );
+    }
+
+    if ( firstname.length() > 0 &amp;&amp; lastname.length() > 0 ) {
+      mailNickname = firstname + "." + lastname;
+      mailNickname = scrubMailNickname( mailNickname, maxLength );
+      mailNicknameHash.put( 1, mailNickname );
+    }
+
+    if ( startNumber &lt;= 0 ) {
+      // Generate non numeric mail nicknames
+      if ( firstname.length() > 0 &amp;&amp; lastname.length() > 0 ) {
+
+        if ( middlename.length() > 0 ) {
+          middleInitial = middlename.substring(0, 1);
+          mailNickname = firstname + "." + middlename + "." + lastname;
+          mailNickname = scrubMailNickname( mailNickname, maxLength );
+          mailNicknameHash.put( 2, mailNickname );
+
+          mailNickname = firstname + "." + middleInitial + "." + lastname;
+          mailNickname = scrubMailNickname( mailNickname, maxLength );
+          mailNicknameHash.put( 3, mailNickname );
+        }
+      }
+    } else {
+      // Generate numeric mail nicknames 5 at a time
+        String numericBase = mailNicknameHash.get( 1 );
+      for ( int i = startNumber + 3; i &lt; startNumber + 8; i++ ) {
+        mailNickname = numericBase + ( i - 3 );
+        mailNickname = scrubMailNickname( mailNickname, maxLength - 1 );
+        mailNicknameHash.put( i, mailNickname );
+      }
+    }
+
+    if ( plog.isTraceEnabled() ) {
+      for ( Map.Entry entry : mailNicknameHash.entrySet() ) {
+          plog.trace( "[" + entry.getKey() + ", " + entry.getValue() + "]\n" );
+      }
+      plog.trace( "ARL-GMNN-005 Exiting Attribute Rule Library - generateMailNicknames" );
+      plog.trace( msgSeparator );
+    }
+    return mailNicknameHash;
+  }
+
+  /*******
+    Generate AD user DN
+    This will generate a DN for a new AD user account
+    TODO: Update logic to select
+      1) Forest
+      2) Container
+      3) cn attribute
+  *******/
+  public static String generateADDN( SailPointContext context, Identity identity, Application application ) {
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( msgSeparator );
+      plog.trace( "ARL-GADDN-001 Entering Attribute Rule Library - generateADDN" );
+    }
+
+    Map forestContainers = application.getAttributeValue( "userContainers" );
+
+    String userDN = "";
+    String targetDomain = "";
+    String userContainer = "users";
+    String accountAttribute = "workday_id";
+    
+    
+    if ( forestContainers != null &amp;&amp; !forestContainers.isEmpty() ) {
+
+      if ( plog.isTraceEnabled() ) {
+        plog.trace( "ARL-GADDN-001 forestContainers:\n" + forestContainers.toString() );
+      }
+
+      Set forestContainerKeySet = forestContainers.keySet();
+      for ( String key : forestContainerKeySet ) {
+        targetDomain = key;
+      }
+      
+      Map domainContainers = forestContainers.get( targetDomain );
+      String baseDN = domainContainers.get( userContainer );
+
+      String workdayID = identity.getAttribute( accountAttribute );
+
+      userDN = "cn=" + workdayID + "," + baseDN;
+      if ( plog.isTraceEnabled() ) {
+        plog.trace( "ARL-GADDN-002 User distingushedName: " + userDN );
+      }
+    }
+
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-GADDN-003 Exiting Attribute Rule Library - generateADDN" );
+      plog.trace( msgSeparator );
+      
+    }
+    return userDN;
+  }
+  /*
+    Generate AD ENGuser DN
+    This will generate a DN for a new AD user account
+    Based on the Group requested OU will be provisioned for user  
+  */
+  public static String generateADEngDN( SailPointContext context, Identity identity, Application application, Object groupName ) {
+    if ( plog.isTraceEnabled() ) {
+      plog.trace("ADENGDN-001:: Entering Attribute Rule Library generateADEngDN" );
+    }
+    Map OUContainers = application.getAttributeValue("OUNames");
+    String userDN = "";
+    String accountAttribute = "workday_id";
+    String baseDN="";
+    if (!(Util.isEmpty(OUContainers))) {
+      if ( plog.isTraceEnabled() ) {
+        plog.trace( "ADENGDN-002::OUContainers:\n" + OUContainers.toString() );
+      }
+      for ( Map.Entry OUDomainEntry : OUContainers.entrySet() )  {
+        String groupDN = OUDomainEntry.getKey();
+        String OUDomain = OUDomainEntry.getValue();
+        String reqGroup = groupName.toString();
+        if ( groupDN.equalsIgnoreCase( reqGroup ) ) {
+          baseDN = OUDomain;
+        }
+      }
+    }
+    String workdayID = identity.getAttribute( accountAttribute );
+    userDN = "cn=" + workdayID + "," + baseDN;
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ADENGDN-003::User distingushedName: " + userDN );
+    }
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ADENGDN-004::Exiting Attribute Rule Library - generateADDN" );
+    }
+    return userDN;
+  }
+  /*******
+    Get Manager AD user DN
+  *******/
+  public static String getManagerADDN( SailPointContext context, Identity identity, Application application ) {
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( msgSeparator );
+      plog.trace( "ARL-GMADDN-001 Entering Attribute Rule Library - getManagerADDN" );
+    }
+
+    Identity manager = identity.getManager();
+
+    IdentityService identityService = new IdentityService( context );
+    String result = "";
+
+    if ( manager != null ) {
+
+      String managerID = manager.getName();
+
+      List links =  identityService.getLinks( manager, application );
+
+      if ( links != null &amp;&amp; !links.isEmpty() ) {
+        Attributes wdAtts = new Attributes();
+
+        if ( links.size() == 1 ) {
+          Link account = links.get( 0 );
+          wdAtts = account.getAttributes();
+          result = wdAtts.get( "distinguishedName" );
+        } else {
+          for ( Link account : links ) {
+            wdAtts = account.getAttributes();
+            String sAMAccountName = wdAtts.get( "sAMAccountName" );
+
+            if ( managerID.equalsIgnoreCase( sAMAccountName ) ) {
+              result = wdAtts.get( "distinguishedName" );
+            }
+          }
+        }
+      }
+    }
+
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-GMADDN-002 Exiting Attribute Rule Library - getManagerADDN" );
+      plog.trace( msgSeparator );
+    }
+
+    return result;
+  }
+  
+  /*******
+    Get Manager Azure userPrincipalName to populate for Azure MTM and Azure TMNA PIM applications
+  *******/
+  public static String getManagerAzureUpn( SailPointContext context, Identity identity, Application application ) {
+      
+    plog.trace( "ARL-GMADDN-090 Entering Attribute Rule Library - getManagerAzureObjId" );
+    Identity manager = identity.getManager();
+    IdentityService identityService = new IdentityService( context );
+    String result = "";
+    /*******
+      Checking user's manager Azure AD link to see if account is synchronized and member type then return userPrincipalName otherwise return blank
+    *******/
+    if ( manager != null ) {
+      List links =  identityService.getLinks( manager, application );
+      if(Util.nullSafeSize(links) > 0){
+        Link account = links.get( 0 );
+        if(Util.isNotNullOrEmpty(account.getAttribute("userType"))&amp;&amp; account.getAttribute("userType").equalsIgnoreCase("Member") &amp;&amp; 
+        account.getAttribute("onPremisesSyncEnabled") != null &amp;&amp; account.getAttribute("onPremisesSyncEnabled") == true &amp;&amp; Util.isNotNullOrEmpty(account.getAttribute("userPrincipalName")) ){
+          result = account.getAttribute( "userPrincipalName" );
+        }
+      }
+    }
+    plog.trace( "ARL-GMADDN-091 Returned userPrincipalName" +result );
+    return result;
+  }
+  
+  /******
+  convertNonEnglishCharacters
+  Converts non english charecters like "José" to english "Jose".
+  ******/
+  public static String convertNonEnglishCharacters(String text) {
+    String normalizedText = Normalizer.normalize(text, Normalizer.Form.NFD);
+    Pattern pattern = Pattern.compile("\\p{M}");
+    return pattern.matcher(normalizedText).replaceAll("");
+  }
+  
+  /*******
+    Scrub mailNicknames
+    This will Scrub a mail nickname to meet standards
+  *******/
+  public static String scrubMailNickname( String mailNickname, int maxLength ) {
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( msgSeparator );
+      plog.trace( "ARL-SMNN-001 Entering Attribute Rule Library - scrubMailNickname" );
+    }
+
+    // Convert case to lower
+    mailNickname = mailNickname.toLowerCase();
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-SMNN-002 mailNickname lower: " + mailNickname );
+    }
+    
+    // Convert Special non english charecters like "José" to english.
+    mailNickname = convertNonEnglishCharacters( mailNickname);
+    plog.trace( "ARL-SMNN-002.1 mailNickname converting Non English Characters : " + mailNickname );
+    
+    // Change whitespace to "."
+    mailNickname = mailNickname.replaceAll( "\\s+", "." );
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-SMNN-003 mailNickname no whitespace: " + mailNickname );
+    }
+    // Remove illeagal characters according to RFC-5321
+    mailNickname = mailNickname.replaceAll( "[^0-9A-Za-z.!#$%&amp;*+-\\/=?^_{|}~]", "" );
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-SMNN -004 mailNickname no illegal characters: " + mailNickname );
+    }
+    // Change consecutive periods to a single period
+    mailNickname = mailNickname.replaceAll( "[.][.]+", "." );
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-SMNN-005 mailNickname replace double .: " + mailNickname );
+    }
+    // remove non ascii characters
+    mailNickname = mailNickname.replaceAll("[^\\x20-\\x7e]", "");
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-SMNN-006 mailNickname remove non ascii characters: " + mailNickname );
+    }
+    // Remove leading period
+    mailNickname = mailNickname.replaceAll( "^[.]+", "" );
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-SMNN-007 mailNickname remove leading .: " + mailNickname );
+    }
+    // Remove trailing period
+    mailNickname = mailNickname.replaceAll( "[.]+$", "" );
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-SMNN-008 mailNickname remove trailing .: " + mailNickname );
+    }
+    // Remove comma 
+    mailNickname = mailNickname.replaceAll( "[,]", "" );
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-SE-005::mailNickname remove comma: " + mailNickname );
+    }
+    // Trim to max length allowed
+
+    maxLength = maxLength &lt; mailNickname.length() ? maxLength : mailNickname.length();
+
+    mailNickname = mailNickname.substring( 0, maxLength );
+
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-SMNN-009 Scrubbed Mail Nickname: " + mailNickname );
+      plog.trace( "ARL-SMNN-010 Exiting Attribute Rule Library - scrubMailNickname" );
+      plog.trace( msgSeparator );
+    }
+    return mailNickname;
+  }
+
+  /*******
+  Search SailPoint for existance of UPN and Mail
+   *******/
+  public Object isSailPointMailNicknamePresent( SailPointContext context, Object mailNicknameHash ) {
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( msgSeparator );
+      plog.trace( "ARL-ISMNP-001 Entering Azure AD Rule Library - isSailPointMailNicknamePresent" );
+    }
+
+    List usedMailNicknames = new ArrayList();
+    String nicknameFilters = "";
+
+    List nickanameFilterList = new ArrayList();
+
+    for ( Object myKey : mailNicknameHash.keySet() ) {
+      nickanameFilterList.add( Filter.like( "userPrincipalName", mailNicknameHash.get( myKey ) + "@", Filter.MatchMode.START ) );
+    }
+
+    Filter mailNicknameFilter = ( Filter.or( nickanameFilterList ) );
+
+    QueryOptions qo=new QueryOptions();
+
+    qo.addFilter( mailNicknameFilter );
+
+    ArrayList colsToRead = new ArrayList();
+    colsToRead.add( "userPrincipalName" );
+    colsToRead.add( "email" );
+
+    Iterator it = context.search( Identity.class, qo, colsToRead );
+
+    if ( it != null ) {
+      while ( it.hasNext() ) {
+        Object [] thisRecord = it.next();
+
+        String userPrincipalName = thisRecord[0];
+        String emailAddress = thisRecord[1];
+
+        if ( userPrincipalName != null &amp;&amp; !userPrincipalName.trim().isEmpty() ) {
+          usedMailNicknames.add( userPrincipalName.split( "@" )[ 0 ] );
+        }
+        if ( emailAddress != null &amp;&amp; !emailAddress.trim().isEmpty() ) {
+          usedMailNicknames.add( emailAddress.split( "@" )[ 0 ] );
+        }
+      }
+    }
+    Util.flushIterator(it);
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-ISMNP-002 Exiting Attribute Rule Library - isSailPointMailNicknamePresent" );
+      plog.trace( msgSeparator );
+    }
+
+    return usedMailNicknames;
+  }
+
+  /*******
+    To set AZURE MFA
+  *******/
+  public boolean registerAzureMfaPhone( SailPointContext context, String identityName, String phone ) {
+    IdentityService idService = new IdentityService(context);
+    Application azureApp = context.getObjectByName(Application.class, "Azure AD");
+    String upn = null;
+    String nativeIdentity = null;
+    String number = phone;
+    Identity identity = context.getObjectByName(Identity.class, identityName);
+    List azureLinks = idService.getLinks(identity, azureApp);
+    if ( Util.nullSafeSize(azureLinks) > 0 ) {
+      if ( azureLinks.size() == 1 ) {
+        Link account = (Link) azureLinks.get(0);
+        upn = account.getAttribute("userPrincipalName");
+        nativeIdentity = account.getNativeIdentity();
+      }
+    }
+    if (null != upn &amp;&amp; !upn.contains("#EXT#")) {
+      return setMfaPhoneWithMicrosoftGraph( azureApp, number, upn, nativeIdentity );
+    }
+    return false;
+  }
+
+  /*******
+  return first available unique email address
+   *******/
+  public String uniqueMailNickname( SailPointContext context, Application app, String firstname, String lastname, String middlename, Identity identity ) {
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( msgSeparator );
+      plog.trace( "ARL-UMNN-001 Entering Azure AD Rule Library - uniqueMailNickname" );
+    }
+
+    TreeMap mailNicknameHash = new TreeMap();
+    TreeMap interateHash = new TreeMap();
+
+    Integer startNumber = 0;
+    do {
+      mailNicknameHash.putAll( generateMailNicknames( context, firstname, lastname, middlename, startNumber ) );
+      if ( plog.isTraceEnabled() ) {
+        plog.trace( "ARL-UMNN-002 mailNicknameHash" );
+        for ( Map.Entry entry : mailNicknameHash.entrySet() ) {
+          plog.trace( "ARL-UMNN-003 [" + entry.getKey() + ", " + entry.getValue() + "]\n" );
+        }
+      }
+      interateHash.putAll( mailNicknameHash );
+      if ( plog.isTraceEnabled() ) {
+        plog.trace( "interateHash" );
+        for ( Map.Entry entry : interateHash.entrySet() ) {
+          plog.trace( "ARL-UMNN-004 [" + entry.getKey() + ", " + entry.getValue() + "]\n" );
+        }
+      }
+      List foundNames = new ArrayList();
+      Object azureNames = isAzureMailNicknamePresent( context, app, mailNicknameHash );
+      if ( plog.isTraceEnabled() ) {
+        plog.trace( "ARL-UMNN-005 azureNames Class: " + azureNames.getClass().getName() );
+      }
+      IdentityService is = new IdentityService(context);
+      Application app = context.getObjectByName(Application.class, "Azure AD");
+      List oldNickNames = new ArrayList();
+      List links = is.getLinks(identity, app);
+      for (Link link : links){
+        if (link != null &amp;&amp; link.getAttribute("proxyAddresses")!= null){
+         List proxyAddresses = link.getAttribute("proxyAddresses");
+         for(String proxyAddress : proxyAddresses){
+           if (proxyAddress!= null){
+             oldNickNames.add( proxyAddress.split( ":" )[ 1 ].split( "@" )[ 0 ] );
+           }
+         }
+        }
+      }
+      if ( azureNames != null &amp;&amp; azureNames.size() > 0 ) {
+        foundNames.addAll( azureNames );
+        if ( plog.isTraceEnabled() ) {
+          plog.trace( "ARL-UMNN-006 foundNames 1: " + foundNames.toString() );
+        }
+      } else {
+        if ( plog.isTraceEnabled() ) {
+          plog.trace( "ARL-UMNN-007 no list from Azure" );
+        }
+      }
+
+      Object sailPointNames = isSailPointMailNicknamePresent( context, mailNicknameHash );
+      if ( plog.isTraceEnabled() ) {
+        plog.trace( "ARL-UMNN-008 sailPointNames Class: " + sailPointNames.getClass().getName() );
+      }
+
+      if ( sailPointNames != null &amp;&amp; sailPointNames.size() > 0 ) {
+        foundNames.addAll( sailPointNames );
+        if ( plog.isTraceEnabled() ) {
+          plog.trace( "ARL-UMNN-009 foundNames 1: " + foundNames.toString() );
+        }
+      } else {
+        if ( plog.isTraceEnabled() ) {
+          plog.trace( "ARL-UMNN-010 no list from SailPoint" );
+        }
+      }
+
+      for ( Map.Entry entry : interateHash.entrySet() ) {
+        if ( entry != null ) {
+          String entryValue = entry.getValue();
+          if ( entryValue != null ) {
+            for ( String usedNickname : foundNames ) {
+              if ( entryValue.equalsIgnoreCase( usedNickname ) &amp;&amp;  !oldNickNames.contains(usedNickname)) {
+                mailNicknameHash.remove( entry.getKey() );
+              }
+            }
+          }
+        }
+      }
+
+      if ( startNumber == 0 ) {
+        startNumber = 1;
+      } else {
+        startNumber = startNumber + 5;
+      }
+    } while ( mailNicknameHash.isEmpty() );
+
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-UMNN-011 Exiting Attribute Rule Library - uniqueMailNickname" );
+      plog.trace( msgSeparator );
+    }
+
+    return mailNicknameHash.firstEntry().getValue().toString();
+  }
+
+  /*******
+  return email/upn domain suffix
+   *******/
+  public String getDomainSuffix( SailPointContext context, Application application ) {
+    String domainSuffix = "";
+
+    Map domainMails = new HashMap();
+    mailDomains = application.getAttributeValue( "emailDomainNames" ) != null ? application.getAttributeValue( "emailDomainNames" ) : null;
+
+    if ( mailDomains != null ) {
+      for ( Map.Entry emailDomainEntry : mailDomains.entrySet() )  {
+        String emailDomain = emailDomainEntry.getKey();
+        String emailDomainPriority = emailDomainEntry.getValue();
+
+        if ( emailDomainPriority.equalsIgnoreCase( "primary" ) ) {
+          domainSuffix = emailDomain;
+        }
+      }
+    }
+    return domainSuffix;
+  }
+
+  /*******
+  return updated proxyAddresses
+  *******/
+  public List getProxyAddresses( SailPointContext context, Identity identity ) {
+
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-GPA-001 Under getProxy Address" );
+    }
+    String emailProxyAddress = "";
+    emailProxyAddress = getIdentityAttribute( context, identity, "userPrincipalName" );
+    // emailProxyAddress = emailProxyAddress.isEmpty() ? "" : "SMTP:" + emailProxyAddress; // isEmtpy on null object was creating problem, commented
+
+    if (null != emailProxyAddress &amp;&amp; !emailProxyAddress.isEmpty()) {
+      emailProxyAddress= "SMTP:" + emailProxyAddress;
+    }
+    else {
+    emailProxyAddress="";
+    }
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-GPA-002 Under getProxy Address emailProxyAddress"+emailProxyAddress );
+    }
+
+    List proxyAddresses = new ArrayList();
+    proxyAddresses = getApplicationAttribute( context, identity, "Active Directory - NA",  "proxyAddresses" );
+
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-GPA-003 Under getProxy Address proxyAddresses"+proxyAddresses );
+    }
+
+    List newProxyAddresses = new ArrayList();
+
+    if ( proxyAddresses == null ) {
+      if ( !emailProxyAddress.isEmpty() ) {
+        newProxyAddresses.add( emailProxyAddress );
+      }
+    } else {
+
+      for ( String address : proxyAddresses ) {
+        if(address==null){
+          continue;
+        }
+        newProxyAddresses.add( address.toLowerCase() );
+      }
+      if ( newProxyAddresses.contains( emailProxyAddress.toLowerCase() ) ) {
+        newProxyAddresses.remove( emailProxyAddress.toLowerCase() );
+      }
+      newProxyAddresses.add( emailProxyAddress );
+    }
+
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-GPA-004 return proxyAddresses"+newProxyAddresses );
+    }
+    return newProxyAddresses;
+  }
+
+  /*******
+  remove attribute change from Azure Sync enabled users for attributes that are contained in the sync configuration
+   *******/
+  public Object disallowAzureUpdateForOnPremSync( SailPointContext context, AttributeTarget target, Object value, Link link ) {
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( msgSeparator );
+      plog.trace( "ARL-DAUOPS-001 Entering Attribute Rule Library - disallowAzureUpdateForOnPremSync" );
+    }
+
+    Object newAttributeValue = null;
+
+    if ( link != null &amp;&amp; target != null ) {
+      Boolean isDirSyncEnabled = link.getAttribute( "dirSyncEnabled" ) != null ? link.getAttribute( "dirSyncEnabled" ) : false;
+      String azureAttributeName = target.getName() != null ? target.getName() : "";
+      Application application = target.getApplication();
+      String applicationName = application != null ? application.getName() : "";
+      String nativeIdentity = link.getNativeIdentity() != null ? link.getNativeIdentity() : "";
+      newAttributeValue = link.getAttribute(azureAttributeName);
+      if ( isDirSyncEnabled ) {
+        if ( plog.isTraceEnabled() ) {
+          plog.trace( "ARL-DAUOPS-002 The account " + nativeIdentity + " is dirSyncEnabled" );
+        }
+
+        if ( applicationName.startsWith( "Azure" ) ) {
+
+          Map azureSyncAttributeMap = application != null ? application.getAttributeValue( "onPremSyncAttributes" ) : null;
+
+          if ( azureSyncAttributeMap != null ) {
+            if ( !azureSyncAttributeMap.containsKey( azureAttributeName ) ) {
+              if ( plog.isTraceEnabled() ) {
+                plog.trace( "ARL-DAUOPS-003 Allowing update to Azure Attribute for " + azureAttributeName );
+              }
+              newAttributeValue = value;
+            } else {
+              if ( plog.isTraceEnabled() ) {
+                plog.trace( "ARL-DAUOPS-004 Disallowing update to Azure Attribute for " + azureAttributeName );
+              }
+            }
+          } else {
+            plog.error( "ARL-DAUOPS-005 Cannot get Azure Directory Sync attribute list." );
+          }
+        } else {
+          plog.error( "ARL-DAUOPS-006 Cannot Use disallowAzureUpdateForOnPremSync Rule with Application: " + applicationName );
+        }
+
+      } else { // if the account is not Directory Sync Enabled process the update
+        if ( plog.isTraceEnabled() ) {
+          plog.trace( "ARL-DAUOPS-007 The account " + nativeIdentity + " is not dirSyncEnabled" );
+          plog.trace( "ARL-DAUOPS-008 Attribute " + azureAttributeName + " is being updated in " + applicationName );
+        }
+        newAttributeValue = value;
+      }
+    }
+
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-DAUOPS-009 Exiting Attribute Rule Library - disallowAzureUpdateForOnPremSync" );
+      plog.trace( msgSeparator );
+    }
+
+    return newAttributeValue;
+  }
+
+  /*******
+  generate a displayname based on DisplayName without CompanyCode workgroup
+   *******/
+  public String generateDisplaynameBasedOnWorkgroup( SailPointContext context, String firstname, String lastname, String middlename, String companyCode, String pronoun, String identityName ) {
+    
+    plog.trace( "ARL-GDNBW-001 identityName:: " + identityName );
+    boolean isMember =isUserMemberOfWorkGroup("DisplayName without CompanyCode",identityName);
+    plog.trace( "ARL-GDNBW-002 isMember:: " + isMember);
+    if ( isMember ) {
+      return generateDisplayname( context, firstname, lastname, middlename, "",  pronoun ); //Blank CompanyCode is used to generate displayname
+    }else{
+      return generateDisplayname( context, firstname, lastname, middlename, companyCode,  pronoun );
+    }
+  }
+
+  /*******
+  generate a displayname for employees
+  The method also generates the displayname for supplier where pronoun will be utilizing the primary supplier number and companyCode will use Supplier value
+   *******/
+  public String generateDisplayname( SailPointContext context, String firstname, String lastname, String middlename, String companyCode, String pronoun ) {
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( msgSeparator );
+      plog.trace( "ARL-GDN-001 Entering Attribute Rule Library - generateDisplayname" );
+    }
+
+    String displayName;
+    String compAbbreviation = null;
+    
+    Custom companyObj = context.getObjectByName( Custom.class, "Company Name Mappings" );
+    if (Util.isNotNullOrEmpty( companyCode )){
+      compAbbreviation = companyObj.get( companyCode.trim() );
+    }
+    if (null != middlename &amp;&amp; !middlename.equalsIgnoreCase("null") &amp;&amp; !middlename.trim().equals("")) {
+      displayName = firstname + " "+middlename+ " " + lastname;
+    }
+    else {
+    displayName = firstname + " " + lastname;
+    }
+
+    if ( Util.isNotNullOrEmpty( pronoun ) ) {
+      displayName = displayName + " (" + pronoun + ")";
+    }
+
+    if ( compAbbreviation != null &amp;&amp; compAbbreviation.length() > 0 ) {
+      displayName = displayName + " (" + compAbbreviation + ")";
+    }
+
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-GDN-002 Exiting Attribute Rule Library - generateDisplayname.  Generated Displayname:: " + displayName );
+      plog.trace( msgSeparator );
+    }
+
+    return displayName;
+  }
+
+  /*******
+  Check if a Identity is MTM subType or not
+ *******/
+  public boolean checkNonMTMUser(SailPointContext context, Identity identity){
+    Object subTypeObj = identity.getAttribute("subType");
+    String companyCode = identity.getAttribute("companyCode");
+    boolean returnBol = false;
+
+    if(subTypeObj != null){
+      if(subTypeObj instanceof List){
+        if(Util.nullSafeContains(subTypeObj,"MTM")){
+          returnBol = true;
+        }
+      }else if(subTypeObj instanceof String){
+        if(Util.nullSafeCaseInsensitiveEq(subTypeObj,"MTM")){
+          returnBol =  true;
+        }
+      }
+    }else if(Util.nullSafeCaseInsensitiveEq(companyCode,"MTM")){
+        returnBol = true;
+    }
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-CNMTMU-001 Exiting Attribute Rule Library - CheckNonMTMUser.  Generated boolean:: " + returnBol );
+      plog.trace( msgSeparator );
+    }
+    return returnBol;
+  }
+
+  /*******
+  Value change rule-Setting oldvalue when identity attribute newvalue is null
+  *******/
+  public void valueChangeAttrSet(String attributeName, Object attrOldValue,Identity identity) {
+    identity.setAttribute(attributeName,attrOldValue);
+  }
+
+  /*******
+    Function to append description to contact assignment values
+  *******/
+  public List getModifiedContactAssignment(Identity identity, String conAssignAttrName, String strToAppend) {
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-GMCA-001: Entering Attribute Rule Library - getModifiedContactAssignment for identity " +identity+ ", contact assignment " +conAssignAttrName);
+    }
+    List updatedList = new ArrayList();
+    List conAssignVals = Util.filterNulls(Util.asList(identity.getAttribute(conAssignAttrName)));
+    if ( Util.nullSafeSize(conAssignVals)>0 ) {
+      Util.removeDuplicates(conAssignVals);
+      for (String val : conAssignVals) {
+        updatedList.add(val+strToAppend);
+      }
+    }
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-GMCA-002: Updated list to return " +updatedList);
+    }
+    return updatedList;
+  }
+  
+  /*******
+    Generate Supplier User Plant Details with '#' seperator
+    This will generate a list of plant details like "plantCode#definitionCode#definitionDesc" for a supplier user
+  *******/
+  public static List supplierUserPlantDetails( SailPointContext context, Identity identity ) {
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-SUPD-001: Entering Attribute Rule Library - supplierUserPlantDetails for identity " +identity);
+    }
+    List finalList = new ArrayList();
+    finalList.addAll(ListUtils.emptyIfNull(getModifiedContactAssignment(identity,"CONTACT_ASSIGNMENT_35","#35#Plant Manager")));
+    finalList.addAll(ListUtils.emptyIfNull(getModifiedContactAssignment(identity,"CONTACT_ASSIGNMENT_37","#37#Production Crisis Management")));
+    finalList.addAll(ListUtils.emptyIfNull(getModifiedContactAssignment(identity,"CONTACT_ASSIGNMENT_1","#1#Primary Sales 001")));
+    finalList.addAll(ListUtils.emptyIfNull(getModifiedContactAssignment(identity,"CONTACT_ASSIGNMENT_46","#46#Executive")));
+    finalList.addAll(ListUtils.emptyIfNull(getModifiedContactAssignment(identity,"CONTACT_ASSIGNMENT_138","#138#Ordering Emergency Contact")));
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-SUPD-002: Final list: " + finalList);
+    }
+    return finalList;
+  }
+  /*******
+  generate an expirationDate for contractors
+  *******/
+  public String getContractorExpirationDate() {
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( msgSeparator );
+      plog.trace( "ARL-GCED-001 Entering Attribute Rule Library - getContractorExpirationDate" );
+    }
+    String expirationDate = "";
+    DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss a z");
+    Calendar calendar = Calendar.getInstance();
+    Date currentDate = calendar.getTime();
+    calendar.add(Calendar.YEAR, 1);
+    Date nextYear = calendar.getTime();
+    nextYear = Util.getEndOfDay(nextYear);
+    expirationDate = dateFormat.format(nextYear);
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-GCED-002 Exiting Attribute Rule Library - getContractorExpirationDate :: "+expirationDate);
+    }
+    return expirationDate;
+  }
+
+
+  /*******
+  generate upn values for target mappings
+  *******/
+  public static String getUPNvalue( SailPointContext context, Identity identity, Link link) {
+    String upn =  getIdentityAttribute( context, identity, "userPrincipalName" );
+
+    if(upn==null &amp;&amp; link!=null)
+    {
+      upn = link.getAttribute( "UPN" );
+    }
+
+    return upn;
+  }
+
+
+  /*******
+  Convert Date to AD date format
+  *******/
+  public String convertDateToAD( String humanDate ) {
+    Long adTimestamp = null;
+    String adDate = "";
+    SimpleDateFormat sdf = new SimpleDateFormat( "MM/dd/yyyy");
+    if(Util.isNotNullOrEmpty(humanDate))
+    {
+      if (humanDate != null &amp;&amp; humanDate.contains("/")) {
+        if (humanDate.contains(":")) {
+          sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+        } else {
+          sdf = new SimpleDateFormat("MM/dd/yyyy");
+        }
+      } else if(humanDate != null &amp;&amp; humanDate.contains("-")) {
+        if (humanDate.contains(":")) {
+          sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        } else {
+          sdf = new SimpleDateFormat("yyyy-MM-dd");
+        }
+      }
+      Date date = sdf.parse( humanDate );
+      if ( plog.isTraceEnabled() ) {
+        plog.trace( "ARL-CDTAD-001 Date is " + date );
+      }
+      if ( date != null) {
+        date = Util.getEndOfDay(date);
+        adTimestamp = ( date.getTime()*10000L ) + 116444736000000000L;
+      }
+      if ( adTimestamp != null ) {
+        if ( plog.isTraceEnabled() ) {
+          plog.trace( "ARL-CDTAD-002 AD Timestamp is: " + adTimestamp );
+        }
+        adDate = adTimestamp.toString();
+      }
+    }
+    else
+    {
+      if ( plog.isTraceEnabled() ) {
+        plog.trace( "ARL-CDTAD-003 Input human date for AD conversion is empty: "  );
+      }
+    }
+    return adDate;
+  }
+
+  /*******
+   Calculate ExpirationDate based on HireDate at the time of Identity Creation
+   If HireDate exists then HireDate+1year, if not currentDate+1year
+  *******/
+  public String getExpirationDateFromHireDate( String hireDate ) {
+    DateFormat dateFormat =null;
+    if (hireDate != null &amp;&amp; hireDate.contains("/")) {
+      if (hireDate.contains(":")) {
+        dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+      } else {
+        dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+      }
+    } else if(hireDate != null &amp;&amp; hireDate.contains("-")) {
+      if (hireDate.contains(":")) {
+        dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+      } else {
+        dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+      }
+    }
+    String expirationDate = null;
+    if(hireDate != null &amp;&amp; !hireDate.isEmpty()){
+      try
+      {
+      Date dtHireDate = dateFormat.parse(hireDate);
+      Calendar calendar = Calendar.getInstance();
+      calendar.setTime(dtHireDate);
+      calendar.add(Calendar.YEAR, 1);
+      Date dtExpirationDate = calendar.getTime();
+      dtExpirationDate = Util.getEndOfDay(dtExpirationDate);
+      expirationDate = dateFormat.format(dtExpirationDate);
+      }catch(Exception parseExp)
+      {
+       plog.error("ARL-GEDHD-001 getExpirationDateFromHireDate failed with error: " +parseExp.getMessage());
+       return null;
+      }
+    }
+    else{
+      expirationDate = getContractorExpirationDate();
+    }
+    return expirationDate;
+  }
+
+  /*******
+  Identify Identity affliate code
+ *******/
+  public String getGlobalSupplierAffliateCode(SailPointContext context, Identity identity)
+  {
+    List subTypes = getIdentityAttribute(context, identity, "subType");
+    String value = "";
+    if(subTypes!=null)
+    {
+    for(String s: subTypes)
+      {
+        value = s;
+        break;
+      }
+    }
+
+    String affliateCode="";
+    Custom custObj=context.getObjectByName(Custom.class,"ToyotaGlobalSupplierAffiliateCodeMap");
+    if(custObj!=null)
+    {
+      affliateCode= custObj.get(value);
+    }
+    affliateCode ==null ? "" : affliateCode;
+    return affliateCode;
+  }
+
+  /*******
+    This method is to check Supplier Plant or Corp source application link only present or not
+  *******/
+  public static Boolean checkApplicationLinkPresent(SailPointContext context, Identity myIdentity, String applicationName) {
+    Boolean checkVal = false;
+    Application app = context.getObjectByName(Application.class,applicationName);
+    IdentityService identityService = new IdentityService(context);
+
+    List newIdenAppLinkList = identityService.getLinks(myIdentity,app);
+
+    if(newIdenAppLinkList!=null &amp;&amp; newIdenAppLinkList.size()>0) {
+      checkVal = true;
+    }
+    return checkVal;
+  }
+  
+  /*******
+  This method is to check Supplier Plant or Corp or Org source application link present or not for Reverse leaver LCE
+  *******/  
+  public static Boolean checkApplcationLinkChange(SailPointContext context, Identity identity1, Identity identity2,
+          String applicationName) {
+    Boolean checkVal = false;
+    Application app = context.getObjectByName(Application.class, applicationName);
+    if (app != null) {
+      Link link1 = identity1.getLink(app);
+      Link link2 = identity2.getLink(app);
+      if (link2 == null &amp;&amp; link1 != null) {
+        checkVal = true;
+      }
+    }
+    return checkVal;
+  }
+
+  
+  /*******
+    This method is to check business entity for Supplier Corporation XREF Source or Supplier NAMC Plant XREF Source
+  *******/
+  public static Boolean checkBusinessEntityChange(SailPointContext context, Identity identity1, Identity identity2, String applicationName) {
+    Boolean checkVal = false;
+    Application app = context.getObjectByName(Application.class, applicationName);
+    if (app != null) {
+      Link link1 = identity1.getLink(app);
+      Link link2 = identity2.getLink(app);
+        
+      if (link1 != null &amp;&amp; link2 != null) {
+        List businessEntity1 = (List) identity1.getAttribute("Business_Entity");
+        List businessEntity2 = (List) identity2.getAttribute("Business_Entity");
+        if (businessEntity1 != null) {
+          if ((businessEntity1.size() > 1 || ((businessEntity1.size() == 1) &amp;&amp; !businessEntity1.contains("00")))) {
+            if (businessEntity2 != null) {
+              if (businessEntity2.size() == 1 &amp;&amp; businessEntity2.contains("00")) {
+                plog.trace("ARL-CBEC-001 businessEntity1 size :: "+identity1+" :: "  + businessEntity1.size());
+                plog.trace("ARL-CBEC-002 businessEntity2 size :: "+identity2+" :: "  + businessEntity2.size());
+                checkVal = true;
+              }
+            }
+            if (businessEntity2 == null) {
+              checkVal = true;
+            }
+          }
+        }
+      }
+    }
+    return checkVal;
+  }
+  
+  /********
+  returns primary accounts based on privilaged account status
+  ********/
+  public List getADPrimaryAccountDN(List idLinks, Application application){
+    String appType = application.getType();
+    ArrayList primaryAccounts = new ArrayList();
+    // Extract Primary account for Active Directory
+    if (idLinks != null &amp;&amp; appType != null &amp;&amp; appType.contains("Active Directory")){
+      for (Link idLink : idLinks ){
+        plog.trace("ARL-GADPADN-002 The link with native identity " + idLink.getNativeIdentity() + " is AD account");
+        primaryAccounts.add(idLink);
+      }
+    }
+    return primaryAccounts; 
+  }
+  /*
+  This methord returns the domain name of the account from the native identity. 
+    To be used to fetch the right userContainer in application xml.
+    All domain name will be returned in upper case.
+  */
+  public String getDomainNameFromNativeIdentity(String adNativeIdentity)
+  {
+    int adIndex = adNativeIdentity.toUpperCase().indexOf("DC");
+    String lnkDomain = null;
+    if (adIndex > 0)
+    {
+      String[] adNativeSplit = adNativeIdentity.substring(adIndex + 3).split(",");
+      if (adNativeSplit.length > 1)
+      {
+        lnkDomain = adNativeSplit[0].toUpperCase();
+      }
+    }
+    return lnkDomain;
+  } 
+  /*******
+  return native identity of primary AD account
+  If the user has multiple accounts the primary account is in the user container
+  *******/
+  public String getADPrimaryAccountDN( SailPointContext context, Identity identity, Application application ) {
+  
+    plog.trace( "ARL-GADPADN-001 Entering Attribute Rule Library - getADPrimaryAccountDN" );
+    String primaryADNativeIdentity = "";
+    String userContainer = "";
+    Map accountContainers = null;
+    
+    Map accountContainersKey = application.getAttributeValue( "userContainers" );
+    Set accountContainersKeySet = accountContainersKey.keySet();
+    for ( String key : accountContainersKeySet ) {
+      accountContainers = accountContainersKey.get(key);
+    }
+
+    if ( accountContainers != null &amp;&amp; !accountContainers.isEmpty() &amp;&amp; accountContainers.containsKey( "users" ) ) {
+      userContainer = accountContainers.get( "users" ).toUpperCase();
+    } else {
+      plog.error( "ARL-GADPADN-002 Cannot retrieve userContainer for Application: " + application.getName() );
+    }
+
+    if ( userContainer != null &amp;&amp; !userContainer.isEmpty() ) {
+      IdentityService identityService = new IdentityService( context );
+      List adLinks = identityService.getLinks( identity, application );
+
+      if ( adLinks !=null &amp;&amp; !adLinks.isEmpty() ) {
+        for ( Link adLink : adLinks ) {
+
+          String linkNativeIdentity = adLink.getNativeIdentity();
+          if ( linkNativeIdentity != null &amp;&amp; !linkNativeIdentity.isEmpty() &amp;&amp; linkNativeIdentity.toUpperCase().indexOf( userContainer ) > 0 ) {
+            primaryADNativeIdentity = linkNativeIdentity;
+          }
+        }
+      } else {
+        plog.error( "ARL-GADPADN-003 Identity: " + identity.getName() + " does not have and account in " + application.getName() );
+      }
+    }
+
+    primaryADNativeIdentity = primaryADNativeIdentity != null ? primaryADNativeIdentity : "";
+    plog.trace( "ARL-GADPADN-004 Exiting Attribute Rule Library - getADPrimaryAccountDN" );
+    return primaryADNativeIdentity;
+  }
+
+  /*******
+  return Active Directory Group Container
+  *******/
+  public String getADGroupContainer( SailPointContext context, Application application, String containerKey ) {
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( msgSeparator );
+      plog.trace( "ARL-GADGC-001 Entering Attribute Rule Library - getADGroupContainer" );
+    }
+
+    String groupContainer = "";
+    String targetDomain = "";
+
+    Map groupContainers = application.getAttributeValue( "groupContainers" );
+
+    if ( groupContainers != null &amp;&amp; !groupContainers.isEmpty() ) {
+
+      if ( plog.isTraceEnabled() ) {
+        plog.trace( "ARL-GADGC-002 groupContainers:\n" + groupContainers.toString() );
+      }
+
+      if ( groupContainers.containsKey( "MTMUSTEST" ) ) {
+        targetDomain = "MTMUSTEST";
+      } else if ( groupContainers.containsKey( "TMMTEST" ) ) {
+        targetDomain = "TMMTEST";
+      } else if ( groupContainers.containsKey( "TMM" ) ) {
+        targetDomain = "TMM";
+      } else if ( groupContainers.containsKey( "MTMUS" ) ) {
+        targetDomain = "MTMUS";
+      }
+
+      Map domainContainers = groupContainers.get( targetDomain );
+      groupContainer = domainContainers.get( containerKey );
+    }
+
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-GADGC-003 Exiting Attribute Rule Library - Get Application Attribute" );
+      plog.trace( msgSeparator );
+    }
+    return groupContainer;
+  }
+
+  /*******
+    This method is to get Supplier Plant Names which are accociated with contact_assignment_142
+  *******/
+  public static List getConAssign142PlantName( SailPointContext context, Identity identity ) {
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( msgSeparator );
+      plog.trace( "ARL-GCA142PN-001 Entering Attribute Rule Library - getConAssign142PlantName" );
+    }
+
+    List plantNameList = new ArrayList();
+
+    List conAssign142 = getIdentityAttribute(context, identity, "CONTACT_ASSIGNMENT_142");
+    if(conAssign142!=null &amp;&amp; conAssign142.size()>0)
+    {
+      for (String plantCode : conAssign142)
+      {
+        String userName= plantCode + "@plant.toyotasupplier.com";
+        Identity id = context.getObjectByName(Identity.class, userName);
+        if (id != null) {
+            String plantName=id.getAttribute("supplierName");
+            plantNameList.add(plantName);
+        }
+      }
+    }
+    return plantNameList;
+  }
+
+  /*******
+    This method is to get Supplier Plant Names which are accociated with contact_assignment_143
+  *******/
+  public static List getConAssign143PlantName( SailPointContext context, Identity identity ) {
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( msgSeparator );
+      plog.trace( "ARL-GCA143PN-001 Entering Attribute Rule Library - getConAssign143PlantName" );
+    }
+
+    List plantNameList = new ArrayList();
+
+    List conAssign143 = getIdentityAttribute(context, identity, "CONTACT_ASSIGNMENT_143");
+    if(conAssign143!=null &amp;&amp; conAssign143.size()>0)
+    {
+      for (String plantCode : conAssign143)
+      {
+        String userName= plantCode + "@plant.toyotasupplier.com";
+        Identity id = context.getObjectByName(Identity.class, userName);
+        String plantName=id.getAttribute("supplierName");
+        plantNameList.add(plantName);
+      }
+    }
+    return plantNameList;
+  }
+  /*******
+    This method returns emailid from identity object, if email not present, it returns upn
+  *******/
+
+  public static String getEmailUPNGeneral(SailPointContext context, Identity identity)
+  {
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( msgSeparator );
+      plog.trace( "ARL-GEUPNG-001 Entering Attribute Rule Library - getEmailUPNGeneral" );
+    }
+    String returnValue = null;
+
+    String email = getIdentityAttribute( context, identity, "email" );
+    if (Util.isNotNullOrEmpty(email))
+    {
+      returnValue =  email;
+    }
+    else
+    {
+      returnValue = getIdentityAttribute( context, identity, "userPrincipalName" );
+    }
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-GEUPNG-002 Exiting Attribute Rule Library - getEmailUPNGeneral" );
+      plog.trace( msgSeparator );
+    }
+    return returnValue;
+  }
+
+  // From https://community.sailpoint.com/t5/Technical-White-Papers/BSDG-20-Locking-Identity-Objects-for-Modification/ta-p/76456
+  // A helper function that attempts to acquire a lock on an Identity.  It will
+  // wait for 'waitSecs' for any existing locks to go away before giving up an
+  // attempt, and it will re-attempt 'retryTimes' before giving up entirely.
+  // On a successful lock it will return a valid sailpoint.object.Identity
+  // reference.  If it fails to acquire a lock then it will return a null Identity
+  // reference to the caller and it will display various messages in the log file.
+  // After the last re-attempt it will give up and log a full stack trace
+  // allowing system administrators to review the issue.
+  // The 'lockName' argument is an option string that can describe the process
+  // that is acquiring the lock on the Identity.  If null or an empty string is
+  // passed for this then the host + thread name will be substitued in for the
+  // value of 'lockName'.
+  // Note: this can be copied and pasted into site-specific code or places into
+  // rule libraries as necessary.
+  public Identity acquireIdentityLock (String identityId, String lockName, int waitSecs, int retryTimes) {
+    // Sanity check the arguments passed in, to prevent irrationally short calls.
+    if (retryTimes &lt;= 0) {
+      retryTimes = 1;
+    }
+    if (waitSecs &lt;= 0) {
+      waitSecs = 5;
+    }
+
+    // Make sure we've been asked to lock a valid Identity.
+    Identity idToLock = context.getObjectById(Identity.class, identityId);
+    if (null == idToLock) {
+      idToLock = context.getObjectByName(Identity.class, identityId);
+    }
+    if (null == idToLock) {
+      plog.error("ARL-AIL-001 Could not find an Identity to lock matching: [" + identityId + "]");
+      return null;
+    }
+
+    int numLockRetries = 0;
+    Identity lockedId = null;
+
+    // If no lock name was passed in then create one that's descriptive of
+    // the host and thread that acquired the lock came from.
+    if ( (lockName instanceof String) &amp;&amp; (0 == lockName.length()) ) {
+      lockName == null;
+    }
+    if (null == lockName) {
+      String hostName = java.net.InetAddress.getLocalHost().getHostName();
+      String threadId = Thread.currentThread().getId();
+      String threadName = Thread.currentThread().getName();
+      lockName = "host:[" + hostName + "], threadName:[" + threadId + "], thread:[" + threadName +"]";
+    }
+
+    while ((lockedId == null) &amp;&amp; (numLockRetries &lt; retryTimes)) {
+
+      try {
+
+        // Attempt to acquire a lock in the object.
+        lockedId = sailpoint.api.ObjectUtil.lockIdentity(context, identityId, waitSecs);
+
+      } catch (sailpoint.api.ObjectAlreadyLockedException ex) {
+
+        // Let's see who's got this object currently locked.
+        String lockString = idToLock.getLock();
+        if ((null == lockString) || (0 == lockString.length())) {
+          lockString = "unspecified";
+        }
+
+        // Log the stack trace on the final attempt to retry.
+        if (numLockRetries == (retryTimes - 1)) {
+          String eMsg = "Failed to acquire lock on Identity [" + identityId + "], lock held by: [" + lockString + "]";
+          plog.error(eMsg, ex);
+        } else {
+          String wMsg = "Timeout acquiring lock on Identity [" + identityId + "], lock held by: [" + lockString + "], retrying.";
+          plog.warn(wMsg);
+        }
+      }
+      numLockRetries++;
+    }
+    return lockedId;
+  }
+
+  /*******
+  return primary AD account link
+  If the user has multiple accounts the primary account is in the user container
+  *******/
+  public Link getADPrimaryAccount( SailPointContext context, Identity identity, Application application, String userContainer) {
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-GADPA-001 Entering Attribute Rule Library - getADPrimaryAccount with values:" );
+      plog.trace( "ARL-GADPA-002 identity: "+identity.getName() );
+      plog.trace( "ARL-GADPA-003 application: "+application.getName() );
+      plog.trace( "ARL-GADPA-004 userContainer: ("+userContainer+")" );
+    }
+    Link primaryADLink;
+
+    Map accountContainersMap = application.getAttributeValue( "userContainers" );
+    Map accountContainers = null;
+    if(accountContainersMap.get(userContainer)!= null){
+      accountContainers = accountContainersMap.get(userContainer);
+    }
+    if ( accountContainers != null &amp;&amp; !accountContainers.isEmpty() &amp;&amp; accountContainers.containsKey( "users" ) ) {
+      userContainer = accountContainers.get( "users" );
+    } else {
+      plog.error( "ARL-GADPA-005 Cannot retrieve userContainer for Application: " + application.getName() );
+    }
+
+    if ( userContainer != null &amp;&amp; !userContainer.isEmpty() ) {
+      IdentityService identityService = new IdentityService( context );
+      List adLinks = identityService.getLinks( identity, application );
+
+      if ( adLinks !=null &amp;&amp; !adLinks.isEmpty() ) {
+        for ( Link adLink : adLinks ) {
+          String linkNativeIdentity = adLink.getNativeIdentity();
+          if ( linkNativeIdentity != null &amp;&amp; !linkNativeIdentity.isEmpty() &amp;&amp; linkNativeIdentity.indexOf( userContainer ) > 0 ) {
+            primaryADLink = adLink;
+          }
+        }
+      } else {
+        plog.error( "ARL-GADPA-006 Identity: " + identity.getName() + " does not have an account in " + application.getName() );
+      }
+    }
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-GADPA-007 Exiting Attribute Rule Library - getADPrimaryAccount with value:" );
+      plog.trace( "ARL-GADPA-008 primaryADLink: "+primaryADLink );
+    }
+    return primaryADLink;
+  }
+
+  /*******
+  return primary AD account's attribute value
+  *******/
+  public Object getADPrimaryAccountAttribute ( SailPointContext context, Identity identity, String applicationName, String userContainer, String attributeName ){
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-GADPAA-001 Entering Attribute Rule Library - getADPrimaryAccountAttribute with values:" );
+      plog.trace( "ARL-GADPAA-002 identity: "+identity.getName() );
+      plog.trace( "ARL-GADPAA-003 application: "+applicationName );
+      plog.trace( "ARL-GADPAA-004 userContainer: "+userContainer );
+      plog.trace( "ARL-GADPAA-005 attributeName: "+attributeName );
+    }
+    Object attributeValue;
+    Application application=context.getObjectByName(Application.class,applicationName);
+    Link primaryAccountLink = getADPrimaryAccount(context, identity, application, userContainer );
+    if(primaryAccountLink!=null){
+      attributeValue=primaryAccountLink.getAttribute (attributeName);
+    }
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-GADPAA-006 Exiting Attribute Rule Library - getADPrimaryAccountAttribute with value:" );
+      plog.trace( "ARL-GADPAA-007 attributeValue: "+attributeValue );
+    }
+    return attributeValue;
+  }
+
+  /*******
+  return 4 or 5 digit custom company code
+  *******/
+  public String getCustomCompanyCode(SailPointContext context, Identity identity) {
+    String compCode = getIdentityAttribute(context, identity, "companyCode");
+    String customCompanyCode="";
+    Custom custObj=context.getObjectByName(Custom.class,"Company Name Mappings");
+    if(custObj != null) {
+       customCompanyCode= custObj.get(compCode);
+    }
+    customCompanyCode == null ? "" : customCompanyCode;
+    return customCompanyCode;
+  }
+
+  public ProvisioningPlan examinePlan(ProvisioningPlan plan, String applicationName){
+    AccountRequest accReq=plan.getAccountRequest(applicationName);
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-EP-001 Inside examinePlan()");
+      plog.trace( "ARL-EP-002 appName: \n" + applicationName );
+      plog.trace( "ARL-EP-003 plan \n" + plan.toXml() );
+    }
+    Custom appAttrCustomObject = context.getObjectByName( Custom.class, "Application Attributes Never Empty" );
+
+    if (accReq.getOperation().toString().equals("Modify") ) {
+      if ( plog.isTraceEnabled() ){
+        plog.trace( "ARL-EP-004 inside modify: \n" );
+      }
+      if ( appAttrCustomObject != null ) {
+        if ( plog.isTraceEnabled() ){
+          plog.trace( "ARL-EP-005 Application Attributes Never Empty: \n" + appAttrCustomObject.toString() );
+        }
+        Map appAttrMap = appAttrCustomObject.get( "Application Attributes Never Empty" );
+        List attrList=appAttrMap.get(applicationName);
+        if ( attrList != null &amp;&amp; !attrList.isEmpty() ) {
+          if ( plog.isTraceEnabled() ) {
+            plog.trace( "ARL-EP-006 Attributes that cannot be null: \n" + attrList.toString() );
+          }
+          List attributeRequestsToRemove=new ArrayList();
+          for(AttributeRequest attrRequest:accReq.getAttributeRequests()){
+            if (attrList.contains(attrRequest.getName())) {
+              if (attrRequest.getValue()==null || attrRequest.getValue().toString().isEmpty()){
+                if ( plog.isTraceEnabled() ) {
+                  plog.trace("ARL-EP-007 Detected an AttributeRequest to set " + attrRequest.getName() + " as null. Removing it:\n" + plan.toXml());
+                }
+                attributeRequestsToRemove.add(attrRequest);
+              }
+            }
+          }
+          if ( attributeRequestsToRemove != null &amp;&amp; attributeRequestsToRemove.size() > 0 ) {
+            for ( AttributeRequest attrRequest : attributeRequestsToRemove ) {
+              if ( plog.isTraceEnabled() ){
+                plog.trace( "ARL-EP-008 Removing Attribute Request: " + attrRequest.toXml() );
+              }
+              accReq.remove( attrRequest );
+            }
+          }
+        }
+      }
+    }
+    if ( plog.isTraceEnabled() ) {
+      plog.trace("#####################################################");
+      plog.trace( "ARL-EP-009 Plan After Deletion:\n" + plan.toXml() );
+    }
+    return plan;
+  }
+  
+  /*******
+    Generate AD Privileged DN
+    This will generate a DN for a new AD Privileged account
+    TODO: Update logic to select 
+      1) Forest 
+      2) Container
+      3) cn attribute
+  *******/  
+  
+  public static String generatePrivilegedADDN( SailPointContext context, Identity identity, Application application ) {
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( msgSeparator );
+      plog.trace( "ARL-GPADDN-001 Entering Attribute Rule Library - generatePrivilegedADDN" );
+    }
+
+    Map forestContainers = application.getAttributeValue( "userContainers" );
+    
+    String privilegedADDN = "";
+    String targetDomain = "";
+    String userContainer = "privileged";
+    String accountAttribute = "workday_id";
+    
+    if ( forestContainers != null &amp;&amp; !forestContainers.isEmpty() ) {
+    
+      plog.trace( "forestContainers:\n" + forestContainers.toString() );
+      
+      if ( forestContainers.containsKey( "MTMUSTEST" ) ) {
+        targetDomain = "MTMUSTEST";
+      } else if ( forestContainers.containsKey( "TMMTEST" ) ) {
+        targetDomain = "TMMTEST";
+      } else if ( forestContainers.containsKey( "TMM" ) ) {
+        targetDomain = "TMM";
+      } else if ( forestContainers.containsKey( "MTMUS" ) ) {
+        targetDomain = "MTMUS";
+      }
+      else if ( forestContainers.containsKey( "ENGTEST" ) ) {
+        targetDomain = "ENGTEST";
+      }
+      else if ( forestContainers.containsKey( "ENG" ) ) {
+        targetDomain = "ENG";
+      }
+      Map domainContainers = forestContainers.get( targetDomain );
+      String baseDN = domainContainers.get( userContainer );
+    
+      String workdayID = identity.getAttribute( accountAttribute );
+      if(targetDomain.contains("ENG")){
+        privilegedADDN = "CN=" + application.getAttributeValue("adPrivAccountPrefix")+"-"+workdayID + "," + baseDN;
+      }
+      else{
+        privilegedADDN = "cn=" + application.getAttributeValue("adPrivAccountPrefix")+"-"+workdayID + "," + baseDN;
+      }
+      if ( plog.isTraceEnabled() ) {
+        plog.trace( "ARL-GPADDN-002 User distingushedName: " + privilegedADDN );
+      }
+    }
+        
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-GPADDN-003 Exiting Attribute Rule Library - generatePrivilegedADDN" );
+      plog.trace( msgSeparator );
+    }
+
+    return privilegedADDN;
+  }
+  
+  // Method to send email notification. Used in Active Directory NA - Afterprovisioningrule
+  
+  public void sendEmailNotification(String toAddress, String emailTemplate, String userName, String requesterName, List mapList) {
+    try {
+      if(!Util.isAnyNullOrEmpty(toAddress,emailTemplate,userName,requesterName)) {
+        plog.trace("ARL-SEN-001 Rule Name : Toyota AD AfterProvisioningRule , Method Name : sendEmailNotification ,Inside if Statement ");
+        EmailTemplate template = context.getObjectByName(EmailTemplate.class, emailTemplate);
+        EmailOptions options = new EmailOptions();
+        options.setTo(toAddress);
+        Map args = new HashMap();
+        args.put("mapList", mapList);
+        args.put("requesterName", requesterName);
+        args.put("userName", userName);
+        options.setVariables(args);
+        options.setSendImmediate(true);
+        context.sendEmailNotification(template, options);
+      }
+    } catch (GeneralException e) {
+      plog.error("ARL-SEN-002 Rule Name : Toyota AD AfterProvisioningRule , Method Name : sendEmailNotification ,erro : "+e.getMessage());
+    }
+  }
+  
+  //Method to get updated UPN for Priv
+  
+  public static String getUPNNonPrivValue(SailPointContext context, Identity identity, String samAccountName,
+    String distinguishedName, Application application) {
+    plog.trace("ARL-GUPNPV-001 ::" + msgSeparator);
+    plog.trace("ARL-GUPNPV-002 ::Entering Attribute Rule Library - getUPNNonPrivValue");
+    plog.trace("ARL-GUPNPV-003 ::samAccountName: " + samAccountName);
+    plog.trace("ARL-GUPNPV-004 ::distinguishedName: " + distinguishedName);
+
+    String upnPrefix;
+    String upnDomainSuffix;
+    String nativeIdentity;
+
+    String upn = getIdentityAttribute(context, identity, "userPrincipalName");
+    plog.trace("ARL-GUPNPV-006 :: Identity " + identity.getName() + " userPrincipalName: " + upn);
+    String samAccountName = samAccountName;
+    String updatedUpn = null;
+    String domainKey;
+    try {
+      if (Util.isNotNullOrEmpty(upn)) {
+        if (!validateEmail(upn)) {
+          plog.trace("ARL-GUPNPV-007 :: UPN not valid format :: " + upn + " for Identity Name :: " + identity.getName());
+        } else {
+          upnPrefix = upn.split("@")[0];
+          upnDomainSuffix = upn.split("@")[1];
+          nativeIdentity = distinguishedName;
+          domainKey = nativeIdentity.toUpperCase().split(",DC=")[1];
+          updatedUpn = upnPrefix + "@" + upnDomainSuffix;
+          plog.trace("ARL-GUPNPV-009 :: Account setting UPN for " + nativeIdentity + " to: " + updatedUpn);
+
+          Map domainSuffixMap = application.getAttributeValue("domainSuffixMap");
+          String workGroupName = application.getAttributeValue("lexusWorkGroupName");
+          String identityName = identity.getName();
+          boolean isLexusUpn = false;
+          if (Util.isNotNullOrEmpty(workGroupName)) {
+            isLexusUpn = isUserMemberOfWorkGroup(workGroupName, identityName);
+          }
+          if (domainSuffixMap != null &amp;&amp; !domainSuffixMap.isEmpty() &amp;&amp; Util.isNotNullOrEmpty(domainKey)
+              &amp;&amp; domainSuffixMap.containsKey(domainKey)) {
+            if (isLexusUpn) {
+              domainKey = application.getAttributeValue("lexusDomainKey");
+            }
+            upnDomainSuffix = domainSuffixMap.get(domainKey);
+            updatedUpn = upnPrefix + upnDomainSuffix;
+            plog.trace("ARL-GUPNPV-010 ::Correcting Domain Suffix. Setting UPN for " + nativeIdentity + " to: " + updatedUpn);
+          } else {
+            plog.error("ARL-GUPNPV-011 ::error getting AD Domain Suffix for Domain Key: " + domainKey+ " For Identity: " + identity.getName());
+          }
+        }
+      }
+    }catch (Exception e) {
+      plog.error("ARL-GUPNPV-012 :: " + e.getClass().getName() + " Exception happened ::" + e + " For Identity Name :: "+ identity.getName() + " and UPN ::" + upn);
+      throw new Exception("ARL-GUPNPV-013 :: Exception happened  " + e + " For Identity Name :: " + identity.getName()+ " and UPN ::" + upn);
+    }
+    plog.trace("ARL-GUPNPV-014 ::" + updatedUpn);
+    return updatedUpn;
+  }
+  
+  //  Return middleInitial from middleName
+   
+  public static String getMiddleInitial( String middleName ) {
+    String middleInitial;
+    
+    if ( Util.isNotNullOrEmpty( middleName ) ) {
+      middleInitial = middleName.substring( 0, 1 );
+    }
+    
+    return middleInitial;
+  }
+  
+  public static String parseIso13662State( String isoState ) {
+    String state;
+    
+    if ( Util.isNotNullOrEmpty( isoState ) &amp;&amp; isoState.contains( "-" ) ) {
+      state = isoState.split( "-" )[1];
+    } else {
+      state = isoState;
+    }
+    
+    return state;
+  }
+  
+  //Generate Proxy address for newly created AD account
+  
+  public List generateProxyAddresses( SailPointContext context, Identity identity, String distinguishedName, Application application, boolean isPrivilegedAccount ) 
+  {
+    String proxyAddress;
+    String nativeIdentity = distinguishedName ;
+    Map domainSuffixMap = application.getAttributeValue( "domainSuffixMap" );
+   
+    String workdayID = getIdentityAttribute(context, identity, "workday_id");
+    List proxyAddressess = new ArrayList();
+    
+    if ( isPrivilegedAccount ) 
+    {
+      plog.trace( "ARL-GPA-001 No Proxy Address for Privileged Account " + nativeIdentity );
+      proxyAddress = "";
+      proxyAddressess.add(proxyAddress);
+    } else
+    {
+      String domainKey = nativeIdentity.toUpperCase().split(",DC=")[1];
+     
+      if (domainKey!=null &amp;&amp; (Util.nullSafeCaseInsensitiveEq(domainKey, "tmm") || Util.nullSafeCaseInsensitiveEq(domainKey, "tmmtest")))
+      {
+        domainKey = domainKey;
+      } else 
+      {
+        plog.trace( "ARL-GPA-002 No Proxy Address for non-tmm DN based Account " + nativeIdentity );
+        
+        proxyAddress = ""; // for non-tmm domain
+        proxyAddressess.add(proxyAddress);
+      }
+     
+      if ( domainSuffixMap != null &amp;&amp; !domainSuffixMap.isEmpty() &amp;&amp;  domainSuffixMap.containsKey( domainKey )) 
+      {        
+        String EnvDomain = domainSuffixMap.get( domainKey );
+        proxyAddress = "smtp:"+workdayID+EnvDomain;
+        plog.trace( "ARL-GPA-003 Setting Proxy Address for Account " + nativeIdentity + " to: " + proxyAddress );
+        
+        proxyAddressess.add(proxyAddress); 
+      }
+    }
+    return proxyAddressess;
+  }
+
+  /**
+    * launchEmailChangeWorkflow to Calculate EmailChange based on attribute change FirstName, LastName. 
+    * @param oldValue a HashMap containing the old attribute Values
+    * @param newValue a HashMap containing the new attribute values
+    * @param triggererName holds value of the attribute changed.
+    * @return workFlow Id to be Launched
+    * Calling the workflow via request to call after 10 mins as we need to set email first if missing and then set email arguments
+  */
+  public String launchEmailChangeWorkflow(Identity identity, String triggererName, String oldValue,String newValue) {
+          
+    plog.trace("ARL-LECWF-001 Entring launch Email Change Workflow");
+    
+    String workflowName = "Workflow-Lifecycle-EmailChange";
+    String caseName = "Email Change for Identity: "+identity.getName();
+    String requesterId = "spadmin";
+    Workflow eventWorkflow = context.getObject(Workflow.class, workflowName);
+    Identity id = context.getObjectByName(Identity.class, requesterId);
+    DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+    Calendar calendar = Calendar.getInstance();
+    calendar.add(Calendar.MINUTE, 10);
+    Date futureTime = calendar.getTime();
+    String launchTime = dateFormat.format(futureTime);
+
+    caseName = caseName + "(" + launchTime + ")";
+    Attributes reqArgs = new Attributes();
+    reqArgs.put(StandardWorkflowHandler.ARG_REQUEST_DEFINITION, sailpoint.request.WorkflowRequestExecutor.DEFINITION_NAME);
+    reqArgs.put(sailpoint.workflow.StandardWorkflowHandler.ARG_WORKFLOW, workflowName);
+    reqArgs.put(sailpoint.workflow.StandardWorkflowHandler.ARG_REQUEST_NAME, caseName);
+    reqArgs.put( "requestName", caseName );
+    Attributes wfArgs = new Attributes();
+  
+    wfArgs.put("identityName", identity.getName());
+    wfArgs.put("triggererAttribute", triggererName);
+    wfArgs.put("launcher", "spadmin");
+    wfArgs.put("oldValue", oldValue);
+    wfArgs.put("newValue", newValue);
+    wfArgs.put("workflow", eventWorkflow.getName());
+   
+    plog.trace("ARL:0011 : worklfow arguments " +wfArgs);
+  
+    reqArgs.putAll(wfArgs);
+    Request req = new Request();
+    RequestDefinition reqdef = context.getObject(RequestDefinition.class, "Workflow Request");
+    req.setDefinition(reqdef);
+    req.setEventDate(futureTime);
+    req.setOwner(id);
+    req.setName(caseName);
+    req.setAttributes( reqdef, reqArgs );
+    RequestManager.addRequest(context, req);
+   
+    plog.trace("ARL-LECWF-004 Ending launch Email Change Workflow");
+  
+    return "Launched Workflow-Lifecycle-EmailChange successfully";
+  }
+
+  public boolean updateAzureUserEmailAttributes(SailPointContext context, Application application,AccountRequest accountRequest, Identity identity) {
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-UPAUEA-001 Inside Update Azure Email Attribute "  );
+    }
+    List emailGroups = application.getAttributeValue( "emailGroups" );
+    boolean updated = true;
+    /***
+    TODO
+    not sure if we can do this because of bad data but ideally we wouldn't even bother to check the groups
+    if the user already has an email.  To do this we would need to make sure that the fake email in Azure
+    neven got into SailPoint
+    String userEmail = identity.getEmail();
+    ***/
+    // Only evaluate attributeRequests if there are group requests in the accountRequest
+    List groupAttributeRequests = accountRequest.getAttributeRequests( "groups" );
+    if ( groupAttributeRequests != null &amp;&amp; !groupAttributeRequests.isEmpty() ) {
+      for (AttributeRequest planattributes: groupAttributeRequests ) {
+        String aroperation = planattributes.getOperation().toString();
+        String arname = planattributes.getName().toString();
+        
+        Object arvalue = planattributes.getValue();
+        String upn = identity.getAttribute( "userPrincipalName" );
+        // only check if a group is being requested that may add email
+        if ( aroperation.equals("Add") &amp;&amp; Util.nullSafeCaseInsensitiveEq( arname, "groups" ) ) {
+          // check for adding of group that provides mailbox
+          boolean emailRequest = false;
+          if ( arvalue != null &amp;&amp; emailGroups !=null &amp;&amp; !emailGroups.isEmpty() ) {
+            if ( arvalue instanceof List ) {
+              for ( String emailGroup : emailGroups ) {
+                if ( arvalue.contains( emailGroup ) ) {
+                  emailRequest = true;
+                }
+              }
+            } else if ( arvalue instanceof String ) {
+              if ( emailGroups.contains( arvalue ) ) {
+                emailRequest = true;
+              }
+            } else {
+              plog.error( "ARL-UPAUEA-002 Error with Azure Provisioning Plan.  Group Attribute is of type: " + arvalue.getClass().getName() + " for Identity: " + identity.getName() );
+            }
+          }
+          if ( emailRequest ) {
+            if (plog.isTraceEnabled()) {
+              plog.trace("=====Inside Group condition=======");
+            }
+              
+            String userWorkdayId = identity.getAttribute( "workday_id" );
+            plog.trace("ARL-UAUEA-003 user's current workday id is: "+userWorkdayId);
+            
+            boolean updateUPN = false;
+            if (null != upn &amp;&amp; upn.startsWith(userWorkdayId)) {
+              plog.trace("Current UPN of user contains workday id. Generating new UPN for user");              
+              Map identityNameData = getIdentityNameData( context, identity );
+              if ( plog.isTraceEnabled() ) {
+                plog.trace( "ARL-UAUEA-004 Name Data for Identity: " + identity.getName() + " :: " + identityNameData.toString() );
+              }
+              String firstname = identityNameData.get( "firstname" );
+              String lastname = identityNameData.get( "lastname" );
+              String middlename = identityNameData.get( "middlename" );
+              String mailNickname = uniqueMailNickname( context, application, firstname, lastname, middlename, identity );
+              String domainSuffix = upn.split( "@" )[1];
+              upn = mailNickname + "@" + domainSuffix;
+              
+              plog.trace( "ARL-UAUEA-005 New UPN for Identity: " + identity.getName() + " is: " + upn );
+              updateUPN = true;
+            }
+              
+          //Set email to the user
+            email= upn;
+            String identityName = identity.getName();
+            ProvisioningPlan provisioningPlan = new ProvisioningPlan();
+            provisioningPlan.setIdentity(identity);
+        
+            AccountRequest accountRequest = new AccountRequest();
+            accountRequest.setApplication(ProvisioningPlan.APP_IIQ);
+            accountRequest.setOperation(AccountRequest.Operation.Modify);
+            accountRequest.setNativeIdentity(identityName);
+        
+            AttributeRequest attributeRequest = new AttributeRequest();
+            attributeRequest.setName("email");
+            attributeRequest.setOp(Operation.Set);
+            attributeRequest.setValue (email);
+            accountRequest.add(attributeRequest);
+
+            // if we had to generate a new UPN because the user had a WDID UPN update it as well as email
+            if ( updateUPN ) {
+              AttributeRequest upnAR = new AttributeRequest();
+              upnAR.setName( "userPrincipalName" );
+              upnAR.setOp( Operation.Set );
+              upnAR.setValue( upn );
+              accountRequest.add( upnAR );
+            }
+          
+            provisioningPlan.add(accountRequest);
+          
+            if ( plog.isTraceEnabled() ) {
+              plog.trace("ARL-UAUEA-006 Provisioning Plan for " + identityName +" : "+ provisioningPlan.toXml());
+            }
+            Provisioner provisioner=new Provisioner(context);
+            provisioner.execute(provisioningPlan);
+            if ( plog.isTraceEnabled() ) {
+              plog.trace("=====Launching Email Change Workflow=======");
+            }
+            String workflowCase = launchEmailChangeWorkflow(identity, "email", "", email);
+        
+          }
+        } else {
+          updated=false;
+          plog.error("ARL-UAUEA-007 Email group is either NULL or Empty");
+        }
+      }
+    }
+    return updated;
+  }
+  
+  
+  public boolean isUserMemberOfWorkGroup(String workGroupName, String identityName) {
+    boolean userIsMemberOfWorkGroup=false;
+    try {
+      if( Util.isNotNullOrEmpty(workGroupName) &amp;&amp; Util.isNotNullOrEmpty(identityName) ) {
+        Identity wgIdenObj = context.getObjectByName(Identity.class, workGroupName);
+        Identity userIdenObj = context.getObjectByName(Identity.class, identityName);
+        if( wgIdenObj != null &amp;&amp; userIdenObj != null ) {
+          userIsMemberOfWorkGroup = userIdenObj.isInWorkGroup( wgIdenObj );
+          if ( userIsMemberOfWorkGroup ) {
+            plog.trace( "ARL-IUMWG-001 Identity: " + identityName + " is in WorkGroup " + workGroupName );
+          } else {
+            plog.trace( "ARL-IUMWG-002 Identity: " + identityName + " is in WorkGroup " + workGroupName );
+          }
+        }
+      }
+    }catch(GeneralException e) {
+      plog.error( "ARL-IUMWG-003 error while checking if user part of workgroup");
+    }
+    return userIsMemberOfWorkGroup;
+  }
+
+  public List getAuthoritativeDomains() {
+    // We are defining "Authoritative" as either:
+    //  1) We generate and maintain the UPN
+    // or
+    //  2) We have an Active Directory source for the UPN of the user
+    Filter appFilter = Filter.eq( "type", "Azure Active Directory" );
+    
+    QueryOptions qo = new QueryOptions();
+    qo.addFilter( appFilter );
+    
+    List attributesToInclude = new ArrayList();
+    attributesToInclude.add( "id" );
+    List authoritativeDomains = new ArrayList();
+    Iterator it = context.search( Application.class, qo ,attributesToInclude);
+    if ( it != null ) {
+      while ( it.hasNext() ) {
+        Object [] thisRecord = it.next();
+        String appId = (String) thisRecord[0];
+        Application adApp = context.getObjectById( Application.class, appId);
+        
+        List adDomains = adApp.getAttributeValue( "authoritativeDomains" );
+        
+        if ( adDomains != null &amp;&amp; !adDomains.isEmpty() ) {
+          authoritativeDomains.addAll( adDomains );
+        }
+      }
+    }
+    Util.flushIterator(it);
+    return authoritativeDomains;
+  }
+  
+  
+  public String determineAzureUpnEmail( SailPointContext context, Identity identity, Application application, String spAttribute , String azureAttribute) {
+    plog.trace( "ARL-DAUE-001::Entering Attribute Rule Library - determineAzureUpnEmail "); 
+    String updatedAttrValue = "";
+    
+    String identityType = identity.getType();
+    String identityName = identity.getName();
+    String currentAttrValue = identity.getAttribute(spAttribute);
+    plog.trace( "ARL-DAUE-002::identityType ="+identityType); 
+    plog.trace( "ARL-DAUE-003::identityName ="+identityName); 
+    plog.trace( "ARL-DAUE-004::currentAttrValue ="+currentAttrValue); 
+
+
+    // Get Azure Application Links that the user may have
+    IdentityService identityService = new IdentityService( context );
+    List azureLinks = identityService.getLinks( identity, application );
+    plog.trace( "ARL-DAUE-005::azureLinks ="+azureLinks); 
+    
+    GroupDefinition tMNAUsers = context.getObjectByName(GroupDefinition.class,"TMNA Users");
+
+    QueryOptions qo = new QueryOptions();
+    Filter adFilter = tMNAUsers.getFilter();
+    qo.addFilter(adFilter);
+    qo.add(Filter.eq("name", identity.getName()));
+    int isTMNA = context.countObjects( Identity.class, qo );
+    
+    // only check if Azure is the source for UPN/Email for contractor and employee user types
+    if ( Util.nullSafeCaseInsensitiveEq( identityType, "employee" ) || Util.nullSafeCaseInsensitiveEq( identityType, "contractor" ) ) {      
+      // Process the links if we have any (and we should have at least 1)
+      if ( azureLinks != null &amp;&amp; !azureLinks.isEmpty() ) {
+        List authoritativeDomains = getAuthoritativeDomains();
+        plog.trace( "ARL-DAUE-006::authoritativeDomains ="+authoritativeDomains); 
+      
+        // We will get the member link with email assigned and a list of any other member links
+        // if there are multiple member accounts the one with the email license should be primary
+        Link savedLink;
+        int savedScore;
+
+        for ( Link azureLink : azureLinks ) {
+          String userType = azureLink.getAttribute( "userType" );
+          plog.trace( "ARL-DAUE-007::userType ="+userType); 
+          int azureLinkScore = 0;
+          
+          if ( Util.nullSafeCaseInsensitiveEq( userType, "member" ) ) {
+            // Only deal with member type accounts for finding the primary Azure account
+            // If a member account is not linked there is a problem with it and we log and skip.  All linked accounts have an onPremises DN
+            String onPremisesDistinguishedName = azureLink.getAttribute( "onPremisesDistinguishedName" );
+            plog.trace( "ARL-DAUE-008::onPremisesDistinguishedName ="+onPremisesDistinguishedName); 
+            
+            if ( Util.isNotNullOrEmpty( onPremisesDistinguishedName ) ) {
+              // We are dealing with at least an aditional directory Sync member account.  which is better?
+              //  4a) TMNA user - use current UPN/Email
+              //  4b) Managed Domain with email - use current UPN/Email
+              //  3)  Unmanaged with email - use Azure UPN/Email
+              //  2)  Managed without email - use current UPN/Email
+              //  1)  Unmanaged without email - use Azure UPN/Email
+              //  0a) No link with value - Use current UPN/Email.
+              //  0b) Inactive Azure Account - Use current UPN/Email.
+
+              // Check for existence of email account.  If email license exists the UPN is primary with any
+              
+              // Current Loop Account Information
+              boolean azureHasEmail = checkAzureForEmailLicense(azureLink);
+              plog.trace( "ARL-DAUE-008::azureHasEmail ="+azureHasEmail); 
+ 
+              String azureDomainKey = onPremisesDistinguishedName.toUpperCase().split(",DC=")[1];
+              plog.trace( "ARL-DAUE-010::azureDomainKey ="+azureDomainKey); 
+ 
+              boolean azureIsManaged = false;
+              
+              boolean isDisabled = azureLink.isDisabled();
+
+              if ( authoritativeDomains != null &amp;&amp; authoritativeDomains.contains( azureDomainKey ) ) {
+                azureIsManaged = true;
+              }
+              plog.trace( "ARL-DAUE-011::azureIsManaged ="+azureIsManaged); 
+                          
+              // Score current Link value based on priority ranking criteria
+              // If Azure account is disabled we'll ignore azurelinkScore and set to 0
+              if ( isDisabled ) {
+                azureLinkScore = 0;
+              } else if ( isTMNA > 0 ) {
+                azureLinkScore = 4;
+              } else {
+                if ( azureHasEmail &amp;&amp; azureIsManaged ) {
+                  azureLinkScore = 4;
+                } else if ( azureHasEmail &amp;&amp; !azureIsManaged ) {
+                  azureLinkScore = 3;
+                } else if ( !azureHasEmail &amp;&amp; azureIsManaged ) {
+                  azureLinkScore = 2;
+                } else if ( !azureHasEmail &amp;&amp; !azureIsManaged ) {
+                  azureLinkScore = 1;
+                } else {
+                  azureLinkScore = 0;
+                }
+              }
+              plog.trace( "ARL-DAUE-012::azureLinkScore ="+azureLinkScore); 
+              plog.trace( "ARL-DAUE-013::savedLink = "+savedLink +" savedScore="+savedScore); 
+              
+              // Update savedLink and savedScore as compared
+              if ( savedLink != null &amp;&amp; savedScore != null ) {
+                if ( azureLinkScore > savedScore ) {
+                  // The current account is a better UPN than the saved one.  use it
+                  savedLink = azureLink.clone();
+                  savedScore = azureLinkScore;
+                  plog.trace( "ARL-DAUE-014::savedLink = "+savedLink +" savedScore="+savedScore); 
+                } else if ( azureLinkScore == 4 &amp;&amp; savedScore == 4 ) {
+                  // There is a problem.  We have 2 managed accounts with an email.  Notify of error
+                  plog.trace( "ARL-DAUE-015::savedLink = "+savedLink +" savedScore="+savedScore); 
+                }
+              } else {
+                // This is the first member Link found and we will save it
+                savedLink = azureLink.clone();
+                savedScore = azureLinkScore;
+                plog.trace( "ARL-DAUE-016::savedLink = "+savedLink +" savedScore="+savedScore); 
+              }
+              
+            } else {
+              // This is a non-directorySync member account and we don't know what to do with it
+              plog.error( "ARL-DAUE-017 Identity: " + identityName + " has a non-directorySync member Azure account: " + azureLink.getNativeIdentity() );
+            }
+          } else {
+            // guest accounts can never be authoritative for UPN.  Ignore
+            plog.trace( "ARL-DAUE-018 Ignoring Guest Account for user with multiple Azure accounts." );
+          }
+        } // END For Loop.  We should have our Primary Account UPN
+        
+        // Get information from Primary Account Link
+        if ( savedScore != null &amp;&amp; ( savedScore == 3 || savedScore == 1 ) ) {
+          updatedAttrValue = savedLink.getAttribute(azureAttribute);
+          plog.trace( "ARL-DAUE-019::updatedAttrValue ="+updatedAttrValue); 
+        } else {
+            plog.trace( "ARL-DAUE-020::currentAttrValue ="+currentAttrValue); 
+            //If currentAttrValue is null use azure attribute value else retain the existing
+            if(Util.isNullOrEmpty(currentAttrValue) &amp;&amp; savedLink != null){
+              updatedAttrValue = savedLink.getAttribute(azureAttribute);
+            } else {
+              updatedAttrValue = currentAttrValue;
+            }
+            plog.trace( "ARL-DAUE-021::updatedAttrValue ="+updatedAttrValue); 
+        }
+      } else {
+        // There is a problem as we should have at least one Link or we would not be here
+        updatedAttrValue = currentAttrValue;
+        plog.trace( "ARL-DAUE-022::updatedAttrValue ="+updatedAttrValue); 
+        plog.error( "ARL-DAUE-023 Identity: " + identityName + " has no Azure links." );
+      }
+    } else {
+      // Non employee/contractor users email do not come from Azure
+      if (Util.nullSafeCaseInsensitiveEq(spAttribute,"email")){
+        updatedAttrValue = currentAttrValue;
+        plog.trace( "ARL-DAUE-024::updatedAttrValue ="+updatedAttrValue); 
+      }
+      // UPN from Azure for Supplier and it is safe to retrive it from Azure for Non employee and contractor
+      if (Util.nullSafeCaseInsensitiveEq(spAttribute,"userPrincipalName")){
+        updatedAttrValue=identity.getAttribute(spAttribute);
+        plog.trace( "ARL-DAUE-025::updatedAttrValue ="+updatedAttrValue); 
+        if (azureLinks != null &amp;&amp; !azureLinks.isEmpty()){
+          if ( !Util.nullSafeCaseInsensitiveEq( identityType, "supplier") || azureLinks.size() == 1){
+            Link azureLink=azureLinks.get(0);
+            plog.trace( "ARL-DAUE-026::azureLink ="+azureLink); 
+            updatedAttrValue=getUPNOrMail( context, azureLink );
+            plog.trace( "ARL-DAUE-027::updatedAttrValue ="+updatedAttrValue); 
+          }
+          else {
+            plog.error( "ARL-DAUE-028 Violation: Supplier User " + identityName + " has more than one Auzre Acounts.");
+          }
+        }
+      }
+    }
+    
+    plog.trace( "ARL-DAUE-029::updatedAttrValue ="+updatedAttrValue); 
+    plog.trace( "ARL-DAUE-030::Exiting Attribute Rule Library - determineAzureUpnEmail "); 
+    return updatedAttrValue;
+  }
+  
+  public String upnEmailIdentityAttribute(Identity identity, Link link, String spAttribute , String azureAttribute) {
+    plog.trace( "ARL-UEA-001::Entering Attribute Rule Library - upnEmailIdentityAttribute ");
+    String response;
+    plog.trace( "ARL-UEA-002::spAttribute = "+spAttribute +" azureAttribute= " +azureAttribute);
+    Application linkApp = link.getApplication();
+    plog.trace( "ARL-UEA-003::linkApp = "+linkApp);
+    String newValue = determineAzureUpnEmail( context, identity, linkApp, spAttribute ,azureAttribute);
+    plog.trace( "ARL-UEA-004::newValue = "+newValue);
+    if ( Util.isNotNullOrEmpty(newValue) ) {
+      response = newValue;
+      plog.trace( "ARL-UEA-005::response = "+response);
+    } else {
+      response = identity.getAttribute(spAttribute);
+      plog.trace( "ARL-UEA-006::response = "+response);
+    }
+    plog.trace( "ARL-UEA-007::response = "+response);
+    plog.trace( "ARL-UEA-008::Exiting Attribute Rule Library - upnEmailIdentityAttribute ");
+    
+    return response;
+  }
+    
+    
+  public static Map getIdentityNameData( SailPointContext context, Identity identity ) {
+    Map identityNameData = new HashMap();
+    String firstname;
+    String lastname;
+    String middlename;
+    String preferredFirstname;
+    String preferredLastname;
+    String preferredMiddlename;
+    String companyCode;
+    String pronoun;
+    boolean isPreferredName = false;
+    
+    if (identity != null) {
+      preferredFirstname = identity.getAttribute( "preferred_first_name" );
+      firstName = identity.getAttribute( "firstname" );
+      preferredLastname = identity.getAttribute( "preferred_last_name" );
+      lastName = identity.getAttribute( "lastname" );
+      preferredMiddlename = identity.getAttribute( "preferred_middle_name" );
+      middleName = identity.getAttribute( "middleName" );
+      
+      pronoun = identity.getAttribute( "pronoun" );
+      identityNameData.put( "pronoun", pronoun );
+      
+      companyCode = identity.getAttribute( "companyCode" );
+      identityNameData.put( "companyCode", companyCode );
+      
+      if ( Util.isNotNullOrEmpty( preferredFirstname ) || Util.isNotNullOrEmpty( preferredLastname ) || Util.isNotNullOrEmpty( preferredMiddlename ) ) {
+        isPreferredNameExist = true;
+        identityNameData.put( "preferredName", isPreferredName );
+        identityNameData.put( "firstname", preferredFirstname );
+        identityNameData.put( "lastname", preferredLastname );
+        identityNameData.put( "middlename", preferredMiddlename );
+      } else {
+        identityNameData.put( "preferredName", isPreferredName );
+        identityNameData.put( "firstname", firstname );
+        identityNameData.put( "lastname", lastname );
+        identityNameData.put( "middlename", middlename );
+      }
+    }
+    return identityNameData;
+  }
+
+  // this method will look into provided Azure account to check if a email license has been assigned to the user
+  public boolean checkAzureForEmailLicense(Link azureLink) {
+  
+    plog.trace( "ARL-CAL-001::Entering Attribute Rule Library - checkAzureForEmailLicense ");
+    boolean azureHasEmail = false;
+
+    // build list of possible plans with Exchange
+    List exchangePlans = new ArrayList();
+    exchangePlans.add( "EOP_ENTERPRISE" );
+    exchangePlans.add( "EOP_ENTERPRISE_PREMIUM" );
+    exchangePlans.add( "EXCHANGE_ANALYTICS" );
+    exchangePlans.add( "EXCHANGE_B_STANDARD" );
+    exchangePlans.add( "EXCHANGE_L_STANDARD" );
+    exchangePlans.add( "EXCHANGE_S_ARCHIVE" );
+    exchangePlans.add( "EXCHANGE_S_ARCHIVE_ADDON" );
+    exchangePlans.add( "EXCHANGE_S_DESKLESS" );
+    exchangePlans.add( "EXCHANGE_S_ENTERPRISE" );
+    exchangePlans.add( "EXCHANGE_S_ESSENTIALS" );
+    exchangePlans.add( "EXCHANGE_S_FOUNDATION" );
+    exchangePlans.add( "EXCHANGE_S_STANDARD" );
+    exchangePlans.add( "EXCHANGE_S_STANDARD_MIDMARKET" );
+    exchangePlans.add( "EXCHANGEONLINE_MULTIGEO" );
+
+    List azureALs = azureLink.getAttribute( "assignedLicenses" );
+    List assignedPlans = azureLink.getAttribute( "assignedPlans" );
+    plog.trace( "ARL-CAL-002::azureALs = "+azureALs);
+    plog.trace( "ARL-CAL-003::assignedPlans = "+assignedPlans);
+    if ( assignedPlans != null ) {
+      for ( String assignedPlan : assignedPlans ) {
+        String plan = assignedPlan.split( " : " )[1];
+        plog.trace( "ARL-CAL-004::plan = "+plan);
+        if ( Util.isNotNullOrEmpty( plan ) &amp;&amp; exchangePlans.contains( plan ) ) {
+          azureHasEmail = true;
+          plog.trace( "ARL-CAL-005::azureHasEmail = "+azureHasEmail);
+        }
+      }
+    }
+    if ( azureALs != null &amp;&amp; azureALs.contains( "ENTERPRISEPREMIUM" ) ) {
+      azureHasEmail = true;
+      plog.trace( "ARL-CAL-006::ENTERPRISEPREMIUM azureHasEmail = "+azureHasEmail);
+    }
+    plog.trace( "ARL-CAL-007::azureHasEmail = "+azureHasEmail);
+    plog.trace( "ARL-CAL-008::Exiting Attribute Rule Library - checkAzureForEmailLicense ");
+    return azureHasEmail;
+  }
+
+  // this method will evaluate if the user needs their email attribute value synced up in Azure AD
+  public boolean needsEmailAttributeSyncUp (Identity identity, Link link) {
+    
+    plog.trace( "ARL-NES-001 Entering Attribute Rule Library - needsEmailAttributeSyncUp : " + identity.getName() );
+
+    /* if a TFS user has AD NA account and user has email license assigned, Do NOT update email value
+    criteria-1 = the update request is for a TFS user
+    criteria-2 = user has AD NA account
+    criteria-3 = user has email license assigned to their Azure AD account */
+
+    boolean returnVal = false;
+    Application adApp = link.getApplication();
+    List tfsCompanyCodes = new ArrayList();
+    if(adApp.getAttributeValue("tfsCompanyCodes")!=null){
+      tfsCompanyCodes.addAll(adApp.getAttributeValue("tfsCompanyCodes"));
+    }
+    List tcnCompanyCodes = new ArrayList();
+    if(adApp.getAttributeValue("tcnCompanyCodes")!=null){
+      tcnCompanyCodes.addAll(adApp.getAttributeValue("tcnCompanyCodes"));
+    }
+    List syncExceptionCompanyCodes = new ArrayList();
+    syncExceptionCompanyCodes.addAll(tfsCompanyCodes);
+    syncExceptionCompanyCodes.addAll(tcnCompanyCodes);
+    
+    //criteria-1: get user's company code value
+    String companyCode = getIdentityAttribute(context, identity, "companyCode");
+    
+    plog.trace( "ARL-NES-002 companyCode : " + companyCode );
+    plog.trace( "ARL-NES-003 syncExceptionCompanyCodes : " + syncExceptionCompanyCodes );
+
+    if (Util.isNotNullOrEmpty(companyCode) &amp;&amp; syncExceptionCompanyCodes.contains(companyCode)) {
+
+      /* criteria-2: if company code starts with TFS or TCN, need to check if user also has AD NA acount
+      however, the method is only triggered for users with AD NA account with the link value passed as a method arguement, so skip app account check.
+      criteria-3: check if email license is also assigned to user */
+
+      boolean azureHasEmail = false;
+      Application azureApp = context.getObjectByName(Application.class, "Azure AD");
+      List azurelinks = new ArrayList();
+      IdentityService idService = new IdentityService(context);
+      azurelinks = idService.getLinks(identity, azureApp);
+      if (!azurelinks.isEmpty() &amp;&amp; azurelinks.size()>0) {
+        for (Link azureLink : azurelinks) {
+          plog.trace( "ARL-NES-004 azureHasEmail : " + azureHasEmail );
+          if (!azureHasEmail) {
+            if(tcnCompanyCodes.contains(companyCode)){
+              //Check the if the Azure link is authoritative domain example: DC=TMM
+              String onPremisesDistinguishedName = azureLink.getAttribute( "onPremisesDistinguishedName" );
+              plog.trace( "ARL-NES-005 onPremisesDistinguishedName : " + onPremisesDistinguishedName ); 
+              List authoritativeDomains = getAuthoritativeDomains();
+              plog.trace( "ARL-NES-006 authoritativeDomains : " + authoritativeDomains );
+              if ( Util.isNotNullOrEmpty( onPremisesDistinguishedName ) ) {
+                String azureDomainKey = onPremisesDistinguishedName.toUpperCase().split(",DC=")[1];
+                plog.trace( "ARL-NES-007 azureDomainKey : " + azureDomainKey );
+                if ( authoritativeDomains != null &amp;&amp; authoritativeDomains.contains( azureDomainKey ) ) {
+                  plog.trace( "ARL-NES-008 identity.getName()::"+identity.getName() +" User company code is TCN and Azure link is related to authoritative domain,hence license check is skipped." );
+                }else {
+                  azureHasEmail = checkAzureForEmailLicense(azureLink);
+                }
+              }
+            }else {
+              azureHasEmail = checkAzureForEmailLicense(azureLink);
+            }
+          }
+        }
+      }
+      plog.trace( "ARL-NES-009 azureHasEmail : " + azureHasEmail );        
+      if (azureHasEmail) {
+        /* criteria-1, criteria-2, criteria-3 are all met
+        no need to update email value, so returning original value from account link */
+        returnVal = false;
+      }
+      else {
+        //filter criteria not met, proceed with target mapping as initiated
+        returnVal = true;
+      }
+    }
+    else {
+      returnVal = true;
+    }
+    plog.trace( "ARL-NES-010 returnVal : " + returnVal );
+    plog.trace( "ARL-NES-011 Exiting Attribute Rule Library - needsEmailAttributeSyncUp : " + identity.getName() );
+    return returnVal;
+  }
+  
+  public Date expirationdate(String selectedIdentityId, String type, String expirationDate){
+    Logger alog=Logger.getLogger("rule.ExtendedExpirationDate");
+
+    Calendar calendar = Calendar.getInstance();
+    calendar.add(Calendar.YEAR, 1);
+    Date nextYear = calendar.getTime();
+    if(selectedIdentityId != null){
+      Identity identity=context.getObjectById(Identity.class,selectedIdentityId);
+      if(identity != null)
+      {
+        if(alog.isTraceEnabled()) {
+          alog.trace("ARL-ED-001 Starting ExtendedExpirationDateFieldForm for " +identity.getName());
+        }
+
+        if(form.getField("type") != null &amp;&amp; form.getField("expirationDate") != null){
+          String type = form.getField("type").getValue();
+          String expiryDate = form.getField("expirationDate").getValue();
+          if(type!=null &amp;&amp; "contractor".equalsIgnoreCase(type)){
+            if(expiryDate != null &amp;&amp; !"never".equalsIgnoreCase(expiryDate)){
+              nextYear = Util.getEndOfDay(nextYear);
+            }
+            else{
+              nextYear = Util.getEndOfDay(nextYear);
+            }
+          }
+        }
+        if(alog.isTraceEnabled()) {
+          alog.trace("ARL-ED-002 Ending ExtendedExpirationDateFieldForm for " +identity.getName()+" date:"+nextYear);
+        }
+      }
+      else
+      {
+        alog.error("ARL-ED-003 Expiration extension for Identity ID" +selectedIdentityId+" failed as Identity not found in system");
+      }
+    }
+    return nextYear;
+  }
+
+
+   /*******
+  Get Identity Single Subtype
+  *******/  
+  public String getIdentitySingleSubtype(SailPointContext context, Identity identity){
+    Object subTypes = getIdentityAttribute(context, identity, "subType");  
+    String value = "";
+    if(subTypes!=null){
+      if(subTypes instanceof List){
+        value=subTypes.get(0);
+      }
+      else if(subTypes instanceof String){
+        value=subTypes;
+      }
+    }
+    return value;
+  }
+  
+  
+  /*****
+    Method to format date of either a String or Date Object when the type is unknown
+    Returns a formatted date as a string
+    For formatting options please review:
+      https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html
+  *****/
+  public static String formatDateOrStringObject( Object dateObject, String formatString ) {
+    String formattedDateString = "";
+    
+    if ( dateObject != null ) {
+      if ( Util.isNotNullOrEmpty( formatString ) ) {
+        try {
+          
+          Date workingDate;
+          if ( dateObject instanceof Date ) {
+            // The dateObject is of type Date.  Set the value for working
+            workingDate = (Date) dateObject;
+          } else if ( dateObject instanceof String ) {
+            // The dateObject is of type String.  Convert to Date for working
+            workingDate = Util.stringToDate( dateObject );
+          }
+          
+          // Set the date format
+          SimpleDateFormat formatter = new SimpleDateFormat( formatString );
+          formattedDateString = formatter.format( workingDate );
+          
+        } catch ( Exception ex ) {
+          plog.error( "ARL-FDSO-001 Exception Formatting Date: " + ex.getMessage() );
+        }
+      } else {
+        plog.error( "ARL-FDSO-002 Cannot format null Date/String Object with missing formatString" );
+      }
+    } else {
+      plog.error( "ARL-FDSO-003 Cannot format null Date/String Object as date" );
+    }
+    return formattedDateString;
+  }
+
+  /*
+    Truncates a value at a specified length
+    
+    @value Input string to be truncated
+    @length Length of the string to be truncated
+  */
+  public static String truncateValue( String value, int length ) {
+    if ( value != null ) {
+      // Truncate the length to 40 chars  
+      if ( value.length() > length ) {
+        value = value.substring( 0, length - 1 );              
+      }             
+
+      // Clean up and extra whitespace
+      value = value.trim();
+    }  
+    return value;
+  }
+  
+  /*
+    Delete the attribute from link Active Directory - NA if attribute value is same but different case
+    
+    @attributeValue Input string value
+    @link link object
+    attributeName Name of attribute
+  */
+  public void deleteLinkAttrForCaseSensitive(SailPointContext context, String attributeValue, Link link, String attributeName){
+    String linkAttributeValue = link.getAttribute(attributeName);
+    if (attributeValue != null &amp;&amp; linkAttributeValue!=null &amp;&amp; attributeValue.equalsIgnoreCase(linkAttributeValue) &amp;&amp; !attributeValue.equals(linkAttributeValue)) {
+      link.setAttribute(attributeName, "");
+      context.saveObject(link);
+    }
+  }
+
+  /*
+    This method is used to retrieve the job profile group code for Address Registration System Application
+  */
+  public String getADRJobProfileGroup(SailPointContext context, Identity identity){
+    String jobProfileGroup = "";
+    String companyCode = getIdentityAttribute(context, identity, "companyCode");
+    if(companyCode != null &amp;&amp; !companyCode.isEmpty()){
+      if(companyCode.equals( "MTM" )){
+        jobProfileGroup = getIdentityAttribute(context, identity, "job_code");
+      }else{
+        jobProfileGroup = getIdentityAttribute(context, identity, "JobProfileGroup_Code");
+      }
+    }
+    return jobProfileGroup;
+  }
+  /*******
+    Get Direct Reportees
+  *******/
+  public static Object getDirectReportees( SailPointContext context, Identity identity, String type ) {
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "ARL-GDR-001: Entering Attribute Rule Library - getDirectReportees: "+identity.getName()+" "+ type);
+    }
+    ArrayList reportees = new ArrayList();
+    QueryOptions qo=new QueryOptions();
+    qo.addFilter(Filter.eq("manager.name", identity.getName()));
+    qo.addFilter(Filter.eq("type", type));
+    qo.addFilter(Filter.eq("inactive",false));
+    Iterator it = context.search( Identity.class, qo, "name" );
+    if ( it != null ) {
+        while ( it.hasNext() ) {
+          Object [] thisRecord = it.next();
+          String identityName = thisRecord[0];
+          reportees.add(identityName);
+        }
+    }
+    Util.flushIterator(it);
+    plog.trace( "ARL-GDR-002: "+type+" reportees of "+identity.getName()+" "+ reportees);
+    return reportees;
+  }
+
+  public static ProvisioningPlan buildIdentityAttributeUpdatePlan(String identityName)
+  {
+    plog.trace( "ARL-BIAUP-001 Entering Emergency Account Termination IdentityAttribute Update");
+    if (identityName != null) {
+      Identity identity = context.getObjectByName(Identity.class,identityName);
+      ProvisioningPlan plan = new ProvisioningPlan();
+      plan.setIdentity(identity);
+      Date currentDate = new Date();
+      String stringDate=new SimpleDateFormat("MM/dd/yyyy").format(currentDate);
+      AccountRequest acctReq = new AccountRequest();
+      acctReq.setApplication("IIQ");
+      acctReq.setNativeIdentity(identity.getName());
+      acctReq.setOp(ProvisioningPlan.ObjectOperation.Modify);
+      acctReq.add(new AttributeRequest("emergencyLeaverDate",ProvisioningPlan.Operation.Set,stringDate));
+      acctReq.add(new AttributeRequest("inactive",ProvisioningPlan.Operation.Set,true));
+      plan.add(acctReq);
+      return plan;
+    }
+  }
+  /*******
+    Get Management Level for WorkDB Web application
+  *******/
+  public static int getManagementLevel(String jobLevel)
+  {  
+    plog.trace("ARL-GML-001 Entering Attribute Rule Library - getManagementLevel:" + jobLevel);
+
+    int managementLevel = 0 ;
+    try {
+      if(Util.isNotNullOrEmpty(jobLevel)) {
+        managementLevel = Integer.parseInt(jobLevel);
+      }      
+    }catch ( Exception ex ) {
+      plog.error( "ARL-GML-002 Error occured while parsing the string: " + ex.getMessage() );
+    }
+    return managementLevel;
+  }
+
+  /*******
+    This method is used to get the user's numerical subtype
+    * @param context SailPointContext
+    * @param typeValue UserType of the user
+    * @param identity identity object of the user
+  *******/
+  public static int getWorkerType(SailPointContext context, Identity identity, String typeValue)
+  {
+    plog.trace("ARL-GWT-001 Entering Attribute Rule Library - getWorkerType:" + identity.getName());
+    plog.trace("ARL-GWT-002 typeValue:" + typeValue);
+    int wType = 0;
+    if (typeValue !=null &amp;&amp; typeValue.equalsIgnoreCase("contractor")) {
+      wType = 10;
+    }
+    else if (typeValue !=null &amp;&amp; typeValue.equalsIgnoreCase("employee")) {
+      wType = 1;
+      String empClass= getIdentityAttribute( context, identity, "employee_class" );
+      if ( empClass !=null &amp;&amp; empClass.equalsIgnoreCase("I") ) {
+        wType = 3;
+      }
+    }
+    plog.trace("ARL-GWT-005 returned wType:" + wType);
+    return wType;
+  }
+
+  /*******
+    This method is return true if the userType is employee otherwise false.
+    * @param type UserType of the user
+  *******/
+  public static boolean getIsTm(String type)
+  {
+    plog.trace("ARL-GIT-001 Entering Attribute Rule Library - getIsTm");
+    plog.trace("ARL-GIT-002 type:"+type);
+    boolean isTm=false;  
+    if (type !=null &amp;&amp; type.equalsIgnoreCase("employee")) {
+      isTm=true;
+    }
+    plog.trace("ARL-GIT-003 returned isTm:"+isTm);
+    return isTm;
+  }
+  
+  /*******
+    This method is used to get the user's work location state name if country is USA.
+    * @param context SailPointContext
+    * @param state state name of the user's work location
+    * @param identity identity object of the user to get the state value
+  *******/
+  public static String getUSAUserState(SailPointContext context, Identity identity, String state)
+  { 
+    plog.trace("ARL-GUUS-001 Entering Attribute Rule Library - getUSAUserState:"+identity.getName());
+    String country = getIdentityAttribute(context, identity, "country");
+    plog.trace("ARL-GUUS-003 country:"+country);
+    if (country !=null &amp;&amp; country.equalsIgnoreCase("USA")) {
+      plog.trace("ARL-GUUS-003 state returned:"+state);
+      return state;
+    }
+    else {
+      plog.trace("ARL-GUUS-004 The user doesn't belong to USA:");
+      return null;
+    }
+  } 
+  public static String getGUIDformattedEmailForInactiveUsers(SailPointContext context, Identity identity)
+  {  
+    plog.trace("ARL-GSE-001 Entering Attribute Rule Library - getStatusBasedEmail:" + identity.getName());
+    boolean inactive = identity.isInactive();
+    String email= getIdentityAttribute( context, identity, "email" );
+    String guid = getIdentityAttribute(context, identity, "guid");
+    plog.trace("ARL-GSE-002 guid for the user "+guid);
+    if(inactive &amp;&amp; Util.isNotNullOrEmpty(email)){
+      email = guid +email.substring(email.indexOf("@"),email.length());
+    }else if(inactive &amp;&amp; Util.isNullOrEmpty(email)){
+      email = guid + "@toyota.com";
+    }
+    plog.trace("ARL-GSE-003 email For the user "+email);
+    return email;
+  }
+  
+    /**
+    * Generates a valid email address for an identity, defaulting to a placeholder if none provided.
+    * 
+    * This method ensures that every identity has an associated email address. If no valid email
+    * is provided, it constructs a default email using the identity's Workday ID.
+    * 
+    * @param context The SailPoint context for accessing system resources
+    * @param identity The Identity object for which to get or generate an email address
+    * @param email The provided email address (can be null or empty)
+    * @return A valid email address - either the provided email or a generated placeholder
+    *         in the format "{workday_id}_invalid@toyota.com"
+  */
+  public static String getEmailAddress(SailPointContext context, Identity identity, String email)
+  { 
+    plog.trace("ARL-GEA-001 Entering Attribute Rule Library - getEmailAddress:"+identity.getName());
+    String workdayID = getIdentityAttribute(context, identity, "workday_id");
+    plog.trace("ARL-GEA-002 workdayID:"+workdayID);
+    String emailToSend = email;
+    if (Util.isNullOrEmpty( email )) {
+      emailToSend = workdayID+"_invalid@toyota.com";
+    }
+    return emailToSend;
+  }
+  
+  /**
+    * Determines the employment status based on the input status code.
+    * 
+    * @param status The employee status code.
+    * @return "Active" if the status code is A, L, or P; "Terminated" otherwise
+  */
+  public static String getEmploymentStatus(String status)
+  { 
+    plog.trace("ARL-GES-001 Entering Attribute Rule Library - getEmploymentStatus");
+    if (status != null) {
+      if (status.matches("A")) {
+        return  "1";
+      }
+      else if (status.matches("D")) {
+        return  "6";
+      }
+      else if (status.matches("I")) {
+        return  "2";
+      }
+      else if (status.matches("L")) {
+        return  "9";
+      }
+      else if (status.matches("R")) {
+        return  "5";
+      }
+      else if (status.matches("T")) {
+        return  "102";
+      }
+    } else {
+      return  "100";
+    }
+  }
+  
+  /**
+    * Generates a formatted string containing hire and rehire dates for an identity.
+    * 
+    * This method retrieves the original hire date from the Workday TMNA application
+    * and combines it with the rehire date (if provided) to create a formatted string.
+    * 
+    * @param context The SailPoint context used for accessing application data
+    * @param identity The Identity object for which to retrieve hire date information
+    * @param rehireDate The rehire date string, can be null or empty if the employee was not rehired
+    * @return A formatted string containing:
+    *         - "Hire Date: {originalHireDate} ReHire Date: {rehireDate}" if rehireDate is provided
+    *         - "Hire Date: {originalHireDate}" if rehireDate is null or empty
+  */
+  public static String getHireAndRehireDate(SailPointContext context, Identity identity,String rehireDate)
+  { 
+    plog.trace("ARL-GHRD-001 Entering Attribute Rule Library - getHireRehireDate:"+identity.getName());
+    plog.trace("ARL-GHRD-002 rehireDate:"+rehireDate);
+    String workdayOriginalHireDate =  getApplicationAttribute( context, identity, "Workday TMNA" , "ORIGINAL_HIRE_DATE" );
+    plog.trace("ARL-GHRD-003 workdayOriginalHireDate:"+workdayOriginalHireDate);
+    if ( Util.isNotNullOrEmpty(rehireDate ) ) {
+      return "Hire Date:" + workdayOriginalHireDate + " ReHire Date:" + rehireDate;
+    } else {
+      return "Hire Date:" + workdayOriginalHireDate;
+    }
+  }
+  
+  /**
+    * Converts a termination date string to YYYY-MM-DD format.
+    * 
+    * @param terminationDate the termination date string to be converted
+    * @return the termination date formatted as YYYY-MM-DD
+  */
+  public static String getTerminationDateYYYYMMDD(String terminationDate)
+  { 
+    plog.trace("ARL-GTD-001 Entering Attribute Rule Library - getTerminationDateYYYY-MM-DD");
+    plog.trace("ARL-GTD-002 terminationDate:"+terminationDate);
+    if ( terminationDate!= null  &amp;&amp; terminationDate.contains("/") )
+    {
+      String[] termDateSplit = terminationDate.split("/");
+      if ( termDateSplit.length == 3 )
+      { 
+        return termDateSplit[2] + "-" + termDateSplit[0] + "-" + termDateSplit[1];
+      }
+    } else {
+      return terminationDate;
+    }
+  }
+  
+  /**
+    * Determines the appropriate tag value based on the provided status. 
+    * This method evaluates the status parameter and returns a corresponding tag string.
+    * @param status A single character status code.
+  */
+  public static String getStatusTag(String status)
+  { 
+    plog.trace("ARL-GST-001 Entering Attribute Rule Library - getStatusTag");
+    plog.trace("ARL-GST-002 status:"+status);
+    String tagsValue = "Do Not Email; Terminated";
+    if (status .matches("A|L|P"))
+    {
+      tagsValue = "- Do Not Email; - Terminated";
+    }
+    plog.trace("ARL-GST-003 tagsValue:"+tagsValue);
+    return tagsValue;
+  }
+  </Source>
+</Rule>

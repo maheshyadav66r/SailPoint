@@ -1,0 +1,100 @@
+<!DOCTYPE html PUBLIC
+  "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets">
+
+<body>
+
+<ui:composition>
+<h3>Mahesh's plugin</h3>
+    <div class="container" ng-app="TrainingPlugin" ng-controller="trainingPluginFullPageCtrl as ctrl">
+       <!-- Ex2 Hello World
+ 	   <div class="panel-body"> 
+           {{display_text}} 
+       End Ex2 Hello World -->
+           
+       <!-- Ex3 HTML 
+       <form  class="form-inline"> 
+           <select ng-model="object" style="width: 180px;" ng-options="x for x in objects"     
+                  class="form-control input-sm" ></select>
+           <input  placeholder="Enter Search Term" style="width: 180px;" 
+             class="form-control input-sm" ng-keypress="searchEnter($event)" 
+                  ng-model="search"></input> 
+           <button type="button" role="button" class="btn btn-white btn-sm" 
+                  ng-click="getSearch(object,search)">Search</button>
+       </form> 
+ 
+       <div class="panel-body"> 
+          <div  style="strong" id="directions">{{directions}}</div>
+          <div style="strong" ng-repeat="result in results"> 
+              {{result}} 
+          </div>
+       </div>
+       End Ex3 HTML -->
+                 
+       <!-- Ex8 Data entry form with button -->
+       <form name="searchForm">
+         <label for="dropdown">Choose the object type to search</label>
+         <sp-dropdown id="dropdown"
+            sp-options="dropdownOptions" 
+            sp-show-blank="false"
+            sp-button-aria-label="Object Type Selection"
+            class="allowed-operations"
+            ng-model="object">
+         </sp-dropdown>
+         <br/>
+         <label for="requiredInput">Specify the search text
+            <span class="text-danger" role="presentation">*</span>
+            <span class="sr-only">{{'ui_form_required' | spTranslate}}</span>
+         </label>
+         <input id="requiredInput" type="text" name="requiredInput" 
+            ng-model="search" class="form-control" ng-required="true"/>
+         <div class="text-danger" aria-live="polite" aria-atomic="true" role="alert" ng-show="ctrl.showRequired()">
+             {{ 'ui_form_required' | spTranslate}}
+         </div>
+         <br/>           
+         <button id="submitButton" type="submit" class="btn btn-info" 
+                ng-click="getSearch(object,search)">Search
+                <i class="fa fa-chevron-right m-l-xs" role="presentation" aria-hidden="true"></i>
+         </button>
+         <br/><br/>
+       </form>
+       <!-- End Data entry form -->
+    
+       <!-- Ex 10 Results display section -->
+       <H4>#{msgs.TrainingPlugin_results}</H4>  
+       <!-- Results display section -->
+       <div class="panel" ng-if="showDiv">
+           <div class="panel-body" >
+               <div class="col-xs-12">
+                   <table class="table m-t table-hover table-bordered">
+                      <thead>
+                         <tr>
+                             <th>Name</th>
+                         </tr>
+                      </thead>
+                      <tbody>
+                         <tr ng-repeat="result in results" >
+                             <td>{{ result }}</td>
+                         </tr>
+                      </tbody>
+                   </table>
+                   <h3 class="text-muted text-center" ng-if="results.length === 0">
+                         No matching results found
+                   </h3>
+               </div>
+           </div>
+       </div>     
+       <!-- End Results display section -->
+    
+    </div> 
+  
+    <script src="#{plugins.requestContextPath}/plugin/TrainingPlugin/ui/js/SailPointBundleLibrary.js"></script>
+    <script src="#{plugins.requestContextPath}/plugin/TrainingPlugin/ui/js/trainingPluginFullPageModule.js"></script>
+
+</ui:composition>
+</body>
+</html>
+

@@ -1,0 +1,195 @@
+<!DOCTYPE html PUBLIC
+  "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:sp="http://sailpoint.com/ui" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:c="http://java.sun.com/jstl/core" xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html" xmlns:t="http://myfaces.apache.org/tomahawk">
+
+<head>
+<link rel="stylesheet" href="#{plugins.requestContextPath}/ui/css/ng-sortable.css?#{debug.revision}" />
+<link rel="stylesheet" href="#{plugins.requestContextPath}/plugin/impersonateplugin/ui/css/plugin.css" />
+</head>
+<body>
+	<ui:composition>
+
+		<script type="text/javascript" src="#{plugins.requestContextPath}/plugin/impersonateplugin/ui/js/typeahead.bundle.js" />
+		<script type="text/javascript">
+
+				var CsrfToken = Ext.util.Cookies.get('CSRF-TOKEN');
+				var MAXFILESIZE = 1 * 1024 * 1024; // 1 MB
+				var jQueryClone = jQuery;
+
+				// Sleep methods
+				function sleep(milliseconds) {
+				  var start = new Date().getTime();
+				  for (var i = 0; i &lt; 1e7; i++) {
+				    if ((new Date().getTime() - start) > milliseconds){
+				      break;
+				    }
+				  }
+				}
+				
+				function getConfiguration() {
+			      jQueryClone.ajax({
+						method: "GET",
+						beforeSend: function (request) {
+					    request.setRequestHeader("X-XSRF-TOKEN", CsrfToken);
+					},
+					url: SailPoint.CONTEXT_PATH + "/plugin/rest/impersonateplugin/getConfiguration"
+				  })
+				  .done(function (result) {
+                    document.getElementById('authenticationRequired').checked=(result.authenticationRequired === "true" || result.authenticationRequired == true);
+                    document.getElementById('userTokenRequired').checked=(result.userTokenRequired === "true" || result.userTokenRequired == true);
+                    document.getElementById('impersonatorPluginFilterRule').value=result.impersonatorPluginFilterRule;
+                    document.getElementById('impersonatorPluginRequirePasswordRule').value=result.impersonatorPluginRequirePasswordRule;
+                    document.getElementById('impersonatorPluginRequireTokenRule').value=result.impersonatorPluginRequireTokenRule;
+				  });
+				}
+				
+				function saveConfigurationOption(option, value) {
+				  jQueryClone.ajax({
+					method: "GET",
+					beforeSend: function (request) {
+					  request.setRequestHeader("X-XSRF-TOKEN", CsrfToken);
+				    },
+					url: SailPoint.CONTEXT_PATH + "/plugin/rest/impersonateplugin/setConfigurationOption/"+encodeURIComponent(option)+"/"+encodeURIComponent(value)
+				  });
+				  return false;
+				}
+				
+				function saveConfiguration() {
+				  saveConfigurationOption("authenticationRequired", document.getElementById('authenticationRequired').checked);
+				  saveConfigurationOption("userTokenRequired", document.getElementById('userTokenRequired').checked);
+				  saveConfigurationOption("impersonatorPluginFilterRule", document.getElementById('impersonatorPluginFilterRule').value);
+				  saveConfigurationOption("impersonatorPluginRequirePasswordRule", document.getElementById('impersonatorPluginRequirePasswordRule').value);
+				  saveConfigurationOption("impersonatorPluginRequireTokenRule", document.getElementById('impersonatorPluginRequireTokenRule').value);
+				  return false;
+				}
+				
+				jQuery(document).ready(function(){
+					// Get configuration
+					getConfiguration();
+				});
+				
+				</script>
+		<h:panelGroup id="mainImpersonateConfigPanelUNAUTHORIZED" rendered="#{!sp:hasRight(facesContext, 'ImpersonatePluginConfigurationRight')}">
+			<div class="container">
+				<div class="row m-t">
+					<div class="panel">
+						<div class="panel-heading bg-light lter">
+							<div class="row">
+								<div class="col-xs-12">
+									<span class="panel-title">UNAUTHORIZED</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</h:panelGroup>
+		<h:panelGroup id="mainImpersonateConfigPanel" rendered="#{sp:hasRight(facesContext, 'ImpersonatePluginConfigurationRight')}">
+			<div class="container">
+				<div class="row m-t">
+					<div class="panel">
+						<div class="panel-heading bg-light lter">
+							<div class="row">
+								<div class="col-xs-12">
+									<span class="panel-title">Impersonation Settings</span>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="panel">
+						<div class="panel-body bg-light lter">
+							<div class="row m-t">
+								<div class="col-xs-12">
+									<form class="form" id="impersonateConfigForm">
+										<div class="row">
+											<div class="col-xs-12">
+												<span class="spContentTitle">Defaults</span>
+												<table width="100%" cols="2">
+													<tr>
+														<td><b>Authentication Required?</b><br /> <i>Tick to require an impersonator to provide the authentication password to impersonate another identity. This can be controlled in a
+																more fine-grained fashion using the rule below.</i><br /></td>
+														<td><input type="checkbox" id="authenticationRequired" /></td>
+													</tr>
+													<tr>
+														<td><b>Token Required?</b><br /> <i>Tick to require an impersonator to enter an impersonation token provided by the identity to be impersonated. This can be controlled in a
+																more fine-grained fashion using the rule below.</i><br /></td>
+														<td><input type="checkbox" id="userTokenRequired" /></td>
+													</tr>
+												</table>
+												<br /> <span class="spContentTitle">Rules</span>
+												<table width="100%">
+													<tr>
+														<td><b>Filter Rule</b><br /> <i>This rule returns a filter to limit whom a user can impersonate.</i></td>
+														<td><input class="typeahead ruleSearch" type="text" id="impersonatorPluginFilterRule" size="50" /></td>
+													</tr>
+													<tr>
+														<td><b>Password Requirement Rule</b><br /> <i>This rule return a filter to limit whom a user can impersonate.</i></td>
+														<td><input class="typeahead ruleSearch" type="text" id="impersonatorPluginRequirePasswordRule" size="50" /></td>
+													</tr>
+													<tr>
+														<td><b>Token Requirement Rule</b><br /> <i>This rule return a filter to limit whom a user can impersonate.</i></td>
+														<td><input class="typeahead ruleSearch" type="text" id="impersonatorPluginRequireTokenRule" size="50" /></td>
+													</tr>
+												</table>
+												<br />
+												<button class="btn btn-sm btn-white pull-left" name="resetButton" onclick="getConfiguration(); return false;">Reset</button>
+												<button class="btn btn-sm btn-info pull-right" name="saveButton" onclick="saveConfiguration(); return false;">Save</button>
+											</div>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</h:panelGroup>
+		<script type="text/javascript">
+var matchingRules = new Bloodhound({
+  datumTokenizer: Bloodhound.tokenizers.obj.whitespace('value'),
+  queryTokenizer: Bloodhound.tokenizers.whitespace,
+  //prefetch: '../data/films/post_1960.json',
+    remote: {
+      url: '../plugin/rest/impersonateplugin/ruleSearch/',
+      prepare: function (query, settings) {
+    	var url = settings.url;
+    	settings.url = url + query;
+    	settings.headers = {
+          'X-XSRF-TOKEN': CsrfToken
+        };
+    	return settings;
+      },
+    }
+});
+
+$('#impersonatorPluginFilterRule').typeahead(null, {
+  name: 'impersonatorPluginFilterRule',
+  display: 'value',
+  source: matchingRules,
+  limit: 10
+});
+
+$('#impersonatorPluginRequirePasswordRule').typeahead(null, {
+  name: 'impersonatorPluginRequirePasswordRule',
+  display: 'value',
+  source: matchingRules,
+  limit: 10
+});
+
+$('#impersonatorPluginRequireTokenRule').typeahead(null, {
+  name: 'impersonatorPluginRequireTokenRule',
+  display: 'value',
+  source: matchingRules,
+  limit: 10
+});
+</script>
+
+	</ui:composition>
+
+</body>
+</html>

@@ -1,0 +1,263 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE sailpoint PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<sailpoint>
+	<Rule language="beanshell" name="Impersonator Plugin Filter Rule">
+		<Description>This is an example rule for selecting who can impersonate
+			whom. Features can be enabled or disabled by changing boolean variables.</Description>
+		<Source><![CDATA[
+
+// Expect: String impersonator
+import sailpoint.object.Capability;
+import sailpoint.object.Filter;    
+import sailpoint.object.Identity;    
+import sailpoint.api.ScopeService;
+
+// ----------------------------------------------------------------------
+// Control variables
+// ----------------------------------------------------------------------
+
+// Set to true of enforce search for correlated identities only
+boolean ENFORCE_CORRELATED = true;
+
+// Set to true of Scoping is enabled and must be enforces
+boolean ENFORCE_SCOPING = true;
+  
+// Set to true to allow a manager to impersonate subordinate
+boolean MANAGER_SUBORDINATE = false;
+
+// Set to true to allow a helpdesk employee to impersonate any active identity
+boolean HELPDESK_ASSISTANCE = false;
+
+// Set to true to allow a (temporary) assistant to impersonate e.g. a manager
+// Note that this requires additional configuration of a special, searchable identity attribute. In this
+// example, we use an attribute of type Identity, named "deputy". 
+boolean MANAGEMENT_ASSISTANT = false;
+
+// Fallback: if no rules, only spadmin (or equivalent) can impersonate
+boolean DEFAULT_SPADMIN_ONLY = true;
+
+
+// ----------------------------------------------------------------------
+// Main rule: create search filters based on control variables.
+// ----------------------------------------------------------------------
+
+List filters = new ArrayList();
+
+Identity impersonatorIdentity = context.getObjectByName(Identity.class, impersonator);
+if (impersonatorIdentity == null) {
+	log.error("Impersonator identity not found");
+	return null;
+}
+
+// Correlated
+if (ENFORCE_CORRELATED) {
+	log.debug("Correlated identities enforced");
+	filters.add(Filter.eq("correlated", true));
+}
+
+// Scoping
+if (ENFORCE_SCOPING) {
+	log.debug("Scoping enforced");
+	ScopeService scopeService = new ScopeService(context);
+	filters.add(scopeService.getControlledScopesQueryInfo(impersonatorIdentity).getFilter());
+}
+
+List orFilters = new ArrayList();
+
+// Manager
+if (MANAGER_SUBORDINATE && impersonatorIdentity.getManagerStatus()) {
+ 	log.debug("Subordinate impersonation allowed");
+	orFilters.add(Filter.eq("manager.name", impersonator));
+}
+
+// Assistant - MANAGEMENT_ASSISTANT
+if (MANAGEMENT_ASSISTANT) {
+	log.debug("Assistant allowed to impersonate manager");
+	orFilters.add(Filter.eq("deputy.name", impersonator));
+}
+  
+// Helpdesk
+if (HELPDESK_ASSISTANCE && impersonatorIdentity.getCapabilityManager().hasCapability(Capability.HELP_DESK)) {
+	log.debug("Helpdesk impersonation allowed");
+	orFilters.add(Filter.eq("inactive", false));
+}
+
+if (orFilters != null) {
+	orFilters.removeAll(Collections.singleton(null));
+	if (orFilters.size() > 0) {
+		if (orFilters.size() == 1) {
+			filters.add(orFilters.get(0));
+		} else {
+			filters.add(Filter.or(orFilters));
+		}
+  } else {
+    if (DEFAULT_SPADMIN_ONLY && !impersonatorIdentity.getCapabilityManager().hasCapability(Capability.SYSTEM_ADMINISTRATOR)) {
+      return null;
+    }
+  }
+}
+
+if (filters != null) {
+	filters.removeAll(Collections.singleton(null));
+	if (filters.size() == 0) {
+  	log.debug("No results");
+		return null;
+	} else if (filters.size() == 1) {
+  	log.debug("Only one result");
+		return (Filter) filters.get(0);
+	} else {
+  	log.debug("Multiple results");
+		return Filter.and(filters);
+	}
+}
+
+  ]]></Source>
+	</Rule>
+
+	<Rule language="beanshell" name="Impersonator Plugin Require Password Rule">
+		<Description>This is an example rule for selecting who must supply a password to impersonate another identity.
+
+		</Description>
+		<Signature returnType="java.lang.Boolean">
+			<Inputs>
+				<Argument name="log">
+					<Description>
+						The log object associated with the SailPointContext.
+					</Description>
+				</Argument>
+				<Argument name="context">
+					<Description>
+						A sailpoint.api.SailPointContext object that can be used to query the database if necessary.
+					</Description>
+				</Argument>
+				<Argument name="impersonator">
+					<Description>
+						The name of the current identity, for which we need to evaluate whether or not a password is required. 
+					</Description>
+				</Argument>
+			</Inputs>
+		</Signature>
+		<Source><![CDATA[
+// Expect: String impersonator
+
+import sailpoint.object.Capability;
+import sailpoint.object.Identity;
+import sailpoint.object.Identity.CapabilityManager;
+
+// ----------------------------------------------------------------------
+// Control variables
+// ----------------------------------------------------------------------
+
+// Set to true to allow System Administrator users to impersonate without a password.
+Boolean SYSTEM_ADMIN_NO_PASSWORD = true;
+
+// Set to true to allow Help Desk employees users to impersonate without a password.
+Boolean HELPDESK_NO_PASSWORD = false;
+
+// Default setting:
+// - true    - require
+// - false   - do not require
+// - null    - use fixed setting
+Boolean DEFAULT_REQUIRE_PASSWORD = null;
+
+// ----------------------------------------------------------------------
+// Main rule: determine whether or not to require password.
+// ----------------------------------------------------------------------
+Identity impersonatorIdentity = context.getObjectByName(Identity.class, impersonator);
+if (impersonatorIdentity == null) {
+  log.error("Cannot find identity: " + impersonator);
+  return true;
+}
+CapabilityManager cm = impersonatorIdentity.getCapabilityManager();
+
+if (SYSTEM_ADMIN_NO_PASSWORD) {
+  if (cm.hasCapability(Capability.SYSTEM_ADMINISTRATOR)) {
+    return false;
+  }
+}
+
+if (HELPDESK_NO_PASSWORD) {
+  if (cm.hasCapability(Capability.HELP_DESK)) {
+    return false;
+  }
+}
+
+// Fall back
+return DEFAULT_REQUIRE_PASSWORD;		
+		]]></Source>
+	</Rule>
+
+	<Rule language="beanshell" name="Impersonator Plugin Require Token Rule">
+		<Description>This is an example rule for selecting who must supply a token to impersonate another identity.
+
+		</Description>
+		<Signature returnType="java.lang.Boolean">
+			<Inputs>
+				<Argument name="log">
+					<Description>
+						The log object associated with the SailPointContext.
+					</Description>
+				</Argument>
+				<Argument name="context">
+					<Description>
+						A sailpoint.api.SailPointContext object that can be used to query the database if necessary.
+					</Description>
+				</Argument>
+				<Argument name="impersonator">
+					<Description>
+						The name of the current identity, for which we need to evaluate whether or not a token is required. 
+					</Description>
+				</Argument>
+			</Inputs>
+		</Signature>
+		<Source><![CDATA[
+// Expect: String impersonator
+
+import sailpoint.object.Capability;
+import sailpoint.object.Identity;
+import sailpoint.object.Identity.CapabilityManager;
+
+// ----------------------------------------------------------------------
+// Control variables
+// ----------------------------------------------------------------------
+
+// Set to true to allow System Administrator users to impersonate without a token.
+Boolean SYSTEM_ADMIN_NO_TOKEN = false;
+
+// Set to true to allow Help Desk employees users to impersonate without a token.
+Boolean HELPDESK_NO_TOKEN = false;
+
+// Default setting:
+// - true    - require
+// - false   - do not require
+// - null    - use fixed setting
+Boolean DEFAULT_REQUIRE_TOKEN = null;
+
+// ----------------------------------------------------------------------
+// Main rule: determine whether or not to require token.
+// ----------------------------------------------------------------------
+Identity impersonatorIdentity = context.getObjectByName(Identity.class, impersonator);
+if (impersonatorIdentity == null) {
+  log.error("Cannot find identity: " + impersonator);
+  return true;
+}
+CapabilityManager cm = impersonatorIdentity.getCapabilityManager();
+
+if (SYSTEM_ADMIN_NO_TOKEN) {
+  if (cm.hasCapability(Capability.SYSTEM_ADMINISTRATOR)) {
+    return false;
+  }
+}
+
+if (HELPDESK_NO_TOKEN) {
+  if (cm.hasCapability(Capability.HELP_DESK)) {
+    return false;
+  }
+}
+
+// Fall back
+return DEFAULT_REQUIRE_TOKEN;		
+		]]></Source>
+	</Rule>
+
+</sailpoint>

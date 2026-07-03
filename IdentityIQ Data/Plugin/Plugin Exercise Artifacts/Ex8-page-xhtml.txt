@@ -1,0 +1,29 @@
+        <!-- Data entry form with button -->
+        <form name="searchForm">
+          <label for="dropdown">Choose the object type to search</label>
+          <sp-dropdown id="dropdown"
+            sp-options="dropdownOptions" 
+            sp-show-blank="false"
+            sp-button-aria-label="Object Type Selection"
+            class="allowed-operations"
+            ng-model="object">
+          </sp-dropdown>
+          <br/>
+          <label for="requiredInput">Specify the search text
+             <span class="text-danger" role="presentation">*</span>
+             <span class="sr-only">{{'ui_form_required' | spTranslate}}</span>
+          </label>
+          <input id="requiredInput" type="text" name="requiredInput" 
+             ng-model="search" class="form-control" ng-required="true"/>
+          <div class="text-danger" aria-live="polite" aria-atomic="true" role="alert" ng-show="ctrl.showRequired()">
+               {{ 'ui_form_required' | spTranslate}}
+          </div>
+          <br/>           
+          <button id="submitButton" type="submit" class="btn btn-info" 
+             ng-click="getSearch(object,search)">Search
+             <i class="fa fa-chevron-right m-l-xs" role="presentation" aria-hidden="true"></i>
+          </button>
+          <br/><br/>
+      </form>
+      <!-- End Data entry form -->
+ 

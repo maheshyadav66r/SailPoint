@@ -1,0 +1,102 @@
+	public static final String ARG_IN_SEARCH_TERM="search_term";
+	public static final String ARG_IN_OBJECT_TYPE="object_type";
+	public static final String ARG_OUT_ITEMS = "items";
+	private static final String SETTING_SEARCH_OBJECT_COUNT = "maxSearchObjectCount";
+
+	private String strSearchTerm = null;
+	private String strSearchObject = null;
+	private int maxSearchObjects = 50;
+	private TaskMonitor monitor = null;
+	private String messages = null;
+	private boolean isSuccess = false;
+
+	
+    /** 
+     * Returns our plugin Name 
+     */  
+    @Override  
+    public String getPluginName() {  
+        return "TrainingPlugin";  
+    }       
+      
+    /** 
+     * Runs search operation for task 
+     */  
+    @Override  
+    public void execute(SailPointContext context, TaskSchedule schedule,  
+        TaskResult result, Attributes<String, Object> args) throws Exception {  
+      
+		TaskMonitor monitor = new TaskMonitor( context, result );
+		setMonitor( monitor );
+		
+		monitor.updateProgress("Parsing Arguments" );
+		// parse the arguments
+		parseArgs( args );
+		
+		monitor.updateProgress("Validating Arguments");
+		// validate the args
+		if( !validateArgs() ) {
+			monitor.updateProgress( "Arguments failed validation" );
+			setSuccess( false );
+		} else {		
+			monitor.updateProgress("Searching for term");
+			maxSearchObjects = getSettingInt(SETTING_SEARCH_OBJECT_COUNT);  
+			
+			List<String> names = getSearchService().searchObject();
+			
+			result.setAttribute(ARG_OUT_ITEMS, Util.listToCsv());	
+			
+			monitor.updateProgress("Finished." );
+	
+        }  
+    }
+    
+    /** Parse args out of taskDefinition 
+     */
+	public void parseArgs( Attributes<String, Object> args ) {
+		strSearchTerm = args.getString(ARG_IN_SEARCH_TERM); 
+		strSearchObject = args.getString(ARG_IN_OBJECT_TYPE); 
+	}
+
+    /** Require search arg and search object 
+     */
+	public boolean validateArgs() throws GeneralException {
+		if ((this.strSearchTerm == null) || (this.strSearchTerm.trim().equals(""))) { 
+			setMessages("Must include a search term."); 
+			return false;
+		} 
+		if ((this.strSearchObject == null) || (this.strSearchObject.trim().equals(""))) { 
+			setMessages("Must include an object to search."); 
+			return false;
+		} 
+		return(true); 
+	}
+	
+
+	 /** Instantiate and return SearchService object 
+     */
+	private SearchService getSearchService() {
+		return new SearchService(this);
+	}
+
+	
+	/** 
+     * {@inheritDoc} 
+     */  
+    @Override  
+    public boolean terminate() { 
+       return true;  
+    }  
+ 
+	public void setSuccess(boolean isSuccess) {
+		this.isSuccess = isSuccess;
+	}
+
+	public String getMessages() {
+		return messages;
+	}
+
+	public void setMessages(String messages) {
+		this.messages = messages;
+	}    
+

@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Plugin PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Plugin certificationLevel="None" displayName="Active Managers Plugin" minSystemVersion="7.1" name="ActiveManagers" version="1.0">
+  <Attributes>
+    <Map>
+      <entry key="minUpgradableVersion" value="1.0" />
+      <!-- full page will create a full page in IIQ with the below title. If full page entry exists then IIQ looks for ui\page.xhtml to render -->
+      <entry key="fullPage">
+        <value>
+          <FullPage title="Managers-SubOrdinates List" />
+        </value>
+      </entry>
+      <!--  only one REST API for testing -->
+      <entry key="restResources">
+        <value>
+          <List>
+            <String>com.demo.AllResources</String>
+            </List>
+        </value>
+      </entry>
+     <!--  Commented out settings as I don't  want any configuration in my plug-in demo
+     <entry key="settings">
+        <value>
+          <List>
+            <Setting dataType="boolean" helpText="" label="" name="" defaultValue="true"/>
+          </List>
+        </value>
+      </entry>-->
+       <entry key="snippets">  
+        <value>  
+          <List>
+          <!--  this regex pattern will allow all kind of url  and login user is mentioned in rightRequired-->  
+            <Snippet regexPattern=".*"  rightRequired="SystemAdministrator">
+            <!-- Below Script is executed when the regex pattern is matched  -->
+            <!-- the plugin can be invoked with below url. this is usually done in the script -->  
+            <!-- http://localhost:8080/identityiq/plugins/pluginPage.jsf?pn=ActiveManagers -->
+             <Scripts>  
+                <String>ui/js/snippets/header.js</String>  
+              </Scripts> 
+            </Snippet>  
+          </List>  
+        </value>  
+      </entry>
+    </Map>
+  </Attributes>
+</Plugin>

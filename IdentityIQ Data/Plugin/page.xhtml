@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <script src="#{plugins.requestContextPath}/plugin/IdentityEntitlementsPlugin/ui/js/viewIdentityEntitlementsPlugin.js"></script>
+    <title>Document</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 16px;
+      }
+
+      h2 {
+        margin-top: 0;
+      }
+
+      .table-container {
+        border: 1px solid #c0c0c0;
+        border-radius: 4px;
+        margin-bottom: 28px;
+        overflow: hidden;
+      }
+
+      .table-header {
+        background: #f7f7f7;
+        padding: 10px 12px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .table-header input[type="text"] {
+        height: 30px;
+        padding: 0 8px;
+        border: 1px solid #b0b0b0;
+        border-radius: 2px;
+        width: 220px;
+      }
+
+      .table-header button {
+        height: 32px;
+        padding: 0 10px;
+        border: 1px solid #c0c0c0;
+        background: #f0f0f0;
+        border-radius: 3px;
+        cursor: pointer;
+      }
+
+      .table-header button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .data-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .data-table th,
+      .data-table td {
+        border-top: 1px solid #d0d0d0;
+        padding: 8px 10px;
+        text-align: left;
+      }
+
+      .data-table thead th {
+        background: #f1f1f1;
+        font-weight: 600;
+      }
+
+      .pager {
+        background: #f7f7f7;
+        border-top: 1px solid #d0d0d0;
+        padding: 10px 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .pager-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .pager-row input[type="number"] {
+        width: 46px;
+        text-align: center;
+        padding: 4px 6px;
+        border: 1px solid #c0c0c0;
+        border-radius: 2px;
+      }
+
+      .pager-row select {
+        height: 30px;
+        border: 1px solid #c0c0c0;
+        border-radius: 2px;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body ng-app="myApp">
+  <section class="table-container">
+    <h2>Roles</h2>
+
+    <div class="table-header">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <input type="text" ng-model="roleSearch.roleName" placeholder="Filter by role name" />
+        <button type="button">🔍</button>
+      </div>
+    </div>
+
+    <div ng-controller="RolesTableCtrl">
+      <div ng-if="loading" style="padding: 20px; text-align: center;">Loading roles...</div>
+      <div ng-if="error" style="padding: 20px; color: red; text-align: center;">{{error}}</div>
+      <table class="data-table" ng-if="!loading &amp;&amp; !error">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Classifications</th>
+            <th>Assigned By</th>
+            <th>Allowed By</th>
+            <th>Acquired</th>
+            <th>Application</th>
+            <th>Account Name</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="role in getPageItems()">
+            <td>{{role.roleName}}</td>
+            <td>{{role.description}}</td>
+            <td>{{role.classification}}</td>
+            <td>{{role.assignedBy}}</td>
+            <td></td>
+            <td>{{role.acquired}}</td>
+            <td>{{role.applicationName}}</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="pager" ng-if="!loading &amp;&amp; !error">
+        <div class="pager-row">
+          <button type="button" ng-click="goFirst()" ng-disabled="currentPage === 0">⏮</button>
+          <button type="button" ng-click="prevPage()" ng-disabled="currentPage === 0">◀</button>
+          <span>Page</span>
+          <input type="number" ng-model="pageNumber" min="1" max="{{pageCount()}}" />
+          <span>of {{pageCount()}}</span>
+          <button type="button" ng-click="nextPage()" ng-disabled="currentPage >= pageCount()-1">▶</button>
+          <button type="button" ng-click="goLast()" ng-disabled="currentPage >= pageCount()-1">⏭</button>
+        </div>
+        <div class="pager-row">
+          <button type="button" ng-click="resetPaging()">↻</button>
+          <span>Show</span>
+          <select ng-model="pageSize" ng-options="size for size in pageSizeOptions"></select>
+          <span>items</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="table-container">
+    <h2>Entitlements</h2>
+
+    <div class="table-header">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <input type="text" ng-model="entSearch.attribute" placeholder="Filter by attribute" />
+        <button type="button">🔍</button>
+        <input type="text" ng-model="entSearch.application" placeholder="Filter by application" style="margin-left: 12px;" />
+        <button type="button">🔍</button>
+      </div>
+      <label style="display: flex; align-items: center; gap: 6px;">
+        <input type="checkbox" ng-model="showAdditional" />
+        Show only additional entitlements
+      </label>
+    </div>
+
+    <div ng-controller="EntitlementsTableCtrl">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Attribute</th>
+            <th>Entitlement</th>
+            <th>Classifications</th>
+            <th>Application</th>
+            <th>Account Name</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="ent in getPageItems()">
+            <td>{{ent.attribute}}</td>
+            <td>{{ent.entitlement}}</td>
+            <td>{{ent.classifications}}</td>
+            <td>{{ent.application}}</td>
+            <td>{{ent.accountName}}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="pager">
+        <div class="pager-row">
+          <button type="button" ng-click="goFirst()" ng-disabled="currentPage === 0">⏮</button>
+          <button type="button" ng-click="prevPage()" ng-disabled="currentPage === 0">◀</button>
+          <span>Page</span>
+          <input type="number" ng-model="pageNumber" min="1" max="{{pageCount()}}" />
+          <span>of {{pageCount()}}</span>
+          <button type="button" ng-click="nextPage()" ng-disabled="currentPage >= pageCount()-1">▶</button>
+          <button type="button" ng-click="goLast()" ng-disabled="currentPage >= pageCount()-1">⏭</button>
+        </div>
+        <div class="pager-row">
+          <button type="button" ng-click="resetPaging()">↻</button>
+          <span>Show</span>
+          <select ng-model="pageSize" ng-options="size for size in pageSizeOptions"></select>
+          <span>items</span>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- AngularJS is provided by the host application; do not load it twice. -->
+</body>
+</html>

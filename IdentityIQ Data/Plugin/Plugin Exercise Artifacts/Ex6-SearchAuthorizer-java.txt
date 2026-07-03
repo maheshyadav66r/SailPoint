@@ -1,0 +1,19 @@
+
+   /** 
+    * Constructor. 
+    * 
+    */  
+   public SearchAuthorizer() {   
+   } 
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void XXXX(UserContext userContext) throws GeneralException {
+        if (!(userContext.getLoggedInUser().getCapabilityManager().hasCapability("SystemAdministrator") || 
+              userContext.getLoggedInUser().getCapabilityManager().hasCapability("TrainingPluginAdmin"))) {  
+           throw new UnauthorizedAccessException("User does not have required access to the Training Plugin");  
+        } 
+	}
+

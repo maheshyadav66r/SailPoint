@@ -1,0 +1,67 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="AccPack Rehire Remove Neg Assignments">
+  <Description>Remove Negative Assignments for an Identity, that were created during AccPack Leaver LCE</Description>
+  <Source><![CDATA[
+
+  import sailpoint.rapidapponboarding.logger.LogEnablement;
+  import org.apache.commons.logging.Log;
+  import org.apache.commons.logging.LogFactory;
+  import java.util.ArrayList;
+  import sailpoint.object.Bundle;
+  import sailpoint.object.Identity;
+  import sailpoint.object.RoleAssignment;
+  import sailpoint.tools.Util;
+
+  private Log rehireLogger = LogFactory.getLog("rapidapponboarding.rules");
+  boolean dirty = false;
+  int count = 0;
+  LogEnablement.isLogDebugEnabled(rehireLogger, "AccPack rehireBeforePlanRule: Removing negative assignments from Leaver LCE for identity: " + identityName);
+
+  Identity id = context.getObjectByName(Identity.class, identityName);
+  List ras = id.getRoleAssignments();
+
+  // We'll keep roleAssignments that are non-negative (should we have any at this point?) or one that is negative with source != AccPack
+  List keep = new ArrayList();
+
+  for (RoleAssignment ra : Util.iterate(ras)) {
+
+      if (!ra.isNegative() || (ra.getSource() != null && ! ra.getSource().equalsIgnoreCase("AccPack"))) {
+          LogEnablement.isLogDebugEnabled(rehireLogger,"AccPack rehireBeforePlanRule: Adding role assignmeent to keep list: " + ra.getRoleName());
+          keep.add(ra);
+      } else {
+        dirty=true;
+        count++;
+        LogEnablement.isLogDebugEnabled(rehireLogger,"AccPack rehireBeforePlanRule: Removing role assignment: " + ra.getRoleName());
+      }
+  }
+
+  if (! dirty) {
+    LogEnablement.isLogDebugEnabled(rehireLogger,"AccPack rehireBeforePlanRule: Found 0 negative assignments from AccPack Leaver...exiting");
+    return("Number of assignments removed: " + count);
+  }
+
+  id.setRoleAssignments(keep);
+  id.updateBundleSummary();
+  ras = id.getRoleAssignments();
+
+  LogEnablement.isLogDebugEnabled(rehireLogger,"AccPack rehireBeforePlanRule: checking again for neg assignments");
+  for (RoleAssignment ra : Util.iterate(ras)) {
+    if (ra.isNegative()) {
+      LogEnablement.isLogDebugEnabled(rehireLogger,"AccPack rehireBeforePlanRule: Found negative assignment for role: " + ra.getRoleName() + ":" + ra.getSource());
+    }
+  }
+
+  if (dirty) {
+    LogEnablement.isLogDebugEnabled(rehireLogger,"AccPack rehireBeforePlanRule: Saving identity: " + identityName);
+    context.saveObject(id);
+    context.commitTransaction();
+    LogEnablement.isLogDebugEnabled(rehireLogger,"AccPack rehireBeforePlanRule: Done saving identity: " + identityName);
+  }
+
+  LogEnablement.isLogDebugEnabled(rehireLogger, "AccPack rehireBeforePlanRule: Number of assignments removed: " + count);
+  LogEnablement.isLogDebugEnabled(rehireLogger, "AccPack rehireBeforePlanRule: Exiting...");
+  return("Number of assignments removed: " + count);
+
+  ]]></Source>
+</Rule>

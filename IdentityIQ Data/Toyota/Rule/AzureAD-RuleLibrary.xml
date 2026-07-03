@@ -1,0 +1,2518 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule   language="beanshell"  name="AzureAD-RuleLibrary">
+  <AssignedScope>
+    <Reference class="sailpoint.object.Scope"  name="TMNA"/>
+  </AssignedScope>
+  <ReferencedRules>
+    <Reference class="sailpoint.object.Rule"  name="Toyota Database Logger"/>
+  </ReferencedRules>
+  <Source>
+  import org.apache.http.HttpEntity;
+  import org.apache.http.HttpHeaders;
+  import org.apache.http.HttpResponse;
+  import org.apache.http.NameValuePair;
+  import org.apache.http.client.HttpClient;
+  import org.apache.http.client.entity.UrlEncodedFormEntity;
+  import org.apache.http.client.methods.HttpGet;
+  import org.apache.http.client.methods.HttpPost;
+  import org.apache.http.client.methods.HttpDelete;
+  import org.apache.http.client.methods.HttpPatch;
+  import org.apache.http.impl.client.HttpClients;
+  import org.apache.http.message.BasicNameValuePair;
+  import org.apache.http.util.EntityUtils;
+  import org.apache.http.entity.StringEntity;
+  import org.json.JSONObject;
+  import org.json.JSONArray;
+  import java.net.URLEncoder;
+  import org.apache.commons.logging.Log;
+  import org.apache.log4j.Logger;
+  import org.apache.log4j.Level;
+  import org.apache.commons.codec.binary.Base64;
+  import org.apache.commons.logging.LogFactory;
+  import connector.common.JsonUtil;
+  import sailpoint.object.Application;
+  import sailpoint.object.Identity;
+  import sailpoint.object.Filter;
+  import sailpoint.object.QueryOptions;
+  import sailpoint.object.Custom;
+  import sailpoint.object.Attributes;
+  import sailpoint.object.Link;
+  import sailpoint.api.PersistenceManager;
+  import sailpoint.api.SailPointContext;
+  import sailpoint.api.IdentityService;
+  import sailpoint.api.Terminator;
+  import sailpoint.api.Workflower;
+  import sailpoint.object.Workflow;
+  import sailpoint.object.WorkflowLaunch;
+  import sailpoint.object.ProvisioningPlan;
+  import sailpoint.object.ProvisioningPlan.AccountRequest;
+  import sailpoint.object.ProvisioningPlan.AttributeRequest;
+  import sailpoint.object.ProvisioningPlan.Operation;
+  import sailpoint.object.ProvisioningResult;
+  import sailpoint.api.Provisioner;
+  import sailpoint.object.ProvisioningProject;
+  import sailpoint.tools.GeneralException;
+  import java.util.Iterator;
+  import java.util.List;
+  import java.util.ArrayList;
+  import java.time.Instant;
+  import java.util.Date;
+  import sailpoint.object.ExpansionItem;
+  import sailpoint.object.Form.Section;
+  import sailpoint.object.Form;
+  import sailpoint.object.Form.Type;
+  import sailpoint.object.Field;
+  import sailpoint.tools.Util;
+  import sailpoint.object.Request;
+  import sailpoint.object.RequestDefinition;
+  import sailpoint.workflow.StandardWorkflowHandler;
+  import sailpoint.api.RequestManager;
+  import org.apache.commons.lang3.StringUtils;
+  import sailpoint.object.ManagedAttribute;
+  import sailpoint.object.IdentityEntitlement;
+
+  Logger plog = Logger.getLogger(  "rule.AzureAD-RuleLibrary" );
+  
+   //  To Delete the Account 
+   public deleteLink(Identity identity, Link link) {
+    try {
+      if (null != identity &amp;&amp;null != link) {
+        ProvisioningPlan plan = new ProvisioningPlan();
+        AccountRequest acctReq = new AccountRequest();
+        acctReq.setNativeIdentity(link.getNativeIdentity());
+        acctReq.setApplication(link.getApplicationName());
+        acctReq.setOperation(ProvisioningPlan.AccountRequest.Operation.Delete);
+        plan.add(acctReq);
+        plan.setIdentity(identity);
+        Provisioner p = new Provisioner(context);
+        p.execute(plan);
+      }
+    } catch (Exception e) {
+      plog.trace("AADRL-LW-001:: Exception occured while deleting account from adhoc " + e.getMessage());
+    }
+  }
+  
+  // Get attributes to remove from Application Form passed in section
+  public List getAttributesToRemoveFromForm(Application application,List attributesToRemove,String sectionName) {
+    Form form = application.getProvisioningForm( Form.Type.Create , "account" );
+    if ( form != null) {
+      Section sectionInvite = form.getSection(sectionName);
+      if (sectionInvite == null) {
+        if (form.getFormRef() != null) {
+          String formRefName = form.getFormRef().getName();
+          plog.trace( "AADRL-LW-002 :: Account Reference Form Name in "+sectionName+ " Section : " + formRefName );
+          if (Util.isNotNullOrEmpty(formRefName)) {
+            Form accountForm = context.getObjectByName(Form.class,formRefName);
+            if (accountForm != null) {
+              sectionInvite = accountForm.getSection(sectionName);
+              if (sectionInvite != null) {
+                for ( Field field : sectionInvite.getFields() ) {
+                  attributesToRemove.add( field.getName() );
+                }
+              }
+            }
+          }
+        }
+      } else{
+        for ( Field field : sectionInvite.getFields() ) {
+          attributesToRemove.add( field.getName() );
+        }
+      }
+      plog.trace( "AADRL-LW-003 :: Removing Invite attributes: " + attributesToRemove.toString() );
+      plog.trace( "AADRL-LW-004 :: Removing Non-Invite attributes List: " + attributesToRemove);
+    }
+    return attributesToRemove;
+  }
+   //workflow launch to send the prehire email notificaiton
+   public void launchWorkflow(String identityName,String wfName,String caseName,Map args){
+    if ( plog.isTraceEnabled() ) {
+        plog.trace("AADRL-LW-005 :: Entering launchWorkflow()");
+        plog.trace("AADRL-LW-006 :: identityName::"+identityName+"|caseName::"+caseName+"|wfName::"+wfName);
+    }
+    HashMap launchArgs = new HashMap();
+    launchArgs.put("identityName",identityName);
+    launchArgs.put("launcher","spadmin");
+    if(args != null){
+      launchArgs.putAll(args);
+    }
+    WorkflowLaunch wfLaunch = new WorkflowLaunch();
+    Workflow workflow = (Workflow)context.getObjectByName(Workflow.class,wfName);
+    if(null != workflow){
+      wfLaunch.setWorkflowName(workflow.getName());
+      wfLaunch.setWorkflowRef(workflow.getName());
+      wfLaunch.setCaseName(caseName+" : "+identityName); 
+      wfLaunch.setVariables(launchArgs);
+      Workflower workflower = new Workflower(context);
+      WorkflowLaunch Launch = workflower.launch(wfLaunch);
+      if ( plog.isTraceEnabled() ) {
+        plog.trace("AADRL-LW-007 :: Launched "+wfName);
+      }
+    }
+    if ( plog.isTraceEnabled() ) {
+      plog.trace("AADRL-LW-008 :: Exiting launchWorkflow()"); 
+    }
+   }
+  
+  /**
+  * updateGuestPrehireAccountAttribute updates the guest account attributes while create account.
+  * creation where Native Identity is required before it exists.
+  * @param context The SailPointContext Object
+  * @param accountRequest The current AccountRequest Object to be examined
+  * @param application The Application Object being evaluated
+  * @param identity The Identity Object being evaluated
+  */
+  public static void updateGuestPrehireAccountAttribute( SailPointContext context, AccountRequest accountRequest, Application application, Identity identity ) {
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "AADRL-LW-009 ::Entering Azure AD Rule Library - updateGuestPrehireAccountAttribute" );
+    }
+    if ( accountRequest != null ) {
+      AttributeRequest EntAttrReq = accountRequest.getAttributeRequest("groups");
+      if ( null != EntAttrReq ) {
+        Object entValueObject = EntAttrReq.getValue();
+        Custom extensionAttributesCustomObject = context.getObjectByName( Custom.class, "Azure AD Guest Account" );
+        if(null != extensionAttributesCustomObject){
+          preHireGroupValue = extensionAttributesCustomObject.getString( "preHireGroupNameForAzureADTMNA");
+          if(entValueObject instanceof String){
+            if (null != preHireGroupValue &amp;&amp; entValueObject != null &amp;&amp; entValueObject.equalsIgnoreCase(preHireGroupValue)) {
+              AttributeRequest inviteUserEmailAttrReq = accountRequest.getAttributeRequest("invitedUserEmailAddress");
+              AttributeRequest inviteRedirectUrlAttrReq = accountRequest.getAttributeRequest("inviteRedirectUrl");
+              inviteUserEmailAttrReq. setValue(getIdentityAttribute( context, identity, "PersonalEmail" ));
+              inviteRedirectUrlAttrReq. setValue(getAzureADTMNAURL( identity ));
+            }
+           } else if(entValueObject instanceof List){
+              if (null != preHireGroupValue &amp;&amp; entValueObject != null &amp;&amp; entValueObject.contains(preHireGroupValue)) {
+                AttributeRequest inviteUserEmailAttrReq = accountRequest.getAttributeRequest("invitedUserEmailAddress");
+                AttributeRequest inviteRedirectUrlAttrReq = accountRequest.getAttributeRequest("inviteRedirectUrl");
+                inviteUserEmailAttrReq. setValue(getIdentityAttribute( context, identity, "PersonalEmail" ));
+                inviteRedirectUrlAttrReq. setValue(getAzureADTMNAURL( identity ));
+            }
+          }
+        }
+      }
+    }
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "AADRL-LW-010 ::Leaving Azure AD Rule Library - updateGuestPrehireAccountAttribute" );
+    }
+  }
+
+   /**
+  *
+  * This method will get workday application from the identity
+  *
+  */
+  public String getWorkdayAppNamefromIdentityLink(String identityName){
+    String wAppName = null;
+    if(null != identityName){
+      Filter filter = Filter.and(Filter.eq("identity.name",identityName),Filter.ignoreCase(Filter.eq("application.type","Workday")));
+      QueryOptions qo = new QueryOptions();
+      qo.addFilter(filter);
+      Iterator linksIterator = context.search(Link.class, qo);
+      while (linksIterator.hasNext()) {
+        Link link = (Link) linksIterator.next();
+        wAppName = link.getApplicationName();
+      }
+      Util.flushIterator( linksIterator );
+    }
+    return wAppName;
+  }
+  
+  /*******
+    Determine Azure AD TMA URL if the user is having preHireIdentificationFlag as true then it will return Guest User URL else in other case it will return as User URL.
+      1) Normal Azure User
+      2) Guest Azure User
+   *******/ 
+  public String getAzureADTMNAURL( Identity identity ) {
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "AADRL-LW-011 ::Entering Azure AD Rule Library - getAzureADTMNAURL" );
+    }
+    String responseString = "";
+    Custom extensionAttributesCustomObject = context.getObjectByName( Custom.class, "Azure AD Guest Account" );
+    if ( extensionAttributesCustomObject != null ) {
+      String userUrl=extensionAttributesCustomObject.get("userUrl");
+      String guestUserUrl=extensionAttributesCustomObject.get("preHireAcceptInviteUrl");    
+      String preHireFlag = identity.getAttribute("preHireIdentificationFlag");
+    if(null != preHireFlag &amp;&amp; "true".equalsIgnoreCase(preHireFlag)){   
+      responseString = guestUserUrl;
+    }else{
+      responseString = userUrl;
+    }
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "AADRL-LW-012 :: Identity: " + identity.getName() + " :: " + responseString );
+      plog.trace( "AADRL-LW-013 :: Leaving Azure AD Rule Library - getAzureADTMNAURL" );
+    }
+  }
+    return responseString;
+  }
+
+  /*******
+  Internal method to get Azure Access token for Graph API Calls
+  *******/
+  public String getAccessToken( String azureADDomain, String resource, String clientID, String clientSecret ) throws Exception {
+
+    HttpClient httpclient = HttpClients.createDefault();
+    String accessToken = "";
+
+    String url = "https://login.microsoft.com/" + azureADDomain + "/oauth2/v2.0/token";
+    HttpPost post = new HttpPost(url);
+    List nameValuePairs = new ArrayList(5);
+    nameValuePairs.add( new BasicNameValuePair( "scope", "https://graph.microsoft.com/.default" ) );
+    nameValuePairs.add( new BasicNameValuePair( "client_id", clientID ) );
+    nameValuePairs.add( new BasicNameValuePair( "client_secret", clientSecret ) );
+    nameValuePairs.add( new BasicNameValuePair( "aud", "https://graph.microsoft.com/" ) );
+    nameValuePairs.add( new BasicNameValuePair( "grant_type", "client_credentials" ) );
+    nameValuePairs.add( new BasicNameValuePair( "tenant", azureADDomain ) );
+    post.setEntity( new UrlEncodedFormEntity( nameValuePairs ) );
+    HttpResponse response = httpclient.execute( post );
+    HttpEntity entity = response.getEntity();
+
+    if (entity != null) {
+      String content = EntityUtils.toString( entity );
+      JSONObject obj = new JSONObject( content );
+      accessToken = obj.getString( "access_token" );
+    }
+    return accessToken;
+  }
+  
+  
+   /**
+  * createAzureADMTMGuestUser Removes attributeRequest based on accountType. If the accountType is "User". It will remove guest releated attriuteRequest from the plan and vice-versa.
+  * creation where Native Identity is required before it exists.
+  * @param accountRequest The current AccountRequest Object to be examined
+  * @param application The Application Object being evaluated
+  * @param identity The Identity Object being evaluated
+  */
+  public void createAzureADMTMGuestUser(AccountRequest accountRequest, Application application, Identity identity) {
+
+    String identityType = identity.getType()!=null?identity.getType():"";
+    String userEmail = identity.getEmail()!=null?identity.getEmail():"";
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "Email: " + userEmail );
+    }
+
+    String userType = "Member";
+    List attributesToRemove = new ArrayList();
+    AttributeRequest accountTypeAttrReq = accountRequest.getAttributeRequest( "accountType" );
+    if ( accountTypeAttrReq != null ) {
+      accountType = accountTypeAttrReq.getValue().toString();
+      if ( accountType.equalsIgnoreCase( "user" )) {
+        plog.trace( "Azure User or Guest User account. Remove Invitation attributes." );
+        // Get attributes to remove from Application Form Guest B2B section
+        attributesToRemove = getAttributesToRemoveFromForm(application,attributesToRemove,"GuestUser");
+        
+        // Determine what kind of user account
+        if ( identityType.equalsIgnoreCase( "supplier" ) ) {
+          userType = "Guest";
+        }
+        accountRequest.add( new ProvisioningPlan.AttributeRequest( "userType", ProvisioningPlan.Operation.Add, userType ) );
+      } else {
+        plog.trace( "Guest B2B User. Remove Non-Invitation attributes." );
+        attributesToRemove = getAttributesToRemoveFromForm(application,attributesToRemove,"User");
+        
+        // Add Guest userType
+        userType = "Guest";
+        accountRequest.add( new ProvisioningPlan.AttributeRequest( "userType", ProvisioningPlan.Operation.Add, userType ) );
+      }
+      
+      // Remove Attributes
+      List attributeRequests = accountRequest.getAttributeRequests();
+      if ( plog.isTraceEnabled() ) {
+        plog.trace( "Attribute Request List: " + attributeRequests.toString() );
+        plog.trace( "Attribute Request Size: " + attributeRequests.size().toString() );
+      }
+
+      List attributeRequestsToRemove = new ArrayList();
+      if (attributeRequests !=null &amp;&amp; !attributeRequests.isEmpty()) {
+        for ( ProvisioningPlan.AttributeRequest attreq : attributeRequests ) {
+          String attributeName = attreq.getName().toString();
+          if ( plog.isTraceEnabled() ) {
+            plog.trace( "Working with Attribute: " + attributeName );
+          }
+
+          if ( attributesToRemove.contains( attributeName ) ) {
+            plog.trace( "Getting Attribute to Remove: " + attributeName );
+            attributeRequestsToRemove.add( attreq );
+          }
+        }
+      }
+      if ( plog.isTraceEnabled() ) {
+        plog.trace( "Attribute Removal List: " + attributeRequestsToRemove.toString() );
+        plog.trace( "Attribute Removal Size: " + attributeRequestsToRemove.size().toString() );
+      }
+      if ( attributeRequestsToRemove != null &amp;&amp; attributeRequestsToRemove.size() > 0 ) {
+        // remove the attributes now
+        for ( ProvisioningPlan.AttributeRequest attributeRemoval : attributeRequestsToRemove ) {
+          plog.trace( " Removing Attribute: " + attributeRemoval.getName().toString() );
+          accountRequest.remove( attributeRemoval );
+        }
+      }
+    } else {
+      toyotaLogger( context, "Account Type is Null for Method: createAzureADMTMGuestUser" );
+    }
+    
+  }
+  
+  /*******
+    Determine Azure AD MTM User Type if the user is having preHireIdentificationFlag as true and azure ad mtm member accout then it will return Guest User B2B else in other case it will return as User.
+      1) Normal Azure User
+      2) Guest Azure User
+  *******/  
+  public String getAzureADMTMUserType( SailPointContext context, Application application, Identity identity ) {
+    plog.trace( "Entering Azure AD Rule Library - getAzureADMTMUserType" );
+    String user="User";
+    String guestUser="Guest User B2B";
+    String responseString = "";
+
+    IdentityService identityService = new IdentityService(context);
+    List links =  identityService.getLinks( identity, application );
+    if(null != links &amp;&amp; !links.isEmpty()){
+      for(Link link : links ){
+        String preHireFlag = identity.getAttribute("preHireIdentificationFlag");
+        String userType = link.getAttribute("userType");
+        if(null != preHireFlag &amp;&amp; null != userType &amp;&amp; "Member".equalsIgnoreCase(userType) &amp;&amp; "true".equalsIgnoreCase(preHireFlag)){
+          responseString = guestUser;
+          break;
+        }else{
+          responseString = user;
+          break;
+        }
+      }
+    }else{
+      responseString = user;
+    }
+    plog.trace( "User Type for Identity: " + identity.getName() + " :: " + responseString );
+    plog.trace( "Leaving Azure AD Rule Library - getAzureADMTMUserType" );
+
+    return responseString;
+  }
+
+   /*******
+    Determine Azure AD MTM URL if the user is having preHireIdentificationFlag as true then it will return Guest User URL else in other case it will return as User URL.
+      1) Normal Azure User
+      2) Guest Azure User
+   *******/ 
+  public String getAzureADMTMURL( Identity identity, Application application ) {
+  
+    plog.trace( "Entering Azure AD Rule Library - getAzureADMTMURL" );
+    String userUrl=application.getAttributeValue("AzureADMTMUserUrl");
+    String guestUserUrl=application.getAttributeValue("AzureADMTMGuestUserUrl");
+    String responseString = "";
+    String preHireFlag = identity.getAttribute("preHireIdentificationFlag");
+    if(null != preHireFlag &amp;&amp;  "true".equalsIgnoreCase(preHireFlag)){   
+      responseString = guestUserUrl;
+    }else{
+      responseString = userUrl;
+    }
+    plog.trace( "Identity: " + identity.getName() + " :: " + responseString );
+    plog.trace( "Leaving Azure AD Rule Library - getAzureADMTMURL" );
+
+    return responseString;
+  }
+  
+  /*******
+  Search Azure for existance of email
+  *******/
+  public String isAzureEmailPresent( SailPointContext context, Application app, Identity identity, String email ) throws Exception {
+    
+    plog.trace( "AADRL-ISAEP-01 Entering Azure AD Rule Library - isAzureEmailPresent" );
+    String azureADDomain = (String)app.getAttributeValue( "domainName" );
+    String clientID = (String)app.getAttributeValue( "clientID" );
+    String clientSecret = context.decrypt( (String)app.getAttributeValue( "clientSecret" ) );
+    String resource = "https://graph.microsoft.com/beta/users";
+    plog.trace( "AADRL-ISAEP-02 isAzureemailPresent email" +email );
+    HttpClient httpclient = HttpClients.createDefault();
+    String[] mailparts=email.split( "@" );
+    String emailprefix = mailparts[0];
+    String emaildomain= mailparts[1];
+    String mailEA2Check = null;
+    String guidAttributeName = "";
+
+
+    Custom extensionAttributesCustomObject = context.getObjectByName( Custom.class, "Azure Extension Attributes" );
+    if ( extensionAttributesCustomObject != null ) {
+      guidAttributeName = extensionAttributesCustomObject.getString( "guid" );
+    } else {
+      plog.trace( "AADRL-ISAEP-03 ERROR:: Cannot find Azure Extension Attributes Object" );
+    }
+
+    String url = resource+"?$select="+guidAttributeName+",id,mail&amp;"+ "$filter="+ URLEncoder.encode( "mail eq ", "UTF-8" )+ "'"+ URLEncoder.encode( emailprefix, "UTF-8")+ "@" + emaildomain+ URLEncoder.encode( "' or otherMails/any(id:id eq '","UTF-8")+URLEncoder.encode( emailprefix, "UTF-8")+ "@" + emaildomain+ "')";
+    plog.trace( "AADRL-ISAEP-04 EncodedURL : " + url);
+    String accessToken = getAccessToken( azureADDomain, resource, clientID, clientSecret );
+    plog.trace( "AADRL-ISAEP-05 Access Token:\n" + accessToken + "\n" );
+    HttpGet request = new HttpGet(url);
+    request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+    request.setHeader(HttpHeaders.AUTHORIZATION, accessToken );
+    HttpResponse response = httpclient.execute( request );
+    int statuscode = response.getStatusLine().getStatusCode();
+
+    if ( statuscode >= 200 &amp;&amp; statuscode &lt; 300 ) {
+      HttpEntity entity = response.getEntity();
+
+      if (entity != null) {
+        String content = EntityUtils.toString( entity );
+        plog.trace( "AADRL-ISAEP-06 Response content: " + content );
+        plog.trace( "AADRL-ISAEP-07 Response Type: " + content.getClass() );
+        JSONObject obj = new JSONObject( content );
+
+        if( obj.getJSONArray("value").length() > 0 ) {
+          mailpresent=true;
+          if ( plog.isTraceEnabled() ) {
+            plog.trace( "AADRL-ISAEP-08 Object Type: " + obj.getClass() );
+          }
+          JSONArray azureUserArray = obj.getJSONArray( "value" );
+          
+          if ( plog.isTraceEnabled() ) {
+            plog.trace( "AADRL-ISAEP-09 azureUserArray: \n" + azureUserArray.toString() );
+          }
+          JSONObject azureUser = azureUserArray.get(0);
+          String azureEA2 = null;
+          String userObjectID = null;
+          
+          if(azureUser.has("id")){
+            userObjectID = azureUser.get( "id" ).toString();
+            plog.trace("AADRL-ISAEP-10 userObjectID : "+userObjectID);
+          }
+          if(azureUser.has(guidAttributeName)){
+            azureEA2 = azureUser.get( guidAttributeName ).toString();
+            plog.trace("AADRL-ISAEP-11 azureEA2 : "+azureEA2);
+          }
+          String idenGUID = identity.getAttribute("guid");
+          plog.trace("AADRL-ISAEP-12 idenGUID : "+idenGUID);
+
+          if(azureEA2 == null){
+            plog.trace("AADRL-ISAEP azureEA2 is null entered if condition");
+            plog.trace("AADRL-ISAEP-1 GUID in Azure AD is :"+azureEA2+" and in Sailpoint is "+idenGUID+ " for the user "+identity.getName());
+            Boolean myResult = updateUserGUID( identity, userObjectID, accessToken );
+            mailEA2Check = "RemoveAccountReq:EmailFoundGUIDUpdated";
+          } else {
+            if(idenGUID != null &amp;&amp; !idenGUID.equalsIgnoreCase(azureEA2)){
+              mailEA2Check = "GuestAccount";
+              plog.trace("AADRL-ISAEP-13 idenGUID not null And idenGUID not equals of azureEA2");
+              plog.trace("AADRL-ISAEP-13.1 GUID in Azure AD is :"+azureEA2+" and in Sailpoint is "+idenGUID+ " for the user "+identity.getName());
+              plog.trace("AADRL-ISAEP-13.2 email address in Sailpoint is:"+email);
+            } else {
+              mailEA2Check = "RemoveAccountReq:Aggregation";
+              plog.trace("AADRL-ISAEP-14 idenGUID null OR idenGUID  equals of azureEA2");
+              plog.trace("AADRL-ISAEP-14.1 GUID in Azure AD is :"+azureEA2+" and in Sailpoint is "+idenGUID+ " for the user "+identity.getName());
+            }
+          }
+        }
+      }
+    }
+    plog.trace( "AADRL-ISAEP-15 - Leaving Azure AD Rule Library - isAzureEmailPresent" + mailEA2Check );
+
+      return mailEA2Check;
+  }
+  
+  /*******
+  getting ObjectID from azure based on the users  email address.
+  *******/
+  public String getAzureObjectIdUsingMail( SailPointContext context, Application app, Identity identity, String email ) throws Exception {
+
+    plog.trace( "AADRL-GAOIDUM-01 Entering Azure AD Rule Library - getAzureObjectIdUsingMail" );
+    String azureADDomain = (String)app.getAttributeValue( "domainName" );
+    String clientID = (String)app.getAttributeValue( "clientID" );
+    String clientSecret = context.decrypt( (String)app.getAttributeValue( "clientSecret" ) );
+    String resource = "https://graph.microsoft.com/v1.0/users";
+    plog.trace( "AADRL-GAOIDUM-02 isAzureemailPresent email " +email );
+    HttpClient httpclient = HttpClients.createDefault();
+    String[] mailparts=email.split( "@" );
+    String emailprefix = mailparts[0];
+    String emaildomain= mailparts[1];
+    String guestUserObjectId = null;
+    String guidAttributeName = "";
+
+    Custom extensionAttributesCustomObject = context.getObjectByName( Custom.class, "Azure Extension Attributes" );
+    if ( extensionAttributesCustomObject != null ) {
+      guidAttributeName = extensionAttributesCustomObject.getString( "guid" );
+    } else {
+      plog.trace( "AADRL-GAOIDUM-03 ERROR:: Cannot find Azure Extension Attributes Object" );
+    }
+
+    String url = resource+"?$select="+guidAttributeName+",id,mail,creationType&amp;"+ "$filter="+ URLEncoder.encode( "mail eq ", "UTF-8" )+ "'"+ URLEncoder.encode( emailprefix, "UTF-8")+ "@" + emaildomain+ "'";
+    plog.trace( "AADRL-GAOIDUM-04 EncodedURL : " + url);
+    String accessToken = getAccessToken( azureADDomain, resource, clientID, clientSecret );
+    plog.trace( "AADRL-GAOIDUM-05 Access Token:\n" + accessToken + "\n" );
+    HttpGet request = new HttpGet(url);
+    request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+    request.setHeader(HttpHeaders.AUTHORIZATION, accessToken );
+    HttpResponse response = httpclient.execute( request );
+    int statuscode = response.getStatusLine().getStatusCode();
+    
+    if ( statuscode >= 200 &amp;&amp; statuscode &lt; 300 ) {
+      HttpEntity entity = response.getEntity();
+      if (entity != null) {
+        String content = EntityUtils.toString( entity );
+        plog.trace( "AADRL-GAOIDUM-06 Response content: " + content );
+        plog.trace( "AADRL-GAOIDUM-07 Response Type: " + content.getClass() );
+        JSONObject obj = new JSONObject( content );
+        if( obj.getJSONArray("value").length() > 0 ) {
+          mailpresent=true;
+          plog.trace( "AADRL-GAOIDUM-08 Object Type: " + obj.getClass() );
+          JSONArray azureUserArray = obj.getJSONArray( "value" );
+          plog.trace( "AADRL-GAOIDUM-09 azureUserArray: \n" + azureUserArray.toString() );
+          JSONObject azureUser = azureUserArray.get(0);
+          String azureEA2 = null;
+          String userObjectID = null;
+          String creationType = null;
+          if(azureUser.has("id")){
+            userObjectID = azureUser.get( "id" ).toString();
+            plog.trace("AADRL-GAOIDUM-10 userObjectID : "+userObjectID);
+          }
+          if(azureUser.has(guidAttributeName)){
+            azureEA2 = azureUser.get( guidAttributeName ).toString();
+            plog.trace("AADRL-GAOIDUM-11 azureEA2 : "+azureEA2);
+          }
+          if(azureUser.has("creationType")){
+            creationType = azureUser.get( "creationType" ).toString();
+            plog.trace("AADRL-GAOIDUM-11.1 creationType : "+creationType);
+          }
+          String idenGUID = identity.getAttribute("guid");
+          plog.trace("AADRL-GAOIDUM-12 idenGUID : "+idenGUID);
+          if(azureEA2 != null &amp;&amp; idenGUID != null &amp;&amp; !idenGUID.equalsIgnoreCase(azureEA2) &amp;&amp; creationType.equalsIgnoreCase("Invitation")){
+            guestUserObjectId = userObjectID;
+            Boolean myResult = updateUserGUID( identity, userObjectID, accessToken );
+            plog.trace("AADRL-GAOIDUM-13 idenGUID not null And idenGUID not equals of azureEA2");
+          }
+          else if (azureEA2 != null &amp;&amp; idenGUID != null &amp;&amp; idenGUID.equalsIgnoreCase(azureEA2)){
+            guestUserObjectId = userObjectID;
+            plog.trace("AADRL-GAOIDUM-13 idenGUID not null And idenGUID not equals of azureEA2");
+          }
+        } 
+      }
+    }
+    plog.trace( "AADRL-GAOIDUM-15 - Leaving Azure AD Rule Library - getAzureObjectIdUsingMail" + guestUserObjectId );
+
+    return guestUserObjectId;
+  }
+
+  /*******
+  Update User GUID in Azure
+  *******/
+  public Boolean updateUserGUID( Identity identity, String objectId, String accessToken ) {
+    plog.trace( "Entering Azure AD Rule Library - updateUserGUID" );
+    String guidAttributeName = "";
+    Custom extensionAttributesCustomObject = context.getObjectByName( Custom.class, "Azure Extension Attributes" );
+    if ( extensionAttributesCustomObject != null ) {
+      guidAttributeName = extensionAttributesCustomObject.getString( "guid" );
+    } else {
+      plog.trace( "ERROR:: Cannot find Azure Extension Attributes Object" );
+      return false;
+    }
+    String resource = "https://graph.microsoft.com/beta/users/";
+    String userGUID = identity.getAttribute( "guid" ) != null ? identity.getAttribute( "guid" ) : "";
+    plog.trace( "GUID: " + userGUID );
+    HttpClient httpclient = HttpClients.createDefault();
+    Boolean success = false;
+    String url = resource + objectId;
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "EncodedURL : " + url );
+    }
+    if (Util.isNotNullOrEmpty(userGUID)) {
+      JSONObject entensionAttribute = new JSONObject();
+      entensionAttribute.put( "extensionAttribute2", userGUID );
+      JSONObject payload = new JSONObject();
+      payload.put( "onPremisesExtensionAttributes", entensionAttribute );
+      payload.put( guidAttributeName, userGUID );
+      plog.trace( "JSON Payload:\n\n" + payload.toString() + "\n\n" );
+      StringEntity body = new StringEntity( payload.toString() );
+      HttpPatch request = new HttpPatch( url );
+      request.setHeader( HttpHeaders.CONTENT_TYPE, "application/json" );
+      request.setHeader( HttpHeaders.AUTHORIZATION, accessToken );
+      request.setEntity( body );
+      HttpResponse response = httpclient.execute( request );
+      int statuscode = response.getStatusLine().getStatusCode();
+      plog.trace( "Status Code " + statuscode );
+
+      if ( statuscode >= 200 &amp;&amp; statuscode &lt; 300 ) {
+        plog.trace( "Status Reason: " + response.getStatusLine().getReasonPhrase() );
+        success = true;
+        HttpEntity entity = response.getEntity();
+        if (entity != null) {
+          String stuff = EntityUtils.toString( entity );
+          if ( plog.isTraceEnabled() ) {
+            plog.trace( "Status Code: " + stuff );
+          }
+        }
+      }
+      plog.trace( "Leaving Azure AD Rule Library - updateUserGUID" );
+    }
+    return success;
+  }
+
+  /*******
+    Determine Azure User Type
+      1) Normal Azure User
+      2) Guest Azure User
+      3) B2B Guest Invite User
+  *******/
+  public String getAzureADUserType( SailPointContext context, Application application, Identity identity ) {
+
+    plog.trace( "Entering Azure AD Rule Library - getAzureADUserType" );
+    QueryOptions qo=new QueryOptions();
+    String user="User";
+    String guestB2BUser="Guest User B2B";
+    String responseString = "";
+    boolean isRetired = false;
+    
+    IdentityService idService = new IdentityService(context);
+    Application appObject = context.getObjectByName(Application.class,"Workday TMNA");
+    if(identity != null &amp;&amp; appObject != null ) {
+      List linkList = idService.getLinks(identity,appObject);
+      if ( Util.nullSafeSize(linkList) > 0 ){
+        Link link = linkList.get(0);
+        String linkAttr = link.getAttribute("IS_RETIRED");
+        if(Util.nullSafeEq(linkAttr, "1")) {
+          isRetired = true;
+        }
+        context.decache(appObject);
+      }
+    }
+    
+  // This is used to support the guest account creation for the prehire.
+    String preHireFlag = identity.getAttribute("preHireIdentificationFlag");
+    String companycode = identity.getAttribute("companyCode");
+    if(null != preHireFlag &amp;&amp; "true".equalsIgnoreCase(preHireFlag) ){
+      IdentityService identityService = new IdentityService(context);
+      List links =  identityService.getLinks( identity, application );
+      if(null != links &amp;&amp; !links.isEmpty()){
+        for(Link link : links ){
+
+          String userType = link.getAttribute("userType");
+          if( null != userType &amp;&amp; "Member".equalsIgnoreCase(userType)){
+            responseString = guestB2BUser;
+          }
+        }
+      }
+      if(Util.isNullOrEmpty(responseString) &amp;&amp; null != companycode ){
+        if("TCC".equalsIgnoreCase(companycode) || 
+        "TIS".equalsIgnoreCase(companycode) || 
+        "TFB".equalsIgnoreCase(companycode) || 
+        "TPR".equalsIgnoreCase(companycode) || 
+        "BJN".equalsIgnoreCase(companycode) || 
+        "BTR".equalsIgnoreCase(companycode) || 
+        "TCA".equalsIgnoreCase(companycode) || 
+        "TIN".equalsIgnoreCase(companycode) || 
+        "TKY".equalsIgnoreCase(companycode) || 
+        "TMP".equalsIgnoreCase(companycode) || 
+        "TTX".equalsIgnoreCase(companycode) || 
+        "TAL".equalsIgnoreCase(companycode) || 
+        "TNC".equalsIgnoreCase(companycode) || 
+        "TWV".equalsIgnoreCase(companycode) || 
+        "AIR".equalsIgnoreCase(companycode) || 
+        "TDP".equalsIgnoreCase(companycode) || 
+        "TLS".equalsIgnoreCase(companycode) || 
+        "TMN".equalsIgnoreCase(companycode) || 
+        "TMS".equalsIgnoreCase(companycode) || 
+        "TNA".equalsIgnoreCase(companycode) || 
+        "TRD".equalsIgnoreCase(companycode)){
+          responseString = guestB2BUser;
+        }
+      }
+    }
+   
+  if(null == responseString || responseString.isEmpty()){
+     String userEmail = identity.getEmail();
+      if ( userEmail != null &amp;&amp; !userEmail.isEmpty() ) {
+        Filter filter = Filter.and( Filter.eq( "application", application ), Filter.eq( "appMail", userEmail ) );
+        qo.addFilter( filter );
+    // This reduces overhead in the call by not returning complete identity objects
+      ArrayList colsToRead = new ArrayList();
+      colsToRead.add("appMail");
+      Iterator it = context.search( Link.class, qo, colsToRead );
+      if ( (null != it) &amp;&amp; (it.hasNext()) ) {
+        plog.trace("Identities Matched by email");
+        plog.trace("AccountType User entered");
+        responseString = user;
+        if ( isRetired ) responseString = guestB2BUser;
+      } else {
+        Map domainMails = application.getAttributeValue( "emailDomainNames" );
+        if ( domainMails != null &amp;&amp; !domainMails.isEmpty() &amp;&amp; userEmail.contains("@") ) {
+          String [] emails= userEmail.split("@");
+          String emailDomain = "";
+          if (emails.length > 1 &amp;&amp; emails[1]!= null){
+            emailDomain = emails[1];
+          }
+          if ( domainMails.containsKey( emailDomain ) ) {
+            plog.trace("AccountType User entered");
+            responseString = user;
+            if ( isRetired ) responseString = guestB2BUser;
+          } else {
+            plog.trace("AccountType Guest entered");
+            responseString = guestB2BUser;
+          }
+        } else {
+          // Default to Guest
+          plog.trace("AccountType Guest entered");
+          responseString = guestB2BUser;
+        }
+      }
+      Util.flushIterator(it);
+    } else {
+      String userUPN = identity.getAttribute( "userPrincipalName" );
+      if ( userUPN != null &amp;&amp; !userUPN.isEmpty() ) {
+        String [] upns= userUPN.split("@");
+        String upnDomain = "";
+        if (upns.length > 1 &amp;&amp; upns[1]!= null){
+          upnDomain = upns[1];
+        }
+        Map domainMails = application.getAttributeValue( "emailDomainNames" );
+        if ( domainMails != null &amp;&amp; !domainMails.isEmpty() ) {
+          if ( domainMails.containsKey( upnDomain ) ) {
+            responseString = user;
+            if ( isRetired ) responseString = guestB2BUser;
+          } else {
+            responseString = guestB2BUser;
+          }
+        }
+      } else {
+        toyotaLogger( context, "User: " + identity.getName() + " Missing Email and UPN.  Cannot provision " + application.getName() );
+      }
+    }
+  }
+    plog.trace( "User Type for Identity: " + identity.getName() + " :: " + responseString );
+    plog.trace( "Leaving Azure AD Rule Library - getAzureADUserType" );
+
+    return responseString;
+  }
+
+  /*******
+  Get Azure AD UPN ( userPrincipalName )
+  *******/
+  public String getAzureADUPN( SailPointContext context, Application application, Identity identity ) {
+
+    plog.trace( "Entering Azure AD Rule Library - getAzureADUPN" );
+
+    Custom supplierConfiguration;
+    String userName = identity.getName();
+    String userType = identity.getType()!=null?identity.getType():"";
+    String userEmail = identity.getEmail()!=null?identity.getEmail():"";
+    String appDomain;
+    String uPN="";
+
+    try {
+      supplierConfiguration = context.getObjectByName(Custom.class, "Supplier Configuration");
+      appDomain = supplierConfiguration.get("domainSuffix");
+    } catch ( Exception ex ) {
+      plog.trace( "ERROR :: Exception fetching Custom Object: " + ex.toString() );
+      return null;
+    }
+
+    if ( !(userType.equalsIgnoreCase( "supplier" ) || userType.equalsIgnoreCase( "marketing" )) ) { //  Everyone but not suppliers and Marketing users
+      plog.trace( "AZRL-GAADUON-002:: Regular User UPN (email or UPN)" );
+      uPN = getEmailOrUPN( context, identity );
+    } 
+    else if (userType.equalsIgnoreCase( "marketing" )){
+      if ( userName.indexOf( "@" ) != -1 &amp;&amp; !userName.split( "@" )[1].equalsIgnoreCase( application.getAttributeValue("toyotaMarketingDomain") )) { // username with @
+        // email address outside of toyota for usernames
+        if ( !userName.split( "@" )[1].equalsIgnoreCase( application.getAttributeValue("toyotaMarketingDomain") ) ) {
+          appDomain = userName.split( "@" )[1];
+        }
+        uPN = userName.split( "@" )[0] + "@" + appDomain;
+      } else { // username without @
+        plog.error("AZRL-GAADUON-003:: ERROR :: Supplier User Invalid Username: " + userName);
+        uPN = userName;
+      }
+    }
+    else {  // All Suppliers
+      plog.trace( "AZRL-GAADUON-004:: Supplier User UPN (Guest User or Guest B2B Invite" );
+      if ( userName.indexOf( "@" ) != -1 ) { // username with @
+        // email address outside of toyota for usernames
+        if ( !userName.split( "@" )[1].equalsIgnoreCase( "toyotasupplier.com" ) ) {
+          appDomain = userName.split( "@" )[1];
+        }
+        uPN = userName.split( "@" )[0] + "@" + appDomain;
+      } else { // username without @
+        plog.error("AZRL-GAADUON-005:: ERROR :: Supplier User Invalid Username: " + userName);
+        uPN = userName;
+      }
+    }
+    if ( plog.isTraceEnabled() ) {
+      if ( Util.isNullOrEmpty( uPN ) ) {
+        plog.trace( "AZRL-GAADUON-006:: UPN for Identity: " + identity.getName() + " :: null" );
+      } else {
+        plog.trace( "AZRL-GAADUON-007:: UPN for Identity: " + identity.getName() + " :: " + uPN );
+      }
+      plog.trace( "AZRL-GAADUON-008:: Leaving Azure AD Rule Library - getAzureADUPN" );
+    }
+    return uPN;
+  }
+  
+    /*******
+  Get Azure AD PIM UPN ( userPrincipalName )
+  *******/
+  public String getAzureAdPIMUPN( SailPointContext context, Application application, Identity identity ) {
+    plog.trace( "AZRL ::001::UPNPIM::Start" );
+    String appDomain = application.getAttributeValue("domainSuffix");
+    String userName = identity.getName();
+    String userEmail = identity.getEmail()!=null?identity.getEmail():"";
+    String uPN="";
+    String MSAvalue = application.getAttributeValue("azureADPrivAccountPrefix");
+    
+    if ( userName != null ) {
+       plog.trace( "Regular User UPN" );
+       uPN = MSAvalue+"-"+userName + "@" + appDomain;
+     }
+     else {
+      toyotaLogger( context, "AZRL012::User: " + userName + " UserType is empty/null");
+    }
+     if ( plog.isTraceEnabled() ) {
+        plog.trace( "AZRL::UPN PIM 002 for Identity: " + identity.getName() + " :: " + uPN );
+        plog.trace( "AZRL::UPN PIM 003 Leaving Azure AD Rule Library - getAzureAdPIMUPN" );
+     }
+     return uPN;
+  }
+  /*******
+  Get Azure AD Mail Nickname ( mailNickname )
+  *******/
+  public String getAzureADMailNickname( SailPointContext context, Application application, Identity identity ) {
+
+    String userName = identity.getName();
+    String userType = identity.getType();
+    String userEmail = identity.getEmail();
+    String UPN= identity.getAttribute("userPrincipalName");
+    String userMailNickname = "";
+
+    if ( Util.isNotNullOrEmpty(userType) ) {
+      if (userType.equalsIgnoreCase( "supplier" ) ) {
+        userMailNickname = userName.split( "@" )[0];
+      } else if(Util.isNotNullOrEmpty(userEmail)) {
+        userMailNickname = userEmail.split( "@" )[0];
+      } else if(Util.isNotNullOrEmpty(UPN)) {
+        userMailNickname = UPN.split( "@" )[0];
+      } else {
+        toyotaLogger( context,"AZRL010::User: " + userName + " email/UPN is empty/null");
+      }  
+    } else {
+      toyotaLogger( context, "AZRL011::User: " + userName + " UserType is empty/null");
+    }
+    return userMailNickname;
+  }
+  /*******
+  Get Azure AD PIM Mail Nickname ( mailNickname )
+  *******/
+  public String getAzureAdPIMMailNickname( SailPointContext context, Application application, Identity identity ) {
+    plog.trace("AZRL::003::MailNickNamePIM::Start" );
+    String userName = identity.getName();
+    String UPN= identity.getAttribute("userPrincipalName");
+    String userMailNickname = "";
+    String MSAvalue = application.getAttributeValue("azureADPrivAccountPrefix");
+    
+    if(userName !=null){
+      userMailNickname = MSAvalue+"-"+userName;
+    } 
+    else {
+      toyotaLogger( context,"AZRL-004::User: " + userName + " userName is empty/null");
+    }
+    return userMailNickname;
+  }
+  /*******
+  Clean Duplicate SailPoint Account Link for single Azure user
+  This Link is created when an attempt is made to invite 2 different
+  email addresses that are mail aliases to the same user in a
+  different Azure tennant
+
+  The Link must be deleted so that we can create the user as a guest
+  *******/
+  public Boolean cleanDuplicateAccountLink( SailPointContext context, String linkNativeIdentity, Identity currentIdentity ) {
+
+    plog.trace( "AZRL-CDAL-01::Entering Azure AD Rule Library - cleanDuplicateAccountLink" );
+    String appName = "Azure AD";
+    Boolean response = false;
+    String linkToDelete = "";
+    Application app = context.getObjectByName( Application.class, appName );
+    QueryOptions qo = new QueryOptions();
+    qo.add( new Filter[] { Filter.and( Filter.eq( "application", app ), Filter.ignoreCase( Filter.eq( "nativeIdentity", linkNativeIdentity ) ) ) } );
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "AZRL-CDAL-02::Created Filter for search" );
+    }
+    int matchedLinks = context.countObjects( Link.class, qo );
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "AZRL-CDAL-03::Matched links: " + matchedLinks );
+    }
+
+    // More than one match means that the same account is linked to more than one Identity.
+    Iterator it = context.search( Link.class, qo );
+    plog.trace( "AZRL-CDAL-04::More than 1 result.  Got Search results" );
+    if ( it != null ) {
+      while ( it.hasNext() ) {
+        Link link = it.next();
+        Identity linkIdentity = link.getIdentity();
+        String linkGUID = linkIdentity.getAttribute( "guid" );
+        String currentIdentityGUID = currentIdentity.getAttribute( "guid" );
+        if ( linkGUID != null &amp;&amp; currentIdentityGUID != null ) {
+          // Delete the link for the Identity we just provisioned
+          if ( linkGUID.equalsIgnoreCase( currentIdentityGUID ) ) {
+            linkToDelete = link.getId();
+            plog.trace( "AZRL-CDAL-05::Deleting Link: " + linkToDelete + " for Identity: " + linkIdentity.getName() );
+          } else {
+            plog.trace( "AZRL-CDAL-06::NOT Deleting Link: " + linkToDelete + " for Identity: " + linkIdentity.getName() );
+          }
+        } else {
+          plog.trace( "AZRL-CDAL-07::ERROR:: One GUID is NULL" );
+        }
+      }
+      sailpoint.tools.Util.flushIterator( it );
+      plog.trace( "AZRL-CDAL-08::Flushed Iterator" );
+      if ( !linkToDelete.isEmpty() ) {
+        Terminator t = new Terminator( context );
+
+        Link deleteLink = context.getObjectById( Link.class, linkToDelete );
+        try {
+          plog.trace( "AZRL-CDAL-09::Deleting Account: " + deleteLink.getNativeIdentity() );
+          t.deleteObject( deleteLink );
+          plog.trace( "AZRL-CDAL-10::Deleted" );
+          response = true;
+        } catch ( Exception ex ) {
+          plog.trace( "AZRL-CDAL-11::ERROR:: " + ex.toString() );
+        }
+      }
+    }
+    plog.trace( "AZRL-CDAL-12::Exiting Azure AD Rule Library - cleanDuplicateAccountLink" );
+    
+    return response;
+  }
+
+  /*******
+  Testing
+  *******/
+  public Object testStuff( SailPointContext context ) {
+
+    plog.trace( "AZRL-TS-01::Entering Azure AD Rule Library - test" );
+    Object result;
+    AttributeRequest testAR = new AttributeRequest();
+    testAR.setName( "password" );
+    testAR.setOperation( ProvisioningPlan.Operation.Set );
+    testAR.setValue( "myPassword" );
+    testAR.put( "secret", "true" );
+    AttributeRequest testAR2 = new AttributeRequest();
+    testAR2.setName( "accountEnabled" );
+    testAR2.setOperation( ProvisioningPlan.Operation.Set );
+    testAR2.setValue( true );
+    ProvisioningPlan.AccountRequest acctReq = new ProvisioningPlan.AccountRequest();
+    acctReq.add( testAR );
+    acctReq.add( testAR2 );
+    result = acctReq.toXml();
+    plog.trace( "AZRL-TS-02::Attribute Request:\n" + result );
+    plog.trace( "AZRL-TS-03::Exiting Azure AD Rule Library - testLinkSearch" );
+    
+    return result;
+  }
+
+  /*******
+  Check for Crosslinked account
+  *******/
+  public Boolean isAccountCrosslinked( SailPointContext context, Application application, Identity identity, String azureIDCreated ) {
+
+    plog.trace( "AZRL-ISACL-01::Entering Azure AD Rule Library - isAccountCrosslinked" );
+    String azureADDomain = (String)application.getAttributeValue( "domainName" );
+    String clientID = (String)application.getAttributeValue( "clientID" );
+    String clientSecret = context.decrypt( (String)application.getAttributeValue( "clientSecret" ) );
+    String resource = "https://graph.microsoft.com/beta/users";
+    HttpClient httpclient = HttpClients.createDefault();
+    Boolean result = false;
+    String guidAttributeName = "";
+    // Get extension attribute names from the custom object
+    Custom extensionAttributesCustomObject = context.getObjectByName( Custom.class, "Azure Extension Attributes" );
+    if ( extensionAttributesCustomObject != null ) {
+      guidAttributeName = extensionAttributesCustomObject.getString( "guid" );
+    } else {
+      plog.trace( "AZRL-ISACL-02::ERROR:: Cannot find Azure Extension Attributes Object" );
+      return false;
+    }
+
+    String azureUserGUID = "";
+    String identityGUID = identity.getAttribute( "guid" );
+    if ( identityGUID == null || identityGUID.isEmpty() ) {
+      plog.trace( "AZRL-ISACL-02::User: " + identity.getName() + " missing GUID" );
+    }
+
+    String accessToken = getAccessToken( azureADDomain, resource, clientID, clientSecret );
+    String url = resource + "/" + azureIDCreated + "?$select=" + guidAttributeName;
+    plog.trace( "AZRL-ISACL-03::Request URL: " + url );
+    HttpGet request = new HttpGet(url);
+    request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+    request.setHeader(HttpHeaders.AUTHORIZATION, accessToken );
+    HttpResponse response = httpclient.execute( request );
+    int statuscode = response.getStatusLine().getStatusCode();
+
+    if ( statuscode >= 200 &amp;&amp; statuscode &lt; 300 ) {
+      HttpEntity entity = response.getEntity();
+
+      if (entity != null) {
+        String content = EntityUtils.toString( entity );
+        plog.trace( "AZRL-ISACL-04::Response content: " + content );
+        plog.trace( "AZRL-ISACL-05::Response Type: " + content.getClass() );
+
+        JSONObject obj = new JSONObject( content );
+
+        if ( obj.has( guidAttributeName ) ) {
+          azureUserGUID = obj.getString( guidAttributeName );
+          if ( azureUserGUID != null &amp;&amp; !azureUserGUID.isEmpty() ) {
+            plog.trace( "AZRL-ISACL-06::Response GUID: " + azureUserGUID );
+            plog.trace( "AZRL-ISACL-07::Identity GUID: " + identityGUID + "\n\n" );
+
+            if ( !azureUserGUID.equalsIgnoreCase( identityGUID ) ) {
+              result = true;
+            }
+          } else {
+            plog.trace( "AZRL-ISACL-08::No GUID returned" );
+          }
+        }
+      }
+    }
+    plog.trace( "AZRL-ISACL-09::Leaving Azure AD Rule Library - isAccountCrosslinked" );
+
+    return result;
+  }
+
+
+  //Create Azure GuestUser Scenario
+  public Boolean createAzureGuestUser(SailPointContext context, AccountRequest accountRequest, Application application, Identity identity) {
+
+    String identityType = identity.getType()!=null?identity.getType():"";
+    String email = identity.getEmail()!=null?identity.getEmail():"";
+    String userEmail;
+    AttributeRequest userEmailAttrReq = accountRequest.getAttributeRequest( "invitedUserEmailAddress");
+    if (userEmailAttrReq != null &amp;&amp; userEmailAttrReq.getValue() != null) {
+       userEmail = userEmailAttrReq.getValue().toString()!=null ? userEmailAttrReq.getValue().toString() : email;
+    }
+    else 
+    {
+      userEmail = email;   
+    }
+    plog.trace( "AADRL-CAGU-01: Email: " + userEmail );
+    Custom extensionAttributesCustomObject = context.getObjectByName( Custom.class, "Azure Extension Attributes" );
+    String guidAttributeName = extensionAttributesCustomObject.getString( "guid" );
+    String accountType;
+    String userType = "Member";
+    List attributesToRemove = new ArrayList();
+    AttributeRequest isCrossLinked = accountRequest.getAttributeRequest( "crossLinked" );
+    AttributeRequest isSharedAzureTenantEmails = accountRequest.getAttributeRequest( "sharedAzureTenantEmails" );
+    AttributeRequest accountTypeAttrReq = accountRequest.getAttributeRequest( "accountType" );
+    Boolean linkedExistingAccount = false;
+
+    if ( accountTypeAttrReq != null ) {
+      accountType = accountTypeAttrReq.getValue().toString();
+      plog.trace( "AADRL-CAGU-02 :Working with accountType: " + accountType );
+
+      //  Determine if this guest should be created or linked
+      try {
+        String mailEA2AzureCheck;
+        if ( Util.isNotNullOrEmpty( userEmail ) ) {
+          mailEA2AzureCheck = isAzureEmailPresent( context, application, identity, userEmail );
+        }
+        if ( mailEA2AzureCheck != null ) {
+          if(mailEA2AzureCheck.equalsIgnoreCase("GuestAccount")){
+            plog.trace( "AADRL-CAGU-03 :User email " + userEmail + " found in Azure---"+mailEA2AzureCheck );
+            if(accountType != null &amp;&amp; accountType.equalsIgnoreCase("Guest User B2B")){
+              accountRequest.remove(accountTypeAttrReq);
+              accountRequest.add(new ProvisioningPlan.AttributeRequest( "accountType", ProvisioningPlan.Operation.Set, "User" ) );
+              accountType = "User";
+            }
+          } else if(mailEA2AzureCheck.equalsIgnoreCase("RemoveAccountReq:EmailFoundGUIDUpdated")){
+            linkedExistingAccount = true;
+            plog.trace( "AADRL-CAGU-04 User email " + userEmail + " found in Azure and Linked---"+mailEA2AzureCheck );
+          } else if(mailEA2AzureCheck.equalsIgnoreCase("RemoveAccountReq:Aggregation")){
+            linkedExistingAccount = true;
+            plog.trace( "AADRL-CAGU-05 User email " + userEmail + " found in Azure and Linked---"+mailEA2AzureCheck );
+          }
+          // Link Account
+
+        } else {
+          // New Invite
+          plog.trace( "AADRL-CAGU-06 User email " + userEmail + " NOT found in Azure" );
+        }
+      } catch ( Exception ex ) {
+        toyotaLogger( context, "AADRL-CAGU-07 An error occurred with searching Azure:: " + ex.toString() );
+      }
+
+      if ( isSharedAzureTenantEmails != null ) {
+        plog.trace( "AADRL-CAGU-08 Azure Tenant Shares Email Domains" );
+        accountType = "User";
+        attributesToRemove.add( "sharedAzureTenantEmails" );
+        attributesToRemove.add( "accountType" );
+      }
+
+      if ( accountType.equalsIgnoreCase( "user" ) || isCrossLinked != null ) {
+        if ( !accountType.equalsIgnoreCase( "user" )) {
+          attributesToRemove.add( "accountType" );
+        }
+        plog.trace( "AADRL-CAGU-09 Azure User or Guest User account. Remove Invitation attributes." );
+
+        // Get attributes to remove from Application Form Guest B2B section
+        attributesToRemove = getAttributesToRemoveFromForm(application,attributesToRemove,"Guest User B2B");
+
+        // Determine what kind of user account
+        if ( identityType.equalsIgnoreCase( "supplier" ) || identityType.equalsIgnoreCase( "marketing" )) {
+          userType = "Guest";
+        }
+        accountRequest.add( new ProvisioningPlan.AttributeRequest( "userType", ProvisioningPlan.Operation.Add, userType ) );
+
+      } else {
+        plog.trace( "AADRL-CAGU-10 Guest B2B User. Remove Non-Invitation attributes." );
+        attributesToRemove = getAttributesToRemoveFromForm(application,attributesToRemove,"User");
+        
+        //adding the following attributes to remove from the AccountRequest
+        attributesToRemove.add("firstName");
+        attributesToRemove.add("lastName");
+        attributesToRemove.add("email");
+        attributesToRemove.add("userType");
+      }
+      // Never provision GUID except for supplier users and toyotamarketing users
+      if ( !(identityType.equalsIgnoreCase( "supplier" ) || identityType.equalsIgnoreCase( "marketing" )) ) {
+
+        if ( !attributesToRemove.contains( guidAttributeName ) ) {
+          attributesToRemove.add( guidAttributeName );
+        }
+
+        if ( !attributesToRemove.contains( "extensionAttribute2" ) ) {
+          attributesToRemove.add( "extensionAttribute2" );
+        }
+      }
+      // Remove Attributes
+      List attributeRequests = accountRequest.getAttributeRequests();
+      plog.trace( "AADRL-CAGU-11 Attribute Request List: " + attributeRequests.toString() );
+      plog.trace( "AADRL-CAGU-12 Attribute Request Size: " + attributeRequests.size().toString() );
+      List attributeRequestsToRemove = new ArrayList();
+        if (attributeRequests !=null &amp;&amp; !attributeRequests.isEmpty()) {
+          for ( ProvisioningPlan.AttributeRequest attreq : attributeRequests ) {
+            String attributeName = attreq.getName().toString();
+            if ( plog.isTraceEnabled() ) {
+              plog.trace( "AADRL-CAGU-13 Working with Attribute: " + attributeName );
+            }
+          
+          if ( attributesToRemove.contains( attributeName ) ) {
+            plog.trace( "AADRL-CAGU-13.1 Getting Attribute to Remove: " + attributeName );
+            attributeRequestsToRemove.add( attreq );
+          }
+        }
+      }
+      plog.trace( "AADRL-CAGU-14 Attribute Removal List: " + attributeRequestsToRemove.toString() );
+      plog.trace( "AADRL-CAGU-15 Attribute Removal Size: " + attributeRequestsToRemove.size().toString() );
+      if ( attributeRequestsToRemove != null &amp;&amp; attributeRequestsToRemove.size() > 0 ) {
+        // remove the attributes now
+        for ( ProvisioningPlan.AttributeRequest attributeRemoval : attributeRequestsToRemove ) {
+          plog.trace( "AADRL-CAGU-16 Removing Attribute: " + attributeRemoval.getName().toString() );
+          accountRequest.remove( attributeRemoval );
+        }
+      }
+      if ( attributeRequestsToRemove != null &amp;&amp; attributeRequestsToRemove.contains( "crossLinked" ) ) {
+        accountRequest.add( new ProvisioningPlan.AttributeRequest( "accountType", ProvisioningPlan.Operation.Add, "User" ) );
+      }
+      if ( attributeRequestsToRemove != null &amp;&amp; attributeRequestsToRemove.contains( "sharedAzureTenantEmails" ) ) {
+        accountRequest.add( new ProvisioningPlan.AttributeRequest( "accountType", ProvisioningPlan.Operation.Add, "User" ) );
+      }
+    } else {
+       toyotaLogger( context, "AADRL-CAGU-17 Account Type is Null for Method: createAzureGuestUser" );
+    }
+    return linkedExistingAccount;
+  }
+
+  //Azure AD Update User Scenario
+  public Boolean updateAzureUser(SailPointContext context, ProvisioningPlan plan, AccountRequest accrst , Application application, Identity identity) throws Exception{
+    
+    plog.trace( "AADRL-UAZU-01::Entering AzureAD-RuleLibrary - updateAzureUser" );
+    plog.trace( "AADRL-UAZU-02::Inside Modify Method:::" );
+
+    Custom extensionAttributesCustomObject = context.getObjectByName( Custom.class, "Azure Extension Attributes" );
+    String guidAttributeName = extensionAttributesCustomObject.getString( "guid" );
+    String primarySupplierNumber = extensionAttributesCustomObject.getString( "primarySupplierNumber" );
+    String emailAttributeName = extensionAttributesCustomObject.getString( "emailSupplier" );
+    plog.trace( "AADRL-UAZU-03::emailAttributeName::: "+emailAttributeName );
+    ProvisioningPlan deletePlan = new ProvisioningPlan();
+    List azureOtherMail=new ArrayList();
+    AttributeRequest attrReq = new AttributeRequest();
+    attrReq = accrst.getAttributeRequest(emailAttributeName);
+    IdentityService identityService = new IdentityService(context);
+    List links =  identityService.getLinks( identity, application );
+    Boolean linkedAccount = false;
+    if (attrReq!=null &amp;&amp; links != null &amp;&amp; links.size()>=1) {
+      if ( plog.isTraceEnabled() ) {
+        plog.trace( "AADRL-UAZU-04::emailAttributeName attrReq::: "+attrReq.toXml() );
+      }
+      String newMail=attrReq.getValue();
+      plog.trace( "AADRL-UAZU-05::application*****:: "+application );
+      plog.trace( "AADRL-UAZU-06::newMail*****:: "+newMail );
+      Link azureLink = links.get(0);
+      if(azureLink!=null) {
+        String azureExtEmail=azureLink.getAttribute(emailAttributeName);
+        if ( plog.isTraceEnabled() ) {
+          plog.trace( "AADRL-UAZU-07::azureLink*****:: "+azureLink.toXml()+" azureExtEmail***:: "+azureExtEmail );
+        }
+        //Checking if this a Attribute Synchronization scenario
+        if(azureExtEmail!=null &amp;&amp; !azureExtEmail.equalsIgnoreCase( newMail ) )
+        {
+          String azureUPN = azureLink.getAttribute("userPrincipalName");
+          if ( plog.isTraceEnabled() ) {
+            plog.trace( "AADRL-UAZU-08::azureUPN*****:: "+azureUPN );
+            plog.trace( "AADRL-UAZU-09::Inside Suppliers and mail update::: attribute req::: "+attrReq.toXml()+" :: AzureUPN::: "+azureUPN );
+          }
+          //Checking if the identity is the Guest User
+          if(azureUPN.contains("#EXT#"))
+          {
+            plog.trace("AADRL-UAZU-10::newMail inside If and above delete::: "+newMail);
+            plog.trace("AADRL-UAZU-11::Inside Invited User::: "+azureUPN );
+            //Deleting the already existing Guest Azure account
+            deletePlan.setIdentity(identity);
+            AccountRequest delAccReq = new AccountRequest();
+            delAccReq.setOperation(AccountRequest.Operation.Delete);
+            delAccReq.setNativeIdentity(accrst.getNativeIdentity());
+            delAccReq.setApplication("Azure AD");
+            deletePlan.add(delAccReq);
+
+            //Extract the groups to be added back if the user is an external user
+            List groupsToAddBack = new ArrayList();
+            String creationType = azureLink.getAttribute("creationType");
+            if( Util.isNotNullOrEmpty(identity.getType()) &amp;&amp; Util.nullSafeCaseInsensitiveEq(creationType,"Invitation"))
+            {
+              List linkGroups = azureLink.getAttribute("groups");
+              if(null!=linkGroups &amp;&amp; linkGroups.size()>0)
+              {
+                for(String groupId:linkGroups)
+                {
+                  List filters = new ArrayList();
+                  filters.add(Filter.eq("value", groupId));
+                  filters.add(Filter.eq("attribute", "groups"));
+                  filters.add(Filter.eq("application.name", "Azure AD"));
+                  Filter filter = Filter.and(filters);
+                  ManagedAttribute azureEntitlement = context.getUniqueObject(ManagedAttribute.class, filter);
+                  if(azureEntitlement!=null &amp;&amp; azureEntitlement.isRequestable()==true)
+                  {
+                    groupsToAddBack.add(groupId);
+                  }
+                }
+              }
+            }// End preparation of groups add Back
+
+            if ( plog.isTraceEnabled() ) {
+              plog.trace( "AADRL-UAZU-12::Delete plan::: "+deletePlan.toXml() );
+            }
+            Provisioner p = new Provisioner(context);
+            p.execute(deletePlan);
+            plog.trace( "AADRL-UAZU-13::Delete the existing account::: " );
+            //Checking if the Sailpoint identity exists with the same mail and with Azure account  to decide the AccountType
+            Filter f = Filter.eq("email", newMail);
+            plog.trace("AADRL-UAZU-14::newMail::: "+newMail);
+            f = Filter.and(f, Filter.eq("links.application.name", application.getName()));
+            QueryOptions ops = new QueryOptions();
+            ops.addFilter(f);
+            int identityObjs = context.countObjects(Identity.class, ops);
+            //Works for AccountType User
+            if(identityObjs > 0) {
+              plog.trace( "AADRL-UAZU-15::Inside AccountType User:::" );
+              accrst.setOperation(ProvisioningPlan.AccountRequest.Operation.Create);
+              accrst.add(new ProvisioningPlan.AttributeRequest("accountType", ProvisioningPlan.Operation.Add, "User"));
+              if ( plog.isTraceEnabled() ) {
+                plog.trace( "AADRL-UAZU-16::AccountReq after adding AccountType User--- "+accrst.toXml());
+              }
+            } else {
+              //Works for AccountType Guest User B2B
+              plog.trace( "AADRL-UAZU-17::Inside AccountType Guest User B2B:::" );
+              accrst.setOperation(ProvisioningPlan.AccountRequest.Operation.Create);
+              accrst.add(new ProvisioningPlan.AttributeRequest("accountType", ProvisioningPlan.Operation.Add, "Guest User B2B"));
+              accrst.add(new ProvisioningPlan.AttributeRequest("invitedUserEmailAddress", ProvisioningPlan.Operation.Set,newMail));
+              accrst.add(new ProvisioningPlan.AttributeRequest(emailAttributeName, ProvisioningPlan.Operation.Set,newMail));
+              if(groupsToAddBack.size()>0)
+              {
+                accrst.add(new ProvisioningPlan.AttributeRequest("groups",ProvisioningPlan.Operation.Set,groupsToAddBack));
+              }
+              if ( plog.isTraceEnabled() ) {
+                plog.trace( "AADRL-UAZU-18::AccountReq after adding AccountType B2B--- "+accrst.toXml());
+              }
+            }
+            //Fetching the attributes for Create operation from Project Expansion Items
+            Provisioner provisioner=new Provisioner (context);
+            ProvisioningProject project=provisioner.compile(plan);
+            if ( plog.isTraceEnabled() ) {
+              plog.trace("AADRL-UAZU-19::ProvisioningProject------"+project.toXml());
+            }
+            List expansionItems=project.getExpansionItems();
+            List attributeRequests=new ArrayList();
+            List formAttributesList=new ArrayList();
+            for(AttributeRequest planattributes: accrst.getAttributeRequests()) {
+              attributeRequests.add(planattributes.getName());
+            }
+            for(ExpansionItem expansionItem : expansionItems) {
+              //Avoiding duplicate Attribute Requests
+              if(!attributeRequests.contains(expansionItem.getName())) {
+                AttributeRequest attrReqAdded=new ProvisioningPlan.AttributeRequest(expansionItem.getName(), ProvisioningPlan.Operation.Set, expansionItem.getValue());
+                accrst.add(attrReqAdded);
+                if ( plog.isTraceEnabled() ) {
+                  plog.trace("AADRL-UAZU-20::attrReqAdded From Expansion Item------"+attrReqAdded.toXml());
+                }
+              }
+            }
+
+            if ( plog.isTraceEnabled() ) {
+              plog.trace("AADRL-UAZU-21::FinalAccountReq Before Create------"+accrst.toXml());
+            }
+            linkedAccount = createAzureGuestUser(context, accrst, application, identity);
+          } else {
+            //If the identity is not the Azure Guest user
+            plog.trace( "AADRL-UAZU-22::Inside Old Guest Account not a B2B:::" );
+            azureOtherMail = azureLink.getAttribute("otherMails");
+            if(azureOtherMail!=null) {
+              if(azureLink.getAttribute(emailAttributeName)!=null &amp;&amp; azureOtherMail.contains(azureLink.getAttribute(emailAttributeName))) {
+                plog.trace( "AADRL-UAZU-23::Extension email::: "+azureLink.getAttribute(emailAttributeName) );
+                azureOtherMail.remove(azureLink.getAttribute(emailAttributeName));
+                azureOtherMail.add(newMail);
+              } else {
+                plog.trace( "AADRL-UAZU-24::Extension email else::: "+azureLink.getAttribute(emailAttributeName) );
+                azureOtherMail.clear();
+                azureOtherMail.add(newMail);
+              }
+
+              plog.trace( "AADRL-UAZU-25::Other email:::"+azureOtherMail );
+              accrst.add(new AttributeRequest("otherMails",ProvisioningPlan.Operation.Set,azureOtherMail));
+              if ( plog.isTraceEnabled() ) {
+                plog.trace( "AADRL-UAZU-26::Plan not guest::: "+plan.toXml() );
+              }
+            }
+          }
+        }
+      }
+    }
+    return linkedAccount;
+  }
+
+ /***
+  Set Extension Attributes
+  ***/
+  public Boolean setExtensionAttributes(SailPointContext context, Application app, String extensionAttribute, String extensionAttributeValue, String azureID) {
+
+    String azureADDomain = (String)app.getAttributeValue( "domainName" );
+    String clientID = (String)app.getAttributeValue( "clientID" );
+    String clientSecret = context.decrypt( (String)app.getAttributeValue( "clientSecret" ) );
+    String resource = "https://graph.microsoft.com/beta/users/";
+    String accessToken = getAccessToken( azureADDomain, resource, clientID, clientSecret );
+    String url = resource + azureID + "/";
+    plog.trace("AADRL-SEA-01::Update URL: "+url);
+
+
+    HttpClient httpclient = HttpClients.createDefault();
+    Boolean result = false;
+
+    if (Util.isNotNullOrEmpty(extensionAttributeValue)) {
+      JSONObject entensionAttribute = new JSONObject();
+      entensionAttribute.put( extensionAttribute, extensionAttributeValue );
+
+      JSONObject payload = new JSONObject();
+      payload.put( "onPremisesExtensionAttributes", entensionAttribute );
+      plog.trace( "AADRL-SEA-02::JSON Payload:\n\n" + payload.toString() + "\n\n" );
+      StringEntity body = new StringEntity( payload.toString() );
+      HttpPatch request = new HttpPatch( url );
+      request.setHeader( HttpHeaders.CONTENT_TYPE, "application/json" );
+      request.setHeader( HttpHeaders.AUTHORIZATION, accessToken );
+      request.setEntity( body );
+      HttpResponse response = httpclient.execute( request );
+      int statuscode = response.getStatusLine().getStatusCode();
+
+      plog.trace( "AADRL-SEA-02::Status Code " + statuscode );
+
+      if ( statuscode >= 200 &amp;&amp; statuscode &lt; 300 ) {
+        plog.trace( "AADRL-SEA-03::Status Reason: " + response.getStatusLine().getReasonPhrase() );
+        result = true;
+
+        HttpEntity entity = response.getEntity();
+
+        if (entity != null) {
+          String stuff = EntityUtils.toString( entity );
+          plog.trace( "AADRL-SEA-04::Status Code: " + stuff );
+        }
+      }
+    }
+    return result;
+  }
+
+ /***
+  Set Azure Attribute via microsoft graph
+
+  ***/
+  public Boolean setAzureAttributesWithMicrosoftGraph(SailPointContext context, Application app, String attributeName, String attributeValue, String azureID) {
+
+    String azureADDomain = (String)app.getAttributeValue( "domainName" );
+    String clientID = (String)app.getAttributeValue( "clientID" );
+    String clientSecret = context.decrypt( (String)app.getAttributeValue( "clientSecret" ) );
+    String resource = "https://graph.microsoft.com/beta/users/";
+    String accessToken = getAccessToken( azureADDomain, resource, clientID, clientSecret );
+    String url = resource + azureID + "/";
+    plog.trace("AADRL-SAAWMG-01::Update URL: "+url);
+
+
+    HttpClient httpclient = HttpClients.createDefault();
+    Boolean result = false;
+
+    if (Util.isNotNullOrEmpty(attributeValue)) {
+      JSONObject payload = new JSONObject();
+      payload.put( attributeName, attributeValue );
+
+      if ( plog.isTraceEnabled() ) {
+        plog.trace( "AADRL-SAAWMG-02::JSON Payload:\n\n" + payload.toString() + "\n\n" );
+      }
+
+      StringEntity body = new StringEntity( payload.toString() );
+
+      HttpPatch request = new HttpPatch( url );
+      request.setHeader( HttpHeaders.CONTENT_TYPE, "application/json" );
+      request.setHeader( HttpHeaders.AUTHORIZATION, accessToken );
+      request.setEntity( body );
+      HttpResponse response = httpclient.execute( request );
+      int statuscode = response.getStatusLine().getStatusCode();
+      plog.trace( "AADRL-SAAWMG-03::Status Code " + statuscode );
+      
+      if ( statuscode >= 200 &amp;&amp; statuscode &lt; 300 ) {
+        plog.trace( "AADRL-SAAWMG-04::Status Reason: " + response.getStatusLine().getReasonPhrase() );
+        result = true;
+        HttpEntity entity = response.getEntity();
+        if (entity != null) {
+          String stuff = EntityUtils.toString( entity );
+          plog.trace( "AADRL-SAAWMG-05::Status Code: " + stuff );
+        }
+      }
+    }
+    return result;
+  }
+  
+  /*******
+  Search Azure for existance of multiple mailNicknames
+  *******/
+  public Object isAzureMailNicknamePresent( SailPointContext context, Application app, TreeMap mailNicknameHash ) {
+
+    plog.trace( "AADRL-ISAMNMP-01::Entering Azure AD Rule Library - isAzureMailNicknamePresent" );
+    List usedMailNicknames = new ArrayList();
+    String nicknameFilters = "";
+    String azureADDomain = (String)app.getAttributeValue( "domainName" );
+    String clientID = (String)app.getAttributeValue( "clientID" );
+    String clientSecret = context.decrypt( (String)app.getAttributeValue( "clientSecret" ) );
+    String resource = "https://graph.microsoft.com/beta/users";
+
+    plog.trace( "AADRL-ISAMNMP-02::azureADDomain: " + azureADDomain );
+    plog.trace( "AADRL-ISAMNMP-03::clientID:      " + clientID );
+    plog.trace( "AADRL-ISAMNMP-04::clientSecret:  " + clientSecret );
+    plog.trace( "AADRL-ISAMNMP-05::resource:      " + resource );
+
+
+    HttpClient httpclient = HttpClients.createDefault();
+    Boolean mailpresent=false;
+
+    for ( Map.Entry entry : mailNicknameHash.entrySet() ) {
+      nicknameFilters = nicknameFilters
+      + "(proxyAddresses/any(x:startswith(x,'smtp:"
+      + entry.getValue()
+      + "@')))"
+      + "or"
+      + "(startswith(userPrincipalName,'"
+      + entry.getValue()
+      + "@'))"
+      + "or";
+    }
+
+    nicknameFilters = nicknameFilters.substring( 0, nicknameFilters.length() - 2 );
+
+    String url = resource
+      + "?$filter=(("
+      + URLEncoder.encode( "userType eq ", "UTF-8" )
+      + "'Member')and("
+      + nicknameFilters
+      + "))&amp;select=proxyAddresses,userPrincipalName";
+    plog.trace( "AADRL-ISAMNMP-06::EncodedURL : " + url);
+    String accessToken = getAccessToken( azureADDomain, resource, clientID, clientSecret );
+    plog.trace( "AADRL-ISAMNMP-07::Access Token:\n" + accessToken + "\n" );
+    HttpGet request = new HttpGet(url);
+    request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+    request.setHeader(HttpHeaders.AUTHORIZATION, accessToken );
+    HttpResponse response = httpclient.execute( request );
+    int statuscode = response.getStatusLine().getStatusCode();
+    if ( statuscode >= 200 &amp;&amp; statuscode &lt; 300 ) {
+      HttpEntity entity = response.getEntity();
+      if (entity != null) {
+        String content = EntityUtils.toString( entity );
+          plog.trace( "AADRL-ISAMNMP-08::Response content: " + content );
+          plog.trace( "AADRL-ISAMNMP-09::Response Type: " + content.getClass() );
+
+        JSONObject obj = new JSONObject( content );
+
+        if( obj.getJSONArray("value").length() > 0 ) {
+          mailpresent=true;
+          plog.trace( "AADRL-ISAMNMP-10::Object Type: " + obj.getClass() );
+          JSONArray azureUsers = obj.getJSONArray( "value" );
+          if ( azureUsers != null ) {
+            for ( int i = 0 ; i &lt; azureUsers.length() ; i++ ) {
+              JSONObject userJSON = azureUsers.get( i );
+              String userPrincipalName = userJSON.get( "userPrincipalName" );
+              if ( userPrincipalName != null &amp;&amp; !userPrincipalName.isEmpty() ) {
+                usedMailNicknames.add( userPrincipalName.split( "@" )[ 0 ] );
+              }
+              JSONArray proxyAddesses = userJSON.getJSONArray( "proxyAddresses" );
+              for ( int j = 0 ; j &lt; proxyAddesses.length() ; j++ ) {
+                String proxyAddress = proxyAddesses.get( j );
+                if ( proxyAddress != null &amp;&amp; !proxyAddress.isEmpty() ) {
+                  usedMailNicknames.add( proxyAddress.split( ":" )[ 1 ].split( "@" )[ 0 ] );
+                }
+              }
+            }
+          }
+          plog.trace( "AADRL-ISAMNMP-11::azureUser: \n" + azureUsers.toString() );
+          plog.trace( "AADRL-ISAMNMP-12::Response JSON:\n\n" + userObjectID + "\n\n" );
+        }
+      }
+    }
+    return usedMailNicknames;
+  }
+
+  /*******
+  Determine if Azure Invitation Message should be sent
+  *******/
+  public String sendInviteMessage( SailPointContext context, Application app, Identity identity ) {
+
+    plog.trace( "AADRL-SIM-01::Entering Azure AD Rule Library - sendInviteMessage" );
+    Map inviteMessages = new HashMap();
+    String sendInvite = "false";
+    String userEmail = identity.getEmail();
+    if ( userEmail !=null &amp;&amp; !userEmail.isEmpty() ) {
+      inviteMessages = application.getAttributeValue( "invitedUserMessages" );
+      String userType = identity.getType();
+      if ( inviteMessages != null &amp;&amp; userType != null &amp;&amp; !inviteMessages.isEmpty()  &amp;&amp; userType.length() > 0) {
+        if ( inviteMessages.containsKey( userType ) ) {
+          if ( userType.equalsIgnoreCase( "external" ) ) {
+            IdentityService idSvc = new IdentityService( context );
+            Application application = context.getObjectByName( Application.class,"eVehicle External" );
+            if ( null != application ) {
+              List links = idSvc.getLinks( identity,application );
+              if ( links != null &amp;&amp; links.size() == 1 ) {
+                sendInvite = "true";
+              }
+            }
+          }
+          else {
+            sendInvite = "true";
+          }
+        }
+      }
+    }
+    plog.trace( "AADRL-SIM-02::Leaving Azure AD Rule Library - sendInviteMessage" );
+    return sendInvite;
+  }
+
+  /*******
+  Get Azure Invitation Message
+  *******/
+  public String getAzureInviteMessage( SailPointContext context, Application app, Identity identity ) {
+
+    plog.trace( "AADRL-GAIM-01::Entering Azure AD Rule Library - getAzureInviteMessage" );
+    Map inviteMessages = new HashMap();
+    Map invitePrimaryMessages = new HashMap();
+    String inviteMessage = "";
+    inviteMessages = application.getAttributeValue( "invitedUserMessages" );
+    invitePrimaryMessages = application.getAttributeValue( "invitedPrimaryUserMessages" );
+    String userType = identity.getType();
+
+    List subTypeList = new ArrayList();
+    Object subTypeObj = identity.getAttribute("subType");
+    if(subTypeObj != null){
+      if(subTypeObj instanceof List){
+        subTypeList = subTypeObj;
+      } else if(subTypeObj instanceof String){
+        subTypeList.add(subTypeObj);
+      }
+    }
+    if ( inviteMessages != null &amp;&amp; userType != null &amp;&amp; !inviteMessages.isEmpty()  &amp;&amp; userType.length() > 0 &amp;&amp; !subTypeList.contains("TDEM")) {
+      if ( inviteMessages.containsKey( userType ) ) {
+        if ( userType.equalsIgnoreCase( "external" ) ) {
+          IdentityService idSvc = new IdentityService( context );
+          Application application = context.getObjectByName( Application.class,"eVehicle External" );
+          if ( null != application ) {
+            List links = idSvc.getLinks( identity,application );
+            if ( links != null &amp;&amp; links.size() == 1 ) {
+              inviteMessage = inviteMessages.get( userType );
+            }
+          }
+        }
+        else {
+          inviteMessage = inviteMessages.get( userType );
+        }
+      }
+    }
+    else if ( invitePrimaryMessages != null &amp;&amp; userType != null &amp;&amp; !invitePrimaryMessages.isEmpty()  &amp;&amp; userType.length() > 0 &amp;&amp; subTypeList.contains("TDEM")) {
+      if ( invitePrimaryMessages.containsKey( userType ) ) {
+        inviteMessage = invitePrimaryMessages.get( userType );
+      }
+    }
+    plog.trace( "AADRL-GAIM-02::Leaving Azure AD Rule Library - getAzureInviteMessage" );
+
+    return inviteMessage;
+  }
+
+  /*******
+  Get email or userPrincipalName for invited users
+  *******/
+  public String getEmailOrUPN( SailPointContext context, Identity identity ) {
+
+    plog.trace( "AADRL-GEOUPN-01::Entering Azure AD Rule Library - getEmailOrUPN" );
+    String attributeName = "Email";
+
+    String emailOrUPN = identity.getEmail();
+    if ( emailOrUPN == null || emailOrUPN.isEmpty() ) {
+      emailOrUPN = identity.getAttribute( "userPrincipalName" );
+      attributeName = "UPN";
+      if ( emailOrUPN == null || emailOrUPN.isEmpty() ) {
+        emailOrUPN = "";
+        attributeName = "Missing";
+        toyotaLogger( context, "AADRL-GEOUPN-02::User: " + identity.getName() + " missing email and UPN.  Cannot invite user to Azure" );
+      }
+    }
+    plog.trace( "AADRL-GEOUPN-03::Identity: " + identity.getName() + " " + attributeName + " :: " + emailOrUPN );
+    plog.trace( "AADRL-GEOUPN-04::Leaving Azure AD Rule Library - getEmailOrUPN" );
+    
+    return emailOrUPN;
+  }
+
+ /***
+  Set MFA Phone number via microsoft graph
+
+  ***/
+  public boolean setMfaPhoneWithMicrosoftGraph(Application app, String phoneNumber, String upn, String azureID) {
+
+
+     plog.trace( "AADRL-SMFAPWMG-01::Entering Azure AD Rule Library - setMfaPhoneWithMicrosoftGraph" );
+     
+     // Format phone number to add space after +1 if present
+     String formattedPhoneNumber = phoneNumber;
+     if (Util.isNotNullOrEmpty(phoneNumber) &amp;&amp; phoneNumber.startsWith("+1") &amp;&amp; phoneNumber.length() > 2) {
+       formattedPhoneNumber = "+1 " + phoneNumber.substring(2);
+     }
+     
+     // Mask phone number for logging - show first 6 digits, mask the rest
+     String maskedPhoneNumber = "";
+     if (Util.isNotNullOrEmpty(formattedPhoneNumber)) {
+       if (formattedPhoneNumber.length() >= 6) {
+         maskedPhoneNumber = formattedPhoneNumber.substring(0, 6) + "****";
+       } else {
+         maskedPhoneNumber = formattedPhoneNumber + "****";
+       }
+     }
+     plog.trace("AADRL-SMFAPWMG-01.1::Setting MFA phone number: " + maskedPhoneNumber + " for UPN: " + upn);     
+     String azureADDomain = (String) app.getAttributeValue("domainName");
+     String clientID = (String) app.getAttributeValue("clientID");
+     String clientSecret = context.decrypt((String) app.getAttributeValue("clientSecret"));
+     String resource = "https://graph.microsoft.com/beta/users/";
+     String accessToken = getAccessToken(azureADDomain, resource, clientID, clientSecret);
+     String url = resource + upn + "/authentication/phoneMethods";
+     plog.trace("AADRL-SMFAPWMG-02::Update URL: " + url);
+     HttpClient httpclient = HttpClients.createDefault();
+     Boolean result = false;
+
+    if (Util.isNotNullOrEmpty(phoneNumber)) {
+      JSONObject payload = new JSONObject();
+      payload.put("phoneNumber", phoneNumber);
+      payload.put("phoneType", "Mobile");
+      if ( plog.isTraceEnabled() ) {
+        plog.trace("JSON Payload:\n\n" + payload.toString() + "\n\n");
+      }
+      StringEntity body = new StringEntity(payload.toString());
+      HttpPost request = new HttpPost( url );
+      request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+      request.setHeader(HttpHeaders.AUTHORIZATION, accessToken);
+      request.setEntity(body);
+      plog.trace("AADRL-SMFAPWMG-03::request:\n\n" + request + "\n\n");
+      HttpResponse response = httpclient.execute(request);
+      plog.trace("AADRL-SMFAPWMG-04::response\n\n" + response + "\n\n");
+      int statuscode = response.getStatusLine().getStatusCode();
+      plog.trace("AADRL-SMFAPWMG-05::Status Code " + statuscode);
+      if (statuscode >= 200 &amp;&amp; statuscode &lt; 300) {
+        plog.trace("Status Reason: " + response.getStatusLine().getReasonPhrase());
+        result = true;
+        HttpEntity entity = response.getEntity();
+        if (entity != null) {
+          String stuff = EntityUtils.toString(entity);
+          plog.trace("AADRL-SMFAPWMG-06::Status Code: " + stuff);
+        }
+      } else {
+        toyotaLogger( context, "AADRL-SMFAPWMG-07::An error occurred with MFA Enrollment Phone Method:: " + response+" for UPN:: "+upn+ " for number: " + maskedPhoneNumber);
+      }
+    }
+    return result;
+  }
+
+  /***
+  Add Authentication method - Email via microsoft graph
+
+  ***/
+  public boolean setMfaEmailWithMicrosoftGraph(Application app, String email, String upn, String azureID) {
+
+    plog.trace( "AADRL-SMFAEWMG-01::Entering Azure AD Rule Library - setMfaEmailWithMicrosoftGraph" );
+    
+    // Mask email for logging - show first 4 chars before @, mask middle part, show full domain
+    String maskedEmail = "";
+    if (Util.isNotNullOrEmpty(email) &amp;&amp; email.contains("@")) {
+      String[] emailParts = email.split("@");
+      String localPart = emailParts[0];
+      String domain = emailParts[1];
+      
+      if (localPart.length() >= 4) {
+        maskedEmail = localPart.substring(0, 4) + "****@" + domain;
+      } else {
+        maskedEmail = localPart + "****@" + domain;
+      }
+    } else if (Util.isNotNullOrEmpty(email)) {
+      maskedEmail = email.substring(0, Math.min(email.length(), 4)) + "****";
+    }    
+    String azureADDomain = (String) app.getAttributeValue("domainName");
+    String clientID = (String) app.getAttributeValue("clientID");
+    String clientSecret = context.decrypt((String) app.getAttributeValue("clientSecret"));
+    String resource = "https://graph.microsoft.com/beta/users/";
+    String accessToken = getAccessToken(azureADDomain, resource, clientID, clientSecret);
+    String url = resource + upn + "/authentication/emailMethods";
+    plog.trace("AADRL-SMFAPWMG-02::Update URL: " + url);
+    HttpClient httpclient = HttpClients.createDefault();
+    Boolean result = false;
+
+    if (Util.isNotNullOrEmpty(email)) {
+      JSONObject payload = new JSONObject();
+      payload.put("emailAddress", email);
+      plog.trace("AADRL-SMFAPWMG-03::JSON Payload:\n\n" + payload.toString() + "\n\n");
+      StringEntity body = new StringEntity(payload.toString());
+      HttpPost request = new HttpPost( url );
+      request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+      request.setHeader(HttpHeaders.AUTHORIZATION, accessToken);
+      request.setEntity(body);
+      plog.trace("AADRL-SMFAPWMG-04::request:\n\n" + request + "\n\n");
+      HttpResponse response = httpclient.execute(request);
+      plog.trace("response\n\n" + response + "\n\n");
+      int statuscode = response.getStatusLine().getStatusCode();
+      plog.trace("AADRL-SMFAPWMG-05::Status Code " + statuscode);
+      if (statuscode >= 200 &amp;&amp; statuscode &lt; 300) {
+        if ( plog.isTraceEnabled() ) {
+          plog.trace("AADRL-SMFAPWMG-06::Status Reason: " + response.getStatusLine().getReasonPhrase());
+        }
+        result = true;
+        HttpEntity entity = response.getEntity();
+        if (entity != null) {
+          String stuff = EntityUtils.toString(entity);
+          plog.trace("AADRL-SMFAPWMG-07::Status Code: " + stuff);
+        }
+      } else {
+        
+        toyotaLogger( context, "AADRL-SMFAPWMG-08::An error occurred with MFA Enrollment Email Method:: " + response+" for UPN:: "+upn+ " for email: " + maskedEmail);
+      }
+    }
+    return result;
+  }
+  // Sets passwordProfile of Azure AD privileged accounts
+  public boolean setforceChangePasswordNextSignInWithMfa(Application app, String upn) {
+  
+    plog.trace( "AADRL-SFC-001: Entering Azure AD Rule Library - setforceChangePasswordNextSignInWithMfa" );    
+    String azureADDomain = (String) app.getAttributeValue("domainName");
+    String clientID = (String) app.getAttributeValue("clientID");
+    String clientSecret = context.decrypt((String) app.getAttributeValue("clientSecret"));
+    String resource = (String) app.getAttributeValue("oauthResource");
+    String accessToken = getAccessToken(azureADDomain, resource, clientID, clientSecret);
+    String url = resource + upn;
+    plog.trace("AADRL-SFC-002:Update URL: " + url);
+    
+    HttpClient httpclient = HttpClients.createDefault();
+    Boolean result = false;    
+    JSONObject payload = new JSONObject();
+    Map pwdProfileMap = new HashMap();
+    pwdProfileMap.put("forceChangePasswordNextSignIn",Boolean.TRUE);
+    payload.put("passwordProfile", pwdProfileMap);
+
+    plog.trace("AADRL-SFC-003:JSON Payload:\n\n" + payload.toString() + "\n\n");
+    
+    StringEntity body = new StringEntity(payload.toString());
+    HttpPatch patchRequest = new HttpPatch( url );
+    patchRequest.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+    patchRequest.setHeader(HttpHeaders.AUTHORIZATION, accessToken);
+    patchRequest.setEntity(body);
+    plog.trace("AADRL-SFC-004:request:\n\n" + patchRequest + "\n\n");    
+    HttpResponse response = httpclient.execute(patchRequest);
+    
+    plog.trace("AADRL-SFC-005:response\n\n" + response + "\n\n");
+    int statuscode = response.getStatusLine().getStatusCode();
+    plog.trace("AADRL-SFC-006:Status Code " + statuscode);
+    if (statuscode >= 200 &amp;&amp; statuscode &lt; 300) {
+      plog.trace("AADRL-SFC-007:Status Reason: " + response.getStatusLine().getReasonPhrase());
+      result = true;
+      HttpEntity entity = response.getEntity();
+      if (entity != null) {
+        String stuff = EntityUtils.toString(entity);
+        if ( plog.isTraceEnabled() ) {
+          plog.trace("AADRL-SFC-008:Status Code: " + stuff);
+        }
+      }
+    } else {
+      toyotaLogger( context, "AADRL-SFC-009:An error occurred with set Force Change Password next signIn:: " + response+" for UPN:: "+upn);
+    }    
+    return result;
+  }
+
+
+/***
+  Delete MFA Email via microsoft graph
+
+  ***/
+  public boolean deleteMfaEmailWithMicrosoftGraph(Application app, String upn) {
+
+    plog.trace( "AADRL-DMFAEWMG-01::Entering Azure AD Rule Library - deleteMfaEmailWithMicrosoftGraph" );
+
+    String azureADDomain = (String) app.getAttributeValue("domainName");
+    String clientID = (String) app.getAttributeValue("clientID");
+    String clientSecret = context.decrypt((String) app.getAttributeValue("clientSecret"));
+    String resource = "https://graph.microsoft.com/beta/users/";
+    String accessToken = getAccessToken(azureADDomain, resource, clientID, clientSecret);
+    String url = resource + upn + "/authentication/emailMethods/3ddfcfc8-9383-446f-83cc-3ab9be4be18f";   
+
+    plog.trace("AADRL-DMFAEWMG-02::Update URL: " + url);
+    HttpClient httpclient = HttpClients.createDefault();
+    Boolean result = false;
+
+    HttpDelete request = new HttpDelete( url );
+    request.setHeader(HttpHeaders.AUTHORIZATION, accessToken);
+
+    plog.trace("AADRL-DMFAEWMG-03::request:\n\n" + request + "\n\n");
+    HttpResponse response = httpclient.execute(request);
+    plog.trace("AADRL-DMFAEWMG-04::response\n\n" + response + "\n\n");
+    int statuscode = response.getStatusLine().getStatusCode();
+    plog.trace("AADRL-DMFAEWMG-05::Status Code " + statuscode);
+    if (statuscode >= 200 &amp;&amp; statuscode &lt; 300) {
+      if ( plog.isTraceEnabled() ) {
+        plog.trace("AADRL-DMFAEWMG-06::Status Reason: " + response.getStatusLine().getReasonPhrase());
+      }
+      result = true;
+      HttpEntity entity = response.getEntity();
+      if (entity != null) {
+        String stuff = EntityUtils.toString(entity);
+          plog.trace("AADRL-DMFAEWMG-07::Status Code: " + stuff);
+      }
+    } else {
+      toyotaLogger( context, "AADRL-DMFAEWMG-08::An error occurred with MFA Enrollment Email Method:: " + response+" for UPN:: "+upn);
+    }
+
+    return result;
+  }
+
+
+
+  /***
+  Delete MFA Phone number via microsoft graph
+
+  ***/
+  public boolean deleteMfaPhoneWithMicrosoftGraph(Application app, String upn) {
+
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "AADRL-DMFAPWMG-01::Entering Azure AD Rule Library - DeleteMfaPhoneWithMicrosoftGraph" );
+    }
+    String azureADDomain = (String) app.getAttributeValue("domainName");
+    String clientID = (String) app.getAttributeValue("clientID");
+    String clientSecret = context.decrypt((String) app.getAttributeValue("clientSecret"));
+    String resource = "https://graph.microsoft.com/beta/users/";
+    String accessToken = getAccessToken(azureADDomain, resource, clientID, clientSecret);
+    String url = resource + upn + "/authentication/phoneMethods/3179e48a-750b-4051-897c-87b9720928f7";
+    plog.trace("AADRL-DMFAEWMG-02::Update URL: " + url);
+
+    HttpClient httpclient = HttpClients.createDefault();
+    Boolean result = false;
+    HttpDelete request = new HttpDelete( url );
+    request.setHeader(HttpHeaders.AUTHORIZATION, accessToken);
+
+    plog.trace("AADRL-DMFAEWMG-03::request:\n\n" + request + "\n\n");
+    HttpResponse response = httpclient.execute(request);
+    plog.trace("AADRL-DMFAEWMG-04::response\n\n" + response + "\n\n");
+    int statuscode = response.getStatusLine().getStatusCode();
+    plog.trace("AADRL-DMFAEWMG-05::Status Code " + statuscode);
+    if (statuscode >= 200 &amp;&amp; statuscode &lt; 300) {
+      plog.trace("AADRL-DMFAEWMG-06::Status Reason: " + response.getStatusLine().getReasonPhrase());
+      result = true;
+      HttpEntity entity = response.getEntity();
+      if (entity != null) {
+        String stuff = EntityUtils.toString(entity);
+        plog.trace("AADRL-DMFAEWMG-07::Status Code: " + stuff);
+      }
+    } else {
+      toyotaLogger( context, "AADRL-DMFAEWMG-08::An error occurred with MFA Enrollment Phone Method:: " + response+" for UPN:: "+upn);
+    }
+
+    return result;
+  }
+
+  
+  public String getMFAEmailStatus(SailPointContext context,Application app, String upn) {
+     String azureADDomain = (String) app.getAttributeValue("domainName");
+     String clientID = (String) app.getAttributeValue("clientID");
+     String clientSecret = context.decrypt((String) app.getAttributeValue("clientSecret"));
+     String resource = "https://graph.microsoft.com/v1.0/users/";
+     String accessToken = getAccessToken(azureADDomain, resource, clientID, clientSecret);
+     String url = resource + upn + "/authentication/emailMethods";
+     plog.trace("AADRL-GMFAES-01::Update URL: " + url);
+
+     HttpClient httpclient = HttpClients.createDefault();
+     String result = "false";
+     HttpGet request = new HttpGet( url );
+     request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+     request.setHeader(HttpHeaders.AUTHORIZATION, accessToken);
+     plog.trace("AADRL-GMFAES-02::request:\n\n" + request + "\n\n");
+     HttpResponse response = httpclient.execute(request);
+     plog.trace("AADRL-GMFAES-06::response\n\n" + response + "\n\n");
+     int statuscode = response.getStatusLine().getStatusCode();
+     plog.trace("AADRL-GMFAES-07::Status Code " + statuscode);
+     if (statuscode >= 200 &amp;&amp; statuscode &lt; 300) {
+         BufferedReader br1 = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+         String s1 = br1.readLine();
+         JSONObject jsonObject = new JSONObject(s1);
+         JSONArray jsonArry = jsonObject.get("value");
+         if(jsonArry != null &amp;&amp; jsonArry.length() > 0){
+             String value = jsonArry.get(0).get("emailAddress");
+             if(Util.isNotNullOrEmpty(value)){
+               result = "true";
+             }
+         }
+     } else {
+         toyotaLogger( context, "AADRL-GMFAES-08::An error getting MFA emailAddress Status:: " + response+" UPN is :::"+upn);
+     }
+     return result;
+  }
+
+  public String getMFAPhoneStatus(SailPointContext context,Application app, String upn) {
+    String azureADDomain = (String) app.getAttributeValue("domainName");
+    String clientID = (String) app.getAttributeValue("clientID");
+    String clientSecret = context.decrypt((String) app.getAttributeValue("clientSecret"));
+    String resource = "https://graph.microsoft.com/v1.0/users/";
+    String accessToken = getAccessToken(azureADDomain, resource, clientID, clientSecret);
+    String url = resource + upn + "/authentication/phoneMethods";
+    plog.trace("AADRL-GMFAPS-01::Update URL: " + url);
+    HttpClient httpclient = HttpClients.createDefault();
+    String result = "false";
+    HttpGet request = new HttpGet( url );
+    request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+    request.setHeader(HttpHeaders.AUTHORIZATION, accessToken);
+    plog.trace("AADRL-GMFAPS-02::request:\n\n" + request + "\n\n");
+    HttpResponse response = httpclient.execute(request);
+    plog.trace("AADRL-GMFAPS-03::response\n\n" + response + "\n\n");
+    int statuscode = response.getStatusLine().getStatusCode();
+    plog.trace("AADRL-GMFAPS-03::Status Code " + statuscode);
+    if (statuscode >= 200 &amp;&amp; statuscode &lt; 300) {
+      BufferedReader br1 = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+      String s1 = br1.readLine();
+      JSONObject jsonObject = new JSONObject(s1);
+      JSONArray jsonArry = jsonObject.get("value");
+      if(jsonArry != null &amp;&amp; jsonArry.length() > 0){
+        String value = jsonArry.get(0).get("phoneNumber");
+        if(Util.isNotNullOrEmpty(value)){
+          result = "true";
+        }
+      }
+    } else {
+        toyotaLogger( context, "AADRL-GMFAPS-04::An error getting MFA Phone Status:: " + response+" UPN is :::"+upn);
+    }
+    return result;
+  }
+  
+  public void setAppTokenString(String applicationName, String tokenValue){
+    Application appObj = (Application) ObjectUtil.lockObject(context, Application.class, null, applicationName, PersistenceManager.LOCK_TYPE_TRANSACTION);
+    appObj.setAttribute("accessToken",tokenValue);
+    context.saveObject(appObj);
+    context.commitTransaction();
+    context.decache(appObj);
+  }
+  
+  public static Boolean ValidateJWT(String jwtToken){
+    Boolean expFlag = false;
+    String[] split_string = jwtToken.split("\\.");
+    String base64EncodedBody = split_string[1];
+    Base64 base64Url = new Base64(true);
+    String tokenBody = new String(base64Url.decode(base64EncodedBody));
+    JSONObject jsonTokenObj = new JSONObject(tokenBody);
+    long expTime = jsonTokenObj.getInt("exp");
+    long instDate = Instant.now().getEpochSecond();
+    Date updatedDate=new Date(expTime - (5 * 60));
+    long fiveminutesbefore = updatedDate.getTime();
+    if(instDate &lt; fiveminutesbefore){
+     expFlag = true;
+    }else{
+      expFlag = false;
+    }
+    return expFlag;
+  }
+    
+  public static Map getAuthenticationStatus(SailPointContext context,Application app, String upn) {
+    Map resultMap = new HashMap();
+    String result="";
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "AZAM-001 Entering Azure AD Rule Library - getAuthenticationStatus with "+app.getName()+" : "+upn );
+    }
+    List urlList=new ArrayList();
+    Map searchFor=new HashMap();
+    urlList.add("emailMethods");
+    searchFor.put("emailMethods","emailAddress");
+    urlList.add("phoneMethods");
+    searchFor.put("phoneMethods","phoneNumber");
+    try {
+      String azureADDomain = (String) app.getAttributeValue("domainName");
+      String clientID = (String) app.getAttributeValue("clientID");
+      String clientSecret = context.decrypt((String) app.getAttributeValue("clientSecret"));
+      String resource = "https://graph.microsoft.com/v1.0/users/";
+      String accessToken = getAccessToken(azureADDomain, resource, clientID, clientSecret);
+      HttpClient httpclient = HttpClients.createDefault();
+      for(String urlEndPoint:urlList) {
+        result="false";
+        String url = resource + upn + "/authentication/" + urlEndPoint;
+        if ( plog.isTraceEnabled() ) {
+           plog.trace("AZAM-002 Update URL: " + url);
+        }
+        HttpGet request = new HttpGet( url );
+        request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+        request.setHeader(HttpHeaders.AUTHORIZATION, accessToken);
+        if ( plog.isTraceEnabled() ) {
+          plog.trace("AZAM-003 request:\n" + request + "\n");
+        }
+        HttpResponse response = httpclient.execute(request);
+        if ( plog.isTraceEnabled() ) {
+          plog.trace("AZAM-004 response\n" + response + "\n");
+        }
+        int statuscode = response.getStatusLine().getStatusCode();
+        if ( plog.isTraceEnabled() ) {
+          plog.trace("AZAM-005 Status Code " + statuscode);
+        }
+        if (statuscode >= 200 &amp;&amp; statuscode &lt; 300) {
+          BufferedReader br1 = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+          String s1 = br1.readLine();
+          JSONObject jsonObject = new JSONObject(s1);
+          JSONArray jsonArry = (JSONArray)jsonObject.get("value");
+          if(jsonArry != null &amp;&amp; jsonArry.length() > 0){
+            String searchStr=searchFor.get(urlEndPoint);
+            Object arrayElement=jsonArry.get(0);
+            if(arrayElement instanceof JSONObject) {
+              String value = normalizeToString(((JSONObject)arrayElement).get(searchStr));
+              if ( plog.isTraceEnabled() ) {
+                plog.trace("AZAM-006 searchStr="+searchStr+" value="+value);
+              }
+              if(Util.isNotNullOrEmpty(value)) {
+                result = "true";
+              }
+            }
+          }
+        }
+        else {
+          toyotaLogger( context, "An error getting MFA emailAddress Status:: " + response+" UPN is :::"+upn);
+        }
+        if ( plog.isTraceEnabled() ) {
+          plog.trace("AZAM-007 Adding ["+urlEndPoint+","+result+"]");
+        }
+        resultMap.put(urlEndPoint,result);
+      }
+    }
+    catch (Exception ex) {
+      plog.error("AZAM-099 Error in getMFAEmailStatus:"+ex.getClass().getName()+":"+ex.getMessage());
+    }
+    return resultMap;
+  } 
+
+  public boolean isAzureADGuestUser(ProvisioningPlan plan,SailPointContext context) throws GeneralException {
+    if ( plog.isTraceEnabled() ) {
+      plog.trace( "AADRL-ISAADGU-01::Entering Azure AD Rule Library - isAzureADGuestUser" );
+      plog.trace( "AADRL-ISAADGU-02::Plan: " + plan.toXml() );
+    }
+    Identity identity=plan.getIdentity();
+    boolean azuerADUserFlag=false;
+    IdentityService idService=new IdentityService(context);
+    List accReqList=plan.getAccountRequests();
+    for(AccountRequest accReq:accReqList) {
+      if(ProvisioningPlan.AccountRequest.Operation.Modify.equals(accReq.getOperation())){
+        Application app=context.getObjectByName(Application.class, accReq.getApplication());
+        if(null!=identity &amp;&amp; accReq!=null &amp;&amp; null!=app) {
+          String nativeIdentity=accReq.getNativeIdentity();
+          if(Util.isNotNullOrEmpty(nativeIdentity)){
+            plog.trace("AADRL-ISAADGU-03::nativeIdentity:"+nativeIdentity);
+            Link link=idService.getLink(identity,app, null, nativeIdentity);
+            String userType=(String)link.getAttribute("userType");
+            plog.trace("AADRL-ISAADGU-04::userType:"+userType);
+            if("Guest".equals(userType)) {
+              azuerADUserFlag=true;
+              plog.trace("AADRL-ISAADGU-05::userType Guest:"+azuerADUserFlag);
+            }
+          } else {
+            toyotaLogger( context, "AADRL-ISAADGU-06::Identity: " + identity.getName() + " missing nativeIdentity for Application: " + app.getName() );
+          }
+        }
+      }
+    }
+    plog.trace( "AADRL-ISAADGU-07::userType:"+azuerADUserFlag);
+    plog.trace( "AADRL-ISAADGU-08::Leaving Azure AD Rule Library - isAzureADGuestUser" );
+    
+    return azuerADUserFlag;
+  }
+
+
+  public ArrayList getaccountRequestsToRemove(String operation, AccountRequest accountRequest, sailpoint.object.Application application,
+                                              Identity identity,SailPointContext context,ProvisioningPlan plan,String identityType) {
+    Boolean linkedExistingAccount = false;
+    ArrayList accountRequestsToRemove = new ArrayList();
+    // Only work on Create Operations
+    if (operation.equals("Create")) {
+      linkedExistingAccount = createAzureGuestUser(context, accountRequest, application, identity);
+      if (linkedExistingAccount) {
+        accountRequestsToRemove.add(accountRequest);
+      }
+
+    } else if (operation.equals("Modify") &amp;&amp; identityType.equalsIgnoreCase("supplier")) {
+      // Work on Modify Operations
+      linkedExistingAccount = updateAzureUser(context, plan, accountRequest, application, identity);
+      if (linkedExistingAccount) {
+        accountRequestsToRemove.add(accountRequest);
+      }
+    }
+    return accountRequestsToRemove;
+  }
+
+  /**
+  * removeTemporaryObjectId Remove a temporary Native Identity from Azure AD accounts used during
+  * creation where Native Identity is required before it exists.
+  * @param context The SailPointContext Object
+  * @param accountRequest The current AccountRequest Object to be examined
+  * @param application The Application Object being evaluated
+  * @param identity The Identity Object being evaluated
+  */
+  public static void removeTemporaryObjectId( SailPointContext context, AccountRequest accountRequest, Application application, Identity identity ) {
+
+    plog.trace( "AADRL-RTOID-01::Entering Azure AD Rule Library - removeTemporaryObjectId" );
+    if ( accountRequest != null ) {
+      String nativeIdentity = accountRequest.getNativeIdentity();
+      if ( Util.isNotNullOrEmpty( nativeIdentity ) &amp;&amp; nativeIdentity.equalsIgnoreCase( "??????" ) ) {
+        accountRequest.setNativeIdentity( null );
+        List attributeRequests = accountRequest.getAttributeRequests();
+        List newAttributeRequests = new ArrayList();
+        if ( attributeRequests != null &amp;&amp; !attributeRequests.isEmpty() ) {
+          for ( AttributeRequest attributeRequest : attributeRequests ) {
+            String attributeName = attributeRequest.getName();
+            if ( Util.isNotNullOrEmpty( attributeName ) &amp;&amp; !attributeName.equalsIgnoreCase( "objectId" ) ) {
+              newAttributeRequests.add( attributeRequest );
+            }
+          }
+          accountRequest.setAttributeRequests( newAttributeRequests );
+        }
+      }
+    }
+    plog.trace( "AADRL-RTOID-02::Leaving Azure AD Rule Library - removeTemporaryObjectId" );
+
+  }
+  public static String normalizeToString(Object obj) {
+    String rval="";
+    if(obj==void || obj==null) {
+      plog.debug("PTC-015 Entered normalizeToString with obj=null or void");
+    } 
+    else {
+      plog.debug("PTC-016 Entered normalizeToString with obj:"+obj.getClass().getName()+"="+obj);
+      if(obj instanceof String) {
+        rval=(String)obj;
+      }
+      else if (obj instanceof List) {
+        List rlist=(List)obj;
+        if(rlist !=null &amp;&amp; !rlist.isEmpty()) {
+          rval=(rlist.get(0).toString());
+        }
+        else {
+          rval=obj.toString();
+        }
+        plog.debug("PTC-017 Exiting normalizeToString with:"+rval);
+      }
+      else if(obj instanceof sailpoint.object.SailPointObject) {
+        rval=obj.getName();
+        plog.debug("PTC-018 Exiting normalizeToString with:"+rval);
+      }
+      else {
+        rval=obj.toString();
+        plog.debug("PTC-019 Exiting normalizeToString with:"+rval);
+      }
+    }
+    return rval;
+  }
+
+  public String checkUserInRecycleBin( Identity identity, Application app, String URL ) throws Exception {
+
+    String azureADDomain = app.getAttributeValue( "domainName" );
+    String clientID = app.getAttributeValue( "clientID" );
+    String clientSecret = context.decrypt( app.getAttributeValue( "clientSecret" ) );
+    String resource = app.getAttributeValue( "genericWebServiceBaseUrl" );
+    String authToken = getAccessToken( azureADDomain, resource, clientID, clientSecret );
+    String token = "Bearer "+authToken;
+    HttpClient httpclient = HttpClients.createDefault();
+    HttpGet request = new HttpGet(URL);
+    request.setHeader("Authorization", token);
+    request.setHeader("Accept", "application/json");
+    HttpResponse response = httpclient.execute(request);
+    int statuscode = response.getStatusLine().getStatusCode();
+    HttpEntity entity = response.getEntity();
+    
+    if (entity != null &amp;&amp; statuscode==200) {
+      String content = EntityUtils.toString( entity );
+      JSONObject obj = new JSONObject( content );
+      JSONArray valueList = obj.get("value");
+      if (valueList.length()>0) {
+        JSONObject valueObj = valueList.get(0);
+        Map accountMap = new HashMap();
+        accountMap = JsonUtil.toMap(valueObj.toString());
+        String objectId = accountMap.get("id");
+        return objectId;
+      }
+      else {
+        return "failed";
+      }
+    }
+    else {
+      return "failed";
+    }
+  }
+  
+  public String getURLRecycleBin( Identity identity, Application app, String attributeName, String attributeValue){
+  
+    String URL = "https://graph.microsoft.com/v1.0/directory/deletedItems/"+"microsoft.graph.user?$filter=startsWith("+attributeName+",'"+attributeValue+"')";
+    return URL;
+  }
+  public String restoreUser( String azureObjectId, Application app ) throws Exception {
+
+    String azureADDomain = app.getAttributeValue( "domainName" );
+    String clientID = app.getAttributeValue( "clientID" );
+    String clientSecret = context.decrypt( app.getAttributeValue( "clientSecret" ) );
+    String resource = app.getAttributeValue( "genericWebServiceBaseUrl" );
+    String authToken = getAccessToken( azureADDomain, resource, clientID, clientSecret );
+    String token = "Bearer "+authToken;
+    String URL = app.getAttributeValue( "recyclebinBaseUrl" ) +azureObjectId+"/restore";
+    HttpClient httpclient = HttpClients.createDefault();
+    HttpPost request = new HttpPost(URL);
+    request.setHeader("Authorization", token);
+    request.setHeader("Accept", "application/json");
+    HttpResponse response = httpclient.execute(request);
+    int statuscode = response.getStatusLine().getStatusCode();
+    HttpEntity entity = response.getEntity();
+
+    if (entity != null &amp;&amp; statuscode==200) {
+      return "success";
+    }
+    else {
+      return "failed";
+    }
+  }
+
+  /*Method to schedule workflow after 1 minute to execute the plan from after proviisoning rule*/
+
+  public void createAzureModifyWorkflow(ProvisioningPlan afterProvPlan, String name) {
+
+    plog.trace("AADRL-CAMW-001 :: Enterning Azure AD modify workflow method"); 
+    String workflowName = "Modify Azure AD User Attributes";
+    String requestName = "Run '" + workflowName + "' for: " + name;
+    String requesterId = "spadmin";
+
+    Workflow eventWorkflow = context.getObject(Workflow.class, workflowName);
+    Identity id = context.getObjectByName(Identity.class, requesterId);
+
+    plog.trace("AADRL-CAMW-002 :: id : "+id); 
+    plog.trace("AADRL-CAMW-003 :: eventWorkflow : "+eventWorkflow);
+    //Arguments to be passed to the Request Scheduler. 
+    Attributes reqArgs = new Attributes();
+    reqArgs.put(StandardWorkflowHandler.ARG_REQUEST_DEFINITION, sailpoint.request.WorkflowRequestExecutor.DEFINITION_NAME);
+    reqArgs.put(StandardWorkflowHandler.ARG_WORKFLOW, workflowName);
+    reqArgs.put(StandardWorkflowHandler.ARG_REQUEST_NAME, requestName);
+
+    // Build a map of arguments to pass to the Workflow case when it launches. 
+    Attributes wfArgs = new Attributes();
+    wfArgs.put("identityName", name);
+    wfArgs.put("workflow", eventWorkflow.getName());
+    wfArgs.put("plan", afterProvPlan);
+    reqArgs.putAll(wfArgs);
+
+    //The workflow will be launched after one minute
+    Calendar calendar = Calendar.getInstance();
+    calendar.add(Calendar.MINUTE, 1);
+    
+    //Request Launcher will schedule the workflow reqeust. The Request object contains the properties of the request item. 
+    Request req = new Request();
+    RequestDefinition reqdef = context.getObject(RequestDefinition.class, "Workflow Request");
+    req.setDefinition(reqdef);
+    req.setOwner(id);
+    req.setName(requestName);
+    req.setEventDate(calendar.getTime());
+    req.setAttributes( reqdef, reqArgs );
+    RequestManager.addRequest(context, req);
+    plog.trace("AADRL-CAMW-004:: Finished launching workflow for Azure AD Modify operation"); 
+  }
+  
+  public String getInviteRedeemUrl(SailPointContext context, Application app, String email, String redirectionUrl) {
+    String inviteUrl;
+    plog.trace( "AADRL-GIRU-001 Entering Azure AD Rule Library - getInviteRedeemUrl with "+app.getName()+" : "+upn );
+
+    HttpClient httpclient = HttpClients.createDefault();
+    IdentityService identityService = new IdentityService(context);
+    String azureADDomain = (String)app.getAttributeValue( "domainName" );
+    String clientID = (String)app.getAttributeValue( "clientID" );
+    String clientSecret = context.decrypt( (String)app.getAttributeValue( "clientSecret" ) );
+    String graphUrl = "https://graph.microsoft.com/v1.0/invitations";
+    String accessToken = getAccessToken( azureADDomain, graphUrl, clientID, clientSecret );
+    JSONObject payload = new JSONObject();
+    payload.put( "invitedUserEmailAddress", email );
+    payload.put( "inviteRedirectUrl", redirectionUrl );
+    StringEntity body = new StringEntity( payload.toString() );
+    HttpPost request = new HttpPost( graphUrl );
+    request.setHeader( HttpHeaders.CONTENT_TYPE, "application/json" );
+    request.setHeader( HttpHeaders.AUTHORIZATION, accessToken );
+    request.setEntity( body );
+    HttpResponse response = httpclient.execute( request );
+    int statuscode = response.getStatusLine().getStatusCode();
+    if ( statuscode >= 200 &amp;&amp; statuscode &lt; 300 ) {
+      plog.trace( "AADRL-GIRU-002 ::Status Reason: " + response.getStatusLine().getReasonPhrase() );
+      HttpEntity entity = response.getEntity();
+      if (entity != null) {
+        String res = EntityUtils.toString(entity);
+        JSONObject obj = new JSONObject( res );
+        inviteUrl = obj.getString( "inviteRedeemUrl" );
+      }
+    } else {
+      plog.error( "AADRL-GIRU-003 ::Invitation not created - Status Reason: " + response.getStatusLine().getReasonPhrase() );
+    }
+    return inviteUrl;
+  }
+
+public static ProvisioningPlan.AccountRequest addAccounttoDisabledUserGroup(Application App,String nativeIdentity,Identity identity)
+  {
+    plog.trace( "AADRL-AACB-001 Entering Azure AD Rule Library - to Add User to CAPBlocl ET ");
+    ProvisioningPlan plan = new ProvisioningPlan();
+    List attributeRequests= new ArrayList();
+    String entValue=(String)App.getAttributeValue("disabledUserGroup");
+    plan.setIdentity(identity);
+    AccountRequest accountRequest = new AccountRequest();
+    accountRequest.setApplication(App.getName());
+    accountRequest.setOperation(AccountRequest.Operation.Modify);
+    accountRequest.setNativeIdentity(nativeIdentity);
+    ProvisioningPlan.AttributeRequest roleAdd=new ProvisioningPlan.AttributeRequest();
+    roleAdd.setName("groups");
+    roleAdd.setOperation( ProvisioningPlan.Operation.Add);
+    roleAdd.setValue(entValue);
+    attributeRequests.add(roleAdd);
+    accountRequest.setAttributeRequests(attributeRequests);
+    return accountRequest;
+  }  
+  /*For Revoking SignIn Sessions*/
+
+  public boolean revokeSignInSessions(Application app,String objectId) {
+     plog.trace( "AADRL-RSS-001 :Entering Azure AD Rule Library - RevokeSignInSessions" );
+     String azureADDomain = (String) app.getAttributeValue("domainName");
+     String clientID = (String) app.getAttributeValue("clientID");
+     String clientSecret = context.decrypt((String) app.getAttributeValue("clientSecret"));
+     String resource = (String) app.getAttributeValue("oauthResource");
+     String accessToken = getAccessToken(azureADDomain, resource, clientID, clientSecret);
+     String url = resource +objectId+ "/revokeSignInSessions";
+     plog.trace("AADRL-RSS-002 :RevokeSignIn session URL: " + url);
+     HttpClient httpclient = HttpClients.createDefault();
+     Boolean result = false;
+     HttpPost request = new HttpPost( url );
+     request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+     request.setHeader(HttpHeaders.AUTHORIZATION, accessToken);
+     plog.trace("AADRL-RSS-003 :request:\n\n" + request + "\n\n");
+     HttpResponse response = httpclient.execute(request);
+     plog.trace("AADRL-RSS-004 :response\n\n" + response + "\n\n");
+     int statuscode = response.getStatusLine().getStatusCode();
+     plog.trace("AADRL-RSS-005 :Status Code " + statuscode);
+       if (statuscode >= 200 &amp;&amp; statuscode &lt; 300) {
+         plog.trace("AADRL-RSS-006 :Status Reason: " + response.getStatusLine().getReasonPhrase());
+         result = true;
+         HttpEntity entity = response.getEntity();
+         if (entity != null) {
+           String stuff = EntityUtils.toString(entity);
+           plog.trace("AADRL-RSS-006 :Status Code: " + stuff);
+        }
+      }
+    return result;
+  }
+  /*Schedule the workflow to execute the delete Plan*/
+  public void scheduleAccountRequest(String name, String applicationName, ProvisioningPlan deletePlan, String workflowName,String caseName){
+
+    String requesterId = "spadmin";
+    Workflow eventWorkflow = context.getObject(Workflow.class, workflowName);
+    Identity id = context.getObjectByName(Identity.class, requesterId);
+    DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+    Calendar calendar = Calendar.getInstance();
+    calendar.add(Calendar.MINUTE, 5);
+    Date futureTime = calendar.getTime();
+    String launchTime = dateFormat.format(futureTime);
+    caseName = caseName + "(" + launchTime + ")";
+    Attributes reqArgs = new Attributes();
+    reqArgs.put(StandardWorkflowHandler.ARG_REQUEST_DEFINITION, sailpoint.request.WorkflowRequestExecutor.DEFINITION_NAME);
+    reqArgs.put(sailpoint.workflow.StandardWorkflowHandler.ARG_WORKFLOW, workflowName);
+    reqArgs.put(sailpoint.workflow.StandardWorkflowHandler.ARG_REQUEST_NAME, caseName);
+    reqArgs.put( "requestName", caseName );
+    Attributes wfArgs = new Attributes();
+    wfArgs.put("identityName",name);
+    wfArgs.put("AzureADDeletePlan", deletePlan);
+    wfArgs.put("appName",applicationName);
+    wfArgs.put("workflow", eventWorkflow.getName());
+    reqArgs.putAll(wfArgs);
+    Request req = new Request();
+    RequestDefinition reqdef = context.getObject(RequestDefinition.class, "Workflow Request");
+    req.setDefinition(reqdef);
+    req.setEventDate(futureTime);
+    req.setOwner(id);
+    req.setName(caseName);
+    req.setAttributes( reqdef, reqArgs );
+    RequestManager.addRequest(context, req);
+  }
+  
+  /*Send Deleteplan for each account of Azure AD application for Schedule*/
+  public void getAzureADDeletePlanSchedule(String identityName)
+  {
+    Identity identity =context.getObjectByName(Identity.class,identityName);
+    ProvisioningPlan deletePlan=new ProvisioningPlan();
+    deletePlan.setIdentity(identity);
+    List acctreq;
+    List azurelinks = identity.getLinks();
+    if (azurelinks != null &amp;&amp; azurelinks.size() > 0) {
+      for(eachLink:azurelinks)
+      {
+        if (eachLink != null) {
+          String applicationName=eachLink.getApplicationName();
+          if(StringUtils.containsIgnoreCase(applicationName,"Azure"))
+          {
+            AccountRequest excAcctReq = new AccountRequest();
+            String nativeIdentity = eachLink.getNativeIdentity() != null ? eachLink.getNativeIdentity(): eachLink.getAttribute("objectId");
+            excAcctReq.setApplication(applicationName);
+            excAcctReq.setNativeIdentity(nativeIdentity);
+            excAcctReq.setOperation(AccountRequest.Operation.Delete);
+            deletePlan.add(excAcctReq);
+          }
+        }
+      }
+      String workflowName = "Azure AD Delete AccountRequest Schedule";
+      String caseName = "Run '" + workflowName + "' for: " + name;
+      scheduleAccountRequest(identityName,"Azure",deletePlan,workflowName,caseName); 
+    }
+  }
+  
+  /*Remove Azure Account from CAPBlock group during Rehire*/
+  public static ProvisioningPlan.AccountRequest removeAccountfromDisabledUserGroup(Application App,String nativeIdentity,Identity identity)
+  {
+    plog.trace("AADRL-AACB-001 Entering Azure AD Rule Library - to Remove User to CAPBlock ET ");
+    ProvisioningPlan plan = new ProvisioningPlan();
+    AccountRequest accountRequest = new AccountRequest();
+    List attributeRequests= new ArrayList();
+    String entValue=(String)App.getAttributeValue("disabledUserGroup");
+    Filter filter = Filter.and(Filter.eq("application.id",App.getId()),Filter.eq("nativeIdentity",nativeIdentity),Filter.eq("aggregationState","Connected"),Filter.eq("value",entValue));
+    QueryOptions queryOptions = new QueryOptions();
+    queryOptions.add(filter);
+    int count = context.countObjects(IdentityEntitlement.class,queryOptions);
+    if ( count > 0 ) {
+      plan.setIdentity(identity);
+      accountRequest.setApplication(App.getName());
+      accountRequest.setOperation(AccountRequest.Operation.Modify);
+      accountRequest.setNativeIdentity(nativeIdentity);
+      ProvisioningPlan.AttributeRequest roleRemove=new ProvisioningPlan.AttributeRequest();
+      roleRemove.setName("groups");
+      roleRemove.setOperation( ProvisioningPlan.Operation.Remove);
+      roleRemove.setValue(entValue);
+      attributeRequests.add(roleRemove);
+      accountRequest.setAttributeRequests(attributeRequests);
+      return accountRequest;
+    }
+    else
+      return accountRequest;
+  } 
+</Source>
+</Rule>
