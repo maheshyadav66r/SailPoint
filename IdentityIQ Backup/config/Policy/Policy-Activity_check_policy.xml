@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Policy PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Policy certificationActions="Acknowledged,Mitigated,Delegated" configPage="activitypolicy.xhtml" executor="sailpoint.policy.ActivityPolicyExecutor" name="Activity_check_policy" state="Active" type="Activity" typeKey="policy_type_activity" violationOwnerType="Identity">
+  <PolicyAlert disabled="true" escalationStyle="none"/>
+  <Attributes>
+    <Map>
+      <entry key="sysDescriptions">
+        <value>
+          <Map>
+            <entry key="en_US"/>
+          </Map>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+  <ViolationOwner>
+    <Reference class="sailpoint.object.Identity" name="Mahesh Nattali"/>
+  </ViolationOwner>
+  <ActivityConstraints>
+    <ActivityConstraint disabled="true" name="activity_rule_1" violationOwnerType="Identity">
+      <Description>activity_rule_1 description</Description>
+      <IdentityFilters>
+        <Filter ignoreCase="true" operation="EQ" property="links.application.name" value="ActiveDirectory"/>
+      </IdentityFilters>
+      <ViolationOwner>
+        <Reference class="sailpoint.object.Identity" name="Mahesh Nattali"/>
+      </ViolationOwner>
+    </ActivityConstraint>
+  </ActivityConstraints>
+</Policy>

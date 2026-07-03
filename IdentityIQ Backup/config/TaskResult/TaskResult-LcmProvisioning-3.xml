@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1735896197488" completionStatus="Error" launched="1735896195472" launcher="spadmin" name="LCM Provisioning - 3" type="LCM">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000417"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Adam Kennedy">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000417"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Adam Kennedy,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                  <AttributeRequest name="memberOf" op="Add" value="AccountingPayable"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000417"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Adam Kennedy" targetIntegration="ActiveDirectory" trackingId="cf665dbec5b147afb2d7f5c89c636b11">
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Adam Kennedy,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                <Attributes>
+                  <Map>
+                    <entry key="provisioningTransactionId" value="c0a8000e94221b1181942b79e7a64309"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="memberOf" op="Add" value="AccountingPayable"/>
+                <ProvisioningResult status="failed">
+                  <Errors>
+                    <Message key="Error(s) reported back from the IQService - Error occurred while connecting to group AccountingPayable. Attribute DistinguishedNamedoes not contain expected character dc=. Value supplied : accountingpayableAttribute DistinguishedNamedoes not contain expected character dc=. Value supplied : accountingpayable. HRESULT:[0x80131500]" type="Error"/>
+                  </Errors>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000417"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+            <ProvisioningTarget retain="true" role="Testing">
+              <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ActiveDirectory" selection="CN=Adam Kennedy,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="Adam Kennedy" nativeIdentity="CN=Adam Kennedy,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+            </ProvisioningTarget>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a8000e94221b1181942b79e3e842fb"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="end"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="Error(s) reported back from the IQService - Error occurred while connecting to group AccountingPayable. Attribute DistinguishedNamedoes not contain expected character dc=. Value supplied : accountingpayableAttribute DistinguishedNamedoes not contain expected character dc=. Value supplied : accountingpayable. HRESULT:[0x80131500]" type="Error"/>
+  </Messages>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

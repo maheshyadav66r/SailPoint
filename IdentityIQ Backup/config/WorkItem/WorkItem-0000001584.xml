@@ -1,0 +1,56 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE WorkItem PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<WorkItem handler="sailpoint.api.Workflower" level="Normal" name="0000001584" renderer="workflow.xhtml" state="Finished" type="Form">
+  <Attributes>
+    <Map>
+      <entry key="identityModel">
+        <value>
+          <Map>
+            <entry key="identity" value="ActiveDirectory Administrators WorkGroup"/>
+            <entry key="operation" value="Create"/>
+          </Map>
+        </value>
+      </entry>
+      <entry key="launcher" value="spadmin"/>
+      <entry key="workItemCompletedBy" value="The Administrator"/>
+      <entry key="workItemForm">
+        <value>
+          <Form name="DB_operation_Selction_form" type="Workflow">
+            <Attributes>
+              <Map>
+                <entry key="formBasePath" value="identityModel"/>
+                <entry key="pageTitle" value="Operatio_Type"/>
+              </Map>
+            </Attributes>
+            <Section label="Operation Selection" name="operationSelection">
+              <Field displayName="Select Identity" name="identity" type="sailpoint.object.Identity" value="ActiveDirectory Administrators WorkGroup"/>
+              <Field displayName="Operation" displayType="radio" name="operation" value="Create">
+                <AllowedValuesDefinition>
+                  <Value>
+                    <List>
+                      <String>Create</String>
+                      <String>Modify</String>
+                    </List>
+                  </Value>
+                </AllowedValuesDefinition>
+              </Field>
+            </Section>
+            <Button action="next" label="Next"/>
+            <Button action="back" label="Cancel"/>
+          </Form>
+        </value>
+      </entry>
+      <entry key="workItemFormBasePath" value="identityModel"/>
+    </Map>
+  </Attributes>
+  <Description>Display Form</Description>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+  <Requester>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Requester>
+  <WorkflowCaseRef>
+    <Reference class="sailpoint.object.WorkflowCase" name="QuickLink Launch for identity spadmin - 805"/>
+  </WorkflowCaseRef>
+</WorkItem>

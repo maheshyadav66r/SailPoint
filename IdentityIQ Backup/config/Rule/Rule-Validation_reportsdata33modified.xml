@@ -1,0 +1,262 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Validation_ReportsData33Modified" type="Validation">
+  <Source><![CDATA[
+  import java.text.SimpleDateFormat;
+  import java.util.*;
+  import java.io.*;
+  import sailpoint.object.*;
+  import sailpoint.tools.Util;
+  import java.time.LocalDateTime;
+  import java.time.format.DateTimeFormatter;
+
+  LocalDateTime now = LocalDateTime.now();
+  DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+  String currentTime = now.format(formatter);
+
+  log.error(" Rule Beginning : "+currentTime);
+
+  public void writeListToFile(File file, List listOfArrays) throws IOException {
+
+    BufferedWriter writer=null;
+    try {
+
+      writer = new BufferedWriter(new FileWriter(file));
+      writer.write("BusinessRoleName,BusinessRoleDescription,BusinessRoleOwner,BusinessRoleDepartment,BusinessRoleDivision,FunctionalRole,Permitted/Required,ApplicationName,Entitlement,EntitlementDisplayName,AccountType");
+      writer.newLine();
+
+      if (listOfArrays != null && !listOfArrays.isEmpty()) {
+        for (String[] row : listOfArrays) {
+
+          if (row == null || row.length != 11) continue;
+
+          StringBuilder sb = new StringBuilder();
+          for (int i = 0; i < row.length; i++) {
+
+            String value = row[i] == null ? "" : row[i];
+
+            if (value.contains(",") || value.contains("\"")) {
+              value = value.replace("\"", "\"\"");
+              value = "\"" + value + "\"";
+            }
+            sb.append(value);
+            if (i < row.length - 1) sb.append(",");
+          }
+          writer.write(sb.toString());
+          writer.newLine();
+        }
+      }
+    }finally {
+      if (writer != null) {
+        writer.close();
+      }
+    }
+  }
+
+
+  //String inputData = "Medium,High";
+   String inputData = (String) config.get("roleCriticality");
+  List roleTypeList = new ArrayList();
+  Iterator bRListItr = null;
+
+  try {
+
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+    String fileName = "ICAM - Role Composition Report_" + sdf.format(new Date()) + ".csv";
+    File file = new File("D:\\tmp\\" + fileName);
+
+    QueryOptions qoForBundle = new QueryOptions();
+    qoForBundle.addFilter(Filter.eq("type", "business"));
+
+    if (!Util.isNullOrEmpty(inputData)) {
+      roleTypeList = inputData.contains(",") ? Arrays.asList(inputData.split(",")) : Arrays.asList(inputData);
+    }
+
+    List listOfArrays = new ArrayList();
+
+    //  CACHE for ManagedAttribute
+    Map entitlementCache = new HashMap();
+
+    bRListItr = context.search(Bundle.class, qoForBundle);
+
+    while (bRListItr.hasNext()) {
+
+      Bundle busRole = bRListItr.next();
+
+      String roleCriticality = (String) busRole.getAttribute("roleCriticality");
+      String roleLevel = (String) busRole.getAttribute("roleLevel");
+      String owner = (busRole.getOwner() != null) ? busRole.getOwner().getName() : "";
+
+      if (roleTypeList != null && !roleTypeList.isEmpty() && (roleCriticality == null || !roleTypeList.contains(roleCriticality))) {
+        continue;
+      }
+
+      Map roleListMap = new HashMap();
+
+      List requiredITRole = busRole.getRequirements();
+      if (requiredITRole != null && !requiredITRole.isEmpty()) {
+        roleListMap.put("REQUIRED", requiredITRole);
+      }
+
+      List permittedITRole = busRole.getPermits();
+      if (permittedITRole != null && !permittedITRole.isEmpty()) {
+        roleListMap.put("PERMITTED", permittedITRole);
+      }
+
+      for (String type : roleListMap.keySet()) {
+
+        for (Bundle itRole : roleListMap.get(type)) {
+
+          // ❌ Removed deepCopy
+          Bundle workingItRole = itRole;
+
+          // 🔥 Use Set to avoid duplicates
+          Set profSet = new HashSet();
+
+          if (workingItRole.getProfiles() != null) {
+            profSet.addAll(workingItRole.getProfiles());
+          }
+
+          if (workingItRole.getInheritance() != null) {
+            for (Bundle inheritRole : workingItRole.getInheritance()) {
+
+              if (inheritRole.getProfiles() != null) {
+                profSet.addAll(inheritRole.getProfiles());
+              }
+
+              if (inheritRole.getInheritance() != null) {
+                for (Bundle furtherRole : inheritRole.getInheritance()) {
+                  if (furtherRole.getProfiles() != null) {
+                    profSet.addAll(furtherRole.getProfiles());
+                  }
+                }
+              }
+            }
+          }
+
+          if (!profSet.isEmpty()) {
+
+            Map appValue = new HashMap();
+
+            for (Profile profile : profSet) {
+
+              List filValueList = new ArrayList();
+              List filters = profile.getConstraints();
+
+              for (Filter f : filters) {
+
+                List leafFilters = new ArrayList();
+
+                if (f instanceof Filter.LeafFilter) {
+                  leafFilters.add(f);
+                } else {
+                  leafFilters.addAll(((Filter.CompositeFilter) f).getChildren());
+                }
+
+                for (Filter lf : leafFilters) {
+
+                  if (!(lf instanceof Filter.LeafFilter)) continue;
+
+                  Object obj = ((Filter.LeafFilter) lf).getValue();
+                  String prop = (String) ((Filter.LeafFilter) lf).getProperty();
+
+                  if (obj instanceof String) {
+                    filValueList.add(prop + "," + obj);
+                  } else if (obj instanceof List) {
+                    for (Object v : (List) obj) {
+                      filValueList.add(prop + "," + v);
+                    }
+                  }
+                }
+              }
+
+              Application app = profile.getApplication();
+
+              List valueList = (List) appValue.get(app);
+
+              if (valueList == null) {
+                valueList = new ArrayList();
+                appValue.put(app, valueList);
+              }
+
+              valueList.addAll(filValueList);
+            }
+
+            for (Application app : appValue.keySet()) {
+
+              for (String entL : appValue.get(app)) {
+
+                int idx = entL.indexOf(",");
+                String attr = entL.substring(0, idx);
+                String val = entL.substring(idx + 1);
+
+                String cacheKey = app.getName() + "|" + attr + "|" + val;
+
+                String displayName = entitlementCache.get(cacheKey);
+
+                if (displayName == null) {
+
+                  QueryOptions qoForEnt = new QueryOptions();
+                  qoForEnt.addFilter(Filter.eq("attribute", attr));
+                  qoForEnt.addFilter(Filter.eq("application", app));
+                  qoForEnt.addFilter(Filter.eq("value", val));
+
+                  List enList = context.getObjects(ManagedAttribute.class, qoForEnt);
+
+                  displayName = (!Util.isEmpty(enList)) ? enList.get(0).getDisplayableName() : "";
+                  entitlementCache.put(cacheKey, displayName);
+                }
+
+                String[] col = new String[11];
+
+                col[0] = busRole.getName();
+                col[1] = busRole.getDescription("en_US");
+                col[2] = owner;
+                col[3] = roleLevel != null ? roleLevel : "";
+                col[4] = roleCriticality != null ? roleCriticality : "";
+                col[5] = workingItRole.getName();
+                col[6] = type;
+                col[7] = app.getName();
+                col[8] = val;
+                col[9] = displayName;
+                col[10] = (String) workingItRole.getAttribute("apaccountType");
+
+                listOfArrays.add(col);
+              }
+            }
+
+          } else {
+
+            String[] col = new String[11];
+
+            col[0] = busRole.getName();
+            col[1] = busRole.getDescription("en_US");
+            col[2] = owner;
+            col[3] = roleLevel != null ? roleLevel : "";
+            col[4] = roleCriticality != null ? roleCriticality : "";
+            col[5] = workingItRole.getName();
+            col[6] = type;
+            col[7] = "No Applications Mapped";
+            col[8] = "No Entitlements Mapped";
+            col[9] = "";
+            col[10] = (String) workingItRole.getAttribute("apaccountType");
+
+            listOfArrays.add(col);
+          }
+        }
+      }
+    }
+
+    writeListToFile(file, listOfArrays);
+
+  } catch (Exception e) {
+    log.error("Exception in ReportsData1 : ", e);
+  } finally {
+    Util.flushIterator(bRListItr);
+  }
+
+  log.error(" Rule Ending : "+currentTime);
+  return "Java Report";
+
+  ]]></Source>
+</Rule>

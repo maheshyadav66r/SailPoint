@@ -1,0 +1,125 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Rule-AzureADCorrelation" type="Correlation">
+  <Description>Identity Correlation Rules are used to find identities to which new accounts
+      can be attached.
+      
+      A correlation rule must return a Map with one of the specified Return
+      arguments.</Description>
+  <Signature returnType="Map">
+    <Inputs>
+      <Argument type="environment">
+        <Description>
+            Arguments passed to the aggregation task.
+          </Description>
+      </Argument>
+      <Argument type="application">
+        <Description>
+            Application being aggregated.
+          </Description>
+      </Argument>
+      <Argument type="account">
+        <Description>
+            A sailpoint.object.ResourceObject returned from the
+            collector.
+          </Description>
+      </Argument>
+      <Argument type="link">
+        <Description>
+            Existing link to this account.
+          </Description>
+      </Argument>
+    </Inputs>
+    <Returns>
+      <Argument type="identityName">
+        <Description>
+            The name of an Identity object.
+          </Description>
+      </Argument>
+      <Argument type="identity">
+        <Description>
+            A fully resolved Identity object if the rule wants
+            to do its own queries to locate the identity.
+          </Description>
+      </Argument>
+      <Argument type="identityAttributeName">
+        <Description>
+            The name of the extended attribute that can be used
+            to locate an existing identity.
+          </Description>
+      </Argument>
+      <Argument type="identityAttributeValue">
+        <Description>
+            The value of the named extended attribute that can be used
+            to locate an existing identity. This attribute is used
+            together with the identityAttributeName argument.
+          </Description>
+      </Argument>
+    </Returns>
+  </Signature>
+  <Source><![CDATA[
+      
+      import java.util.HashMap;
+      import sailpoint.object.Custom;
+      import sailpoint.object.Identity;
+
+      import org.apache.log4j.Logger; 
+      import org.apache.log4j.Level;
+      import org.apache.commons.logging.LogFactory;
+      
+      Logger azLog = Logger.getLogger("rule.Rule-AzureADCorrelation");
+      azLog.trace("AADC-001: Executing Rule Rule-AzureADCorrelation");
+
+      String guidAttributeName = "";
+      String guidAttributeValue = "";
+      String workdayIdAttrName = "";
+      String workdayIdAttrValue = "";
+      String mailNickname = "";
+      
+      Map returnMap = new HashMap();
+        
+      // Get attributes for matching
+      try {
+        // Get extension attribute names from the custom object
+        Custom extensionAttributesCustomObject = context.getObjectByName( Custom.class, "Azure Extension Attributes" );
+        if ( extensionAttributesCustomObject != null ) {
+          guidAttributeName = extensionAttributesCustomObject.getString( "guid" );
+          workdayIdAttrName = extensionAttributesCustomObject.getString( "workdayID" );
+        } else {
+          guidAttributeName = "extensionAttribute2";
+        }
+        
+        guidAttributeValue = account.getStringAttribute( guidAttributeName );
+        workdayIdAttrValue = account.getStringAttribute( workdayIdAttrName );
+        mailNickname = account.getStringAttribute( "mailNickname" );
+
+        azLog.trace( "AADC-002: Matching Attribtues: \n"  +
+                     "guid: "         + guidAttributeValue + "\n" +
+                     "WorkdayID: "    + workdayIdAttrValue + "\n" + 
+                     "mailNickname: " + mailNickname + "\n"
+        );
+
+        // Match on Identity Name for Privileged accounts
+        //Removing Privileged accounts condition as new application has been created for Privileged accounts
+        if( guidAttributeValue == null || guidAttributeValue.isEmpty() ) {
+          azLog.trace( "AADC-005: Non Privileged Account and GUID null" );
+          if ( workdayIdAttrValue != null && !workdayIdAttrValue.isEmpty() ) {
+            returnMap.put( "identityAttributeName", "workday_id" );
+            returnMap.put( "identityAttributeValue", workdayIdAttrValue );
+          }
+        } else {
+          azLog.trace( "AADC-008: Non Privileged Account and GUID not null" );
+          returnMap.put( "identityAttributeName", "guid" );
+          returnMap.put( "identityAttributeValue", guidAttributeValue );
+        }
+      } catch ( Exception ex ) {
+        azLog.trace( "AADC-003: ERROR:: retreiving attribute(s) " + ex );
+      }
+    
+      azLog.trace( "AADC-006: Correlation Map for "+account.getStringAttribute( "objectId" )+" is--- " + returnMap.toString() );
+      azLog.trace( "AADC-007: Exiting Rule Rule-AzureADCorrelation for "+account.getStringAttribute( "userPrincipalName" ) );
+    
+      return returnMap;
+    
+    ]]></Source>
+</Rule>

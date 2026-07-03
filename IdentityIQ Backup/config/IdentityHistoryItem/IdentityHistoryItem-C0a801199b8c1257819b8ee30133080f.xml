@@ -1,0 +1,66 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE IdentityHistoryItem PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<IdentityHistoryItem actor="The Administrator" certificationType="Bundle" entryDate="1767628514210" role="IT2ADEngineering" status="Remediated" type="Decision">
+  <CertificationAction actorDisplayName="The Administrator" actorName="spadmin" decisionCertificationId="c0a801199b8c1257819b8edc6681064b" decisionDate="1767628514210" readyForRemediation="true" remediationAction="SendProvisionRequest" reviewed="true" status="Remediated">
+    <Description>Remove entitlements on 'Andrea Hudson'</Description>
+    <RemediationPlan>
+      <ProvisioningPlan trackingId="c0a801199b8c1257819b8edc711d06e8">
+        <AccountRequest application="IIQ" op="Modify">
+          <AttributeRequest name="assignedRoles" op="Remove" trackingId="c0a801199b8c1257819b8edc711d06e8" value="IT2ADEngineering">
+            <Attributes>
+              <Map>
+                <entry key="deassignEntitlements">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+              </Map>
+            </Attributes>
+          </AttributeRequest>
+          <AttributeRequest name="Capabilities" op="Remove" trackingId="c0a801199b8c1257819b8edc711d06e8" value="SyslogAdministrator">
+            <Attributes>
+              <Map>
+                <entry key="allowSimplification" value="true"/>
+                <entry key="assignment" value="true"/>
+                <entry key="preferRemoveOverRetain" value="true"/>
+              </Map>
+            </Attributes>
+          </AttributeRequest>
+        </AccountRequest>
+        <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Andrea Hudson,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+          <AttributeRequest name="memberOf" op="Remove" trackingId="c0a801199b8c1257819b8edc711d06e8">
+            <Attributes>
+              <Map>
+                <entry key="allowSimplification" value="true"/>
+                <entry key="assignment" value="true"/>
+                <entry key="preferRemoveOverRetain" value="true"/>
+              </Map>
+            </Attributes>
+            <Value>
+              <List>
+                <String>CN=ENG_All,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                <String>CN=ENG_EastCoast,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+              </List>
+            </Value>
+          </AttributeRequest>
+        </AccountRequest>
+        <Attributes>
+          <Map>
+            <entry key="source" value="Certification"/>
+            <entry key="sourceId" value="c0a801199b8c1257819b8edc6681064b"/>
+            <entry key="sourceName" value="Identity Access Review for Andrea Hudson"/>
+          </Map>
+        </Attributes>
+      </ProvisioningPlan>
+    </RemediationPlan>
+  </CertificationAction>
+  <CertifiableDescriptor businessRole="IT2ADEngineering"/>
+  <CertificationLink completed="1767628644902" identitySnapshotId="c0a801199b8c1257819b8edc67ad064c" type="Identity">
+    <Certifiers>
+      <String>spadmin</String>
+    </Certifiers>
+  </CertificationLink>
+  <HistoryIdentity>
+    <Reference class="sailpoint.object.Identity" name="Andrea Hudson"/>
+  </HistoryIdentity>
+</IdentityHistoryItem>

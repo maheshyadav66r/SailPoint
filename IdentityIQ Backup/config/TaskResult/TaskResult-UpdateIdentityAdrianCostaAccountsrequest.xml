@@ -1,0 +1,111 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1744807609926" completionStatus="Error" launched="1744807607352" launcher="spadmin" name="Update Identity Adrian Costa AccountsRequest" targetClass="Identity" targetName="Adrian Costa" type="LCM">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000636"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Adrian Costa">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000636"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="ActiTimeApplication" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="flow" value="AccountsRequest"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="Create"/>
+                    </Map>
+                  </Attributes>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000636"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Adrian Costa" targetIntegration="ActiTimeApplication" trackingId="3d9ddf4a085c4fa2b6743fd27fa51099">
+              <AccountRequest application="ActiTimeApplication" op="Create">
+                <Attributes>
+                  <Map>
+                    <entry key="flow" value="AccountsRequest"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="operation" value="Create"/>
+                    <entry key="provisioningTransactionId" value="c0a8000a961b152a81963ea344a42cfe"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="username" op="Set" value="Adrian Costa"/>
+                <AttributeRequest name="fullName" op="Set" value="Adrian Costa"/>
+                <AttributeRequest name="firstName" op="Set" value="Adrian"/>
+                <AttributeRequest name="lastName" op="Set" value="Costa"/>
+                <AttributeRequest name="email" op="Set" value="adrian.costa@example.com"/>
+                <AttributeRequest name="password" op="Set"/>
+                <AttributeRequest name="active" op="Set">
+                  <Value>
+                    <Boolean>true</Boolean>
+                  </Value>
+                </AttributeRequest>
+                <ProvisioningResult status="failed">
+                  <Errors>
+                    <Message key="Exception occurred while performing 'Create' operation on identity 'null':  Error: Error executing before operation rule for endpoint 'ActiTime Single Account  Aggregation': BeanShell script error: bsh.EvalError: Sourced file: inline evaluation of: ``log.error(&quot;=entered into the Get OBject before operaion rule =============&quot;+plan . . . '' : Attempt to resolve method: toXml() on undefined variable or class name: plan : at Line: 1 : in file: inline evaluation of: ``log.error(&quot;=entered into the Get OBject before operaion rule =============&quot;+plan . . . '' : plan .toXml ( ) &#10; BSF info: GetObj-ActiTime-BeforeOpRule at line: 0 column: columnNo" type="Error"/>
+                  </Errors>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000636"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+              <ProvisioningResult status="failed"/>
+            </ProvisioningPlan>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a8000a961b152a81963ea33d672cdd"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="end"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="Exception occurred while performing 'Create' operation on identity 'null':  Error: Error executing before operation rule for endpoint 'ActiTime Single Account  Aggregation': BeanShell script error: bsh.EvalError: Sourced file: inline evaluation of: ``log.error(&quot;=entered into the Get OBject before operaion rule =============&quot;+plan . . . '' : Attempt to resolve method: toXml() on undefined variable or class name: plan : at Line: 1 : in file: inline evaluation of: ``log.error(&quot;=entered into the Get OBject before operaion rule =============&quot;+plan . . . '' : plan .toXml ( ) &#10; BSF info: GetObj-ActiTime-BeforeOpRule at line: 0 column: columnNo" type="Error"/>
+  </Messages>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

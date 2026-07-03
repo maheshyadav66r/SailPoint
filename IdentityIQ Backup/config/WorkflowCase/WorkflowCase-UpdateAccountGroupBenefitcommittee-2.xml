@@ -1,0 +1,661 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE WorkflowCase PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<WorkflowCase launcher="spadmin" name="Update Account Group BenefitCommittee - 2" targetClass="ManagedAttribute">
+  <Messages>
+    <Message key="notification_failed_no_email" type="Warn">
+      <Parameters>
+        <String>Amanda.Ross</String>
+      </Parameters>
+    </Message>
+  </Messages>
+  <Workflow currentStep="fa6cf318f80345a282606d1c8ceab81a" libraries="Group" name="Entitlement Update" type="ManagedAttribute">
+    <Variable initializer="false" name="trace"/>
+    <Variable editable="true" name="optimisticProvisioning"/>
+    <Variable editable="true" initializer="true" name="foregroundProvisioning"/>
+    <Variable editable="true" initializer="false" name="doManualActions"/>
+    <Variable editable="true" initializer="ref:appOwner" name="fallbackApprover"/>
+    <Variable input="true" name="plan" required="true"/>
+    <Variable initializer="ref:owner" input="true" name="approver"/>
+    <Variable input="true" name="pamContainersToAggregate"/>
+    <Variable input="true" name="pamContainerToGroupAggregate"/>
+    <Variable input="true" name="applicationName"/>
+    <Variable name="sessionOwner"/>
+    <Variable name="summaryName"/>
+    <Variable name="project"/>
+    <Variable name="owner"/>
+    <Variable name="appOwner"/>
+    <Variable name="changes"/>
+    <Step complete="true" icon="Start" name="start" posX="17" posY="19">
+      <Transition to="Examine Plan"/>
+    </Step>
+    <Step action="getSummaryName" complete="true" name="Examine Plan" posX="112" posY="19" resultVariable="summaryName">
+      <Transition to="Compile Project"/>
+    </Step>
+    <Step action="compileGroupProject" complete="true" name="Compile Project" posX="219" posY="19" resultVariable="project">
+      <Arg name="plan" value="ref:plan"/>
+      <Arg name="requester" value="ref:launcher"/>
+      <Arg name="source" value="GroupManagement"/>
+      <Arg name="optimisticProvisioning" value="ref:optimisticProvisioning"/>
+      <Transition to="Start Approval Process" when="script:approver!=null||fallbackApprover!=null"/>
+      <Transition to="Start Provisioning Process"/>
+    </Step>
+    <Step action="setLaunchMessage" complete="true" icon="Message" name="Start Approval Process" posX="285" posY="112">
+      <Arg name="message" value="workflow_identity_approval"/>
+      <Arg name="arg1" value="ref:summaryName"/>
+      <Arg name="arg2" value="ref:approver"/>
+      <Transition to="Build Approval Summary"/>
+    </Step>
+    <Step action="buildGroupChangeSummary" complete="true" name="Build Approval Summary" posX="432" posY="112" resultVariable="changes">
+      <Arg name="plan" value="ref:plan"/>
+      <Transition to="CheckChanges"/>
+    </Step>
+    <Step action="checkChanges" complete="true" name="CheckChanges" posX="17" posY="19">
+      <Transition to="Approval"/>
+    </Step>
+    <Step icon="Approval" name="Approval" posX="554" posY="112">
+      <Approval owner="Amanda.Ross" renderer="entitlement.xhtml" send="summaryName,changes" startDate="1779687076214" started="true" workItemDescription="Approve modification of entitlement ActiveDirectory group: CN=BenefitCommittee,OU=Groups,OU=Demo,DC=Eshiam,DC=com" workItemId="c0a801289e5d1e76819e5d9db145025b" workItemType="Approval">
+        <Arg name="requester" value="ref:launcher"/>
+        <Arg name="workItemDescription">
+          <Script>
+            <Source><![CDATA[
+            String action = "modification";
+            if (changes.delete)
+                action = "deletion";
+            else if (changes.create)
+                action = "creation";
+            return "Approve " + action + " of entitlement " + summaryName;
+          ]]></Source>
+          </Script>
+        </Arg>
+        <OwnerScript>
+          <Source><![CDATA[
+          import sailpoint.object.Identity;
+          Identity approverIdentity = null;
+          if (approver instanceof String) {
+              approverIdentity = wfcontext.getSailPointContext().getObjectByName(Identity.class, approver);
+              if(approverIdentity == null) {
+                  log.info("Invalid approver, fallback approver will be used if available");
+              }
+          }
+          else 
+              approverIdentity = approver;
+          if (approverIdentity != null) {
+              if (approverIdentity.getName().equals(requester))
+                  return null;
+              else
+                  return approver;
+          }
+          else if (fallbackApprover != null) {
+              if (fallbackApprover instanceof String) {
+                  fallbackApproverIdentity = wfcontext.getSailPointContext().getObjectByName(Identity.class, fallbackApprover);
+                  if (fallbackApproverIdentity == null) {
+                      log.info("Invalid fallback approver, please verify fallback approver setting");
+                  }
+              }
+              else
+                  fallbackApproverIdentity = fallbackApprover;
+              if (fallbackApproverIdentity != null) {
+                  if (fallbackApproverIdentity.getName().equals(requester))
+                      return null;
+                  else
+                      return fallbackApprover;
+              }
+          }
+          else
+              return null;
+        ]]></Source>
+        </OwnerScript>
+        <WorkItemConfig escalationStyle="none">
+          <NotificationEmailTemplateRef>
+            <Reference class="sailpoint.object.EmailTemplate" name="Entitlement Update Approval"/>
+          </NotificationEmailTemplateRef>
+        </WorkItemConfig>
+      </Approval>
+      <Transition to="end" when="!ref:approved"/>
+      <Transition to="Start Provisioning Process"/>
+    </Step>
+    <Step action="setLaunchMessage" icon="Message" name="Start Provisioning Process" posX="612" posY="15">
+      <Arg name="message">
+        <Script>
+          <Source><![CDATA[
+          // pick a message with more detail if we're provisioning
+          import sailpoint.object.ProvisioningPlan;
+          String msg = "workflow_identity_saved";
+          boolean otherPlans = false;
+          List plans = project.getPlans();
+          if (plans != null) {
+              for (int i = 0 ; i < plans.size() ; i++) {
+                  ProvisioningPlan plan = (ProvisioningPlan)plans.get(i);
+                  if (!ProvisioningPlan.APP_IIQ.equals(plan.getTargetIntegration())) {
+                     otherPlans = true;
+                     break;
+                  }
+              }
+          }
+
+          if (project.getUnmanagedPlan() != null && isTrue(doManualActions)) {
+              if (otherPlans)
+                  msg = "workflow_identity_provisioning_manual";
+              else
+                  msg = "workflow_identity_manual";
+          }
+          else if (otherPlans) {
+              // jsl - if there are errors it looks odd to show
+              // a "succesfully requesting provisioning" message
+              // followed by the error message, just leave this out,
+              // we can say something about manual provisioning but if
+              // simply committed the change we dont' need anything more
+              // msg = "workflow_identity_provisioning";
+          }
+          return msg;
+        ]]></Source>
+        </Script>
+      </Arg>
+      <Arg name="arg1" value="ref:summaryName"/>
+      <Transition to="Provision"/>
+    </Step>
+    <Step action="call:provisionGroupProject" icon="Provision" name="Provision" posX="732" posY="15">
+      <Arg name="background" value="!ref:foregroundProvisioning"/>
+      <Arg name="project" value="ref:project"/>
+      <Transition to="Check Provisioning Errors"/>
+    </Step>
+    <Step name="Check Provisioning Errors" posX="851" posY="15">
+      <Script>
+        <Source><![CDATA[
+        import sailpoint.tools.Message;
+        //System.out.println("Checking provisioning errors...");
+        List errors = wfcontext.getWorkflowCase().getErrors();
+        if (errors != null) {
+            for (Message error : errors) {
+                //System.out.println("*** " + error.toString());
+            }
+        }
+      ]]></Source>
+      </Script>
+      <Transition to="Aggregate Specific Targets" when="(pamContainersToAggregate != null) &amp;&amp; (!pamContainersToAggregate.isEmpty())"/>
+      <Transition to="Aggregate Specific Group" when="(pamContainerToGroupAggregate != null)"/>
+      <Transition to="end"/>
+    </Step>
+    <Step action="call:aggregateSpecificTargets" icon="Provision" name="Aggregate Specific Targets" posX="732" posY="15">
+      <Arg name="pamContainersToAggregate" value="ref:pamContainersToAggregate"/>
+      <Arg name="applicationName" value="ref:applicationName"/>
+      <Transition to="end"/>
+    </Step>
+    <Step action="call:aggregateSpecificGroup" icon="Provision" name="Aggregate Specific Group" posX="732" posY="15">
+      <Arg name="pamContainerToGroupAggregate" value="ref:pamContainerToGroupAggregate"/>
+      <Arg name="applicationName" value="ref:applicationName"/>
+      <Transition to="end"/>
+    </Step>
+    <Step icon="Stop" name="end" posX="977" posY="14"/>
+    <Attributes>
+      <Map>
+        <entry key="appOwner">
+          <value>
+            <Identity lastLogin="1779682598871" lastRefresh="1779186093662" name="spadmin" password="1:ACP:xCjjVHCHzHF73lfsFXpAHzb4wcOzk+5QPlsaE6kzrRM=" protected="true">
+              <Attributes>
+                <Map>
+                  <entry key="displayName" value="The Administrator"/>
+                  <entry key="email" value="spadmin.1045@eshiam.com"/>
+                  <entry key="firstname" value="The"/>
+                  <entry key="lastname" value="Administrator"/>
+                  <entry key="rapidSetupProcessingState" value="skipped"/>
+                </Map>
+              </Attributes>
+              <UIPreferencesRef>
+                <Reference class="sailpoint.object.UIPreferences"/>
+              </UIPreferencesRef>
+              <AttributeMetaDatas>
+                <AttributeMetaData attribute="inactive" source="SRH application:inactive"/>
+              </AttributeMetaDatas>
+              <Capabilities>
+                <Reference class="sailpoint.object.Capability" name="SystemAdministrator"/>
+              </Capabilities>
+              <Links>
+                <Link displayName="spadmin" identity="spadmin" lastRefresh="1767083079067">
+                  <ApplicationRef>
+                    <Reference class="sailpoint.object.Application" name="SCIMApp"/>
+                  </ApplicationRef>
+                  <Attributes>
+                    <Map>
+                      <entry key="IIQDisabled">
+                        <value>
+                          <Boolean/>
+                        </value>
+                      </entry>
+                      <entry key="accounts">
+                        <value>
+                          <List>
+                            <String>{"displayName":"spadmin","value":"c0a801199b581419819b6a705f4e1717","$ref":"http://localhost:8080/identityiq-8.4/scim/v2/Accounts/c0a801199b581419819b6a705f4e1717"}</String>
+                          </List>
+                        </value>
+                      </entry>
+                      <entry key="active">
+                        <value>
+                          <Boolean>true</Boolean>
+                        </value>
+                      </entry>
+                      <entry key="capabilities">
+                        <value>
+                          <List>
+                            <String>SystemAdministrator</String>
+                          </List>
+                        </value>
+                      </entry>
+                      <entry key="displayName" value="The Administrator"/>
+                      <entry key="emails.work.primary.value" value="spadmin.1045@eshiam.com"/>
+                      <entry key="id" value="spadmin"/>
+                      <entry key="isManager">
+                        <value>
+                          <Boolean/>
+                        </value>
+                      </entry>
+                      <entry key="lastRefresh">
+                        <value>
+                          <Date>1767017307995</Date>
+                        </value>
+                      </entry>
+                      <entry key="name.familyName" value="Administrator"/>
+                      <entry key="name.formatted" value="The Administrator"/>
+                      <entry key="name.givenName" value="The"/>
+                      <entry key="riskScore">
+                        <value>
+                          <Integer>0</Integer>
+                        </value>
+                      </entry>
+                      <entry key="userName" value="spadmin"/>
+                    </Map>
+                  </Attributes>
+                </Link>
+              </Links>
+              <Scorecard/>
+            </Identity>
+          </value>
+        </entry>
+        <entry key="applicationName"/>
+        <entry key="approver">
+          <value>
+            <Identity lastRefresh="1779186080960" name="Amanda.Ross">
+              <Attributes>
+                <Map>
+                  <entry key="displayName" value="Amanda.Ross"/>
+                  <entry key="rapidSetupProcessingState" value="skipped"/>
+                </Map>
+              </Attributes>
+              <AttributeMetaDatas>
+                <AttributeMetaData attribute="inactive" source="SRH application:inactive"/>
+              </AttributeMetaDatas>
+              <Links>
+                <Link displayName="Amanda.Ross" identity="Amanda.Ross" lastRefresh="1767083072776">
+                  <ApplicationRef>
+                    <Reference class="sailpoint.object.Application" name="SCIMApp"/>
+                  </ApplicationRef>
+                  <Attributes>
+                    <Map>
+                      <entry key="IIQDisabled">
+                        <value>
+                          <Boolean/>
+                        </value>
+                      </entry>
+                      <entry key="accounts">
+                        <value>
+                          <List>
+                            <String>{"displayName":"Amanda.Ross","value":"c0a801199b581419819b6a70531416b6","$ref":"http://localhost:8080/identityiq-8.4/scim/v2/Accounts/c0a801199b581419819b6a70531416b6"}</String>
+                          </List>
+                        </value>
+                      </entry>
+                      <entry key="active">
+                        <value>
+                          <Boolean>true</Boolean>
+                        </value>
+                      </entry>
+                      <entry key="displayName" value="Amanda.Ross"/>
+                      <entry key="emails.work.primary.value"/>
+                      <entry key="id" value="Amanda.Ross"/>
+                      <entry key="isManager">
+                        <value>
+                          <Boolean/>
+                        </value>
+                      </entry>
+                      <entry key="lastRefresh">
+                        <value>
+                          <Date>1767017304862</Date>
+                        </value>
+                      </entry>
+                      <entry key="name.formatted" value="Amanda.Ross"/>
+                      <entry key="userName" value="Amanda.Ross"/>
+                    </Map>
+                  </Attributes>
+                </Link>
+              </Links>
+            </Identity>
+          </value>
+        </entry>
+        <entry key="changes">
+          <value>
+            <ChangeSummary>
+              <Differences>
+                <Difference attribute="Owner" displayName="Owner" newValue="spadmin" oldValue="Amanda.Ross"/>
+              </Differences>
+            </ChangeSummary>
+          </value>
+        </entry>
+        <entry key="doManualActions" value="false"/>
+        <entry key="fallbackApprover">
+          <value>
+            <Identity lastLogin="1779682598871" lastRefresh="1779186093662" name="spadmin" password="1:ACP:xCjjVHCHzHF73lfsFXpAHzb4wcOzk+5QPlsaE6kzrRM=" protected="true">
+              <Attributes>
+                <Map>
+                  <entry key="displayName" value="The Administrator"/>
+                  <entry key="email" value="spadmin.1045@eshiam.com"/>
+                  <entry key="firstname" value="The"/>
+                  <entry key="lastname" value="Administrator"/>
+                  <entry key="rapidSetupProcessingState" value="skipped"/>
+                </Map>
+              </Attributes>
+              <UIPreferencesRef>
+                <Reference class="sailpoint.object.UIPreferences"/>
+              </UIPreferencesRef>
+              <AttributeMetaDatas>
+                <AttributeMetaData attribute="inactive" source="SRH application:inactive"/>
+              </AttributeMetaDatas>
+              <Capabilities>
+                <Reference class="sailpoint.object.Capability" name="SystemAdministrator"/>
+              </Capabilities>
+              <Links>
+                <Link displayName="spadmin" identity="spadmin" lastRefresh="1767083079067">
+                  <ApplicationRef>
+                    <Reference class="sailpoint.object.Application" name="SCIMApp"/>
+                  </ApplicationRef>
+                  <Attributes>
+                    <Map>
+                      <entry key="IIQDisabled">
+                        <value>
+                          <Boolean/>
+                        </value>
+                      </entry>
+                      <entry key="accounts">
+                        <value>
+                          <List>
+                            <String>{"displayName":"spadmin","value":"c0a801199b581419819b6a705f4e1717","$ref":"http://localhost:8080/identityiq-8.4/scim/v2/Accounts/c0a801199b581419819b6a705f4e1717"}</String>
+                          </List>
+                        </value>
+                      </entry>
+                      <entry key="active">
+                        <value>
+                          <Boolean>true</Boolean>
+                        </value>
+                      </entry>
+                      <entry key="capabilities">
+                        <value>
+                          <List>
+                            <String>SystemAdministrator</String>
+                          </List>
+                        </value>
+                      </entry>
+                      <entry key="displayName" value="The Administrator"/>
+                      <entry key="emails.work.primary.value" value="spadmin.1045@eshiam.com"/>
+                      <entry key="id" value="spadmin"/>
+                      <entry key="isManager">
+                        <value>
+                          <Boolean/>
+                        </value>
+                      </entry>
+                      <entry key="lastRefresh">
+                        <value>
+                          <Date>1767017307995</Date>
+                        </value>
+                      </entry>
+                      <entry key="name.familyName" value="Administrator"/>
+                      <entry key="name.formatted" value="The Administrator"/>
+                      <entry key="name.givenName" value="The"/>
+                      <entry key="riskScore">
+                        <value>
+                          <Integer>0</Integer>
+                        </value>
+                      </entry>
+                      <entry key="userName" value="spadmin"/>
+                    </Map>
+                  </Attributes>
+                </Link>
+              </Links>
+              <Scorecard/>
+            </Identity>
+          </value>
+        </entry>
+        <entry key="foregroundProvisioning" value="true"/>
+        <entry key="launcher" value="spadmin"/>
+        <entry key="optimisticProvisioning"/>
+        <entry key="owner">
+          <value>
+            <Identity lastRefresh="1779186080960" name="Amanda.Ross">
+              <Attributes>
+                <Map>
+                  <entry key="displayName" value="Amanda.Ross"/>
+                  <entry key="rapidSetupProcessingState" value="skipped"/>
+                </Map>
+              </Attributes>
+              <AttributeMetaDatas>
+                <AttributeMetaData attribute="inactive" source="SRH application:inactive"/>
+              </AttributeMetaDatas>
+              <Links>
+                <Link displayName="Amanda.Ross" identity="Amanda.Ross" lastRefresh="1767083072776">
+                  <ApplicationRef>
+                    <Reference class="sailpoint.object.Application" name="SCIMApp"/>
+                  </ApplicationRef>
+                  <Attributes>
+                    <Map>
+                      <entry key="IIQDisabled">
+                        <value>
+                          <Boolean/>
+                        </value>
+                      </entry>
+                      <entry key="accounts">
+                        <value>
+                          <List>
+                            <String>{"displayName":"Amanda.Ross","value":"c0a801199b581419819b6a70531416b6","$ref":"http://localhost:8080/identityiq-8.4/scim/v2/Accounts/c0a801199b581419819b6a70531416b6"}</String>
+                          </List>
+                        </value>
+                      </entry>
+                      <entry key="active">
+                        <value>
+                          <Boolean>true</Boolean>
+                        </value>
+                      </entry>
+                      <entry key="displayName" value="Amanda.Ross"/>
+                      <entry key="emails.work.primary.value"/>
+                      <entry key="id" value="Amanda.Ross"/>
+                      <entry key="isManager">
+                        <value>
+                          <Boolean/>
+                        </value>
+                      </entry>
+                      <entry key="lastRefresh">
+                        <value>
+                          <Date>1767017304862</Date>
+                        </value>
+                      </entry>
+                      <entry key="name.formatted" value="Amanda.Ross"/>
+                      <entry key="userName" value="Amanda.Ross"/>
+                    </Map>
+                  </Attributes>
+                </Link>
+              </Links>
+            </Identity>
+          </value>
+        </entry>
+        <entry key="pamContainerToGroupAggregate"/>
+        <entry key="pamContainersToAggregate"/>
+        <entry key="plan">
+          <value>
+            <ProvisioningPlan>
+              <Attributes>
+                <Map>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="GroupManagement"/>
+                </Map>
+              </Attributes>
+              <ObjectRequest application="ActiveDirectory" nativeIdentity="CN=BenefitCommittee,OU=Groups,OU=Demo,DC=Eshiam,DC=com" op="Modify" type="group">
+                <AttributeRequest name="sysAttribute" op="Set" value="memberOf"/>
+                <AttributeRequest name="sysDisplayName" op="Set" value="BenefitCommittee"/>
+                <AttributeRequest name="sysDescriptions" op="Set">
+                  <Value>
+                    <Map>
+                      <entry key="en_US"/>
+                    </Map>
+                  </Value>
+                </AttributeRequest>
+                <AttributeRequest name="sysOwner" op="Set" value="spadmin"/>
+                <AttributeRequest name="sysScope" op="Set" value=""/>
+                <AttributeRequest name="sysRequestable" op="Set">
+                  <Value>
+                    <Boolean>true</Boolean>
+                  </Value>
+                </AttributeRequest>
+                <AttributeRequest name="sysManagedAttributeType" op="Set" value="group"/>
+                <AttributeRequest name="sysClassifications" op="Set"/>
+                <AttributeRequest name="sysIiqElevatedAccess" op="Set">
+                  <Value>
+                    <Boolean/>
+                  </Value>
+                </AttributeRequest>
+                <AttributeRequest name="GroupType" op="Set" value="Security"/>
+                <AttributeRequest name="GroupScope" op="Set" value="Global"/>
+                <AttributeRequest name="description" op="Set"/>
+                <AttributeRequest name="mailNickname" op="Set"/>
+                <AttributeRequest name="bundleLevel" op="Set"/>
+                <AttributeRequest name="roleCriticality" op="Set"/>
+                <AttributeRequest name="memberOf" op="Set"/>
+              </ObjectRequest>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+          </value>
+        </entry>
+        <entry key="project">
+          <value>
+            <ProvisioningProject>
+              <Attributes>
+                <Map>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="GroupManagement"/>
+                </Map>
+              </Attributes>
+              <Filtered>
+                <ObjectRequest application="ActiveDirectory" nativeIdentity="CN=BenefitCommittee,OU=Groups,OU=Demo,DC=Eshiam,DC=com" op="Modify" type="group">
+                  <AttributeRequest name="GroupType" op="Set" value="Security">
+                    <Attributes>
+                      <Map>
+                        <entry key="reason">
+                          <value>
+                            <FilterReason>Exists</FilterReason>
+                          </value>
+                        </entry>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                  <AttributeRequest name="GroupScope" op="Set" value="Global">
+                    <Attributes>
+                      <Map>
+                        <entry key="reason">
+                          <value>
+                            <FilterReason>Exists</FilterReason>
+                          </value>
+                        </entry>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                </ObjectRequest>
+              </Filtered>
+              <MasterPlan>
+                <ProvisioningPlan>
+                  <Attributes>
+                    <Map>
+                      <entry key="requester" value="spadmin"/>
+                      <entry key="source" value="GroupManagement"/>
+                    </Map>
+                  </Attributes>
+                  <ObjectRequest application="ActiveDirectory" nativeIdentity="CN=BenefitCommittee,OU=Groups,OU=Demo,DC=Eshiam,DC=com" op="Modify" type="group">
+                    <AttributeRequest name="sysAttribute" op="Set" value="memberOf"/>
+                    <AttributeRequest name="sysDisplayName" op="Set" value="BenefitCommittee"/>
+                    <AttributeRequest name="sysDescriptions" op="Set">
+                      <Value>
+                        <Map>
+                          <entry key="en_US"/>
+                        </Map>
+                      </Value>
+                    </AttributeRequest>
+                    <AttributeRequest name="sysOwner" op="Set" value="spadmin"/>
+                    <AttributeRequest name="sysScope" op="Set" value=""/>
+                    <AttributeRequest name="sysRequestable" op="Set">
+                      <Value>
+                        <Boolean>true</Boolean>
+                      </Value>
+                    </AttributeRequest>
+                    <AttributeRequest name="sysManagedAttributeType" op="Set" value="group"/>
+                    <AttributeRequest name="sysClassifications" op="Set"/>
+                    <AttributeRequest name="sysIiqElevatedAccess" op="Set">
+                      <Value>
+                        <Boolean/>
+                      </Value>
+                    </AttributeRequest>
+                    <AttributeRequest name="GroupType" op="Set" value="Security"/>
+                    <AttributeRequest name="GroupScope" op="Set" value="Global"/>
+                    <AttributeRequest name="description" op="Set"/>
+                    <AttributeRequest name="mailNickname" op="Set"/>
+                    <AttributeRequest name="bundleLevel" op="Set"/>
+                    <AttributeRequest name="roleCriticality" op="Set"/>
+                    <AttributeRequest name="memberOf" op="Set"/>
+                  </ObjectRequest>
+                  <Requesters>
+                    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                  </Requesters>
+                </ProvisioningPlan>
+              </MasterPlan>
+              <ProvisioningPlan targetIntegration="ActiveDirectory" trackingId="814976dde13e4186823bbee91a22e6e9">
+                <Attributes>
+                  <Map>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="GroupManagement"/>
+                  </Map>
+                </Attributes>
+                <ObjectRequest application="ActiveDirectory" nativeIdentity="CN=BenefitCommittee,OU=Groups,OU=Demo,DC=Eshiam,DC=com" op="Modify" type="group">
+                  <AttributeRequest name="sysAttribute" op="Set" value="memberOf"/>
+                  <AttributeRequest name="sysDisplayName" op="Set" value="BenefitCommittee"/>
+                  <AttributeRequest name="sysDescriptions" op="Set">
+                    <Value>
+                      <Map>
+                        <entry key="en_US"/>
+                      </Map>
+                    </Value>
+                  </AttributeRequest>
+                  <AttributeRequest name="sysOwner" op="Set" value="spadmin"/>
+                  <AttributeRequest name="sysScope" op="Set" value=""/>
+                  <AttributeRequest name="sysRequestable" op="Set">
+                    <Value>
+                      <Boolean>true</Boolean>
+                    </Value>
+                  </AttributeRequest>
+                  <AttributeRequest name="sysManagedAttributeType" op="Set" value="group"/>
+                  <AttributeRequest name="sysClassifications" op="Set"/>
+                  <AttributeRequest name="sysIiqElevatedAccess" op="Set">
+                    <Value>
+                      <Boolean/>
+                    </Value>
+                  </AttributeRequest>
+                </ObjectRequest>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </ProvisioningProject>
+          </value>
+        </entry>
+        <entry key="sessionOwner" value="spadmin"/>
+        <entry key="summaryName" value="ActiveDirectory group: CN=BenefitCommittee,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+        <entry key="taskResultId" value="c0a801289e5d1e76819e5d9db0aa0259"/>
+        <entry key="trace" value="false"/>
+      </Map>
+    </Attributes>
+  </Workflow>
+</WorkflowCase>

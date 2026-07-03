@@ -1,0 +1,278 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="AdminAccountCreationInDirectoriesRuleLibrary">
+  <Source><![CDATA[
+  import sailpoint.object.Identity;
+  import sailpoint.object.ProvisioningPlan;
+  import sailpoint.object.Application;
+  import sailpoint.object.AccountRequest;
+  import sailpoint.object.AttributeRequest;
+  import sailpoint.object.ProvisioningPlan.ObjectOperation;
+  import sailpoint.object.ProvisioningPlan.Operation;
+  import sailpoint.object.Filter;
+  import sailpoint.object.ProvisioningPlan.AccountRequest;
+  import sailpoint.api.*;
+  import sailpoint.object.ProvisioningProject;
+  import sailpoint.api.Provisioner;
+  import sailpoint.object.Custom;
+  import sailpoint.object.Filter;
+
+
+
+  Custom custom=context.getObjectByName(Custom.class,"SecondaryIdCreation Custom Object");
+
+
+  public String getAccNativeIdentity(String identityName,String applicationName){
+    log.error("**Entering into getAccNativeIdentity method...  :");
+    String nativeIdentity;
+
+    Filter filter=Filter.and(Filter.eq("displayName",identityName),Filter.eq("application.name",applicationName));
+
+    Link link=context.getUniqueObject(Link.class,filter);
+
+    if(link!=null){
+      Identity identity=link.getIdentity();
+      if(identity!=null){
+        String type=identity.getAttribute("type");
+        if(type!=null @and "employee".equalsIgnoreCase(type)){
+          nativeIdentity=link.getNativeIdentity();
+        }
+      }
+    }
+
+    return nativeIdentity;
+    log.error("**Exiting from getAccNativeIdentity method...  :");
+  }
+
+
+  public AccountRequest fetchAccountRequest(AccountRequest accReq,Map customAttributes){
+    log.error("**Entering from fetchAccountRequest method...  :");
+    log.error("appName==="+accReq.getApplication()+"---customAttr--"+customAttributes);
+
+    String appName=accReq.getApplication();
+    String finalDn=accReq.getNativeIdentity();
+
+    if(appName.equals(custom.get("applicationName").get("ADAdmin"))){
+
+      log.error("--appName--"+appName);
+      Map toBeModifiedMap=custom.get("AD_Update_Atrributes");
+      String nativeIdentity=accReq.getNativeIdentity();
+
+      for(AttributeRequest attReq:accReq.getAttributeRequests()){
+        log.error("--in for loop--");
+
+        String currentValue=attReq.getValue();
+        String modifiedValue;
+        for(String newKey:toBeModifiedMap.keySet()){
+
+          log.error("----newKey  values in keys loop-----"+newKey);
+          if(newKey.equalsIgnoreCase(attReq.getName())){
+            
+
+            modifiedValue=customAttributes.get(toBeModifiedMap.get(newKey));
+            log.error("----modifiedValue  values in key equals check loop-----"+modifiedValue);
+            attReq.setValue(modifiedValue);
+            log.error("----attReq  object in after new value set -----"+attReq.toXml());
+
+          }
+        }
+      }
+      String cnPrefix=finalDn.substring(0,finalDn.indexOf(","));
+
+      String cnSuffix=finalDn.substring(finalDn.indexOf(","));
+      String modifiedDn=cnPrefix+"-ADM"+cnSuffix;
+
+      String utilFinalDn = Util.replaceCharacter(nativeIdentity, modifiedDn, finalDn);
+      accReq.setNativeIdentity(utilFinalDn);
+    }
+
+    log.error("   modified accountrequest ++="+accReq.toXml());
+    log.error("**Exiting from fetchAccountRequest method...  :");
+    return accReq;
+  }
+
+
+
+
+
+  public Identity fetchIdentity(String identityId){
+    log.error("**Entered into fetchIdentity method  :");
+    Identity identity=null;
+    Filter filter=Filter.and((Filter.or(Filter.eq("name",identityId),Filter.eq("id",identityId))),Filter.eq("type","employee"));
+
+    
+    if(identityId!=null @and !formModel.get("secondaryIdType").equalsIgnoreCase(custom.get("secondaryIdType").get("WireLessAdmin"))){
+      identity=context.getUniqueObject(Identity.class,filter);
+    }
+    log.error("**Entered into fetchIdentity method  :");
+    return identity;
+  }
+
+
+
+  public Application fetchApplication(String idType){
+    log.error("Entered into fetchApplication method... :");
+    Application application=null;
+
+    if(formModel!=null @and idType!=null @and formModel.size() @gt 2){
+
+      if(!custom.get("secondaryIdType").get("WireLessAdmin").equalsIgnoreCase(idType)){
+        application=context.getObjectByName(Application.class,custom.get("applicationName").get(idType));
+      }
+      else{
+        application=context.getObjectByName(Application.class,custom.get("applicationName").get(idType));
+      }
+    }
+    log.error("**Exiting from fetchApplication method...  :");
+    return application;
+  }
+
+
+
+
+  public List getADAdminUpdatedPlan(List compiledPlans){
+    log.error("**Entering into getADAdminUpdatedPlan method...  :");
+
+    Identity identity=fetchIdentity(formModel.get("primaryAccount"));
+    String currentLastName=identity.getLastname();
+    String currentEmpId=identity.getAttribute("employeeId");
+    String currentFullName=identity.getName();
+
+    List listOfAccountRequests=new ArrayList();
+    AccountRequest finalAccReq=null;
+    Map currentAttributes=new HashMap();
+
+    currentAttributes.put("currentsAMAccountName",currentFullName);
+    currentAttributes.put("modifiedsAMAccountName",currentFullName+"-ADM");
+    //currentAttributes.put("currentEmpId",currentEmpId);
+    //currentAttributes.put("modifyEmployeeID","ADM"+currentEmpId);
+    currentAttributes.put("currentFullName",currentFullName);
+    currentAttributes.put("modifiedFullName",currentFullName+"-ADM");
+
+    if(compiledPlans!=null){
+      for(ProvisioningPlan plan: compiledPlans){
+        List accReqs=plan.getAccountRequests();
+
+        for(AccountRequest accReq:accReqs){
+          log.error("entered into upadatedAD Plan accreq loop.....");
+
+          String applicationName=accReq.getApplicationName();
+
+          if(applicationName.equals(custom.get("applicationName").get("ADAdmin"))){
+            finalAccReq=fetchAccountRequest(accReq,currentAttributes);
+            listOfAccountRequests.add(finalAccReq);
+
+          }
+        }
+      }
+    }
+    log.error("**Exiting from getADAdminUpdatedPlan acclist method...  :");
+    return listOfAccountRequests;
+  }
+
+
+
+
+  public ProvisioningPlan buildProvisioningPlan(){
+
+    ProvisioningPlan finalPlan=new ProvisioningPlan();
+    log.error("**Entering into buildProvisioningPlan method...  :");
+
+    String secondaryIdType=formModel.get("secondaryIdType");
+    String identityId=formModel.get("primaryAccount");
+
+    log.error(" ====identity id or primatyaccount in buildProvisioningPlan method--"+identityId+"   "+secondaryIdType);
+
+    if(secondaryIdType.equalsIgnoreCase(custom.get("secondaryIdType").get("WireLessAdmin"))){
+
+      //build plan for WireLessAdmin
+
+    }else{
+
+      Identity identity=fetchIdentity(identityId);
+      Application application=fetchApplication(secondaryIdType);
+      List compiledPlans =getCompiledPlansList(application,identityId);
+
+
+      if(secondaryIdType.equalsIgnoreCase(custom.get("secondaryIdType").get("ADAdmin"))){
+        List updateADaccReqs=getADAdminUpdatedPlan(compiledPlans);
+
+        for(AccountRequest accReq:updateADaccReqs){
+          finalPlan.add(accReq);
+        }
+      }else if(secondaryIdType.equalsIgnoreCase(custom.get("secondaryIdType").get("CloudAdmin"))){
+        //buildplan for  LDAPAdmin
+
+      }
+      finalPlan.setIdentity(identity);
+      log.error(" finalPlan in buildprovisoning method :"+finalPlan.toXml());
+
+    }
+
+
+    log.error("**finalplan in buildProvisioningPlan method before exiting from method...  :======"+finalPlan.toXml());
+    log.error("**Exiting from buildProvisioningPlan method...  :");
+    return finalPlan;
+  }
+
+
+
+  public List getCompiledPlansList(Application application, String identityId){
+
+    Identity identity=fetchIdentity(identityId);
+    ProvisioningPlan finalPlan=new ProvisioningPlan();
+     List plansList=new ArrayList();
+    
+    if(identity!=null){
+    finalPlan.setIdentity(identity);
+    AccountRequest accReq= new AccountRequest();
+    accReq.setApplication(application.getName());
+    accReq.setOperation(ProvisioningPlan.AccountRequest.Operation.Create);
+    finalPlan.add(accReq);
+    //accReq.setNativeIdentity(getAccNativeIdentity(String identityName,String applicationName));
+    log.error("  finalPlan in getcompiledplans menthod----"+finalPlan.toXml());
+    Provisioner pr=new Provisioner(context);
+    log.error("  finalPlan in getcompiledplans menthod----1");
+    ProvisioningProject project=pr.compile(finalPlan);
+    log.error("  finalPlan in getcompiledplans menthod----2");
+    plansList=project.getPlans();
+    log.error("  project in getcompiledplans menthod after compiling finalplan----"+project.toXml());
+    
+    if(plansList==null @or plansList.isEmpty()){
+      throw new Exception(" No valid plans are available for the account "); 
+    }
+  }
+    return plansList;
+  }
+
+  log.error("formModel in rule library==="+formModel);
+
+
+
+
+ /* public ProvisioningPlan createLDAPAdminAccount(String identityName,String applicationName){
+    log.error("--enterd into AdminAccountCreationInDirectoriesRuleLibrary createLDAPAdminAccount--"); 
+
+    ProvisioningPlan plan=new ProvisioningPlan();
+    AccountRequest accReq=new AccountRequest();
+
+    accReq.setApplication(applicationName);
+    accReq.setOperation(ProvisioningPlan.AccountRequest.Operation.Create);
+    accReq.setNativeIdentity("cn="+identityName+"-CAdmin"+",ou=People,dc=my-domain,dc=com");
+    accReq.add(new AttributeRequest("sn", ProvisioningPlan.Operation.Add,identityName+"-CAdmin"));
+    accReq.add(new AttributeRequest("cn", ProvisioningPlan.Operation.Add, identityName+"-CAdmin"));
+    accReq.add(new AttributeRequest("password", ProvisioningPlan.Operation.Add, "eshiam@1045"));
+    accReq.add(new AttributeRequest("mail", ProvisioningPlan.Operation.Add, context.getObjectByName(Identity.class,identityName).getEmail()));
+
+    plan.setIdentity(context.getObjectByName(Identity.class,identityName));
+    plan.setNativeIdentity(identityName+"-CAdmin");
+
+    plan.add(accReq);
+
+    return plan;
+
+
+  }*/
+
+  ]]></Source>
+</Rule>

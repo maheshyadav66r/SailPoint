@@ -1,0 +1,194 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE IdentityRequest PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<IdentityRequest completionStatus="Success" endDate="1751429894321" executionStatus="Completed" name="0000000756" priority="Normal" requesterDisplayName="The Administrator" requesterId="c0a81d898f331ca3818f33fcf64800ff" source="LCM" state="End" targetClass="Identity" targetDisplayName="Aaron Nunez" type="AccessRequest" verified="1751516097773">
+  <Attributes>
+    <Map>
+      <entry key="provisionedProject">
+        <value>
+          <ProvisioningProject identity="Aaron Nunez">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000756"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <ExpansionItems>
+              <ExpansionItem application="ActiveDirectory" cause="Role" name="memberOf" nativeIdentity="CN=Aaron Nunez,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Add" sourceInfo="roleForACCSelectionADM" value="CN=Benefits,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+            </ExpansionItems>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="IIQ" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a81d8997c5179b8197c70bb63e0213"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="RoleAdd"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="assignedRoles" op="Add" value="roleForACCSelectionADM"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000756"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <ProvisioningTargets>
+                  <ProvisioningTarget role="roleForACCSelectionADM">
+                    <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" roleName="roleForACCSelectionADM" selection="CN=Aaron Nunez,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                      <AccountInfo displayName="Aaron Nunez" nativeIdentity="CN=Aaron Nunez,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+                    </AccountSelection>
+                  </ProvisioningTarget>
+                </ProvisioningTargets>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan targetIntegration="IIQ" trackingId="0c8846cc69de4300a3c68ea595d07cd8">
+              <AccountRequest application="IIQ" op="Modify" targetIntegration="IIQ">
+                <Attributes>
+                  <Map>
+                    <entry key="attachmentConfigList"/>
+                    <entry key="attachments"/>
+                    <entry key="flow" value="AccessRequest"/>
+                    <entry key="id" value="c0a81d8997c5179b8197c70bb63e0213"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="operation" value="Add"/>
+                    <entry key="provisioningTransactionId" value="c0a81d8997c5179b8197c95b4f4f02b2"/>
+                    <entry key="requester" value="spadmin"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="assignedRoles" op="Add" value="roleForACCSelectionADM"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000756"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+            </ProvisioningPlan>
+            <ProvisioningPlan nativeIdentity="Aaron Nunez" targetIntegration="ActiveDirectory" trackingId="5f1c1111696f47f6993808bc8260e34d">
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Aaron Nunez,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify" sourceRole="roleForACCSelectionADM" targetIntegration="ActiveDirectory">
+                <Attributes>
+                  <Map>
+                    <entry key="provisioningTransactionId" value="c0a81d8997c5179b8197c95b4f2f02b1"/>
+                    <entry key="selectorRuleSource" value="roleForACCSelectionADM"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="memberOf" op="Add" value="CN=Benefits,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                <ProvisioningResult status="committed"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000756"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+            </ProvisioningPlan>
+            <ProvisioningTarget role="roleForACCSelectionADM">
+              <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" roleName="roleForACCSelectionADM" selection="CN=Aaron Nunez,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="Aaron Nunez" nativeIdentity="CN=Aaron Nunez,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+            </ProvisioningTarget>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="taskResultId" value="c0a81d8997c5179b8197c95b4be902a6"/>
+    </Map>
+  </Attributes>
+  <RequestItems>
+    <IdentityRequestItem application="IIQ" approvalState="Finished" name="assignedRoles" operation="Add" ownerName="spadmin" provisioningEngine="IIQ" provisioningState="Finished" value="roleForACCSelectionADM">
+      <Attributes>
+        <Map>
+          <entry key="assignmentId" value="96803900c8ef4894b0dcf4d2bb133576"/>
+          <entry key="attachmentConfigList"/>
+          <entry key="attachments"/>
+          <entry key="displayableValue" value="RoleForACCSelectionADM"/>
+          <entry key="flow" value="AccessRequest"/>
+          <entry key="id" value="c0a81d8997c5179b8197c70bb63e0213"/>
+          <entry key="identityEntitlementId" value="c0a81d8997c5179b8197c95b4e3302ad"/>
+          <entry key="interface" value="LCM"/>
+          <entry key="operation" value="RoleAdd"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="361dfdf5e7b742b4bb612f1d97de2c4b">
+                <AccountRequest application="IIQ" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a81d8997c5179b8197c70bb63e0213"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="Add"/>
+                      <entry key="provisioningTransactionId" value="c0a81d8997c5179b8197c95b4f4f02b2"/>
+                      <entry key="requester" value="spadmin"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="assignedRoles" op="Add" trackingId="361dfdf5e7b742b4bb612f1d97de2c4b" value="roleForACCSelectionADM"/>
+                </AccountRequest>
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Aaron Nunez,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify" sourceRole="roleForACCSelectionADM">
+                  <Attributes>
+                    <Map>
+                      <entry key="selectorRuleSource" value="roleForACCSelectionADM"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="memberOf" op="Add" trackingId="361dfdf5e7b742b4bb612f1d97de2c4b" value="CN=Benefits,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+      <Owner>
+        <Reference class="sailpoint.object.Identity" name="spadmin"/>
+      </Owner>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="ActiveDirectory" approvalState="Finished" compilationStatus="Expansion" expansionCause="Role" name="memberOf" nativeIdentity="CN=Aaron Nunez,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Add" provisioningEngine="ActiveDirectory" provisioningState="Finished" value="CN=Benefits,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <Attributes>
+        <Map>
+          <entry key="expansionInfo" value="roleForACCSelectionADM"/>
+          <entry key="identityEntitlementId" value="c0a81d8997c5179b8197c95b4e3802ae"/>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="9f5aa21c2be84e34a07da662c0bfa417">
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Aaron Nunez,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify" sourceRole="roleForACCSelectionADM" targetIntegration="ActiveDirectory">
+                  <Attributes>
+                    <Map>
+                      <entry key="provisioningTransactionId" value="c0a81d8997c5179b8197c95b4f2f02b1"/>
+                      <entry key="selectorRuleSource" value="roleForACCSelectionADM"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="memberOf" op="Add" trackingId="9f5aa21c2be84e34a07da662c0bfa417" value="CN=Benefits,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+          <entry key="selectorRuleSource" value="roleForACCSelectionADM"/>
+        </Map>
+      </Attributes>
+    </IdentityRequestItem>
+  </RequestItems>
+</IdentityRequest>

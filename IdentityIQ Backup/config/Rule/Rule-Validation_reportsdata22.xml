@@ -1,0 +1,190 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Validation_ReportsData22" type="Validation">
+  <Source><![CDATA[
+  import java.time.LocalDateTime;
+  import java.time.format.DateTimeFormatter;
+  import sailpoint.object.Bundle;
+  import sailpoint.object.Custom;
+  import sailpoint.api.SailPointFactory;
+  import sailpoint.object.Filter;
+  import sailpoint.object.Identity;
+  import sailpoint.object.IdentityEntitlement;
+  import sailpoint.object.QueryOptions;
+  import sailpoint.tools.GeneralException;
+  import sailpoint.tools.Util;
+  import java.io.File;
+  import java.io.FileWriter;
+  import java.io.BufferedWriter;
+  import java.text.SimpleDateFormat;
+  import java.io.File;
+
+
+
+
+
+
+
+  import java.time.LocalDateTime;
+  import java.time.format.DateTimeFormatter;
+  import sailpoint.object.Bundle;
+  import sailpoint.object.Filter;
+  import sailpoint.object.Identity;
+  import sailpoint.object.IdentityEntitlement;
+  import sailpoint.object.QueryOptions;
+  import sailpoint.tools.GeneralException;
+  import sailpoint.tools.Util;
+  import java.io.File;
+  import java.io.FileWriter;
+  import java.io.BufferedWriter;
+  import java.text.SimpleDateFormat;
+  //import java.util.Date;
+
+
+  Iterator iterator = null;
+  BufferedWriter writer = null;
+  List roleDivisions = null;
+
+  try {
+
+    //String inputData = (String)config.get("roleDivision");      
+    String inputData = "Low,Medium,High";   
+    log.error("inputData :" +inputData);
+    roleDivisions = new ArrayList();
+
+    if (!Util.isNullOrEmpty(inputData)) {
+      if (inputData.contains(",")) {
+        roleDivisions = Arrays.asList(inputData.split(","));
+      } else {
+        roleDivisions.add(inputData);
+      }
+    }
+    log.debug("roleDivisions :" +roleDivisions);
+
+    //SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+    String fileName = "icamInstitutionalRoleMembershipReport1045" +".csv";
+    // File file = new File("//Data//sailpoint//datafiles//MissingRoleTargets//" + fileName);
+    File file = new File("D:/csv files/Test/" + fileName);
+    /*if (!file.exists()) {
+      file.createNewFile();
+    }*/
+
+   // Filter baseFilter = Filter.and(Filter.in("name", Arrays.asList("detectedRoles","assignedRoles")),Filter.notnull("value"));
+    //Filter subqueryFilter = Filter.subquery("value", Bundle.class, "name", 	Filter.ignoreCase(Filter.in("Bundle.roleCriticality",roleDivisions)));
+      // Filter subqueryFilter = Filter.ignoreCase(Filter.in("Bundle.roleCriticality",roleDivisions));
+    //Filter joinFilter = Filter.join("value", "Bundle.name");
+    
+   /* String hql = "sql:SELECT i.*,ie.*,b.*FROM spt_identity i"
+      +" INNER JOIN spt_identity_entitlement ie"
+      +" On ie.identity_ID = i.id"
+      +" INNER JOIN spt_bundle b ON b.name = ie.value"
+      +" WHERE ie.name IN ('detectedRoles','assignedRoles')" 
+      +" AND ie.value IS NOT NULL" 
+      +" AND UPPER(b.roleCriticality) IN('"+inputData.replace(",", "','")+"')"
+      +" ORDER BY i.name;";*/
+   String hql = "from IdentityEntitlement ie, Bundle b, Identity i "
+           + "where ie.identity.id = i.id "
+           + "and ie.value = b.name "
+           + "and ie.name in ('detectedRoles','assignedRoles') "
+           + "and ie.value is not null "
+           + "and b.roleCriticality in ('Low','Medium','High') "
+           + "order by i.name";
+    
+    
+    QueryOptions options = new QueryOptions();
+   // options.addFilter(Filter.and(baseFilter,subqueryFilter,joinFilter));
+    options.setQuery(hql);
+    
+    
+    log.error(" hql : "+hql);
+     //log.error(" hql : "+hql);
+
+    String properties = "identity.name,identity.firstname,identity.lastname,identity.department,Bundle.name,name,Bundle.owner.name";
+    iterator = context.search(IdentityEntitlement.class, options, properties);
+    writer = new BufferedWriter(new FileWriter(file));
+    writer.write("IdentityName,FirstName,LastName,Department,RoleName,RoleType,RoleOwner,RoleDescription,RoleDivision,RoleLogicalAppName");
+    writer.newLine();
+
+    String identityName = "";
+    String firstName = "";
+    String lastName = "";
+    String department = "";
+    String roleName = "";
+    String roleType = "";
+    String roleOwner = "";
+    String roleDescription = "";
+    String roleDivision = "";
+    String roleLogicalAppName = "";
+
+
+    while (iterator.hasNext()) {
+
+      Object[] row = (Object[]) iterator.next();
+      roleDescription = "";
+      roleDivision = "";
+      roleLogicalAppName = "";
+
+      identityName = (Util.otos(row[0]) != null ? Util.otos(row[0]) : "").replace("\r", " ").replace("\n", " ");
+      firstName = (Util.otos(row[1])!= null?Util.otos(row[1]):"").replace("\r", " ").replace("\n", " ");
+      lastName = (Util.otos(row[2])!=null?Util.otos(row[2]):"").replace("\r", " ").replace("\n", " ");
+      department = (Util.otos(row[3])!=null?Util.otos(row[3]):"").replace("\r", " ").replace("\n", " ");
+      roleName = (Util.otos(row[4])!=null?Util.otos(row[4]):"").replace("\r", " ").replace("\n", " ");
+
+      Bundle bundle = context.getObjectByName(Bundle.class, roleName);
+      if (bundle != null) {
+        roleDescription = bundle.getDescription("en_US");
+        Map sysDescriptions = (Map) bundle.getAttribute("sysDescriptions");
+        if (sysDescriptions != null) {
+          roleDescription = Util.otos(sysDescriptions.get("en_US"))!=null?Util.otos(sysDescriptions.get("en_US")):"";
+        }
+
+        roleDivision =  (bundle.getAttribute("roleCriticality")!=null?bundle.getAttribute("roleCriticality"):"").replace("\r", " ").replace("\n", " ");       //role_criticality = RoleDivision   
+        roleLogicalAppName = (bundle.getAttribute("roleLevel")!=null?bundle.getAttribute("roleLevel"):"").replace("\r", " ").replace("\n", " ");                      //role_level = appName
+      }
+      if (roleDescription != null) {
+        roleDescription = roleDescription.replace("\r", " ").replace("\n", " ");
+      }
+      roleType = (Util.otos(row[5])!=null?Util.otos(row[5]):"").replace("\r", " ").replace("\n", " ");
+      roleOwner = (Util.otos(row[6])!=null?Util.otos(row[6]):"").replace("\r", " ").replace("\n", " ");
+     
+      String value = identityName.replace("\"","\"\"") + "," 
+        + firstName.replace("\"","\"\"") + "," 
+        + lastName.replace("\"","\"\"") + "," 
+        + department.replace("\"","\"\"") + "," 
+        + roleName.replace("\"","\"\"") + "," 
+        + roleType.replace("\"","\"\"") + "," 
+        + roleOwner.replace("\"","\"\"") + "," 
+       + "\"" + (roleDescription != null ? roleDescription.replace("\"","\"\"") : "") + "\"," 
+        + roleDivision.replace("\"","\"\"") + "," 
+        + roleLogicalAppName.replace("\"","\"\"");
+      
+       log.error(" Data  : "+value);
+
+      writer.write(value);
+      writer.newLine();
+    }
+    writer.flush();
+  } catch (Exception e) {
+
+    if(roleDivisions.isEmpty() || roleDivisions.size()<1) {
+      throw new GeneralException("No roleDivision values found from Run Rule Task");
+    }
+    log.error("Exception in ReportsData1 : ", e);
+  } finally {
+    Util.flushIterator(iterator);
+    if (writer != null) {
+      writer.close();
+    }
+  }
+
+  return "Role Membership Report by RoleDivision";
+
+
+
+
+
+
+
+
+  ]]></Source>
+</Rule>

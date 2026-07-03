@@ -1,0 +1,169 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="NativeRule-AD Powershell Create OU Test">
+  <Attributes>
+    <Map>
+      <entry key="ObjectOrientedScript" value="true"/>
+      <entry key="disabled" value="false"/>
+      <entry key="extension" value=".ps1"/>
+      <entry key="program" value="powershell.exe"/>
+      <entry key="timeout" value="300"/>
+    </Map>
+  </Attributes>
+  <Source><![CDATA[
+
+  Function writeToLog() {
+    param([string]$message)
+      Add-Content ($(Get-Date -format "yyyy-MM-dd HH:mm:ss") + "::$message") -Path $logFile
+  }
+ 
+
+  Add-type -path utils.dll
+    writeToLog("Start PS Rule")
+    $logFile = "C:\Sailpoint\IQService\logs.txt"
+    $session = ""
+
+    # Read the environment variables
+    $sReader = New-Object System.IO.StringReader([System.String]$env:Request)
+    $sResult = New-Object System.IO.StringReader([System.String]$env:Result)
+
+    # Form the xml reader objects
+    $xmlReader = [ System.xml.XmlTextReader]([sailpoint.utils.xml.XmlUtil]::getReader($sReader))
+    $xmlReader_Result = [ System.xml.XmlTextReader]([sailpoint.utils.xml.XmlUtil]::getReader($sResult))
+
+    # Create SailPoint objects
+    $requestObject = New-Object Sailpoint.Utils.objects.AccountRequest($xmlReader)
+    $resultObject = New-Object Sailpoint.Utils.objects.ServiceResult($xmlReader_Result)
+
+    # Loop through the attributes from the request
+    $atrBaseDN = ""
+    $atrDepartmentName = ""
+    foreach ($attribute in $requestObject.AttributeRequests)
+  {
+    if($attribute.Name -eq "baseDN")
+    {
+      $atrBaseDN=$attribute.value;
+      writeToLog("atrBaseDN::$atrBaseDN")  
+    }
+    if($attribute.Name -eq "departmentName")
+    {  
+      $atrDepartmentName=$attribute.value;
+      writeToLog("atrDepartmentName::$atrDepartmentName")  
+    }
+  }
+
+ # Credentials and Target
+$username = "Eshiam\Administrator"
+$password = "Kandula@100"
+$securePassword = ConvertTo-SecureString $password -AsPlainText -Force
+$credential = New-Object System.Management.Automation.PSCredential($username, $securePassword)
+$domainController = "192.168.177.129"
+
+# Target OU details
+$ouName = $atrDepartmentName
+$ouPath = "OU=Departments,OU=Demo,DC=Eshiam,DC=com"  # Replace with your domain DN
+$fullOU = "OU=$ouName,$ouPath"
+
+# Add target to TrustedHosts (only needed if using IP)
+Set-Item WSMan:\localhost\Client\TrustedHosts -Value $domainController -Force
+Restart-Service WinRM
+
+# Create remote session
+$session = New-PSSession -ComputerName $domainController -Credential $credential
+
+# Run logic on remote server
+Invoke-Command -Session $session -ScriptBlock {
+    param($fullOU, $ouName, $ouPath)
+
+    Import-Module ActiveDirectory
+ 
+
+    if (Get-ADOrganizationalUnit -LDAPFilter "(distinguishedName=$fullOU)" -ErrorAction SilentlyContinue) {
+           writeToLog("OU already exists")
+    } else {
+        New-ADOrganizationalUnit -Name $ouName -Path $ouPath -ProtectedFromAccidentalDeletion $true
+          writeToLog("OU created successfull.")
+    }
+} -ArgumentList $fullOU, $ouName, $ouPath
+
+# Clean up session
+Remove-PSSession $session
+  
+  
+  /*-------------------------------
+Test Rule
+import sailpoint.object.ProvisioningPlan;
+  import sailpoint.object.ProvisioningPlan.AccountRequest;
+  import sailpoint.object.ProvisioningPlan.Operation;
+  import sailpoint.object.ProvisioningPlan.AttributeRequest;
+
+  import sailpoint.object.EmailOptions;
+  import sailpoint.object.EmailTemplate;
+  import sailpoint.object.*;
+  import sailpoint.workItem.*;
+  import sailpoint.object.Filter;
+  import sailpoint.object.QueryOptions;
+  import sailpoint.object.ProvisioningPlan;
+  import sailpoint.object.ProvisioningPlan.AccountRequest;
+  import sailpoint.object.Identity;
+  import sailpoint.object.ProvisioningPlan.AttributeRequest;
+  import sailpoint.api.Provisioner;
+  import sailpoint.object.Custom;
+  import sailpoint.object.RpcResponse;
+  import sailpoint.object.RpcRequest;
+  import sailpoint.object.Rule;
+  import sailpoint.connector.RPCService;
+  import sailpoint.api.SailPointFactory;
+  import sailpoint.object.Application;
+  import sailpoint.object.Signature;
+  import sailpoint.object.Argument;
+
+  try {
+
+    String IQServiceHostName = "192.168.177.129";
+    int iqServicePort = 5050;
+    Map dataMap = new HashMap();
+    Application ad = context.getObjectByName(Application.class, "Active Directory");
+    dataMap.put("Application", ad.getAttributes());
+
+    System.out.println("Enetered in a rule");
+   
+
+    Rule rule = context.getObjectByName(Rule.class, "AD Powershell Create OU Test");
+    System.out.println("Enetered in a rule 1");
+
+    System.out.println("Enetered in a rule 8"+rule.toXml());
+    dataMap.put("postScript", rule);
+
+    AccountRequest accountRequest = new AccountRequest();
+    accountRequest.setApplication("AD-Application");
+    accountRequest.setOperation(AccountRequest.Operation.Create);
+    AttributeRequest attributeRequest = new AttributeRequest();
+    attributeRequest.setName("baseDN");  // use this to get a response back
+    attributeRequest.setValue("OU=Departments,OU=Demo,DC=Eshiam,DC=com");
+    accountRequest.add(attributeRequest);
+
+
+    AttributeRequest attributeRequest1 = new AttributeRequest();
+    attributeRequest1.setName("departmentName");  // use this to get a response back
+    attributeRequest1.setValue("Devika");
+    accountRequest.add(attributeRequest1);
+
+    dataMap.put("Request", accountRequest);
+    RPCService service = new RPCService(IQServiceHostName, iqServicePort,true);
+    service.setConnectorServices(new sailpoint.connector.DefaultConnectorServices());
+    RpcRequest request = new RpcRequest("ScriptExecutor", "runAfterScript" , dataMap);
+    System.out.println("Enetered in a rule 4");
+    service.execute(request);
+    System.out.println("Enetered in a rule 5");
+    return request;
+    // return service.execute(request);
+  } catch (Exception e){
+    System.out.println("Log::  "+e.getMessage());
+    log.error(e.getMessage(), e);
+  }
+
+  return;*/
+
+    ]]></Source>
+</Rule>

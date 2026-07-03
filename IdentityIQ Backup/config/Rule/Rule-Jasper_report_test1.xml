@@ -1,0 +1,77 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Jasper_Report_Test1">
+  <Source><![CDATA[
+  import sailpoint.object.*;
+  import sailpoint.api.*;
+  import sailpoint.object.QueryOptions;
+  import sailpoint.tools.Util;
+  import sailpoint.object.TaskResult;
+  import sailpoint.tools.Message;
+  import sailpoint.api.ObjectUtil;
+  import sailpoint.reporting.datasource.TaskResultDataSource;
+  import sailpoint.reporting.datasource.DelimitedFileDataSource;
+  import java.io.BufferedWriter;
+  import java.io.FileWriter;
+  import java.io.File;
+  import sailpoint.reporting.ReportingUtil;
+
+  public void writeToFile(List fileProps, List columnNames) {
+
+    String tempDir = ObjectUtil.getTempDir(context);
+    long currenttime = System.currentTimeMillis();
+    String fileName = tempDir + "/CustomReportFile_" + currenttime + ".csv";
+
+    File reportFile = new File(fileName);
+    BufferedWriter bw = new BufferedWriter(new FileWriter(reportFile));
+
+    for (String line : fileProps) {
+      bw.write(line);
+      bw.write("\n");
+      bw.flush();
+    }
+
+    DelimitedFileDataSource delimitedFileDataSource = new DelimitedFileDataSource(reportFile.getAbsolutePath(), columnNames);
+    TaskDefinition definition = context.getObjectById(TaskDefinition.class, taskResult.getDefinition().getId());
+    Signature signature = definition.getEffectiveSignature();
+
+    Map params = new HashMap();
+    List returns = signature != null ? signature.getReturns() : null;
+    params.put("taskResultDataSource", new TaskResultDataSource(returns, taskResult.getAttributes()));
+    JasperResult jResult = ReportingUtil.fillReport(context, "JasperReport_TestJRXML", delimitedFileDataSource, params);
+
+    taskResult.setReport(jResult);
+    context.saveObject(jResult);
+    context.saveObject(taskResult);
+    context.commitTransaction();
+
+    if (reportFile != null && reportFile.exists()) {
+      reportFile.delete();
+    }
+  }
+
+  List fileData=new ArrayList();
+  List columnNames= Arrays.asList("name","employeeId","email","firstname","lastname");
+
+  QueryOptions qo=new QueryOptions();
+  Filter f=Filter.eq("type","employee");
+  qo.addFilter(f);
+
+  Iterator it=context.search(Identity.class, qo, columnNames);
+
+  while (it.hasNext()) {
+
+    Object[] props=it.next();
+    String lineItem=props[0]+","+props[1]+","+props[2].toLowerCase()+","+props[3]+","+props[4];
+    fileData.add(lineItem);
+  }
+
+  log.error("...fileData in rule ........"+fileData);
+
+  writeToFile(fileData, columnNames);
+
+
+
+  return tempDir;
+  ]]></Source>
+</Rule>

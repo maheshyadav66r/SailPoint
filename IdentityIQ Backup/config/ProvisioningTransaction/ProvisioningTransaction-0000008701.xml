@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningTransaction PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningTransaction accountDisplayName="AccountsPayable" applicationName="ActiveDirectory" integration="ActiveDirectory" name="0000008701" nativeIdentity="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com" operation="Modify" source="GroupManagement" status="Failed" type="Auto">
+  <Attributes>
+    <Map>
+      <entry key="filtered">
+        <value>
+          <ObjectRequest application="ActiveDirectory" nativeIdentity="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com" op="Modify" type="group">
+            <AttributeRequest name="GroupType" op="Set" value="Security">
+              <Attributes>
+                <Map>
+                  <entry key="reason">
+                    <value>
+                      <FilterReason>Exists</FilterReason>
+                    </value>
+                  </entry>
+                </Map>
+              </Attributes>
+            </AttributeRequest>
+            <AttributeRequest name="GroupScope" op="Set" value="Global">
+              <Attributes>
+                <Map>
+                  <entry key="reason">
+                    <value>
+                      <FilterReason>Exists</FilterReason>
+                    </value>
+                  </entry>
+                </Map>
+              </Attributes>
+            </AttributeRequest>
+          </ObjectRequest>
+        </value>
+      </entry>
+      <entry key="request">
+        <value>
+          <ObjectRequest application="ActiveDirectory" nativeIdentity="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com" op="Modify" targetIntegration="ActiveDirectory" type="group">
+            <Attributes>
+              <Map>
+                <entry key="provisioningTransactionId" value="c0a80085996614dc81997542d9c70aa3"/>
+              </Map>
+            </Attributes>
+            <AttributeRequest name="memberOf" op="Set">
+              <Value>
+                <List>
+                  <String>CN=Benefits,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                  <String>CN=Buyer,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                </List>
+              </Value>
+            </AttributeRequest>
+            <AttributeRequest name="sysAttribute" op="Set" value="memberOf"/>
+            <AttributeRequest name="sysDisplayName" op="Set" value="AccountsPayable"/>
+            <AttributeRequest name="sysDescriptions" op="Set">
+              <Value>
+                <Map>
+                  <entry key="en_US"/>
+                </Map>
+              </Value>
+            </AttributeRequest>
+            <AttributeRequest name="sysOwner" op="Set" value=""/>
+            <AttributeRequest name="sysRequestable" op="Set">
+              <Value>
+                <Boolean>true</Boolean>
+              </Value>
+            </AttributeRequest>
+            <AttributeRequest name="sysManagedAttributeType" op="Set" value="group"/>
+            <AttributeRequest name="sysClassifications" op="Set"/>
+            <AttributeRequest name="sysIiqElevatedAccess" op="Set">
+              <Value>
+                <Boolean/>
+              </Value>
+            </AttributeRequest>
+            <ProvisioningResult status="retry"/>
+          </ObjectRequest>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+</ProvisioningTransaction>

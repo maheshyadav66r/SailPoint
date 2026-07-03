@@ -1,0 +1,45 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="SingleAccountAggregation">
+  <Source><![CDATA[
+  
+    import sailpoint.object.Application;
+    import sailpoint.object.Attributes;
+    import sailpoint.object.ResourceObject;
+    import sailpoint.object.TaskResult;
+    import sailpoint.api.Aggregator;
+    import sailpoint.connector.Connector;
+
+
+    String appName = "ActiveDirectory";
+
+    String acctNativeIdentity = "CN=bhanuk,OU=APAC Services,DC=office,DC=bpk,DC=com";
+
+
+    Application appObject = context.getObjectByName(Application.class, appName);
+
+    String appConnName = appObject.getConnector();
+
+    Connector appConnector = sailpoint.connector.ConnectorFactory.getConnector(appObject, null);
+
+    ResourceObject rObj = appConnector.getObject("account", acctNativeIdentity, null);
+
+    if(rObj!=null) {
+      Attributes argMap = new Attributes();
+      argMap.put("aggregationType", "account");
+      argMap.put("applications", appName);
+      argMap.put("descriptionAttribute","description");
+      argMap.put("descriptionLocale", "en_US");
+      argMap.put("noOptimizeReaggregation", "true");
+
+      Aggregator agg = new Aggregator(context, argMap);
+
+      TaskResult result = agg.aggregate(appObject,rObj);
+
+      return rObj.toXml();
+    } else {
+      return "The account: " + acctNativeIdentity + " can not be found.";
+    }
+  
+    ]]></Source>
+</Rule>

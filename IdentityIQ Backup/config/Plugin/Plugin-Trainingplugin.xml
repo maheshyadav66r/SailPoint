@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Plugin PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Plugin certificationLevel="None" disabled="true" displayName="Training Plugin" installDate="1773395303229" minSystemVersion="8.3" name="TrainingPlugin" rightRequired="AdminTrainingPlugin" version="2.0">
+  <Attributes>
+    <Map>
+      <entry key="fullPage">
+        <value>
+          <FullPage title="Training Full Page"/>
+        </value>
+      </entry>
+      <entry key="minUpgradableVersion" value="1.0"/>
+      <entry key="restResources">
+        <value>
+          <List>
+            <String>com.acme.training.rest.SearchResource</String>
+          </List>
+        </value>
+      </entry>
+      <entry key="settings">
+        <value>
+          <List>
+            <Setting dataType="int" defaultValue="200" helpText="The maximum number of objects to search. If there are 1000s or more objects of the type to search, the server could get overloaded" label="Max Objects to Search" name="maxSearchObjectCount"/>
+          </List>
+        </value>
+      </entry>
+      <entry key="snippets">
+        <value>
+          <List>
+            <Snippet regexPattern=".*home.jsf" rightRequired="AdminTrainingPlugin">
+              <Scripts>
+                <String>ui/js/snippets/trainingPluginWidgetModule.js</String>
+              </Scripts>
+            </Snippet>
+            <Snippet regexPattern=".*" rightRequired="AdminTrainingPlugin">
+              <Scripts>
+                <String>ui/js/snippets/snippet-insert.js</String>
+              </Scripts>
+            </Snippet>
+          </List>
+        </value>
+      </entry>
+      <entry key="taskExecutors">
+        <value>
+          <List>
+            <String>com.acme.training.task.SearchTaskExecutor</String>
+          </List>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <File>
+    <Reference class="sailpoint.object.PersistedFile" name="TrainingPlugin.2.0.0.zip"/>
+  </File>
+</Plugin>

@@ -1,0 +1,45 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningTransaction PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningTransaction accountDisplayName="cn=Anna.Ward,ou=People,dc=my-domain,dc=com" applicationName="LDAPApplication" identityDisplayName="Anna Ward" identityName="Anna Ward" integration="LDAPApplication" name="0000008729" nativeIdentity="cn=Anna.Ward,ou=People,dc=my-domain,dc=com" operation="Create" source="IdentityRefresh" status="Failed" type="Auto">
+  <Attributes>
+    <Map>
+      <entry key="planResult">
+        <value>
+          <ProvisioningResult status="failed">
+            <Errors>
+              <Message key="[ InvalidConfigurationException ] &#10; [ Possible suggestions ] a) Furnish the correct host and port. b) Ensure the OpenLDAP host is up and running. &#10; [ Error details ] Failed to connect to server: localhost:389" type="Error"/>
+            </Errors>
+          </ProvisioningResult>
+        </value>
+      </entry>
+      <entry key="request">
+        <value>
+          <AccountRequest application="LDAPApplication" assignmentIds="70d676b2599c432fad6f5aeef3bc9e56" nativeIdentity="cn=Anna.Ward,ou=People,dc=my-domain,dc=com" op="Create" targetIntegration="LDAPApplication">
+            <Attributes>
+              <Map>
+                <entry key="provisioningTransactionId" value="c0a800fc99cc14408199cd0fc0ce021c"/>
+              </Map>
+            </Attributes>
+            <AttributeRequest name="groups" op="Add">
+              <Value>
+                <List>
+                  <String>cn=WebApplicationAccess,ou=Group,dc=my-domain,dc=com</String>
+                  <String>cn=Contractors,ou=Group,dc=my-domain,dc=com</String>
+                </List>
+              </Value>
+            </AttributeRequest>
+            <AttributeRequest name="password" op="Set">
+              <Attributes>
+                <Map>
+                  <entry key="secret" value="true"/>
+                </Map>
+              </Attributes>
+            </AttributeRequest>
+            <AttributeRequest name="sn" op="Set" value="Ward"/>
+            <AttributeRequest name="mail" op="Set" value="anna.ward@eshiam.com"/>
+          </AccountRequest>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+</ProvisioningTransaction>

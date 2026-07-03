@@ -1,0 +1,124 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Toyota AtldapId Transformation" type="IdentityAttributeTarget">
+  <Description>Identity attribute target rules are used to transform identity attribute values that are being pushed to targets.</Description>
+  <Signature returnType="Object">
+    <Inputs>
+      <Argument name="log" type="org.apache.commons.logging.Log">
+        <Description>
+          The log object associated with the SailPointContext.
+        </Description>
+      </Argument>
+      <Argument name="context" type="sailpoint.api.SailPointContext">
+        <Description>
+          A sailpoint.api.SailPointContext object that can be used to query the database if necessary.
+        </Description>
+      </Argument>
+      <Argument name="value" type="Object">
+        <Description>
+          The value of the identity attribute.  Note that this could be single value or a list of values.
+        </Description>
+      </Argument>
+      <Argument name="sourceIdentityAttribute">
+        <Description>
+          The sailpoint.object.ObjectAttribute for this target.
+        </Description>
+      </Argument>
+      <Argument name="sourceIdentityAttributeName">
+        <Description>
+          The name of the identity attribute for this target.
+        </Description>
+      </Argument>
+      <Argument name="sourceAttributeRequest">
+        <Description>
+          The sailpoint.object.ProvisioningPlan.AttributeRequest that is
+          setting the attribute on the identity.
+        </Description>
+      </Argument>
+      <Argument name="target">
+        <Description>
+          The sailpoint.object.AttributeTarget that is being processed.
+        </Description>
+      </Argument>
+      <Argument name="link">
+        <Description>
+          The sailpoint.object.Link that is being processed.
+        </Description>
+      </Argument>
+      <Argument name="identity">
+        <Description>
+          The sailpoint.object.Identity that is being processed.
+        </Description>
+      </Argument>
+      <Argument name="project">
+        <Description>
+          The sailpoint.object.ProvisioningProject that has the changes that
+          are being requested.
+        </Description>
+      </Argument>
+    </Inputs>
+    <Returns>
+      <Argument name="attributeValue">
+        <Description>
+          The transformed value that will be pushed to the target.
+        </Description>
+      </Argument>
+    </Returns>
+  </Signature>
+  <Source><![CDATA[
+ // TCAP-3548 2025-10-17 AtldapId transformation rule to update Workerdb Application Atldap attribute only if atldapuser value is Y.  
+  //Comment added in eclipse  
+  import org.apache.commons.logging.Log;
+  import org.apache.commons.logging.LogFactory;
+  import org.apache.log4j.Logger;  
+  import sailpoint.api.IdentityService;  
+  import sailpoint.rapidapponboarding.logger.LogEnablement;
+  import sailpoint.object.Application;
+  import sailpoint.object.Link;  
+  import sailpoint.tools.GeneralException;  
+  import sailpoint.tools.Util;
+ 
+  {
+    Log tlog = LogFactory.getLog("rule.sp.rule.ToyotaAtldapIdTransformation");    
+    if (tlog.isTraceEnabled()) {
+      tlog.trace("TATLDAPT::001-Entering Toyota AtldapId Transformation");
+      tlog.trace( "TATLDAPT::002-with atldapid value = "+value );
+    }
+
+    String returnValue = link != null?link.getAttribute("mail"):null ;  
+    Application orgLdap = null;
+    IdentityService idService = new IdentityService(context);
+    
+    try {
+      orgLdap = context.getObjectByName(Application.class , "IntConApplication");
+      if (orgLdap != null) {
+        List orgLdapLinks = idService.getLinks(identity,orgLdap);
+        if (Util.nullSafeSize(orgLdapLinks)>0) {
+          Link orgLdapLink = orgLdapLinks.get(0);
+          if (orgLdapLink != null && !orgLdapLink.isDisabled()) { 
+            String atldapUserValue = orgLdapLink.getAttribute("atldapUser");
+            if (atldapUserValue.equalsIgnoreCase("Y")){
+              returnValue = value;
+            }
+          }
+        }
+      }
+    } catch (Exception ex) {
+        throw new GeneralException("TAAR::003-ERROR for User: " + identity.getName() + " Error Message: An exception was thrown while attempting to process AD After Provisioning rule: " + e.getMessage());          
+      } finally {
+          if (tlog.isTraceEnabled()) {
+            tlog.trace("TATLDAPT::004-Entering Toyota AtldapId Transformation");
+            tlog.trace( "TATLDAPT::005-with atldapid value = "+value );
+          }
+          context.decache(orgLdap);
+          
+        }
+
+    if (tlog.isTraceEnabled()) {
+      tlog.trace("TATLDAPT::006-Exiting Toyota AtldapId Transformation");
+      tlog.trace( "TATLDAPT::007-with atldapid returnValue = "+returnValue );
+    }          
+    return returnValue;//today modified just modified
+  }
+  ]]></Source>
+</Rule>

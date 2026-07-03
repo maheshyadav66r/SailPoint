@@ -1,0 +1,59 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Bundle PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Bundle displayName="RoleForACCSelection" iiqElevatedAccess="true" name="roleForACCSelection" type="it">
+  <Attributes>
+    <Map>
+      <entry key="accountSelectorRules">
+        <value>
+          <AccountSelectorRules>
+            <ApplicationAccountSelectorRules>
+              <ApplicationAccountSelectorRule>
+                <ApplicationRef>
+                  <Reference class="sailpoint.object.Application" name="ActiveDirectory"/>
+                </ApplicationRef>
+                <RuleRef>
+                  <Reference class="sailpoint.object.Rule" name="ADAccountSelectorRuleTest"/>
+                </RuleRef>
+              </ApplicationAccountSelectorRule>
+            </ApplicationAccountSelectorRules>
+            <AccountSelectorRuleForBundle>
+              <Reference class="sailpoint.object.Rule" name="TestRole_Link1Rule"/>
+            </AccountSelectorRuleForBundle>
+          </AccountSelectorRules>
+        </value>
+      </entry>
+      <entry key="allowDuplicateAccounts" value="false"/>
+      <entry key="allowMultipleAssignments" value="false"/>
+      <entry key="mergeTemplates" value="false"/>
+      <entry key="roleCriticality" value="High"/>
+      <entry key="roleLevel" value="A"/>
+      <entry key="sysDescriptions">
+        <value>
+          <Map>
+            <entry key="en_US" value="RoleForACCSelection"/>
+          </Map>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+  <Profiles>
+    <Profile>
+      <ApplicationRef>
+        <Reference class="sailpoint.object.Application" name="ActiveDirectory"/>
+      </ApplicationRef>
+      <Constraints>
+        <Filter operation="CONTAINS_ALL" property="memberOf">
+          <Value>
+            <List>
+              <String>CN=Compensation,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+            </List>
+          </Value>
+        </Filter>
+      </Constraints>
+    </Profile>
+  </Profiles>
+  <RoleIndex assignedCount="3" detectedCount="7" entitlementCount="1" entitlementCountInheritance="1" lastAssigned="1751390907618"/>
+</Bundle>

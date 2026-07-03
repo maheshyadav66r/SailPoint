@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="ScopeCorrelation News Rule" type="ScopeCorrelation">
+  <Description>Given an identity and the defined scope correlation attribute and value, determine the correct assigned scope for the Identity. This can return a single Scope (if we can correlate to a distinct scope), a List of Scopes (if we can't determine a distinct scope), or null (if there is not an assigned scope for the given identity).</Description>
+  <Signature returnType="Object">
+    <Inputs>
+      <Argument name="log">
+        <Description> The log object associated with the SailPointContext. </Description>
+      </Argument>
+      <Argument name="context">
+        <Description> A sailpoint.api.SailPointContext object that can be used to query the database if necessary. </Description>
+      </Argument>
+      <Argument name="identity">
+        <Description> The identity for which to correlate the assigned scope. </Description>
+      </Argument>
+      <Argument name="scopeCorrelationAttribute">
+        <Description> The name of the scope correlation attribute on the identity. </Description>
+      </Argument>
+      <Argument name="scopeCorrelationAttributeValue">
+        <Description> The value of the scope correlation attribute on the given identity. </Description>
+      </Argument>
+    </Inputs>
+    <Returns>
+      <Argument name="scopes">
+        <Description> Either a Scope or a List that contains multiple scopes that could correlate to the given identity. </Description>
+      </Argument>
+    </Returns>
+  </Signature>
+  <Source><![CDATA[import sailpoint.object.Scope; 
+  Scope returningScope = null;
+  String scopeByManager = null; 
+  
+  if(null != identity.getManager()) {
+    scopeByManager = identity.getManager().getDisplayName(); 
+  }  
+  if(null == scopeByManager ) {
+    Scope admins = context.getObjectByName(Scope.class, "Admins"); 
+    if(admins == null) {
+      admins = new Scope("Admins");
+      context.saveObject(admins); 
+      String adminsId = admins.getId(); 
+      admins.setDisplayName("Admins Scope"); 
+      admins.setPath(adminsId); admins.setAssignedScope(admins); 
+      context.saveObject(admins); context.commitTransaction();
+    } returningScope = admins; 
+  }else if(null != scopeByManager) { 
+    Scope scope = context.getObjectByName(Scope.class, scopeByManager); 
+    if(scope == null) { 
+      scope = new Scope(scopeByManager); 
+      context.saveObject(scope); 
+      String scopeId = scope.getId(); 
+      scope.setDisplayName(scopeByManager+" Manager Scope"); 
+      scope.setPath(scopeId); 
+      scope.setAssignedScope(scope); 
+      context.saveObject(scope); 
+      context.commitTransaction();
+    } returningScope = scope; 
+  } 
+  return returningScope;]]></Source>
+</Rule>

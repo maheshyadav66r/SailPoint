@@ -1,0 +1,118 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="JDBC Account creation Modified Rule" type="JDBCOperationProvisioning">
+  <Description>This rule is used by the JDBC connector to do provisioning of the data .</Description>
+  <Signature returnType="ProvisioningResult">
+    <Inputs>
+      <Argument name="log" type="org.apache.commons.logging.Log">
+        <Description>
+          The log object associated with the SailPointContext.
+        </Description>
+      </Argument>
+      <Argument name="context" type="sailpoint.api.SailPointContext">
+        <Description>
+          A sailpoint.api.SailPointContext object that can be used to query the database if necessary.
+        </Description>
+      </Argument>
+      <Argument name="application">
+        <Description>The application whose data file is being processed.</Description>
+      </Argument>
+      <Argument name="schema">
+        <Description>The Schema currently in use.</Description>
+      </Argument>
+      <Argument name="connection">
+        <Description>A connection object to connect to database.</Description>
+      </Argument>
+      <Argument name="plan">
+        <Description>The ProvisioningPlan created against the JDBC application.</Description>
+      </Argument>
+      <Argument name="request">
+        <Description>The ProvisioningRequest created against the JDBC application.</Description>
+      </Argument>
+    </Inputs>
+    <Returns>
+      <Argument name="result">
+        <Description>A Provisioning Result object is desirable to return the status.IT can be a new object or part of  Provisioning Plan</Description>
+      </Argument>
+    </Returns>
+  </Signature>
+  <Source><![CDATA[import sailpoint.object.*;
+  import java.sql.*;  
+  import java.sql.ResultSet;
+  import java.sql.Connection;
+  import sailpoint.api.SailPointContext;  
+  import sailpoint.object.ProvisioningPlan;
+  import sailpoint.object.ProvisioningPlan.AccountRequest;
+  import sailpoint.object.ProvisioningPlan.AttributeRequest;
+  import java.sql.PreparedStatement;
+  import java.sql.SQLException;
+  import sailpoint.object.ProvisioningResult;
+
+
+  ProvisioningResult pr = new ProvisioningResult();
+  if(plan != null){
+    int groupId;
+    String groupName;
+
+    List names = Arrays.asList("Name","FirstName","LastName","Department","EmployeeID","EmailAddress","NetworkID","managerID");
+    List groupIdList = new ArrayList();
+    List accReqs = plan.getAccountRequests();
+    Map attributes = new HashMap();
+
+    for(AccountRequest accReq:accReqs){
+
+      ProvisioningPlan.AccountRequest.Operation op = accReq.getOperation();
+      List attrReqs = accReq.getAttributeRequests();
+      attributes.put("EmployeeID",accReq.getNativeIdentity());              //since empId is identityAttribute in application config and its in provisioningform it will come as accReq nativeIdentity
+
+      for(AttributeRequest attrReq:attrReqs){
+        if(attrReq.getName().equalsIgnoreCase("GroupName")){
+          Integer numberObject = Integer.valueOf(attrReq.getValue());
+          groupId=numberObject;  
+          groupIdList.add(groupId);
+
+        }else{
+          for(String name:names){
+            if(attrReq.getName().equalsIgnoreCase(name)){
+              attributes.put(name,attrReq.getValue());
+            }
+          }
+        }
+      }
+      String usersQuery="insert into jdbc.jdbc_user_data(id,Name,FirstName,LastName,Department,EmployeeID,EmailAddress,NetworkID,managerID) values(?,?,?,?,?,?,?,?,?)";
+      PreparedStatement userQueryStatement=connection.prepareStatement(usersQuery);
+      String maxIdQuery="select max(id) from jdbc.jdbc_user_data";
+      PreparedStatement maxIdStatement=connection.prepareStatement(maxIdQuery);
+      ResultSet rs=maxIdStatement.executeQuery();
+
+      int maxId;
+      if(rs.next()){
+        maxId=rs.getInt(1);
+      }
+      int userId=maxId+1;
+      //3) User Table Update
+      userQueryStatement.setInt(1,userId);
+      userQueryStatement.setString(2,attributes.get("Name"));
+      userQueryStatement.setString(3,attributes.get("FirstName"));
+      userQueryStatement.setString(4,attributes.get("LastName"));
+      userQueryStatement.setString(5,attributes.get("Department"));
+      userQueryStatement.setString(6,attributes.get("EmployeeID"));      // userQueryStatement.setString(6,accReq.getNativeIdentity());
+      userQueryStatement.setString(7,attributes.get("EmailAddress"));
+      userQueryStatement.setString(8,attributes.get("NetworkID"));
+      userQueryStatement.setString(9,attributes.get("managerID"));
+      userQueryStatement.executeUpdate();
+
+      // 2)  Link Table Update
+      for(int groupId:groupIdList){
+        String linkTableQuery="insert into jdbc.jdbc_user_groups_data(usersid,groupid) values(?,?)";
+        PreparedStatement linkTableStatement=connection.prepareStatement(linkTableQuery);
+        linkTableStatement.setInt(1,userId);
+        linkTableStatement.setInt(2,groupId);
+        linkTableStatement.executeUpdate();
+      }
+    }
+    connection.close();
+    pr.setStatus(ProvisioningResult.STATUS_COMMITTED);
+  }
+  return pr;]]></Source>
+</Rule>

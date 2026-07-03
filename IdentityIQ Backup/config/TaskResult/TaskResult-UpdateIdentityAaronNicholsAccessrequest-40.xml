@@ -1,0 +1,173 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1765386677653" completionStatus="Success" launched="1765386672904" launcher="spadmin" name="Update Identity Aaron Nichols AccessRequest - 40" targetClass="Identity" targetName="Aaron Nichols" type="LCM">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000982"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Aaron Nichols">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000982"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <Filtered>
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                <Attributes>
+                  <Map>
+                    <entry key="logged" value="true"/>
+                    <entry key="selectorRuleSource" value="roleForACCSelection"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="memberOf" op="Add">
+                  <Attributes>
+                    <Map>
+                      <entry key="reason">
+                        <value>
+                          <FilterReason>Exists</FilterReason>
+                        </value>
+                      </entry>
+                    </Map>
+                  </Attributes>
+                  <Value>
+                    <List>
+                      <String>CN=AuditMgmt,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                    </List>
+                  </Value>
+                </AttributeRequest>
+              </AccountRequest>
+            </Filtered>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="IIQ" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a8001697a21be78197afc4213a2a33"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="RoleAdd"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="assignedRoles" op="Add" value="activeDirectoryITRole"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000982"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <ProvisioningTargets>
+                  <ProvisioningTarget role="activeDirectoryITRole">
+                    <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                      <AccountInfo displayName="1c" nativeIdentity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+                    </AccountSelection>
+                  </ProvisioningTarget>
+                  <ProvisioningTarget retain="true" role="roleForACCSelection">
+                    <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" roleName="roleForACCSelection" selection="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                      <AccountInfo displayName="1c" nativeIdentity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+                    </AccountSelection>
+                  </ProvisioningTarget>
+                  <ProvisioningTarget retain="true" role="BusinessRoleAccountingHtask">
+                    <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ADX" selection="CN=Aaron Nichols,OU=XPeople,OU=Demo,DC=Eshiam,DC=com">
+                      <AccountInfo displayName="ESHIAM\XAaron Nichols" nativeIdentity="CN=Aaron Nichols,OU=XPeople,OU=Demo,DC=Eshiam,DC=com"/>
+                    </AccountSelection>
+                  </ProvisioningTarget>
+                  <ProvisioningTarget retain="true" role="EngineeringBranch">
+                    <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                      <AccountInfo displayName="1c" nativeIdentity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+                    </AccountSelection>
+                    <AccountSelection applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" selection="cn=Aaron.Nichols-CADM,ou=People,dc=my-domain,dc=com">
+                      <AccountInfo displayName="1c" nativeIdentity="cn=Aaron.Nichols-CADM,ou=People,dc=my-domain,dc=com"/>
+                    </AccountSelection>
+                  </ProvisioningTarget>
+                </ProvisioningTargets>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan targetIntegration="IIQ" trackingId="ec174c28a4f94941ae4eeb65f2775d8e">
+              <AccountRequest application="IIQ" op="Modify" targetIntegration="IIQ">
+                <Attributes>
+                  <Map>
+                    <entry key="attachmentConfigList"/>
+                    <entry key="attachments"/>
+                    <entry key="flow" value="AccessRequest"/>
+                    <entry key="id" value="c0a8001697a21be78197afc4213a2a33"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="operation" value="RoleAdd"/>
+                    <entry key="provisioningTransactionId" value="c0a801199b081aef819b093ee75e0226"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="assignedRoles" op="Add" value="activeDirectoryITRole"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000982"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+            <ProvisioningTarget role="activeDirectoryITRole">
+              <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="1c" nativeIdentity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+            </ProvisioningTarget>
+            <ProvisioningTarget retain="true" role="roleForACCSelection">
+              <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" roleName="roleForACCSelection" selection="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="1c" nativeIdentity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+            </ProvisioningTarget>
+            <ProvisioningTarget retain="true" role="BusinessRoleAccountingHtask">
+              <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ADX" selection="CN=Aaron Nichols,OU=XPeople,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="ESHIAM\XAaron Nichols" nativeIdentity="CN=Aaron Nichols,OU=XPeople,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+            </ProvisioningTarget>
+            <ProvisioningTarget retain="true" role="EngineeringBranch">
+              <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="1c" nativeIdentity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+              <AccountSelection applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" selection="cn=Aaron.Nichols-CADM,ou=People,dc=my-domain,dc=com">
+                <AccountInfo displayName="1c" nativeIdentity="cn=Aaron.Nichols-CADM,ou=People,dc=my-domain,dc=com"/>
+              </AccountSelection>
+            </ProvisioningTarget>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a801199b081aef819b093ee05d021f"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="end"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

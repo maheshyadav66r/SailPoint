@@ -1,0 +1,101 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Advanced_SOD_Policy_Test_Rule" type="Policy">
+  <Description>This rule is  to determine if a Policy has been violated.</Description>
+  <Signature returnType="PolicyViolation">
+    <Inputs>
+      <Argument name="log"/>
+      <Argument name="context"/>
+      <Argument name="identity"/>
+      <Argument name="policy"/>
+      <Argument name="constraint"/>
+    </Inputs>
+    <Returns>
+      <Argument name="violation">
+        <Description>The PolicyViolation object.</Description>
+      </Argument>
+    </Returns>
+  </Signature>
+  <Source><![CDATA[
+  import sailpoint.object.*; 
+  import java.util.*; 
+  import java.text.*; 
+
+  log.debug(" Entered into Advanced_SOD_Policy_Test_Rule  :"); 
+
+  PolicyViolation polVil = null; 
+  boolean isViolation = false;
+  boolean roleViolation = false;
+  Identity id = null;
+
+  List fList = new ArrayList();
+  List oList = new ArrayList();
+
+  if (identity != null) { 
+
+    String identityName = identity.getName(); 
+
+    log.debug(" Test SOD : identityName ---"+identityName); 
+
+    id = context.getObjectByName(Identity.class, identityName);
+
+    List old_roleAssigns = id.getAssignedRoles();
+    List futuristic_roleAssigns = identity.getAssignedRoles(); 
+
+    for(Bundle fbundle : futuristic_roleAssigns){
+      String fbRoleLevel = fbundle.getAttribute("roleLevel") != null?fbundle.getAttribute("roleLevel"):"no roleLevel";
+      fList.add(fbRoleLevel);
+
+    }
+
+    for(Bundle obundle : old_roleAssigns){
+      String obRoleLevel = obundle.getAttribute("roleLevel") != null?obundle.getAttribute("roleLevel"):"no roleLevel";
+      oList.add(obRoleLevel);
+
+    }
+
+
+
+
+    log.debug("Have futuristic_roleAssigns    old_roleAssigns   : "+futuristic_roleAssigns+"     "+old_roleAssigns); 
+
+    roleViolation = true; 
+
+    if (fList != null && oList != null){ 
+
+      if(oList.equals(fList)){
+        roleViolation = false;
+        
+        log.error("oList   if equal   fList   "+oList+"    "+fList);
+
+      }else{
+
+        roleViolation = true;
+        
+        log.error("oList     fList   "+oList+"    "+fList);
+      }
+    } 
+  }   
+
+
+
+  if(roleViolation){ 
+    //==Set the Policy Violation flag if Role Violation is Present
+    isViolation = true; 
+  } 
+
+  //==Check for Violation 
+  if (isViolation) { 
+    log.debug(" Test SOD : Inside Violation ---"); 
+    polVil = new PolicyViolation(); 
+    polVil.setActive(true); 
+    polVil.setIdentity(identity); 
+    polVil.setPolicy(policy); 
+    polVil.setDescription("This combination of Role is not allowed for the Identity");
+  } 
+
+  log.debug("=== EXIT: Test SOD Policy ===");
+  return polVil;
+
+  ]]></Source>
+</Rule>

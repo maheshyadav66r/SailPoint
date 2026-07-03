@@ -1,0 +1,55 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE WorkflowCase PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<WorkflowCase launcher="spadmin" name="QuickLink Launch for identity spadmin - 813">
+  <Workflow currentStep="6c8688c120694c46b0fa587e623367f5" explicitTransitions="true" name="Identity Access Items validation">
+    <Variable input="true" name="quickLinkIdentityId"/>
+    <Variable input="true" name="launcher"/>
+    <Step complete="true" icon="Start" name="Start" posX="21" posY="114">
+      <Transition to="Select Item Type"/>
+    </Step>
+    <Step name="Select Item Type" posX="215" posY="115">
+      <Approval name="Get Access Items" originalOwner="$(launcher)" owner="spadmin" return="" send="quickLinkIdentityId" startDate="1773298576630" started="true" workItemDescription="Get Access Items" workItemId="c0a801289cdc1d6e819ce0d4ece2031f" workItemType="Form">
+        <Form name="Get Access Items">
+          <Attributes>
+            <Map>
+              <entry key="pageTitle" value="Get Access Items"/>
+            </Map>
+          </Attributes>
+          <Section label="Select Items" name="selectItems">
+            <Field displayType="radio" name="Type" type="string">
+              <AllowedValues>
+                <String>Entitlements</String>
+                <String>Roles</String>
+              </AllowedValues>
+            </Field>
+            <Field name="searchItem" type="string"/>
+          </Section>
+        </Form>
+      </Approval>
+      <Transition to="Generic Step (1)"/>
+    </Step>
+    <Step icon="Default" name="Generic Step (1)" posX="517" posY="111">
+      <Transition to="Stop"/>
+    </Step>
+    <Step icon="Stop" name="Stop" posX="688" posY="116"/>
+    <Attributes>
+      <Map>
+        <entry key="currentUserName" value="spadmin"/>
+        <entry key="launcher" value="spadmin"/>
+        <entry key="quickLink" value="IdCreation"/>
+        <entry key="quickLinkIdentityId" value="Aaron Nunez"/>
+        <entry key="quickLinkIdentityIds">
+          <value>
+            <List>
+              <String>Aaron Nunez</String>
+            </List>
+          </value>
+        </entry>
+        <entry key="sessionOwner" value="spadmin"/>
+        <entry key="taskResultId" value="c0a801289cdc1d6e819ce0d4eccd031d"/>
+        <entry key="workflowName" value="Identity Access Items validation"/>
+        <entry key="workflowSuccess" value="DBOrderCheckWF workflow Executed Successfully"/>
+      </Map>
+    </Attributes>
+  </Workflow>
+</WorkflowCase>

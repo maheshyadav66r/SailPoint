@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1735895893645" completionStatus="Error" launched="1735895890325" launcher="spadmin" name="LCM Provisioning" type="LCM">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000413"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Adam Kennedy">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000413"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="ActiveDirectory" nativeIdentity="Adam Kennedy" op="Modify">
+                  <AttributeRequest name="memberOf" op="Add" value="AccountingGeneral"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000413"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Adam Kennedy" targetIntegration="ActiveDirectory" trackingId="cde4e98caf9f44eca114ed1807b7b8fd">
+              <AccountRequest application="ActiveDirectory" nativeIdentity="Adam Kennedy" op="Modify">
+                <Attributes>
+                  <Map>
+                    <entry key="provisioningTransactionId" value="c0a8000e94221b1181942b7543eb4274"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="memberOf" op="Add" value="AccountingGeneral"/>
+                <ProvisioningResult status="failed">
+                  <Errors>
+                    <Message key="Invalid name: Adam Kennedy, provided nativeIdentity is not a valid distinguishedName" type="Error"/>
+                  </Errors>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000413"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+            <ProvisioningTarget retain="true" role="Testing">
+              <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ActiveDirectory" selection="CN=Adam Kennedy,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="Adam Kennedy" nativeIdentity="CN=Adam Kennedy,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+            </ProvisioningTarget>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a8000e94221b1181942b753ef04265"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="end"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="Invalid name: Adam Kennedy, provided nativeIdentity is not a valid distinguishedName" type="Error"/>
+  </Messages>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

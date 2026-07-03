@@ -1,0 +1,266 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1720009850692" completionStatus="Error" launched="1720004922612" launcher="spadmin" name="HR Source Joiner event - 765a940ca4464b98acbd78d7b88f2929" type="Workflow">
+  <Attributes>
+    <Map>
+      <entry key="approvalSet">
+        <value>
+          <ApprovalSet>
+            <ApprovalItem application="ActiveDirectory" approver="Aaron Nichols" name="memberOf" nativeIdentity="CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Add" owner="Aaron Nichols" provisioningState="Pending" state="Finished" value="CN=All_Users,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+              <Attributes>
+                <Map>
+                  <entry key="interface" value="LCM"/>
+                  <entry key="nativeIdUpdated">
+                    <value>
+                      <Boolean>true</Boolean>
+                    </value>
+                  </entry>
+                </Map>
+              </Attributes>
+            </ApprovalItem>
+            <ApprovalItem application="ActiveDirectory" name="userAccountControl" nativeIdentity="CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Add" owner="spadmin" provisioningState="Pending" state="Finished" value="514">
+              <Attributes>
+                <Map>
+                  <entry key="interface" value="LCM"/>
+                  <entry key="nativeIdUpdated">
+                    <value>
+                      <Boolean>true</Boolean>
+                    </value>
+                  </entry>
+                </Map>
+              </Attributes>
+            </ApprovalItem>
+            <ApprovalItem application="ActiveDirectory" name="IIQDisabled" nativeIdentity="CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Set" owner="spadmin" provisioningState="Pending" state="Finished" value="true">
+              <Attributes>
+                <Map>
+                  <entry key="interface" value="LCM"/>
+                  <entry key="nativeIdUpdated">
+                    <value>
+                      <Boolean>true</Boolean>
+                    </value>
+                  </entry>
+                </Map>
+              </Attributes>
+            </ApprovalItem>
+            <ApprovalItem application="LDAPApplication" name="groups" nativeIdentity="cn=Vijay.Shankar,ou=People,dc=my-domain,dc=com" operation="Add" owner="spadmin" provisioningState="Pending" state="Finished" value="cn=Users,ou=Group,dc=my-domain,dc=com">
+              <Attributes>
+                <Map>
+                  <entry key="interface" value="LCM"/>
+                  <entry key="nativeIdUpdated">
+                    <value>
+                      <Boolean>true</Boolean>
+                    </value>
+                  </entry>
+                </Map>
+              </Attributes>
+            </ApprovalItem>
+            <ApprovalItem application="LDAPApplication" name="businessCategory" nativeIdentity="cn=Vijay.Shankar,ou=People,dc=my-domain,dc=com" operation="Set" owner="spadmin" provisioningState="Pending" state="Finished" value="Inactive">
+              <Attributes>
+                <Map>
+                  <entry key="interface" value="LCM"/>
+                  <entry key="nativeIdUpdated">
+                    <value>
+                      <Boolean>true</Boolean>
+                    </value>
+                  </entry>
+                </Map>
+              </Attributes>
+            </ApprovalItem>
+          </ApprovalSet>
+        </value>
+      </entry>
+      <entry key="identityRequestId" value="0000000281"/>
+      <entry key="plan">
+        <value>
+          <ProvisioningPlan>
+            <AccountRequest application="ActiveDirectory" op="Create">
+              <AttributeRequest name="memberOf" op="Add" value="CN=All_Users,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+              <AttributeRequest name="userAccountControl" op="Add" value="514"/>
+              <AttributeRequest name="IIQDisabled">
+                <Value>
+                  <Boolean>true</Boolean>
+                </Value>
+              </AttributeRequest>
+            </AccountRequest>
+            <AccountRequest application="LDAPApplication" op="Modify">
+              <AttributeRequest name="groups" op="Add" value="cn=Users,ou=Group,dc=my-domain,dc=com"/>
+              <AttributeRequest name="businessCategory" value="Inactive"/>
+            </AccountRequest>
+            <Attributes>
+              <Map>
+                <entry key="identityRequestId" value="0000000281"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <Requesters>
+              <Reference class="sailpoint.object.Identity" name="spadmin"/>
+            </Requesters>
+          </ProvisioningPlan>
+        </value>
+      </entry>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Vijay Shankar">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000281"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <Filtered>
+              <AccountRequest application="LDAPApplication" nativeIdentity="cn=Vijay.Shankar,ou=People,dc=my-domain,dc=com" op="Modify">
+                <AttributeRequest name="groups" op="Add" value="cn=Users,ou=Group,dc=my-domain,dc=com">
+                  <Attributes>
+                    <Map>
+                      <entry key="reason">
+                        <value>
+                          <FilterReason>Exists</FilterReason>
+                        </value>
+                      </entry>
+                    </Map>
+                  </Attributes>
+                </AttributeRequest>
+              </AccountRequest>
+            </Filtered>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="ActiveDirectory" op="Create">
+                  <AttributeRequest name="memberOf" op="Add" value="CN=All_Users,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                  <AttributeRequest name="userAccountControl" op="Add" value="514"/>
+                  <AttributeRequest name="IIQDisabled">
+                    <Value>
+                      <Boolean>true</Boolean>
+                    </Value>
+                  </AttributeRequest>
+                </AccountRequest>
+                <AccountRequest application="LDAPApplication" nativeIdentity="cn=Vijay.Shankar,ou=People,dc=my-domain,dc=com" op="Modify">
+                  <AttributeRequest name="groups" op="Add" value="cn=Users,ou=Group,dc=my-domain,dc=com"/>
+                  <AttributeRequest name="businessCategory" value="Inactive"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000281"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Vijay Shankar" targetIntegration="ActiveDirectory" trackingId="5a756506335848d3b9c2f4ff821ddf7a">
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create">
+                <Attributes>
+                  <Map>
+                    <entry key="provisioningTransactionId" value="c0a800fb90781e3081907893779300a4"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="memberOf" op="Add" value="CN=All_Users,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                <AttributeRequest name="userAccountControl" op="Add" value="514"/>
+                <AttributeRequest name="IIQDisabled" op="Set">
+                  <Value>
+                    <Boolean>true</Boolean>
+                  </Value>
+                </AttributeRequest>
+                <AttributeRequest name="objectType" op="Set" value="User"/>
+                <AttributeRequest name="sAMAccountName" op="Set" value="VShank2"/>
+                <AttributeRequest name="password" op="Set">
+                  <Attributes>
+                    <Map>
+                      <entry key="secret" value="true"/>
+                    </Map>
+                  </Attributes>
+                </AttributeRequest>
+                <AttributeRequest name="Email" op="Add" value="VShank2@eshiam.com"/>
+                <AttributeRequest name="givenName" op="Set" value="Vijay"/>
+                <AttributeRequest name="sn" op="Set" value="Shankar"/>
+                <AttributeRequest name="msNPAllowDialin" op="Set" value="Not Set"/>
+                <AttributeRequest name="msExchHideFromAddressLists" op="Set">
+                  <Value>
+                    <Boolean/>
+                  </Value>
+                </AttributeRequest>
+                <ProvisioningResult status="failed">
+                  <Errors>
+                    <Message key="Exception occurred while executing the RPCRequest: Errors returned from IQService. &quot;The object already exists. The object already exists. 00002071: UpdErr: DSID-03050371, problem 6005 (ENTRY_EXISTS), data 0 00002071: UpdErr: DSID-03050371, problem 6005 (ENTRY_EXISTS), data 0 . HRESULT:[0x80071392] For identity: CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com&quot;" type="Error"/>
+                  </Errors>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000281"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+            <ProvisioningPlan nativeIdentity="Vijay Shankar" targetIntegration="LDAPApplication" trackingId="fe3f9ca59e404e78aeaed7ad673b03c1">
+              <AccountRequest application="LDAPApplication" nativeIdentity="cn=Vijay.Shankar,ou=People,dc=my-domain,dc=com" op="Modify" targetIntegration="LDAPApplication">
+                <AttributeRequest name="businessCategory" op="Set" value="Inactive"/>
+                <ProvisioningResult status="committed"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000281"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+              <ProvisioningResult status="committed"/>
+            </ProvisioningPlan>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a8005390741d9d819078488cf505ef"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="Stop">
+            <Interactions>
+              <ApprovalSummary completer="Aaron Nichols" endDate="1720009846459" owner="Aaron Nichols" request="Owner Approval - Account Changes for User: Vijay Shankar" startDate="1720004940284" state="Finished" workItemId="c0a8005390741d9d81907848905505fc" workItemType="Approval">
+                <ApprovalSet>
+                  <ApprovalItem application="ActiveDirectory" approver="Aaron Nichols" name="memberOf" operation="Add" state="Finished" value="CN=All_Users,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                    <Attributes>
+                      <Map>
+                        <entry key="attachments"/>
+                      </Map>
+                    </Attributes>
+                  </ApprovalItem>
+                </ApprovalSet>
+              </ApprovalSummary>
+            </Interactions>
+          </WorkflowSummary>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="Exception occurred while executing the RPCRequest: Errors returned from IQService. &quot;The object already exists. The object already exists. 00002071: UpdErr: DSID-03050371, problem 6005 (ENTRY_EXISTS), data 0 00002071: UpdErr: DSID-03050371, problem 6005 (ENTRY_EXISTS), data 0 . HRESULT:[0x80071392] For identity: CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com&quot;" type="Error"/>
+  </Messages>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

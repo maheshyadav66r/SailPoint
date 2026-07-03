@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1781681374354" completionStatus="Success" launched="1781681368775" launcher="spadmin" name="LCM Provisioning - 23" targetClass="Identity" targetName="Charles Mercer" type="LCM">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000001121"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Charles Mercer">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000001121"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <Filtered>
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Charles Mercer,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                <Attributes>
+                  <Map>
+                    <entry key="logged" value="true"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="memberOf" op="Add" value="CN=ENG_EastCoast,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                  <Attributes>
+                    <Map>
+                      <entry key="reason">
+                        <value>
+                          <FilterReason>Exists</FilterReason>
+                        </value>
+                      </entry>
+                    </Map>
+                  </Attributes>
+                </AttributeRequest>
+              </AccountRequest>
+            </Filtered>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Charles Mercer,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                  <AttributeRequest name="memberOf" op="Add" value="CN=ENG_EastCoast,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000001121"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="0afca9c79ecc1ac4819ed47c36ee0512"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="end"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

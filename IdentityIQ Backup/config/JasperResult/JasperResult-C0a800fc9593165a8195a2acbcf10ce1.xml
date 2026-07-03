@@ -1,0 +1,441 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE JasperResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<JasperResult handlerPageCount="-1" pageCount="-1" pagesPerBucket="-1">
+  <Attributes>
+    <Map>
+      <entry key="chart">
+        <value>
+          <Chart category="type" groupBy="action.status,type" nullSeries="cert_action_open" series="action.status" title="Item Decision Count by Type" type="column" value="count(*)">
+            <Attributes>
+              <Map>
+                <entry key="chartData">
+                  <value>
+                    <List>
+                      <Map>
+                        <entry key="category" value="Account"/>
+                        <entry key="series" value="Open"/>
+                        <entry key="value">
+                          <value>
+                            <Long>496</Long>
+                          </value>
+                        </entry>
+                      </Map>
+                      <Map>
+                        <entry key="category" value="Additional Entitlement"/>
+                        <entry key="series" value="Open"/>
+                        <entry key="value">
+                          <value>
+                            <Long>97</Long>
+                          </value>
+                        </entry>
+                      </Map>
+                      <Map>
+                        <entry key="category" value="Account"/>
+                        <entry key="series" value="Approved"/>
+                        <entry key="value">
+                          <value>
+                            <Long>2</Long>
+                          </value>
+                        </entry>
+                      </Map>
+                      <Map>
+                        <entry key="category" value="Role"/>
+                        <entry key="series" value="Approved"/>
+                        <entry key="value">
+                          <value>
+                            <Long>1</Long>
+                          </value>
+                        </entry>
+                      </Map>
+                      <Map>
+                        <entry key="category" value="Account"/>
+                        <entry key="series" value="Revoked"/>
+                        <entry key="value">
+                          <value>
+                            <Long>9</Long>
+                          </value>
+                        </entry>
+                      </Map>
+                      <Map>
+                        <entry key="category" value="Role"/>
+                        <entry key="series" value="Revoked"/>
+                        <entry key="value">
+                          <value>
+                            <Long>10</Long>
+                          </value>
+                        </entry>
+                      </Map>
+                      <Map>
+                        <entry key="category" value="Additional Entitlement"/>
+                        <entry key="series" value="Revoked"/>
+                        <entry key="value">
+                          <value>
+                            <Long>4</Long>
+                          </value>
+                        </entry>
+                      </Map>
+                    </List>
+                  </value>
+                </entry>
+              </Map>
+            </Attributes>
+          </Chart>
+        </value>
+      </entry>
+      <entry key="csvRowsPerBucket">
+        <value>
+          <Integer>1000</Integer>
+        </value>
+      </entry>
+      <entry key="header">
+        <value>
+          <LiveReportSummary title="Certification Report">
+            <Values>
+              <LiveReportSummaryValue label="Creator" name="creator">
+                <Value>
+                  <String>spadmin</String>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="Creation Date" name="date">
+                <Value>
+                  <String>3/17/25, 11:25 AM</String>
+                </Value>
+              </LiveReportSummaryValue>
+            </Values>
+          </LiveReportSummary>
+        </value>
+      </entry>
+      <entry key="reportDefinition">
+        <value>
+          <LiveReport title="Certification Report">
+            <Chart category="type" groupBy="action.status,type" nullSeries="cert_action_open" series="action.status" title="rept_cert_chart_title" type="column" value="count(*)"/>
+            <DataSource dataSourceClass="sailpoint.reporting.datasource.CertificationLiveReportDataSource" objectType="CertificationItem" type="Java">
+              <QueryParameters>
+                <Parameter argument="phase" defaultValue="Staged" operation="NE" property="parent.certification.phase" valueClass="sailpoint.object.Certification$Phase"/>
+                <Parameter argument="type">
+                  <QueryScript>
+                    <Source><![CDATA[
+                            import sailpoint.object.*;
+                            queryOptions.addFilter(Filter.ne("parent.certification.type", Certification.Type.BusinessRoleComposition));
+                            queryOptions.addFilter(Filter.ne("parent.certification.type", Certification.Type.AccountGroupPermissions));
+                            return queryOptions;
+                          ]]></Source>
+                  </QueryScript>
+                </Parameter>
+                <Parameter argument="tags" property="parent.certification.tags.id">
+                  <QueryScript>
+                    <Source><![CDATA[
+                            
+                            import sailpoint.object.*;
+                            import java.util.*;
+
+                            if (value != null && !value.isEmpty()){
+                              queryOptions.addFilter(Filter.containsAll("parent.certification.tags.id", value));
+                            }
+
+                            return queryOptions;
+                            
+                          ]]></Source>
+                  </QueryScript>
+                </Parameter>
+                <Parameter argument="certificationGroups" property="parent.certification.certificationGroups.id"/>
+                <Parameter argument="applicationNames" property="applicationNames">
+                  <QueryScript>
+                    <Source><![CDATA[
+                            import sailpoint.object.*;
+                            import sailpoint.api.ObjectUtil;
+                            List appNames = new ArrayList();
+                            if (value != null){
+                              appNames = ObjectUtil.convertIdsToNames(context, Application.class, value);
+                            }
+
+                            if (appNames.size() != 0){
+                              queryOptions.addFilter(Filter.containsAll("applicationNames", appNames));
+                            }
+                            return queryOptions;
+                          ]]></Source>
+                  </QueryScript>
+                </Parameter>
+                <Parameter argument="creationDate" property="parent.certification.created" valueClass="daterange"/>
+                <Parameter argument="signedDate" property="parent.certification.signed" valueClass="daterange"/>
+                <Parameter argument="expirationDate" property="parent.certification.expiration" valueClass="daterange"/>
+              </QueryParameters>
+            </DataSource>
+            <ReportForm>
+              <Reference class="sailpoint.object.Form" name="Report Form Skeleton"/>
+            </ReportForm>
+            <Columns>
+              <ReportColumnConfig field="nativeIdentity" header="Account Id" property="exceptionEntitlements.nativeIdentity" sortable="true" width="110"/>
+              <ReportColumnConfig field="identity" header="Identity" property="parent.identity" scriptArguments="parent.certification.type,targetName" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                            
+                                import sailpoint.object.*;
+                                if (value == null || Certification.Type.DataOwner.equals(scriptArgs.get("parent.certification.type"))){
+                                  return scriptArgs.get("targetName");
+                                }
+
+                                return value;
+                            
+                        ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="manager" header="Manager Name" property="parent" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                          import sailpoint.reporting.*;
+                          return value != null ? ReportingLibrary.getCertificationItemManagerName(context, value) : null;
+                        ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="signer" header="Signer" property="parent.certification.signOffHistory.signerName" sortable="true" width="110"/>
+              <ReportColumnConfig field="signed" header="Sign Off Date" property="parent.certification.signOffHistory.date" sortable="true" width="110"/>
+              <ReportColumnConfig field="esigned" header="E-Signed" property="parent.certification.signOffHistory.electronicSign" sortable="true" width="110"/>
+              <ReportColumnConfig field="certName" header="Access Review" property="parent.certification.name" sortable="true" width="110"/>
+              <ReportColumnConfig field="certGroupName" header="Certification Name" property="parent.certification.certificationGroups.name" sortable="true" width="110"/>
+              <ReportColumnConfig field="tags" header="Tags" property="parent.certification.tags.name" subQueryKey="id" width="110"/>
+              <ReportColumnConfig field="entitlementType" header="Entitlement Type" property="type" sortable="true" width="110"/>
+              <ReportColumnConfig field="entitlement" header="Entitlement Description" property="exceptionEntitlements" scriptArguments="bundle,violationSummary,targetName" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                          import sailpoint.reporting.*;
+                          return ReportingLibrary.describeCertificationEntitlement(value, scriptArgs.get("bundle"), scriptArgs.get("violationSummary"), scriptArgs.get("targetName"));
+                        ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="status" header="Status" property="summaryStatus" sortable="true" width="110"/>
+              <ReportColumnConfig field="decision" header="Decision" property="action.status" sortable="true" width="110"/>
+              <ReportColumnConfig field="newValue" header="Modified Value" property="action" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                          import sailpoint.reporting.datasource.*;
+                          return DataSourceUtil.getRemediationModifiableNewValue(value);
+                        ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="remediationCompleted" header="Revoke Completed" property="action" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                          import sailpoint.reporting.ReportingLibrary;
+                          import sailpoint.tools.Util;
+                          import java.lang.String;
+                          String status = ReportingLibrary.getRemediationStatus(context, value);
+                          return Util.isNullOrEmpty(status) ? "" : status;
+                        ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="decisionMaker" header="Decision Maker" property="action.actorName" sortable="true" width="110"/>
+              <ReportColumnConfig field="comments" header="Decision Maker Comments" property="action" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                          return value != null ? value.getComments() : null;
+                        ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="application" header="Application" property="exceptionEntitlements.application" sortable="true" width="110"/>
+              <ReportColumnConfig field="exclusionExplanation" header="Exclusion Explanation" property="parent.certification" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                          
+                          if (value != null){
+                            List archivedEntities = value.fetchArchivedEntities(context);
+                            if (archivedEntities != null
+                                && archivedEntities.size() > 0
+                                && archivedEntities.get(0) != null) {
+                              return archivedEntities.get(0).getExplanation();
+                            }
+                          }
+                          
+                        ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="recommendation" header="Recommendation" property="recommendValue" scriptArguments="id" sortable="true" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                          import sailpoint.reporting.ReportingLibrary;
+                          return ReportingLibrary.getRecommendedDecision(context, value, scriptArgs.get("id"), locale, timezone);
+                        ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="recommendationReasons" header="Recommendation Reasons" property="id" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                          import sailpoint.reporting.ReportingLibrary;
+                          return ReportingLibrary.getRecommendationReasons(context, value, locale, timezone);
+                        ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="recommendationTimestamp" header="Recommendation Timestamp" property="id" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                          import sailpoint.reporting.ReportingLibrary;
+                          return ReportingLibrary.getRecommendationTimestamp(context, value, locale, timezone);
+                        ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="autoDecisionGenerated" header="Auto Decision Generated" property="id" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                          import sailpoint.reporting.ReportingLibrary;
+                          return ReportingLibrary.getAutoDecisionGenerated(context, value);
+                        ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="autoDecisionAccepted" header="Auto Decision Accepted" property="id" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                          import sailpoint.reporting.ReportingLibrary;
+                          return ReportingLibrary.getAutoDecisionAccepted(context, value);
+                        ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="classifications" header="Classifications" property="id" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                          import sailpoint.object.CertificationItem;
+                          import sailpoint.service.classification.ClassificationService;
+                          import sailpoint.tools.Util;
+
+                          CertificationItem item = context.getObjectById(CertificationItem.class, value);
+                          List names = new ClassificationService(context).getDisplayableNames(item.getClassificationNames());
+                          return Util.listToCsv(names);
+                        ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="elevatedAccess" header="Elevated Access" property="id" sortable="true" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                          import sailpoint.reporting.ReportingLibrary;
+                          return ReportingLibrary.isIiqElevatedAccess(context, scriptArgs.get("id"));
+                        ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+            </Columns>
+            <InitializationRule>
+              <Reference class="sailpoint.object.Rule" name="Certification Report Customizer"/>
+            </InitializationRule>
+            <ReportHeader title="Certification Report">
+              <Values>
+                <LiveReportSummaryValue label="Creator" name="creator">
+                  <Value>
+                    <String>spadmin</String>
+                  </Value>
+                </LiveReportSummaryValue>
+                <LiveReportSummaryValue label="Creation Date" name="date">
+                  <Value>
+                    <String>3/17/25, 11:25 AM</String>
+                  </Value>
+                </LiveReportSummaryValue>
+              </Values>
+            </ReportHeader>
+            <ReportSummary title="rept_cert_summary_title">
+              <DataSourceScript>
+                <Source><![CDATA[
+                        
+                        import java.util.*;
+                        import sailpoint.object.*;
+
+                        QueryOptions ops = baseQueryOptions;
+
+                        List fields = new ArrayList();
+                        fields.add("count(*)");
+                        fields.add("count(distinct parent.id)");
+                        fields.add("count(distinct parent.certification.id)");
+                        fields.add("count(distinct parent.certification.certificationGroups.id)");
+
+                        Iterator iter = context.search(CertificationItem.class, ops, fields);
+
+                        Map map = new HashMap();
+
+                        if (iter.hasNext()){
+                          Object[] results = iter.next();
+                          map.put("certifications", results[3]);
+                          map.put("accessReviews", results[2]);
+                          map.put("identities", results[1]);
+                          map.put("items", results[0]);
+                        }
+
+                        return map;
+                        
+                      ]]></Source>
+              </DataSourceScript>
+              <Values>
+                <LiveReportSummaryValue label="reprt_cert_summary_total_certs" name="certifications"/>
+                <LiveReportSummaryValue label="reprt_cert_summary_total_access_reviews" name="accessReviews"/>
+                <LiveReportSummaryValue label="reprt_cert_summary_total_identities" name="identities"/>
+                <LiveReportSummaryValue label="reprt_cert_summary_total_items" name="items"/>
+              </Values>
+            </ReportSummary>
+          </LiveReport>
+        </value>
+      </entry>
+      <entry key="reportRowCount">
+        <value>
+          <Integer>619</Integer>
+        </value>
+      </entry>
+      <entry key="summary">
+        <value>
+          <LiveReportSummary title="Certification Totals">
+            <DataSourceScript>
+              <Source><![CDATA[
+                        
+                        import java.util.*;
+                        import sailpoint.object.*;
+
+                        QueryOptions ops = baseQueryOptions;
+
+                        List fields = new ArrayList();
+                        fields.add("count(*)");
+                        fields.add("count(distinct parent.id)");
+                        fields.add("count(distinct parent.certification.id)");
+                        fields.add("count(distinct parent.certification.certificationGroups.id)");
+
+                        Iterator iter = context.search(CertificationItem.class, ops, fields);
+
+                        Map map = new HashMap();
+
+                        if (iter.hasNext()){
+                          Object[] results = iter.next();
+                          map.put("certifications", results[3]);
+                          map.put("accessReviews", results[2]);
+                          map.put("identities", results[1]);
+                          map.put("items", results[0]);
+                        }
+
+                        return map;
+                        
+                      ]]></Source>
+            </DataSourceScript>
+            <Values>
+              <LiveReportSummaryValue label="Certifications" name="certifications">
+                <Value>
+                  <Long>5</Long>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="Access Reviews" name="accessReviews">
+                <Value>
+                  <Long>16</Long>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="Identities" name="identities">
+                <Value>
+                  <Long>512</Long>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="Certification Items" name="items">
+                <Value>
+                  <Long>619</Long>
+                </Value>
+              </LiveReportSummaryValue>
+            </Values>
+          </LiveReportSummary>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Files>
+    <Reference class="sailpoint.object.PersistedFile" name="Report-Certification Activity by Application Live Report.pdf"/>
+    <Reference class="sailpoint.object.PersistedFile" name="Report-Certification Activity by Application Live Report.csv"/>
+  </Files>
+</JasperResult>

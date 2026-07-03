@@ -1,0 +1,158 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1761748961356" completionStatus="Error" launched="1761748956402" launcher="spadmin" name="Update Identity Aaron Nunez AccessRequest - 8" targetClass="Identity" targetName="Aaron Nunez" type="LCM">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000970"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Aaron Nunez">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000970"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="Azure Active Directory" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800fb9a2e13ed819a305f7cf104a7"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="EntitlementAdd"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest displayValue="Access selected Lists without a signed in user. [on] Microsoft Graph" name="appRoleAssignments" op="Add" value="eec7a794-d3cb-49e0-af76-b870309ad063:23c5a9bd-d900-4ecf-be26-a0689755d9e5">
+                    <Attributes>
+                      <Map>
+                        <entry key="assignment" value="true"/>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000970"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <ProvisioningTargets>
+                  <ProvisioningTarget application="Azure Active Directory" attribute="appRoleAssignments" value="eec7a794-d3cb-49e0-af76-b870309ad063:23c5a9bd-d900-4ecf-be26-a0689755d9e5">
+                    <AccountSelection applicationId="c0a8001697a21be78197afdb21542aef" applicationName="Azure Active Directory" implicitCreate="true"/>
+                  </ProvisioningTarget>
+                  <ProvisioningTarget retain="true" role="roleForACCSelectionADM">
+                    <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" roleName="roleForACCSelectionADM" selection="CN=Aaron Nunez,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                      <AccountInfo displayName="Aaron Nunez" nativeIdentity="CN=Aaron Nunez,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+                    </AccountSelection>
+                  </ProvisioningTarget>
+                </ProvisioningTargets>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Aaron Nunez" targetIntegration="Azure Active Directory" trackingId="aaa8d6f0f37647849bb9f1bacde399ca">
+              <AccountRequest application="Azure Active Directory" op="Create">
+                <Attributes>
+                  <Map>
+                    <entry key="attachmentConfigList"/>
+                    <entry key="attachments"/>
+                    <entry key="flow" value="AccessRequest"/>
+                    <entry key="id" value="c0a800fb9a2e13ed819a305f7cf104a7"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="operation" value="EntitlementAdd"/>
+                    <entry key="provisioningTransactionId" value="c0a800fb9a2e13ed819a306bc59f06d1"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest displayValue="Access selected Lists without a signed in user. [on] Microsoft Graph" name="appRoleAssignments" op="Add" value="eec7a794-d3cb-49e0-af76-b870309ad063:23c5a9bd-d900-4ecf-be26-a0689755d9e5">
+                  <Attributes>
+                    <Map>
+                      <entry key="assignment" value="true"/>
+                    </Map>
+                  </Attributes>
+                </AttributeRequest>
+                <AttributeRequest name="accountType" op="Add" value="User"/>
+                <AttributeRequest name="userPrincipalName" op="Set" value="Aaron@Nunez.onmicrosoft.com"/>
+                <AttributeRequest name="password" op="Set">
+                  <Attributes>
+                    <Map>
+                      <entry key="secret" value="true"/>
+                    </Map>
+                  </Attributes>
+                </AttributeRequest>
+                <AttributeRequest name="displayName" op="Set" value="Aaron Nunez"/>
+                <AttributeRequest name="accountEnabled" op="Set">
+                  <Value>
+                    <Boolean>true</Boolean>
+                  </Value>
+                </AttributeRequest>
+                <AttributeRequest name="department" op="Set" value="Sales Manager"/>
+                <ProvisioningResult status="failed">
+                  <Errors>
+                    <Message key="sailpoint.connector.ConnectorException: Exception occurred.  Error message - HTTP not ended OK.  Response Code - 400 Error - The domain portion of the userPrincipalName property is invalid. You must use one of the verified domain names in your organization." type="Error"/>
+                  </Errors>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000970"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+              <ProvisioningResult status="failed">
+                <Errors>
+                  <Message key="sailpoint.connector.ConnectorException: Exception occurred.  Error message - HTTP not ended OK.  Response Code - 400 Error - The domain portion of the userPrincipalName property is invalid. You must use one of the verified domain names in your organization." type="Error"/>
+                </Errors>
+              </ProvisioningResult>
+            </ProvisioningPlan>
+            <ProvisioningTarget application="Azure Active Directory" attribute="appRoleAssignments" value="eec7a794-d3cb-49e0-af76-b870309ad063:23c5a9bd-d900-4ecf-be26-a0689755d9e5">
+              <AccountSelection applicationId="c0a8001697a21be78197afdb21542aef" applicationName="Azure Active Directory" implicitCreate="true"/>
+            </ProvisioningTarget>
+            <ProvisioningTarget retain="true" role="roleForACCSelectionADM">
+              <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" roleName="roleForACCSelectionADM" selection="CN=Aaron Nunez,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="Aaron Nunez" nativeIdentity="CN=Aaron Nunez,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+            </ProvisioningTarget>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a800fb9a2e13ed819a306bba1506c1"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="end"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="sailpoint.connector.ConnectorException: Exception occurred.  Error message - HTTP not ended OK.  Response Code - 400 Error - The domain portion of the userPrincipalName property is invalid. You must use one of the verified domain names in your organization." type="Error"/>
+  </Messages>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

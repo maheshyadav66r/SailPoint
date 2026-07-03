@@ -1,0 +1,127 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1781019797968" completionStatus="Error" launched="1781019795609" launcher="spadmin" name="Update Identity Alan Bradley AccountsRequest - 7" targetClass="Identity" targetName="Alan Bradley" type="LCM">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000001108"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Alan Bradley">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000001108"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="WebServicesApplicationEshiam" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="flow" value="AccountsRequest"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="nativeIdUpdated">
+                        <value>
+                          <Boolean>true</Boolean>
+                        </value>
+                      </entry>
+                      <entry key="operation" value="Create"/>
+                    </Map>
+                  </Attributes>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000001108"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Alan Bradley" targetIntegration="WebServicesApplicationEshiam" trackingId="c851d5647467498fac78771703ed1c07">
+              <AccountRequest application="WebServicesApplicationEshiam" nativeIdentity="1c2a3c4c" op="Create">
+                <Attributes>
+                  <Map>
+                    <entry key="flow" value="AccountsRequest"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="nativeIdUpdated">
+                      <value>
+                        <Boolean>true</Boolean>
+                      </value>
+                    </entry>
+                    <entry key="operation" value="Create"/>
+                    <entry key="provisioningTransactionId" value="c0a801289eaa1516819ead0d680b04bf"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="user_email" op="Set" value="Alan.Bradley@eshiam.com"/>
+                <AttributeRequest name="manager_id" op="Set" value="1c2a3c"/>
+                <AttributeRequest name="location" op="Set" value="India"/>
+                <AttributeRequest name="user_name" op="Set" value="Alan Bradley"/>
+                <AttributeRequest name="department" op="Set" value="Engineering"/>
+                <AttributeRequest name="user_status" op="Set" value="ACTIVE"/>
+                <AttributeRequest name="job_title" op="Set" value="Engineer"/>
+                <ProvisioningResult status="failed">
+                  <Errors>
+                    <Message key="Exception occurred while performing 'Create' operation on identity '1c2a3c4c':  Error: &lt;!-- (c) Copyright 2008 SailPoint Technologies, Inc., All Rights Reserved. --&gt;&#10;&#10;&lt;html&gt;&#10;  &lt;head&gt;&#10;    &lt;title&gt;Page Not Found&lt;/title&gt;&#10;  &lt;/head&gt;&#10;&#10;&lt;body&gt;&#10;&lt;!--&#10;  Need to add some padding.  If this is less the 512 bytes, IE will not display it but&#10;  instead display the friendly HTTP error page.  This is because the errorthreshold as&#10;  configured in HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Internet Explorer\Main\ErrorThresholds&#10;  defaults to 512 bytes.  This is a particularly a problem on WebSphere because it generates&#10;  very small 404 error responses.  This only happens when &quot;Show friendly HTTP errors&quot; is&#10;  enabled in IE.&#10;  --&gt;&#10;&#10;&lt;h1&gt;File Not Found - 404 Error&lt;/h1&gt;&#10;&#10;The requested file was not found.&#10;&#10;&lt;/body&gt;&#10;" type="Error"/>
+                  </Errors>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000001108"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+              <ProvisioningResult status="failed"/>
+            </ProvisioningPlan>
+            <ProvisioningTarget retain="true" role="IT2ADEngineering">
+              <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=Alan Bradley,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="Alan Bradley" nativeIdentity="CN=Alan Bradley,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+            </ProvisioningTarget>
+            <ProvisioningTarget retain="true" role="roleForACCSelection">
+              <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" roleName="roleForACCSelection" selection="CN=Alan Bradley-ADM,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="Alan Bradley-ADM" nativeIdentity="CN=Alan Bradley-ADM,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+            </ProvisioningTarget>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a801289eaa1516819ead0d630404a8"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="end"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="Exception occurred while performing 'Create' operation on identity '1c2a3c4c':  Error: &lt;!-- (c) Copyright 2008 SailPoint Technologies, Inc., All Rights Reserved. --&gt;&#10;&#10;&lt;html&gt;&#10;  &lt;head&gt;&#10;    &lt;title&gt;Page Not Found&lt;/title&gt;&#10;  &lt;/head&gt;&#10;&#10;&lt;body&gt;&#10;&lt;!--&#10;  Need to add some padding.  If this is less the 512 bytes, IE will not display it but&#10;  instead display the friendly HTTP error page.  This is because the errorthreshold as&#10;  configured in HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Internet Explorer\Main\ErrorThresholds&#10;  defaults to 512 bytes.  This is a particularly a problem on WebSphere because it generates&#10;  very small 404 error responses.  This only happens when &quot;Show friendly HTTP errors&quot; is&#10;  enabled in IE.&#10;  --&gt;&#10;&#10;&lt;h1&gt;File Not Found - 404 Error&lt;/h1&gt;&#10;&#10;The requested file was not found.&#10;&#10;&lt;/body&gt;&#10;" type="Error"/>
+  </Messages>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

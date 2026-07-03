@@ -1,0 +1,154 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="DB_Valuescheck_RuleLibrary2">
+  <Source><![CDATA[
+  import java.sql.Connection;
+  import java.sql.DriverManager;
+  import java.sql.PreparedStatement;
+  import java.sql.ResultSet;
+  import java.sql.SQLException;
+  import sailpoint.object.*;
+  import java.sql.*;
+  import java.sql.SQLException;
+  import sailpoint.tools.Message; 
+  import sailpoint.tools.Util;
+
+
+
+  public int checkRecordExistance(String c1value, String c2value , String c3value){
+
+    log.error("......Entering into checkRecordExistance method.....");
+
+    Connection connection = null;
+    PreparedStatement preparedStatement = null;
+    ResultSet resultSet = null;
+
+    String dbUrl = "jdbc:mysql://localhost:3306/test"; 
+    String dbUsername = "root"; 
+    String dbPassword = "root"; 
+
+    int existcount = 0;
+
+    try{
+
+      Class.forName("com.mysql.cj.jdbc.Driver");
+      connection = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
+
+
+      String existanceCheckQuery="SELECT COUNT(*) FROM test.columns_data WHERE c1 = ? AND c2 = ? AND c3 = ?";
+
+      preparedStatement = connection.prepareStatement(existanceCheckQuery);
+      preparedStatement.setString(1, c1value);
+      preparedStatement.setString(2, c2value);
+      preparedStatement.setString(3, c3value);
+
+      resultSet = preparedStatement.executeQuery();
+
+      if (resultSet.next()) {
+
+        existcount = resultSet.getInt(1);
+
+      }
+
+      formModel.put("existcount",existcount);
+
+    }catch (SQLException e) {
+      e.printStackTrace();
+    }finally {
+      if (resultSet != null) {
+        try {
+          resultSet.close();
+        } catch (SQLException e) {
+          e.printStackTrace();
+        }
+      }
+      if (preparedStatement != null) {
+        try {
+          preparedStatement.close();
+        } catch (SQLException e) {
+          e.printStackTrace();
+        }
+      }
+      if (connection != null) {
+        try {
+          connection.close();
+        } catch (SQLException e) {
+          e.printStackTrace();
+        }
+      }
+    }
+
+
+    log.error("......Exiting from checkRecordExistance method.....");
+    return existcount;
+  }
+
+
+
+
+
+
+  //-------------------------------------------------------------------------------
+
+
+  public List getDBColumnValues(List columnValues,int columnIndex ){
+
+
+    Set set = new HashSet();
+
+    Connection connection =null;
+    PreparedStatement preparedStatement = null;
+    ResultSet resultSet = null;
+
+
+    String dbUrl = "jdbc:mysql://localhost:3306/test"; 
+    String dbUsername = "root"; 
+    String dbPassword = "root"; 
+
+
+    Class.forName("com.mysql.cj.jdbc.Driver");
+    Connection  connection = null;
+
+    try{
+
+      connection = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
+
+      String existingCheckQuery="SELECT * FROM test.columns_data";
+
+      preparedStatement = connection.prepareStatement(existingCheckQuery);
+
+      resultSet = preparedStatement.executeQuery();
+
+      while(resultSet.next()) {
+
+        String c1Value = resultSet.getString(columnIndex);
+        set.add(c1Value);
+      }
+
+    }catch (SQLException e) {
+      e.printStackTrace();
+
+    } finally {
+
+      try {
+
+        if (resultSet != null) resultSet.close();
+        if (preparedStatement != null) preparedStatement.close();
+        if (connection != null) connection.close();
+
+      } catch (SQLException e) {
+        log.error(e.toString());
+      }
+    }
+
+
+    columnValues.addAll(set);
+    /*columnValues.addAll(Util.removeDuplicates(c2List));
+      columnValues.addAll(Util.removeDuplicates(c3List));*/
+
+    return  columnValues;
+
+  }
+
+  ]]></Source>
+</Rule>

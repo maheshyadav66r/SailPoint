@@ -1,0 +1,468 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE IdentityRequest PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<IdentityRequest completionStatus="Failure" endDate="1761748961329" executionStatus="Completed" name="0000000970" priority="Normal" requesterDisplayName="The Administrator" requesterId="c0a81d898f331ca3818f33fcf64800ff" source="LCM" state="End" targetClass="Identity" targetDisplayName="Aaron Nunez" type="AccessRequest" verified="1761796804143">
+  <Attributes>
+    <Map>
+      <entry key="messages">
+        <value>
+          <List>
+            <Message key="sailpoint.connector.ConnectorException: Exception occurred.  Error message - HTTP not ended OK.  Response Code - 400 Error - The domain portion of the userPrincipalName property is invalid. You must use one of the verified domain names in your organization." type="Error"/>
+          </List>
+        </value>
+      </entry>
+      <entry key="provisionedProject">
+        <value>
+          <ProvisioningProject identity="Aaron Nunez">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000970"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="Azure Active Directory" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800fb9a2e13ed819a305f7cf104a7"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="EntitlementAdd"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest displayValue="Access selected Lists without a signed in user. [on] Microsoft Graph" name="appRoleAssignments" op="Add" value="eec7a794-d3cb-49e0-af76-b870309ad063:23c5a9bd-d900-4ecf-be26-a0689755d9e5">
+                    <Attributes>
+                      <Map>
+                        <entry key="assignment" value="true"/>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000970"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <ProvisioningTargets>
+                  <ProvisioningTarget application="Azure Active Directory" attribute="appRoleAssignments" value="eec7a794-d3cb-49e0-af76-b870309ad063:23c5a9bd-d900-4ecf-be26-a0689755d9e5">
+                    <AccountSelection applicationId="c0a8001697a21be78197afdb21542aef" applicationName="Azure Active Directory" implicitCreate="true"/>
+                  </ProvisioningTarget>
+                  <ProvisioningTarget retain="true" role="roleForACCSelectionADM">
+                    <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" roleName="roleForACCSelectionADM" selection="CN=Aaron Nunez,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                      <AccountInfo displayName="Aaron Nunez" nativeIdentity="CN=Aaron Nunez,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+                    </AccountSelection>
+                  </ProvisioningTarget>
+                </ProvisioningTargets>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Aaron Nunez" targetIntegration="Azure Active Directory" trackingId="aaa8d6f0f37647849bb9f1bacde399ca">
+              <AccountRequest application="Azure Active Directory" op="Create">
+                <Attributes>
+                  <Map>
+                    <entry key="attachmentConfigList"/>
+                    <entry key="attachments"/>
+                    <entry key="flow" value="AccessRequest"/>
+                    <entry key="id" value="c0a800fb9a2e13ed819a305f7cf104a7"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="operation" value="EntitlementAdd"/>
+                    <entry key="provisioningTransactionId" value="c0a800fb9a2e13ed819a306bc59f06d1"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest displayValue="Access selected Lists without a signed in user. [on] Microsoft Graph" name="appRoleAssignments" op="Add" value="eec7a794-d3cb-49e0-af76-b870309ad063:23c5a9bd-d900-4ecf-be26-a0689755d9e5">
+                  <Attributes>
+                    <Map>
+                      <entry key="assignment" value="true"/>
+                    </Map>
+                  </Attributes>
+                </AttributeRequest>
+                <AttributeRequest name="accountType" op="Add" value="User"/>
+                <AttributeRequest name="userPrincipalName" op="Set" value="Aaron@Nunez.onmicrosoft.com"/>
+                <AttributeRequest name="password" op="Set">
+                  <Attributes>
+                    <Map>
+                      <entry key="secret" value="true"/>
+                    </Map>
+                  </Attributes>
+                </AttributeRequest>
+                <AttributeRequest name="displayName" op="Set" value="Aaron Nunez"/>
+                <AttributeRequest name="accountEnabled" op="Set">
+                  <Value>
+                    <Boolean>true</Boolean>
+                  </Value>
+                </AttributeRequest>
+                <AttributeRequest name="department" op="Set" value="Sales Manager"/>
+                <ProvisioningResult status="failed">
+                  <Errors>
+                    <Message key="sailpoint.connector.ConnectorException: Exception occurred.  Error message - HTTP not ended OK.  Response Code - 400 Error - The domain portion of the userPrincipalName property is invalid. You must use one of the verified domain names in your organization." type="Error"/>
+                  </Errors>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000970"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <ProvisioningResult status="failed">
+                <Errors>
+                  <Message key="sailpoint.connector.ConnectorException: Exception occurred.  Error message - HTTP not ended OK.  Response Code - 400 Error - The domain portion of the userPrincipalName property is invalid. You must use one of the verified domain names in your organization." type="Error"/>
+                </Errors>
+              </ProvisioningResult>
+            </ProvisioningPlan>
+            <ProvisioningTarget application="Azure Active Directory" attribute="appRoleAssignments" value="eec7a794-d3cb-49e0-af76-b870309ad063:23c5a9bd-d900-4ecf-be26-a0689755d9e5">
+              <AccountSelection applicationId="c0a8001697a21be78197afdb21542aef" applicationName="Azure Active Directory" implicitCreate="true"/>
+            </ProvisioningTarget>
+            <ProvisioningTarget retain="true" role="roleForACCSelectionADM">
+              <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" roleName="roleForACCSelectionADM" selection="CN=Aaron Nunez,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="Aaron Nunez" nativeIdentity="CN=Aaron Nunez,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+            </ProvisioningTarget>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="taskResultId" value="c0a800fb9a2e13ed819a306bba0b06c0"/>
+    </Map>
+  </Attributes>
+  <RequestItems>
+    <IdentityRequestItem application="Azure Active Directory" approvalState="Finished" name="appRoleAssignments" operation="Add" ownerName="spadmin" provisioningEngine="Azure Active Directory" provisioningState="Failed" value="eec7a794-d3cb-49e0-af76-b870309ad063:23c5a9bd-d900-4ecf-be26-a0689755d9e5">
+      <Attributes>
+        <Map>
+          <entry key="assignmentId" value="90e82a558ad14e9e89900d800dcbd581"/>
+          <entry key="attachmentConfigList"/>
+          <entry key="attachments"/>
+          <entry key="errors">
+            <value>
+              <List>
+                <Message key="sailpoint.connector.ConnectorException: Exception occurred.  Error message - HTTP not ended OK.  Response Code - 400 Error - The domain portion of the userPrincipalName property is invalid. You must use one of the verified domain names in your organization." type="Error"/>
+              </List>
+            </value>
+          </entry>
+          <entry key="flow" value="AccessRequest"/>
+          <entry key="id" value="c0a800fb9a2e13ed819a305f7cf104a7"/>
+          <entry key="identityEntitlementId" value="c0a800fb9a2e13ed819a306bbe0806cb"/>
+          <entry key="interface" value="LCM"/>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="operation" value="EntitlementAdd"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="25646186bf0e4d3aa0469a1f2b4934fd">
+                <AccountRequest application="Azure Active Directory" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800fb9a2e13ed819a305f7cf104a7"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="EntitlementAdd"/>
+                      <entry key="provisioningTransactionId" value="c0a800fb9a2e13ed819a306bc59f06d1"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest displayValue="Access selected Lists without a signed in user. [on] Microsoft Graph" name="appRoleAssignments" op="Add" trackingId="25646186bf0e4d3aa0469a1f2b4934fd" value="eec7a794-d3cb-49e0-af76-b870309ad063:23c5a9bd-d900-4ecf-be26-a0689755d9e5">
+                    <Attributes>
+                      <Map>
+                        <entry key="assignment" value="true"/>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+      <Owner>
+        <Reference class="sailpoint.object.Identity" name="spadmin"/>
+      </Owner>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="Azure Active Directory" approvalState="Finished" compilationStatus="Expansion" expansionCause="ProvisioningPolicy" name="accountType" operation="Add" provisioningEngine="Azure Active Directory" provisioningState="Failed" value="User">
+      <Attributes>
+        <Map>
+          <entry key="attachmentConfigList"/>
+          <entry key="attachments"/>
+          <entry key="errors">
+            <value>
+              <List>
+                <Message key="sailpoint.connector.ConnectorException: Exception occurred.  Error message - HTTP not ended OK.  Response Code - 400 Error - The domain portion of the userPrincipalName property is invalid. You must use one of the verified domain names in your organization." type="Error"/>
+              </List>
+            </value>
+          </entry>
+          <entry key="expansionInfo" value="Azure Active Directory"/>
+          <entry key="flow" value="AccessRequest"/>
+          <entry key="id" value="c0a800fb9a2e13ed819a305f7cf104a7"/>
+          <entry key="interface" value="LCM"/>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="operation" value="EntitlementAdd"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="045cd284837c4388ba4b5ad249d6ab7f">
+                <AccountRequest application="Azure Active Directory" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800fb9a2e13ed819a305f7cf104a7"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="EntitlementAdd"/>
+                      <entry key="provisioningTransactionId" value="c0a800fb9a2e13ed819a306bc59f06d1"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="accountType" op="Add" trackingId="045cd284837c4388ba4b5ad249d6ab7f" value="User"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="Azure Active Directory" approvalState="Finished" compilationStatus="Expansion" expansionCause="ProvisioningPolicy" name="userPrincipalName" operation="Set" provisioningEngine="Azure Active Directory" provisioningState="Failed" value="Aaron@Nunez.onmicrosoft.com">
+      <Attributes>
+        <Map>
+          <entry key="attachmentConfigList"/>
+          <entry key="attachments"/>
+          <entry key="errors">
+            <value>
+              <List>
+                <Message key="sailpoint.connector.ConnectorException: Exception occurred.  Error message - HTTP not ended OK.  Response Code - 400 Error - The domain portion of the userPrincipalName property is invalid. You must use one of the verified domain names in your organization." type="Error"/>
+              </List>
+            </value>
+          </entry>
+          <entry key="expansionInfo" value="Azure Active Directory"/>
+          <entry key="flow" value="AccessRequest"/>
+          <entry key="id" value="c0a800fb9a2e13ed819a305f7cf104a7"/>
+          <entry key="interface" value="LCM"/>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="operation" value="EntitlementAdd"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="5aecdb76abf244fa990eaccd54d68c75">
+                <AccountRequest application="Azure Active Directory" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800fb9a2e13ed819a305f7cf104a7"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="EntitlementAdd"/>
+                      <entry key="provisioningTransactionId" value="c0a800fb9a2e13ed819a306bc59f06d1"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="userPrincipalName" op="Set" trackingId="5aecdb76abf244fa990eaccd54d68c75" value="Aaron@Nunez.onmicrosoft.com"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="Azure Active Directory" approvalState="Finished" compilationStatus="Expansion" expansionCause="ProvisioningPolicy" name="displayName" operation="Set" provisioningEngine="Azure Active Directory" provisioningState="Failed" value="Aaron Nunez">
+      <Attributes>
+        <Map>
+          <entry key="attachmentConfigList"/>
+          <entry key="attachments"/>
+          <entry key="errors">
+            <value>
+              <List>
+                <Message key="sailpoint.connector.ConnectorException: Exception occurred.  Error message - HTTP not ended OK.  Response Code - 400 Error - The domain portion of the userPrincipalName property is invalid. You must use one of the verified domain names in your organization." type="Error"/>
+              </List>
+            </value>
+          </entry>
+          <entry key="expansionInfo" value="Azure Active Directory"/>
+          <entry key="flow" value="AccessRequest"/>
+          <entry key="id" value="c0a800fb9a2e13ed819a305f7cf104a7"/>
+          <entry key="interface" value="LCM"/>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="operation" value="EntitlementAdd"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="3eb97c91270243f39f4469dc24f2ea6b">
+                <AccountRequest application="Azure Active Directory" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800fb9a2e13ed819a305f7cf104a7"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="EntitlementAdd"/>
+                      <entry key="provisioningTransactionId" value="c0a800fb9a2e13ed819a306bc59f06d1"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="displayName" op="Set" trackingId="3eb97c91270243f39f4469dc24f2ea6b" value="Aaron Nunez"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="Azure Active Directory" approvalState="Finished" compilationStatus="Expansion" name="accountEnabled" operation="Set" provisioningEngine="Azure Active Directory" provisioningState="Failed" value="true">
+      <Attributes>
+        <Map>
+          <entry key="attachmentConfigList"/>
+          <entry key="attachments"/>
+          <entry key="errors">
+            <value>
+              <List>
+                <Message key="sailpoint.connector.ConnectorException: Exception occurred.  Error message - HTTP not ended OK.  Response Code - 400 Error - The domain portion of the userPrincipalName property is invalid. You must use one of the verified domain names in your organization." type="Error"/>
+              </List>
+            </value>
+          </entry>
+          <entry key="flow" value="AccessRequest"/>
+          <entry key="id" value="c0a800fb9a2e13ed819a305f7cf104a7"/>
+          <entry key="interface" value="LCM"/>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="operation" value="EntitlementAdd"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="2b8198b91bbc431e9ebd8e7e68989565">
+                <AccountRequest application="Azure Active Directory" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800fb9a2e13ed819a305f7cf104a7"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="EntitlementAdd"/>
+                      <entry key="provisioningTransactionId" value="c0a800fb9a2e13ed819a306bc59f06d1"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="accountEnabled" op="Set" trackingId="2b8198b91bbc431e9ebd8e7e68989565" value="true"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="Azure Active Directory" approvalState="Finished" compilationStatus="Expansion" expansionCause="ProvisioningPolicy" name="department" operation="Set" provisioningEngine="Azure Active Directory" provisioningState="Failed" value="Sales Manager">
+      <Attributes>
+        <Map>
+          <entry key="attachmentConfigList"/>
+          <entry key="attachments"/>
+          <entry key="errors">
+            <value>
+              <List>
+                <Message key="sailpoint.connector.ConnectorException: Exception occurred.  Error message - HTTP not ended OK.  Response Code - 400 Error - The domain portion of the userPrincipalName property is invalid. You must use one of the verified domain names in your organization." type="Error"/>
+              </List>
+            </value>
+          </entry>
+          <entry key="expansionInfo" value="Azure Active Directory"/>
+          <entry key="flow" value="AccessRequest"/>
+          <entry key="id" value="c0a800fb9a2e13ed819a305f7cf104a7"/>
+          <entry key="interface" value="LCM"/>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="operation" value="EntitlementAdd"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="7a694de874dd464693c2cca91475b1c0">
+                <AccountRequest application="Azure Active Directory" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800fb9a2e13ed819a305f7cf104a7"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="EntitlementAdd"/>
+                      <entry key="provisioningTransactionId" value="c0a800fb9a2e13ed819a306bc59f06d1"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="department" op="Set" trackingId="7a694de874dd464693c2cca91475b1c0" value="Sales Manager"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="Azure Active Directory" compilationStatus="Expansion" operation="Create" provisioningEngine="Azure Active Directory" provisioningState="Failed">
+      <Attributes>
+        <Map>
+          <entry key="attachmentConfigList"/>
+          <entry key="attachments"/>
+          <entry key="errors">
+            <value>
+              <List>
+                <Message key="sailpoint.connector.ConnectorException: Exception occurred.  Error message - HTTP not ended OK.  Response Code - 400 Error - The domain portion of the userPrincipalName property is invalid. You must use one of the verified domain names in your organization." type="Error"/>
+              </List>
+            </value>
+          </entry>
+          <entry key="flow" value="AccessRequest"/>
+          <entry key="id" value="c0a800fb9a2e13ed819a305f7cf104a7"/>
+          <entry key="interface" value="LCM"/>
+          <entry key="operation" value="EntitlementAdd"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="3c3a95c3469a4daa8ff6ecd1abbf4a4c">
+                <AccountRequest application="Azure Active Directory" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800fb9a2e13ed819a305f7cf104a7"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="EntitlementAdd"/>
+                      <entry key="provisioningTransactionId" value="c0a800fb9a2e13ed819a306bc59f06d1"/>
+                    </Map>
+                  </Attributes>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+    </IdentityRequestItem>
+  </RequestItems>
+</IdentityRequest>

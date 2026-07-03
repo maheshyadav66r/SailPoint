@@ -1,0 +1,586 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE WorkflowCase PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<WorkflowCase launcher="Scheduler" name="Refresh identity Lee Mary" targetClass="Identity" targetName="Lee Mary">
+  <Workflow currentStep="64c32ee4f8714378bd02c62b7b36c391" libraries="Identity" name="Identity Refresh" resultExpiration="-1" type="IdentityRefresh">
+    <Variable input="true" name="identitizer" transient="true" type="object"/>
+    <Variable input="true" name="identity" transient="true" type="object"/>
+    <Variable input="true" name="refreshOptions" type="object"/>
+    <Variable input="true" name="identityName" type="string"/>
+    <Variable input="true" name="project"/>
+    <Variable input="true" name="changeEvents"/>
+    <Variable input="true" name="detectionDifference"/>
+    <Variable input="true" name="previousVersion" type="object"/>
+    <Variable editable="true" initializer="false" input="true" name="doManualActions"/>
+    <Variable input="true" name="enableManualAccountSelection"/>
+    <Step complete="true" icon="Start" name="start" posX="28" posY="10">
+      <Transition to="Evaluate Change Events"/>
+    </Step>
+    <Step complete="true" condition="changeEvents != null" name="Evaluate Change Events" posX="161" posY="10">
+      <Transition to="Do Provisioning Forms"/>
+    </Step>
+    <Step condition="project != null &amp;&amp; (project.hasQuestions() || (isTrue(enableManualAccountSelection) &amp;&amp; (project.hasUnansweredAccountSelections() ||  project.hasUnansweredProvisioningTargets())))" name="Do Provisioning Forms" posX="346" posY="10">
+      <Arg name="identityName" value="ref:identityName"/>
+      <Arg name="project" value="ref:project"/>
+      <Arg name="fallbackOwner" value="spadmin"/>
+      <Arg name="accountSelectionOwner" value="applicationOwner"/>
+      <Arg name="formTemplate" value="Identity Refresh"/>
+      <Arg name="disableManualAccountSelection" value="script:!isTrue(enableManualAccountSelection)"/>
+      <Return name="project" to="project"/>
+      <WorkflowRef>
+        <Reference class="sailpoint.object.Workflow" name="Do Provisioning Forms"/>
+      </WorkflowRef>
+      <Transition to="Manual Actions"/>
+      <WorkflowCase launcher="Scheduler" name="Do Provisioning Forms">
+        <Workflow currentStep="3d276bafb5854563a0e42f80f7357d1d" explicitTransitions="true" libraries="Identity" name="Do Provisioning Forms" type="Subprocess">
+          <Variable input="true" name="identityName" required="true"/>
+          <Variable initializer="script:(identityDisplayName != void) ? identityDisplayName : resolveDisplayName(identityName)" input="true" name="identityDisplayName"/>
+          <Variable input="true" name="project" output="true" required="true"/>
+          <Variable input="true" name="formTemplate" required="true"/>
+          <Variable input="true" name="preferredOwner"/>
+          <Variable input="true" name="workItemPriority"/>
+          <Variable input="true" name="requiredOwner"/>
+          <Variable input="true" name="fallbackOwner"/>
+          <Variable input="true" name="accountSelectionOwner"/>
+          <Variable input="true" name="disableManualAccountSelection"/>
+          <Variable name="workItemForm"/>
+          <Variable name="formOwnerError"/>
+          <Variable name="workItemComments"/>
+          <Variable name="accountSelectionForm"/>
+          <Variable name="calculatedAccountSelectionOwner"/>
+          <Step complete="true" icon="Start" name="start" posX="33" posY="16">
+            <Transition to="Get Account Selection Owner"/>
+          </Step>
+          <Step action="call:getAccountSelectionOwner" complete="true" name="Get Account Selection Owner" posX="261" posY="18" resultVariable="calculatedAccountSelectionOwner">
+            <Arg name="owner" value="ref:requiredOwner"/>
+            <Arg name="fallbackOwner" value="ref:fallbackOwner"/>
+            <Arg name="accountSelectionOwner" value="ref:accountSelectionOwner"/>
+            <Arg name="preferredOwner" value="ref:preferredOwner"/>
+            <ConditionScript>
+              <Source><![CDATA[project != null && !isTrue(disableManualAccountSelection) && (project.hasUnansweredProvisioningTargets() || project.hasUnansweredAccountSelections())]]></Source>
+            </ConditionScript>
+            <Transition to="Build Account Selection Form"/>
+          </Step>
+          <Step action="call:buildAccountSelectionForm" complete="true" name="Build Account Selection Form" posX="457" posY="14" resultVariable="accountSelectionForm">
+            <Arg name="owner" value="ref:calculatedAccountSelectionOwner"/>
+            <Arg name="project" value="ref:project"/>
+            <ConditionScript>
+              <Source><![CDATA[project != null && !isTrue(disableManualAccountSelection) && project.hasUnansweredProvisioningTargets()]]></Source>
+            </ConditionScript>
+            <Transition to="Present Account Selection Form"/>
+          </Step>
+          <Step complete="true" condition="script:!isNull(accountSelectionForm)" name="Present Account Selection Form" posX="686" posY="13">
+            <Approval owner="script:accountSelectionForm.getTargetUser()" send="identityName,identityDisplayName,launcher">
+              <AfterScript>
+                <Source><![CDATA[
+          import sailpoint.object.Form;
+          import sailpoint.object.ProvisioningTarget;
+          import sailpoint.object.AccountSelection;
+          import sailpoint.object.Field;
+
+          Form accountSelectionForm = item.getForm();
+          
+          Iterator fieldIterator = accountSelectionForm.iterateFields();
+
+          List targets = project.getProvisioningTargets();
+          
+          //apply selected value to matching AccountSelection
+          //if accountSelectionId, then apply to the first unanswered AccountSelection
+          while (fieldIterator.hasNext()) {
+              Field fld = (Field)fieldIterator.next();
+              if (fld == null) 
+                continue;
+
+              Integer targetIndex = (Integer)fld.getAttribute("targetIndex");
+              Integer selectionIndex = (Integer)fld.getAttribute("selectionIndex");
+              
+              if (targetIndex == null || selectionIndex == null) continue;
+                            
+              ProvisioningTarget target = (ProvisioningTarget) targets.get(targetIndex.intValue());
+              
+              List selections = target.getAccountSelections();
+              AccountSelection selection = (AccountSelection) selections.get(selectionIndex.intValue()); 
+                 
+              if (selection.isAnswered()) continue;
+              
+              if (fld.getValue().equals("doCreateOpt")) {
+                selection.setDoCreate(true);
+              }
+              else {
+                selection.setSelection(fld.getValue());
+              }
+          }
+          
+        ]]></Source>
+              </AfterScript>
+              <Arg name="workItemType" value="Form"/>
+              <Arg name="workItemDescription" value="Role Account Selection for $(identityDisplayName)"/>
+              <Arg name="workItemForm" value="ref:accountSelectionForm"/>
+              <Arg name="workItemDisableNotification">
+                <Script>
+                  <Source><![CDATA[
+           
+            // If this is interactive then don't bother sending email notifications.
+            return (null != sessionOwner) && !sessionOwner.equals("System") && !sessionOwner.equals("Scheduler");
+            
+          ]]></Source>
+                </Script>
+              </Arg>
+              <Arg name="workItemPriority" value="ref:workItemPriority"/>
+              <WorkItemConfig escalationStyle="none">
+                <NotificationEmailTemplateRef>
+                  <Reference class="sailpoint.object.EmailTemplate" name="Account Selection Notification"/>
+                </NotificationEmailTemplateRef>
+              </WorkItemConfig>
+            </Approval>
+            <Transition to="Handle Old Account Selections"/>
+          </Step>
+          <Step complete="true" name="Handle Old Account Selections" posX="926" posY="13">
+            <Approval owner="ref:calculatedAccountSelectionOwner" renderer="accountSelectionRenderer.xhtml">
+              <AfterScript>
+                <Source><![CDATA[
+          import sailpoint.object.Attributes;
+          import sailpoint.api.Provisioner;
+
+          // Set the account selections back on the project.  Later these will
+          // be consulted when the native identities are resolved.
+          List accountSelections = approval.get("accountSelectionsFromWorkItem");
+          project.setAccountSelections(accountSelections);
+
+          // Recompile project so that selected native identities get put into
+          // provisioning plans.
+          Provisioner p = new Provisioner(wfcontext.getSailPointContext());
+          Attributes args = wfcontext.getStepArguments();
+          p.recompile(project, args);
+        ]]></Source>
+              </AfterScript>
+              <Arg name="workItemRequester" value="$(launcher)"/>
+              <Arg name="workItemDescription" value="Account Selection for User: $(identityDisplayName)"/>
+              <Arg name="workItemDisableNotification">
+                <Script>
+                  <Source><![CDATA[
+           
+            // If this is interactive then don't bother sending email notifications.
+            return (null != sessionOwner) && !sessionOwner.equals("System") && !sessionOwner.equals("Scheduler");
+            
+          ]]></Source>
+                </Script>
+              </Arg>
+              <Arg name="workItemPriority" value="ref:workItemPriority"/>
+              <Arg name="accounts" value="script:project.getAccountSelections()"/>
+              <Arg name="expansionItems" value="script:project.getExpansionItems()"/>
+              <Arg name="identityDisplayName" value="$(identityDisplayName)"/>
+              <Arg name="identityName" value="$(identityName)"/>
+              <Return local="true" name="accounts" to="accountSelectionsFromWorkItem"/>
+              <ValidationScript>
+                <Source><![CDATA[
+          import sailpoint.object.AccountSelection;
+          import sailpoint.tools.Util;
+
+          // The return has not yet been processed since we're in the validator
+          // script.  Grab the account selections from the work item.
+          List accountSelections = item.getAttribute("accounts");
+
+          // Make sure that all account selections have decisions.
+          for (AccountSelection sel : accountSelections) {
+              if (Util.isEmpty(sel.getSelectedNativeIdentities())) {
+                  return "Please make a selection for each application.";
+              }
+          }
+          return null;
+        ]]></Source>
+              </ValidationScript>
+              <WorkItemConfig escalationStyle="none">
+                <NotificationEmailTemplateRef>
+                  <Reference class="sailpoint.object.EmailTemplate" name="Account Selection Notification"/>
+                </NotificationEmailTemplateRef>
+              </WorkItemConfig>
+            </Approval>
+            <ConditionScript>
+              <Source><![CDATA[project != null && !isTrue(disableManualAccountSelection) && project.hasUnansweredAccountSelections()]]></Source>
+            </ConditionScript>
+            <Transition to="Recompile Provisioning Project"/>
+          </Step>
+          <Step action="call:recompileProject" complete="true" name="Recompile Provisioning Project" posX="921" posY="308" resultVariable="project">
+            <Arg name="project" value="ref:project"/>
+            <Transition to="Build Provisioning Form"/>
+          </Step>
+          <Step action="call:buildProvisioningForm" complete="true" name="Build Provisioning Form" posX="544" posY="306" resultVariable="workItemForm">
+            <Arg name="template" value="ref:formTemplate"/>
+            <Arg name="owner" value="ref:requiredOwner"/>
+            <Arg name="fallbackOwner" value="ref:fallbackOwner"/>
+            <Arg name="preferredOwner" value="ref:preferredOwner"/>
+            <Arg name="project" value="ref:project"/>
+            <Arg name="workItemComments" value="ref:workItemComments"/>
+            <Arg name="workItemPriority" value="ref:workItemPriority"/>
+            <Transition to="Present Provisioning Form"/>
+          </Step>
+          <Step condition="script:!isNull(workItemForm)" name="Present Provisioning Form" posX="233" posY="305">
+            <Approval originalOwner="script:workItemForm.getTargetUser()" owner="spadmin" return="workItemForm" send="identityName,identityDisplayName,workItemForm,launcher" startDate="1769665475857" started="true" workItemDescription="Complete provisioning form for Lee Mary" workItemId="c0a801199c071190819c084834e603d1" workItemType="Form">
+              <Arg name="workItemType" value="Form"/>
+              <Arg name="workItemDescription" value="Complete provisioning form for $(identityDisplayName)"/>
+              <Arg name="workItemDisableNotification">
+                <Script>
+                  <Source><![CDATA[
+            
+            // 
+            // If this is interactive then don't bother sending email
+            // notifications.
+            // 
+            // There is some subtle logic here. Basically requiredOwner
+            // is null most of the time except in the case of pre-approval
+            // forms. In that case we want to return the forms for the
+            // required owner so they can fill it in during the request
+            // process instead of waiting on a workitem.  
+            //
+            boolean disableEmail = false;
+            String owner = ( requiredOwner != null ) ? requiredOwner : sessionOwner;
+            if ( Util.nullSafeEq(owner, workItemForm.getTargetUser()) ) { 
+                disableEmail = true;
+            }
+            return disableEmail;
+            
+          ]]></Source>
+                </Script>
+              </Arg>
+              <Arg name="workItemPriority" value="ref:workItemPriority"/>
+              <WorkItemConfig escalationStyle="none">
+                <NotificationEmailTemplateRef>
+                  <Reference class="sailpoint.object.EmailTemplate" name="Provisioning Form Notification"/>
+                </NotificationEmailTemplateRef>
+              </WorkItemConfig>
+            </Approval>
+            <Transition to="Assimilate Provisioning Form"/>
+          </Step>
+          <Step action="call:assimilateProvisioningForm" condition="script:!isNull(workItemForm)" name="Assimilate Provisioning Form" posX="232" posY="114" resultVariable="project">
+            <Arg name="form" value="ref:workItemForm"/>
+            <Arg name="project" value="ref:project"/>
+            <Transition to="Build Provisioning Form" when="(project != null &amp;&amp; project.hasQuestions()) &amp;&amp; !isNull(workItemForm)"/>
+            <Transition to="end"/>
+          </Step>
+          <Step icon="Stop" name="end" posX="691" posY="113"/>
+          <Attributes>
+            <Map>
+              <entry key="accountSelectionForm"/>
+              <entry key="accountSelectionOwner" value="applicationOwner"/>
+              <entry key="calculatedAccountSelectionOwner"/>
+              <entry key="disableManualAccountSelection">
+                <value>
+                  <Boolean>true</Boolean>
+                </value>
+              </entry>
+              <entry key="fallbackOwner" value="spadmin"/>
+              <entry key="formOwnerError"/>
+              <entry key="formTemplate" value="Identity Refresh"/>
+              <entry key="identityDisplayName" value="Lee Mary"/>
+              <entry key="identityName" value="Lee Mary"/>
+              <entry key="launcher" value="Scheduler"/>
+              <entry key="preferredOwner"/>
+              <entry key="project">
+                <value>
+                  <ProvisioningProject identity="Lee Mary">
+                    <Attributes>
+                      <Map>
+                        <entry key="noAttributeSyncExpansion">
+                          <value>
+                            <Boolean>true</Boolean>
+                          </value>
+                        </entry>
+                        <entry key="noLocking">
+                          <value>
+                            <Boolean>true</Boolean>
+                          </value>
+                        </entry>
+                        <entry key="noMaintenanceWindowRetry" value="false"/>
+                        <entry key="noRoleDeprovisioning" value="false"/>
+                        <entry key="source" value="Rule"/>
+                      </Map>
+                    </Attributes>
+                    <ExpansionItems>
+                      <ExpansionItem application="ActiveDirectory" cause="ProvisioningPolicy" name="sAMAccountName" nativeIdentity="null null" operation="Set" sourceInfo="ActiveDirectory" value="null null"/>
+                      <ExpansionItem application="ActiveDirectory" cause="ProvisioningPolicy" name="mail" nativeIdentity="null null" operation="Set" sourceInfo="ActiveDirectory" value="null.null@eshiam.com"/>
+                      <ExpansionItem application="ActiveDirectory" cause="ProvisioningPolicy" name="password" nativeIdentity="null null" operation="Set" sourceInfo="ActiveDirectory" value="Mahesh@1045"/>
+                      <ExpansionItem application="ActiveDirectory" cause="AttributeAssignment" name="memberOf" nativeIdentity="null null" operation="Add" sourceInfo="LCM" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                    </ExpansionItems>
+                    <MasterPlan>
+                      <ProvisioningPlan>
+                        <AccountRequest application="ActiveDirectory" nativeIdentity="null null" op="Modify">
+                          <AttributeRequest name="memberOf" op="Add" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                            <Attributes>
+                              <Map>
+                                <entry key="assignment">
+                                  <value>
+                                    <Boolean>true</Boolean>
+                                  </value>
+                                </entry>
+                              </Map>
+                            </Attributes>
+                          </AttributeRequest>
+                        </AccountRequest>
+                        <Attributes>
+                          <Map>
+                            <entry key="source" value="IdentityRefresh"/>
+                          </Map>
+                        </Attributes>
+                      </ProvisioningPlan>
+                    </MasterPlan>
+                    <ProvisioningPlan targetIntegration="ActiveDirectory" trackingId="21645da3ed2a499a873681ec818f5e48">
+                      <AccountRequest application="ActiveDirectory" nativeIdentity="null null" op="Create">
+                        <AttributeRequest name="memberOf" op="Add" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                          <Attributes>
+                            <Map>
+                              <entry key="assignment">
+                                <value>
+                                  <Boolean>true</Boolean>
+                                </value>
+                              </entry>
+                            </Map>
+                          </Attributes>
+                        </AttributeRequest>
+                        <AttributeRequest name="sAMAccountName" op="Set" value="null null"/>
+                        <AttributeRequest name="mail" op="Set" value="null.null@eshiam.com"/>
+                        <AttributeRequest name="password" op="Set" value="Mahesh@1045"/>
+                      </AccountRequest>
+                      <Attributes>
+                        <Map>
+                          <entry key="source" value="IdentityRefresh"/>
+                        </Map>
+                      </Attributes>
+                    </ProvisioningPlan>
+                    <Questions>
+                      <Question attributeName="givenName" source="ActiveDirectory" target="null null" type="Application">
+                        <Field application="ActiveDirectory" displayName="FirstName" name="Question:0:givenName" priority="10" required="true" template="AccountCreation" type="string"/>
+                      </Question>
+                      <Question attributeName="sn" source="ActiveDirectory" target="null null" type="Application">
+                        <Field application="ActiveDirectory" displayName="LastName" name="Question:1:sn" priority="10" required="true" template="AccountCreation" type="string"/>
+                      </Question>
+                    </Questions>
+                  </ProvisioningProject>
+                </value>
+              </entry>
+              <entry key="requiredOwner"/>
+              <entry key="sessionOwner" value="Scheduler"/>
+              <entry key="workItemComments"/>
+              <entry key="workItemForm">
+                <value>
+                  <Form name="Identity Refresh" targetUser="spadmin" type="Workflow">
+                    <Attributes>
+                      <Map>
+                        <entry key="pageTitle" value="provision_identity_refresh_title"/>
+                        <entry key="pageTitleParam" value="$(identityName)"/>
+                      </Map>
+                    </Attributes>
+                    <Section type="text">
+                      <Field displayName="provision_identity_refresh_description"/>
+                    </Section>
+                    <Section label="provision_target_identity" type="datatable">
+                      <Attributes>
+                        <Map>
+                          <entry key="hideNulls" value="true"/>
+                        </Map>
+                      </Attributes>
+                      <Field displayName="provision_account_id" value="script:identity.getName()"/>
+                      <Field displayName="provision_first_name" value="script:identity.getFirstname()"/>
+                      <Field displayName="provision_last_name" value="script:identity.getLastname()"/>
+                      <Field displayName="provision_assigned_roles">
+                        <Script>
+                          <Source><![CDATA[
+          import sailpoint.api.ObjectUtil;
+          import sailpoint.tools.Util;
+          List names = ObjectUtil.getObjectNames(identity.getAssignedRoles());
+          return Util.listToCsv(names);
+      ]]></Source>
+                        </Script>
+                      </Field>
+                    </Section>
+                    <Button action="next" label="button_ok"/>
+                    <Button action="cancel" label="button_cancel"/>
+                    <Button action="cancel" label="button_return" readOnly="true"/>
+                    <Section label="ActiveDirectory" name="ActiveDirectory">
+                      <Field application="ActiveDirectory" displayName="FirstName" name="Question:0:givenName" priority="10" required="true" template="AccountCreation" type="string"/>
+                      <Field application="ActiveDirectory" displayName="LastName" name="Question:1:sn" priority="10" required="true" template="AccountCreation" type="string"/>
+                    </Section>
+                  </Form>
+                </value>
+              </entry>
+              <entry key="workItemPriority"/>
+            </Map>
+          </Attributes>
+        </Workflow>
+      </WorkflowCase>
+    </Step>
+    <Step condition="isTrue(doManualActions) &amp;&amp; project.getUnmanagedPlan() != null" name="Manual Actions" posX="696" posY="10">
+      <Arg name="identityName" value="ref:identityName"/>
+      <Arg name="project" value="ref:project"/>
+      <WorkflowRef>
+        <Reference class="sailpoint.object.Workflow" name="Do Manual Actions"/>
+      </WorkflowRef>
+      <Transition to="Finish Refresh"/>
+    </Step>
+    <Step action="finishRefresh" name="Finish Refresh" posX="515" posY="10">
+      <Arg name="identitizer" value="ref:identitizer"/>
+      <Arg name="identity" value="ref:identity"/>
+      <Arg name="identityName" value="ref:identityName"/>
+      <Arg name="refreshOptions" value="ref:refreshOptions"/>
+      <Arg name="previousVersion" value="ref:previousVersion"/>
+      <Arg name="project" value="ref:project"/>
+      <Transition to="Save Identity"/>
+    </Step>
+    <Step action="script: if (identity != null ) { context.saveObject(identity); context.commitTransaction(); }" condition="isTrue(doManualActions) &amp;&amp; project.getUnmanagedPlan() != null" name="Save Identity" posX="587" posY="150">
+      <Arg name="identity" value="ref:identity"/>
+      <Transition to="end"/>
+    </Step>
+    <Step name="end" posX="859" posY="10"/>
+    <Attributes>
+      <Map>
+        <entry key="changeEvents"/>
+        <entry key="detectionDifference"/>
+        <entry key="doManualActions">
+          <value>
+            <Boolean/>
+          </value>
+        </entry>
+        <entry key="enableManualAccountSelection">
+          <value>
+            <Boolean/>
+          </value>
+        </entry>
+        <entry key="identityName" value="Lee Mary"/>
+        <entry key="launcher" value="Scheduler"/>
+        <entry key="previousVersion"/>
+        <entry key="project">
+          <value>
+            <ProvisioningProject identity="Lee Mary">
+              <Attributes>
+                <Map>
+                  <entry key="noAttributeSyncExpansion">
+                    <value>
+                      <Boolean>true</Boolean>
+                    </value>
+                  </entry>
+                  <entry key="noLocking">
+                    <value>
+                      <Boolean>true</Boolean>
+                    </value>
+                  </entry>
+                  <entry key="noMaintenanceWindowRetry" value="false"/>
+                  <entry key="noRoleDeprovisioning" value="false"/>
+                  <entry key="source" value="Rule"/>
+                </Map>
+              </Attributes>
+              <ExpansionItems>
+                <ExpansionItem application="ActiveDirectory" cause="ProvisioningPolicy" name="sAMAccountName" nativeIdentity="null null" operation="Set" sourceInfo="ActiveDirectory" value="null null"/>
+                <ExpansionItem application="ActiveDirectory" cause="ProvisioningPolicy" name="mail" nativeIdentity="null null" operation="Set" sourceInfo="ActiveDirectory" value="null.null@eshiam.com"/>
+                <ExpansionItem application="ActiveDirectory" cause="ProvisioningPolicy" name="password" nativeIdentity="null null" operation="Set" sourceInfo="ActiveDirectory" value="Mahesh@1045"/>
+                <ExpansionItem application="ActiveDirectory" cause="AttributeAssignment" name="memberOf" nativeIdentity="null null" operation="Add" sourceInfo="LCM" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+              </ExpansionItems>
+              <MasterPlan>
+                <ProvisioningPlan>
+                  <AccountRequest application="ActiveDirectory" nativeIdentity="null null" op="Modify">
+                    <AttributeRequest name="memberOf" op="Add" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                      <Attributes>
+                        <Map>
+                          <entry key="assignment">
+                            <value>
+                              <Boolean>true</Boolean>
+                            </value>
+                          </entry>
+                        </Map>
+                      </Attributes>
+                    </AttributeRequest>
+                  </AccountRequest>
+                  <Attributes>
+                    <Map>
+                      <entry key="source" value="IdentityRefresh"/>
+                    </Map>
+                  </Attributes>
+                </ProvisioningPlan>
+              </MasterPlan>
+              <ProvisioningPlan targetIntegration="ActiveDirectory" trackingId="21645da3ed2a499a873681ec818f5e48">
+                <AccountRequest application="ActiveDirectory" nativeIdentity="null null" op="Create">
+                  <AttributeRequest name="memberOf" op="Add" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                    <Attributes>
+                      <Map>
+                        <entry key="assignment">
+                          <value>
+                            <Boolean>true</Boolean>
+                          </value>
+                        </entry>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                  <AttributeRequest name="sAMAccountName" op="Set" value="null null"/>
+                  <AttributeRequest name="mail" op="Set" value="null.null@eshiam.com"/>
+                  <AttributeRequest name="password" op="Set" value="Mahesh@1045"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="IdentityRefresh"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+              <Questions>
+                <Question attributeName="givenName" source="ActiveDirectory" target="null null" type="Application">
+                  <Field application="ActiveDirectory" displayName="FirstName" name="Question:0:givenName" priority="10" required="true" template="AccountCreation" type="string"/>
+                </Question>
+                <Question attributeName="sn" source="ActiveDirectory" target="null null" type="Application">
+                  <Field application="ActiveDirectory" displayName="LastName" name="Question:1:sn" priority="10" required="true" template="AccountCreation" type="string"/>
+                </Question>
+              </Questions>
+            </ProvisioningProject>
+          </value>
+        </entry>
+        <entry key="refreshOptions">
+          <value>
+            <Map>
+              <entry key="TaskDefinition.runLengthAverage" value="103"/>
+              <entry key="TaskDefinition.runLengthTotal" value="10952"/>
+              <entry key="TaskDefinition.runs" value="106"/>
+              <entry key="TaskSchedule.host"/>
+              <entry key="checkHistory" value="false"/>
+              <entry key="checkPolicies" value="false"/>
+              <entry key="correlateEntitlements" value="true"/>
+              <entry key="deleteDormantGroups" value="false"/>
+              <entry key="disableIdentityProcessingThreshold" value="false"/>
+              <entry key="disableManagerLookup" value="false"/>
+              <entry key="doManualActions" value="false"/>
+              <entry key="enableManualAccountSelection" value="false"/>
+              <entry key="enablePartitioning" value="false"/>
+              <entry key="excludeInactive" value="false"/>
+              <entry key="filterNeedsRefresh" value="false"/>
+              <entry key="forceWorkflow" value="false"/>
+              <entry key="includeWindowModified" value="false"/>
+              <entry key="keepInactiveViolations" value="false"/>
+              <entry key="launcher" value="spadmin"/>
+              <entry key="locale" value="en_US"/>
+              <entry key="markDormantScopes" value="false"/>
+              <entry key="noAutoCreateScopes" value="false"/>
+              <entry key="noCheckPendingWorkflow" value="true"/>
+              <entry key="noMaintenanceWindowRetry" value="false"/>
+              <entry key="noResetNeedsRefresh" value="false"/>
+              <entry key="noRoleDeprovisioning" value="false"/>
+              <entry key="processTriggers" value="false"/>
+              <entry key="promoteAttributes" value="true"/>
+              <entry key="promoteManagedAttributes" value="false"/>
+              <entry key="provision" value="true"/>
+              <entry key="refreshCompositeApplications" value="false"/>
+              <entry key="refreshGroups" value="false"/>
+              <entry key="refreshIdentityEntitlements" value="true"/>
+              <entry key="refreshManagerStatus" value="false"/>
+              <entry key="refreshRoleMetadata" value="false"/>
+              <entry key="refreshScorecard" value="false"/>
+              <entry key="refreshSource" value="Task"/>
+              <entry key="refreshSourceWho" value="Refresh Identity Cube"/>
+              <entry key="synchronizeAttributes" value="false"/>
+              <entry key="taskCompletionEmailNotify" value="Disabled"/>
+              <entry key="taskCompletionEmailRecipients"/>
+              <entry key="taskCompletionEmailTemplate"/>
+              <entry key="timezone" value="Asia/Calcutta"/>
+            </Map>
+          </value>
+        </entry>
+        <entry key="sessionOwner" value="Scheduler"/>
+        <entry key="taskResultId" value="c0a801199c071190819c084834ae03cf"/>
+      </Map>
+    </Attributes>
+  </Workflow>
+</WorkflowCase>

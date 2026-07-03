@@ -1,0 +1,782 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE BundleProfileRelation PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<BundleProfileRelation appStatus="OK" attribute="groups" bundleId="c0a801199c021189819c03cd4eee021f" displayValue="WS_GROUP_103" hash="1ba670851bfd6885cc7266a53396b94363e6d596" hashCode="-1121786627" sourceProfileId="c0a801199c021189819c03cd4ef60220" type="group" value="WS_GROUP_103">
+  <Attributes>
+    <Map>
+      <entry key="applicationName" value="WebServicesApplicationEshiam"/>
+      <entry key="bundlePaths">
+        <value>
+          <List>
+            <BundleProfileRelationStep bundleId="c0a801199c021189819c03cd4eee021f" stepType="none"/>
+          </List>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <BundleProfileRelationSteps>
+    <BundleProfileRelationStep bundleId="c0a801199c021189819c03cd4eee021f" bundleProfileRelationId="c0a8008d9dec11ce819deca30f0b0054" stepType="none"/>
+  </BundleProfileRelationSteps>
+  <SourceApplication>
+    <Application connector="sailpoint.connector.webservices.WebServicesConnector" featuresString="PROVISIONING, ENABLE, PASSWORD, AUTHENTICATE, ADDITIONAL_ACCOUNT_REQUEST, ACCOUNT_ONLY_REQUEST" name="WebServicesApplicationEshiam" profileClass="" type="Web Services">
+      <Attributes>
+        <Map>
+          <entry key="acctAggregationEnd">
+            <value>
+              <Date>1767684415099</Date>
+            </value>
+          </entry>
+          <entry key="acctAggregationStart">
+            <value>
+              <Date>1767684414759</Date>
+            </value>
+          </entry>
+          <entry key="afterProvisioningRule" value="Webservices AfterProvisioningRule"/>
+          <entry key="aggregationPartitioned">
+            <value>
+              <Boolean/>
+            </value>
+          </entry>
+          <entry key="aggregationType" value="account"/>
+          <entry key="authenticationMethod" value="BasicLogin"/>
+          <entry key="beforeProvisioningRule" value="BeforeProvisioningRule"/>
+          <entry key="clientCertAuthEnabled">
+            <value>
+              <Boolean/>
+            </value>
+          </entry>
+          <entry key="compositeDefinition"/>
+          <entry key="connectionParameters">
+            <value>
+              <List>
+                <Map>
+                  <entry key="afterRule"/>
+                  <entry key="beforeRule"/>
+                  <entry key="body">
+                    <value>
+                      <Map>
+                        <entry key="bodyFormData"/>
+                        <entry key="bodyFormat" value="raw"/>
+                        <entry key="jsonBody"/>
+                      </Map>
+                    </value>
+                  </entry>
+                  <entry key="contextUrl" value="/ping"/>
+                  <entry key="curlCommand"/>
+                  <entry key="curlEnabled">
+                    <value>
+                      <Boolean/>
+                    </value>
+                  </entry>
+                  <entry key="customAuthUrl"/>
+                  <entry key="header"/>
+                  <entry key="httpMethodType" value="GET"/>
+                  <entry key="operationType" value="Test Connection"/>
+                  <entry key="paginationSteps"/>
+                  <entry key="pagingInitialOffset">
+                    <value>
+                      <Integer>0</Integer>
+                    </value>
+                  </entry>
+                  <entry key="pagingSize">
+                    <value>
+                      <Integer>50</Integer>
+                    </value>
+                  </entry>
+                  <entry key="parentEndpointName"/>
+                  <entry key="resMappingObj"/>
+                  <entry key="responseCode">
+                    <value>
+                      <List>
+                        <String>200</String>
+                      </List>
+                    </value>
+                  </entry>
+                  <entry key="rootPath"/>
+                  <entry key="sequenceNumberForEndpoint" value="1"/>
+                  <entry key="uniqueNameForEndPoint" value="Ping"/>
+                  <entry key="xpathNamespaces"/>
+                </Map>
+                <Map>
+                  <entry key="afterRule" value="CreateAccount AfterRule"/>
+                  <entry key="beforeRule" value="createAccount BeforeRule"/>
+                  <entry key="body">
+                    <value>
+                      <Map>
+                        <entry key="bodyFormData"/>
+                        <entry key="bodyFormat" value="raw"/>
+                        <entry key="jsonBody"/>
+                      </Map>
+                    </value>
+                  </entry>
+                  <entry key="contextUrl" value="/getAllUsers"/>
+                  <entry key="curlCommand"/>
+                  <entry key="curlEnabled">
+                    <value>
+                      <Boolean/>
+                    </value>
+                  </entry>
+                  <entry key="customAuthUrl"/>
+                  <entry key="header"/>
+                  <entry key="httpMethodType" value="GET"/>
+                  <entry key="operationType" value="Account Aggregation"/>
+                  <entry key="paginationSteps" value="TERMINATE_IF $response.itemsPerPage$ == 0&#13;&#10;$pagingInitialOffset$ = $pagingInitialOffset$+$pagingSize$&#13;&#10;$EndPoint.fullUrl$ = $application.baseUrl$+$EndPoint.contextUrl$+&quot;?offset=&quot;+$pagingInitialOffset$+&quot;&amp;limit=&quot;+$pagingSize$"/>
+                  <entry key="pagingInitialOffset">
+                    <value>
+                      <Integer>0</Integer>
+                    </value>
+                  </entry>
+                  <entry key="pagingSize">
+                    <value>
+                      <Integer>50</Integer>
+                    </value>
+                  </entry>
+                  <entry key="parentEndpointName"/>
+                  <entry key="resMappingObj">
+                    <value>
+                      <Map>
+                        <entry key="department" value="department"/>
+                        <entry key="description" value="description"/>
+                        <entry key="groups" value="groups"/>
+                        <entry key="job_title" value="job_title"/>
+                        <entry key="location" value="location"/>
+                        <entry key="manager_id" value="manager_id"/>
+                        <entry key="user_email" value="user_email"/>
+                        <entry key="user_id" value="user_id"/>
+                        <entry key="user_name" value="user_name"/>
+                        <entry key="user_status" value="user_status"/>
+                      </Map>
+                    </value>
+                  </entry>
+                  <entry key="responseCode">
+                    <value>
+                      <List>
+                        <String>200</String>
+                      </List>
+                    </value>
+                  </entry>
+                  <entry key="rootPath"/>
+                  <entry key="sequenceNumberForEndpoint" value="2"/>
+                  <entry key="uniqueNameForEndPoint" value="Get All Users"/>
+                  <entry key="xpathNamespaces"/>
+                </Map>
+                <Map>
+                  <entry key="afterRule"/>
+                  <entry key="beforeRule"/>
+                  <entry key="body">
+                    <value>
+                      <Map>
+                        <entry key="bodyFormData"/>
+                        <entry key="bodyFormat" value="raw"/>
+                        <entry key="jsonBody"/>
+                      </Map>
+                    </value>
+                  </entry>
+                  <entry key="contextUrl" value="/getAllGroups"/>
+                  <entry key="curlCommand"/>
+                  <entry key="curlEnabled">
+                    <value>
+                      <Boolean/>
+                    </value>
+                  </entry>
+                  <entry key="customAuthUrl"/>
+                  <entry key="header"/>
+                  <entry key="httpMethodType" value="GET"/>
+                  <entry key="operationType" value="Group Aggregation"/>
+                  <entry key="paginationSteps"/>
+                  <entry key="pagingInitialOffset">
+                    <value>
+                      <Integer>0</Integer>
+                    </value>
+                  </entry>
+                  <entry key="pagingSize">
+                    <value>
+                      <Integer>50</Integer>
+                    </value>
+                  </entry>
+                  <entry key="parentEndpointName"/>
+                  <entry key="resMappingObj">
+                    <value>
+                      <Map>
+                        <entry key="group_desc" value="group_desc"/>
+                        <entry key="group_id" value="group_id"/>
+                        <entry key="group_name" value="group_name"/>
+                      </Map>
+                    </value>
+                  </entry>
+                  <entry key="responseCode">
+                    <value>
+                      <List>
+                        <String>200</String>
+                      </List>
+                    </value>
+                  </entry>
+                  <entry key="rootPath" value="$.objects[*]"/>
+                  <entry key="sequenceNumberForEndpoint" value="3"/>
+                  <entry key="uniqueNameForEndPoint" value="Get All Groups"/>
+                  <entry key="xpathNamespaces"/>
+                </Map>
+                <Map>
+                  <entry key="afterRule" value="CreateAccount AfterRule"/>
+                  <entry key="beforeRule" value="WebServicesGetObject BeforeRule"/>
+                  <entry key="body">
+                    <value>
+                      <Map>
+                        <entry key="bodyFormData"/>
+                        <entry key="bodyFormat" value="raw"/>
+                        <entry key="jsonBody"/>
+                      </Map>
+                    </value>
+                  </entry>
+                  <entry key="contextUrl" value="/getUser/$plan.nativeIdentity$"/>
+                  <entry key="curlCommand"/>
+                  <entry key="curlEnabled">
+                    <value>
+                      <Boolean/>
+                    </value>
+                  </entry>
+                  <entry key="customAuthUrl"/>
+                  <entry key="header"/>
+                  <entry key="httpMethodType" value="GET"/>
+                  <entry key="operationType" value="Get Object"/>
+                  <entry key="paginationSteps"/>
+                  <entry key="pagingInitialOffset">
+                    <value>
+                      <Integer>0</Integer>
+                    </value>
+                  </entry>
+                  <entry key="pagingSize">
+                    <value>
+                      <Integer>50</Integer>
+                    </value>
+                  </entry>
+                  <entry key="parentEndpointName"/>
+                  <entry key="resMappingObj">
+                    <value>
+                      <Map>
+                        <entry key="department" value="department"/>
+                        <entry key="job_title" value="job_title"/>
+                        <entry key="location" value="location"/>
+                        <entry key="manager_id" value="manager_id"/>
+                        <entry key="user_email" value="user_email"/>
+                        <entry key="user_id" value="user_id"/>
+                        <entry key="user_name" value="user_name"/>
+                        <entry key="user_status" value="user_status"/>
+                      </Map>
+                    </value>
+                  </entry>
+                  <entry key="responseCode">
+                    <value>
+                      <List>
+                        <String>2**</String>
+                      </List>
+                    </value>
+                  </entry>
+                  <entry key="rootPath" value="$.objects[*]"/>
+                  <entry key="sequenceNumberForEndpoint" value="4"/>
+                  <entry key="uniqueNameForEndPoint" value="Get Single User"/>
+                  <entry key="xpathNamespaces"/>
+                </Map>
+                <Map>
+                  <entry key="afterRule"/>
+                  <entry key="beforeRule"/>
+                  <entry key="body">
+                    <value>
+                      <Map>
+                        <entry key="bodyFormData"/>
+                        <entry key="bodyFormat" value="raw"/>
+                        <entry key="jsonBody"/>
+                      </Map>
+                    </value>
+                  </entry>
+                  <entry key="contextUrl" value="/updateUser"/>
+                  <entry key="curlCommand"/>
+                  <entry key="curlEnabled">
+                    <value>
+                      <Boolean/>
+                    </value>
+                  </entry>
+                  <entry key="customAuthUrl"/>
+                  <entry key="header"/>
+                  <entry key="httpMethodType" value="POST"/>
+                  <entry key="operationType" value="Update Account"/>
+                  <entry key="paginationSteps"/>
+                  <entry key="pagingInitialOffset">
+                    <value>
+                      <Integer>0</Integer>
+                    </value>
+                  </entry>
+                  <entry key="pagingSize">
+                    <value>
+                      <Integer>50</Integer>
+                    </value>
+                  </entry>
+                  <entry key="parentEndpointName"/>
+                  <entry key="resMappingObj"/>
+                  <entry key="rootPath"/>
+                  <entry key="sequenceNumberForEndpoint" value="5"/>
+                  <entry key="uniqueNameForEndPoint" value="Update User"/>
+                  <entry key="xpathNamespaces"/>
+                </Map>
+                <Map>
+                  <entry key="afterRule"/>
+                  <entry key="beforeRule"/>
+                  <entry key="body">
+                    <value>
+                      <Map>
+                        <entry key="bodyFormData"/>
+                        <entry key="bodyFormat" value="raw"/>
+                        <entry key="jsonBody" value="{&#13;&#10;&quot;user_id&quot;: &quot;$plan.nativeIdentity$&quot;,&#13;&#10;&quot;groups&quot;: [&quot;$plan.groups$&quot;]&#13;&#10;}&#13;&#10;"/>
+                      </Map>
+                    </value>
+                  </entry>
+                  <entry key="contextUrl" value="/addGroups"/>
+                  <entry key="curlCommand"/>
+                  <entry key="curlEnabled">
+                    <value>
+                      <Boolean/>
+                    </value>
+                  </entry>
+                  <entry key="customAuthUrl"/>
+                  <entry key="header">
+                    <value>
+                      <Map>
+                        <entry key="Content-Type" value="application/json"/>
+                      </Map>
+                    </value>
+                  </entry>
+                  <entry key="httpMethodType" value="POST"/>
+                  <entry key="operationType" value="Add Entitlement"/>
+                  <entry key="paginationSteps"/>
+                  <entry key="pagingInitialOffset">
+                    <value>
+                      <Integer>0</Integer>
+                    </value>
+                  </entry>
+                  <entry key="pagingSize">
+                    <value>
+                      <Integer>50</Integer>
+                    </value>
+                  </entry>
+                  <entry key="parentEndpointName"/>
+                  <entry key="resMappingObj"/>
+                  <entry key="rootPath"/>
+                  <entry key="sequenceNumberForEndpoint" value="6"/>
+                  <entry key="uniqueNameForEndPoint" value="Update Group"/>
+                  <entry key="xpathNamespaces"/>
+                </Map>
+                <Map>
+                  <entry key="afterRule"/>
+                  <entry key="beforeRule"/>
+                  <entry key="body">
+                    <value>
+                      <Map>
+                        <entry key="bodyFormData"/>
+                        <entry key="bodyFormat" value="raw"/>
+                        <entry key="jsonBody" value="{&#13;&#10;    &quot;user_id&quot;: &quot;$plan.nativeIdentity$&quot;,&#13;&#10;    &quot;groups&quot;: [&quot;$plan.groups$&quot;]&#13;&#10;   &#13;&#10;}"/>
+                      </Map>
+                    </value>
+                  </entry>
+                  <entry key="contextUrl" value="/removeGroups"/>
+                  <entry key="curlCommand"/>
+                  <entry key="curlEnabled">
+                    <value>
+                      <Boolean/>
+                    </value>
+                  </entry>
+                  <entry key="customAuthUrl"/>
+                  <entry key="header">
+                    <value>
+                      <Map>
+                        <entry key="Content-Type" value="application/json"/>
+                      </Map>
+                    </value>
+                  </entry>
+                  <entry key="httpMethodType" value="POST"/>
+                  <entry key="operationType" value="Remove Entitlement"/>
+                  <entry key="paginationSteps"/>
+                  <entry key="pagingInitialOffset">
+                    <value>
+                      <Integer>0</Integer>
+                    </value>
+                  </entry>
+                  <entry key="pagingSize">
+                    <value>
+                      <Integer>50</Integer>
+                    </value>
+                  </entry>
+                  <entry key="parentEndpointName"/>
+                  <entry key="resMappingObj"/>
+                  <entry key="rootPath"/>
+                  <entry key="sequenceNumberForEndpoint" value="7"/>
+                  <entry key="uniqueNameForEndPoint" value="Remove Group"/>
+                  <entry key="xpathNamespaces"/>
+                </Map>
+                <Map>
+                  <entry key="afterRule"/>
+                  <entry key="beforeRule"/>
+                  <entry key="body">
+                    <value>
+                      <Map>
+                        <entry key="bodyFormData"/>
+                        <entry key="bodyFormat" value="raw"/>
+                        <entry key="jsonBody"/>
+                      </Map>
+                    </value>
+                  </entry>
+                  <entry key="contextUrl" value="/enableUser/$getObject.nativeIdentity$"/>
+                  <entry key="curlCommand"/>
+                  <entry key="curlEnabled">
+                    <value>
+                      <Boolean/>
+                    </value>
+                  </entry>
+                  <entry key="customAuthUrl"/>
+                  <entry key="header"/>
+                  <entry key="httpMethodType" value="POST"/>
+                  <entry key="operationType" value="Enable Account"/>
+                  <entry key="paginationSteps"/>
+                  <entry key="pagingInitialOffset">
+                    <value>
+                      <Integer>0</Integer>
+                    </value>
+                  </entry>
+                  <entry key="pagingSize">
+                    <value>
+                      <Integer>50</Integer>
+                    </value>
+                  </entry>
+                  <entry key="parentEndpointName"/>
+                  <entry key="resMappingObj"/>
+                  <entry key="rootPath"/>
+                  <entry key="sequenceNumberForEndpoint" value="8"/>
+                  <entry key="uniqueNameForEndPoint" value="Enable User"/>
+                  <entry key="xpathNamespaces"/>
+                </Map>
+                <Map>
+                  <entry key="afterRule"/>
+                  <entry key="beforeRule"/>
+                  <entry key="body">
+                    <value>
+                      <Map>
+                        <entry key="bodyFormData"/>
+                        <entry key="bodyFormat" value="raw"/>
+                        <entry key="jsonBody"/>
+                      </Map>
+                    </value>
+                  </entry>
+                  <entry key="contextUrl" value="/disableUser/$getObject.nativeIdentity$"/>
+                  <entry key="curlCommand"/>
+                  <entry key="curlEnabled">
+                    <value>
+                      <Boolean/>
+                    </value>
+                  </entry>
+                  <entry key="customAuthUrl"/>
+                  <entry key="header"/>
+                  <entry key="httpMethodType" value="POST"/>
+                  <entry key="operationType" value="Disable Account"/>
+                  <entry key="paginationSteps"/>
+                  <entry key="pagingInitialOffset">
+                    <value>
+                      <Integer>0</Integer>
+                    </value>
+                  </entry>
+                  <entry key="pagingSize">
+                    <value>
+                      <Integer>50</Integer>
+                    </value>
+                  </entry>
+                  <entry key="parentEndpointName"/>
+                  <entry key="resMappingObj"/>
+                  <entry key="rootPath"/>
+                  <entry key="sequenceNumberForEndpoint" value="9"/>
+                  <entry key="uniqueNameForEndPoint" value="Disable User"/>
+                  <entry key="xpathNamespaces"/>
+                </Map>
+                <Map>
+                  <entry key="afterRule"/>
+                  <entry key="beforeRule"/>
+                  <entry key="body">
+                    <value>
+                      <Map>
+                        <entry key="bodyFormData"/>
+                        <entry key="bodyFormat" value="raw"/>
+                        <entry key="jsonBody"/>
+                      </Map>
+                    </value>
+                  </entry>
+                  <entry key="contextUrl" value="/deleteUser/$plan.nativeIdentity$"/>
+                  <entry key="curlCommand"/>
+                  <entry key="curlEnabled">
+                    <value>
+                      <Boolean/>
+                    </value>
+                  </entry>
+                  <entry key="customAuthUrl"/>
+                  <entry key="header">
+                    <value>
+                      <Map>
+                        <entry key="Content-Type" value="application/json"/>
+                      </Map>
+                    </value>
+                  </entry>
+                  <entry key="httpMethodType" value="DELETE"/>
+                  <entry key="operationType" value="Delete Account"/>
+                  <entry key="paginationSteps"/>
+                  <entry key="pagingInitialOffset">
+                    <value>
+                      <Integer>0</Integer>
+                    </value>
+                  </entry>
+                  <entry key="pagingSize">
+                    <value>
+                      <Integer>50</Integer>
+                    </value>
+                  </entry>
+                  <entry key="parentEndpointName"/>
+                  <entry key="resMappingObj"/>
+                  <entry key="rootPath"/>
+                  <entry key="sequenceNumberForEndpoint" value="10"/>
+                  <entry key="uniqueNameForEndPoint" value="Delete User"/>
+                  <entry key="xpathNamespaces"/>
+                </Map>
+                <Map>
+                  <entry key="afterRule"/>
+                  <entry key="beforeRule" value="WebServicesGetObject BeforeRule"/>
+                  <entry key="body">
+                    <value>
+                      <Map>
+                        <entry key="bodyFormData"/>
+                        <entry key="bodyFormat" value="raw"/>
+                        <entry key="jsonBody" value="{&#13;&#10;    &quot;user_id&quot;: &quot;$plan.nativeIdentity$&quot;,&#13;&#10;    &quot;user_name&quot;: &quot;$plan.user_name$&quot;,&#13;&#10;    &quot;user_email&quot;: &quot;$plan.user_email$&quot;,&#13;&#10;    &quot;manager_id&quot;: &quot;$plan.manager_id$&quot;,&#13;&#10;    &quot;location&quot;: &quot;$plan.location$&quot;,&#13;&#10;    &quot;department&quot;: &quot;$plan.department$&quot;,&#13;&#10;    &quot;user_status&quot;: &quot;$plan.user_status$&quot;&#13;&#10;}"/>
+                      </Map>
+                    </value>
+                  </entry>
+                  <entry key="contextUrl" value="/createUser"/>
+                  <entry key="curlCommand"/>
+                  <entry key="curlEnabled">
+                    <value>
+                      <Boolean/>
+                    </value>
+                  </entry>
+                  <entry key="customAuthUrl"/>
+                  <entry key="header">
+                    <value>
+                      <Map>
+                        <entry key="Content-Type" value="application/json"/>
+                      </Map>
+                    </value>
+                  </entry>
+                  <entry key="httpMethodType" value="POST"/>
+                  <entry key="operationType" value="Create Account"/>
+                  <entry key="paginationSteps"/>
+                  <entry key="pagingInitialOffset">
+                    <value>
+                      <Integer>0</Integer>
+                    </value>
+                  </entry>
+                  <entry key="pagingSize">
+                    <value>
+                      <Integer>50</Integer>
+                    </value>
+                  </entry>
+                  <entry key="parentEndpointName"/>
+                  <entry key="resMappingObj"/>
+                  <entry key="responseCode">
+                    <value>
+                      <List>
+                        <String>2**</String>
+                      </List>
+                    </value>
+                  </entry>
+                  <entry key="rootPath"/>
+                  <entry key="sequenceNumberForEndpoint" value="11"/>
+                  <entry key="uniqueNameForEndPoint" value="Create Account"/>
+                  <entry key="xpathNamespaces"/>
+                </Map>
+              </List>
+            </value>
+          </entry>
+          <entry key="createAccountWithEntReq">
+            <value>
+              <Boolean/>
+            </value>
+          </entry>
+          <entry key="enableHasMore" value="true"/>
+          <entry key="enableStatus" value="user_status=ACTIVE"/>
+          <entry key="encrypted" value="accesstoken,refresh_token,oauth_token_info,client_secret,private_key,private_key_password,clientCertificate,clientKeySpec,resourceOwnerPassword"/>
+          <entry key="genericWebServiceBaseUrl" value="http://localhost:8080/identityiq-8.4/plugin/rest/eshiamEmployeePortalPlugin"/>
+          <entry key="httpCookieSpecsStandard" value="true"/>
+          <entry key="isGetObjectRequiredForPTA">
+            <value>
+              <Boolean>true</Boolean>
+            </value>
+          </entry>
+          <entry key="lastAggregationDate_account" value="2026-01-06T07:26:55Z"/>
+          <entry key="lastAggregationDate_group" value="2025-09-03T05:34:19Z"/>
+          <entry key="nativeChangeDetectionAttributeScope" value="entitlements"/>
+          <entry key="nativeChangeDetectionAttributes"/>
+          <entry key="nativeChangeDetectionEnabled">
+            <value>
+              <Boolean/>
+            </value>
+          </entry>
+          <entry key="nativeChangeDetectionOperations"/>
+          <entry key="noPermissions" value="true"/>
+          <entry key="oAuthJwtHeader">
+            <value>
+              <Map>
+                <entry key="alg" value="RS256"/>
+              </Map>
+            </value>
+          </entry>
+          <entry key="oAuthJwtPayload">
+            <value>
+              <Map>
+                <entry key="aud"/>
+                <entry key="exp" value="15f"/>
+                <entry key="iss"/>
+                <entry key="sub"/>
+              </Map>
+            </value>
+          </entry>
+          <entry key="operations" value="Create, Modify, Delete, Enable, Disable, SetPassword"/>
+          <entry key="password" value="1:ACP:zEjEoRXMlhChVtLLLTOEnTr1y9NBDsETKHR28Wz6XUc="/>
+          <entry key="private_key_to_update"/>
+          <entry key="saml_assertion_url"/>
+          <entry key="saml_request_body"/>
+          <entry key="sysDescriptions">
+            <value>
+              <Map>
+                <entry key="en_US"/>
+              </Map>
+            </value>
+          </entry>
+          <entry key="templateApplication" value="Web Services"/>
+          <entry key="throwProvAfterRuleException">
+            <value>
+              <Boolean>true</Boolean>
+            </value>
+          </entry>
+          <entry key="throwProvBeforeRuleException">
+            <value>
+              <Boolean>true</Boolean>
+            </value>
+          </entry>
+          <entry key="timeoutInSeconds"/>
+          <entry key="username" value="spadmin"/>
+        </Map>
+      </Attributes>
+      <Owner>
+        <Reference class="sailpoint.object.Identity" name="spadmin"/>
+      </Owner>
+      <ProvisioningForms>
+        <Form name="WebServicesEshiamCreate" objectType="account" type="Create">
+          <Attributes>
+            <Map>
+              <entry key="pageTitle" value="WebServicesEshiamCreate"/>
+            </Map>
+          </Attributes>
+          <Section name="ProvisioningAttributes">
+            <Field displayName="UserEmail" name="user_email" type="string">
+              <Script>
+                <Source><![CDATA[return identity.getEmail();]]></Source>
+              </Script>
+            </Field>
+            <Field displayName="ManagerId" name="manager_id" type="string">
+              <Script>
+                <Source><![CDATA[String managerId="";
+              if(identity.getManager()!=null){
+              managerId=identity.getManager().getAttribute("employeeId");
+              }else{
+              managerId="1045";
+              }
+              return managerId;]]></Source>
+              </Script>
+            </Field>
+            <Field displayName="Location" name="location" type="string" value="India"/>
+            <Field displayName="UserName" name="user_name" type="string">
+              <Script>
+                <Source><![CDATA[return identity.getDisplayName();]]></Source>
+              </Script>
+            </Field>
+            <Field displayName="Department" name="department" type="string">
+              <Script>
+                <Source><![CDATA[return identity.getAttribute("department");]]></Source>
+              </Script>
+            </Field>
+            <Field displayName="Status" name="user_status" type="string" value="ACTIVE"/>
+            <Field displayName="JobTitle" name="job_title" type="string">
+              <Script>
+                <Source><![CDATA[String title="";
+              if(identity.getManagerStatus()){
+              title="Manager";
+              }else{
+              title="Engineer";
+              }
+              return title;]]></Source>
+              </Script>
+            </Field>
+            <Field displayName="UserId" name="user_id" type="string">
+              <Script>
+                <Source><![CDATA[return identity.getAttribute("employeeId");]]></Source>
+              </Script>
+            </Field>
+          </Section>
+        </Form>
+      </ProvisioningForms>
+      <Schemas>
+        <Schema displayAttribute="user_name" groupAttribute="" identityAttribute="user_id" instanceAttribute="" nativeObjectType="user" objectType="account">
+          <AttributeDefinition name="user_id" type="string">
+            <Description/>
+          </AttributeDefinition>
+          <AttributeDefinition name="user_name" type="string">
+            <Description/>
+          </AttributeDefinition>
+          <AttributeDefinition name="user_email" type="string">
+            <Description/>
+          </AttributeDefinition>
+          <AttributeDefinition name="manager_id" type="string">
+            <Description/>
+          </AttributeDefinition>
+          <AttributeDefinition name="location" type="string">
+            <Description/>
+          </AttributeDefinition>
+          <AttributeDefinition name="department" type="string">
+            <Description/>
+          </AttributeDefinition>
+          <AttributeDefinition name="user_status" type="string">
+            <Description/>
+          </AttributeDefinition>
+          <AttributeDefinition name="description" type="string">
+            <Description/>
+          </AttributeDefinition>
+          <AttributeDefinition name="job_title" type="string">
+            <Description/>
+          </AttributeDefinition>
+          <AttributeDefinition name="created" type="string">
+            <Description/>
+          </AttributeDefinition>
+          <AttributeDefinition name="updated" type="string">
+            <Description/>
+          </AttributeDefinition>
+          <AttributeDefinition entitlement="true" managed="true" multi="true" name="groups" schemaObjectType="group" type="string">
+            <Description/>
+          </AttributeDefinition>
+        </Schema>
+        <Schema descriptionAttribute="" displayAttribute="group_name" identityAttribute="group_id" instanceAttribute="" nativeObjectType="group" objectType="group">
+          <AttributeDefinition name="group_id" type="string">
+            <Description/>
+          </AttributeDefinition>
+          <AttributeDefinition name="group_name" type="string">
+            <Description/>
+          </AttributeDefinition>
+          <AttributeDefinition name="group_desc" type="string">
+            <Description/>
+          </AttributeDefinition>
+        </Schema>
+      </Schemas>
+      <ApplicationScorecard/>
+    </Application>
+  </SourceApplication>
+</BundleProfileRelation>

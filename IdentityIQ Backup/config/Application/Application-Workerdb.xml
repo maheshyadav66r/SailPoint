@@ -1,0 +1,206 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Application PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Application connector="sailpoint.connector.JDBCConnector" featuresString="DISCOVER_SCHEMA, PROVISIONING, SYNC_PROVISIONING, DIRECT_PERMISSIONS, SEARCH, ENABLE, UNLOCK" icon="databaseIcon" name="WorkerDB" profileClass="" type="JDBC">
+  <Attributes>
+    <Map>
+      <entry key="SQL" value="Select A.WORKDAYID,A.GUID,B.STATUS,A.BID,A.ATLDAP from W_IDS A left join W_STATUS B ON A.WID=B.WID where A.WORKDAYID != 'NULL'"/>
+      <entry key="acceleratorPackEnabled" value="TRUE"/>
+      <entry key="accountCorrelationAttrExpression" value="workday_id#IIQCorrelated#WORKDAYID#IIQCorrelated#EQUALS"/>
+      <entry key="accountDisableAttrExpression" value="STATUS#IIQDisabled#T#IIQDisabled#EQUALS"/>
+      <entry key="afterProvisioningRule" value="Rule-Audit-Framework"/>
+      <entry key="aggregationMode">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="apAfterMoverJoiner">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="apAfterRehireAttrSync">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="apBeforeMoverAttrSync">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="authoritativeEmployee" value="false"/>
+      <entry key="authoritativeNonEmployee" value="false"/>
+      <entry key="authoritativeServiceAccount" value="false"/>
+      <entry key="beforeProvisioningRule"/>
+      <entry key="beforemoverPrimaryaccount">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="busApp">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="compositeDefinition"/>
+      <entry key="connMaxRetry" value="3"/>
+      <entry key="connRetryEnable">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="connWaitTimeForRetry" value="2"/>
+      <entry key="customJDBCMappings">
+        <value>
+          <Map>
+            <entry key="account">
+              <value>
+                <Map>
+                  <entry key="keyAtribute" value="WORKDAYID"/>
+                  <entry key="tableName" value="W_IDS"/>
+                </Map>
+              </value>
+            </entry>
+          </Map>
+        </value>
+      </entry>
+      <entry key="deltaTable"/>
+      <entry key="driverClass" value="oracle.jdbc.driver.OracleDriver"/>
+      <entry key="evaluateCreateprovpolicy" value="False"/>
+      <entry key="getDeltaSQL"/>
+      <entry key="getObjectSQL" value="Select A.WORKDAYID,A.GUID,B.STATUS,A.BID,A.ATLDAP from W_IDS A left join W_STATUS B ON A.WID=B.WID where A.WORKDAYID = '$(identity)' and A.WORKDAYID != 'NULL'"/>
+      <entry key="isPermissionEnabled">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="jdbcExceptionBucketing">
+        <value>
+          <Boolean>true</Boolean>
+        </value>
+      </entry>
+      <entry key="jdbcProvisionRule" value="SailPoint JDBC Provision Rule"/>
+      <entry key="loaProcess" value="Do Nothing"/>
+      <entry key="mergeRows">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="moverProcess" value="Do Nothing"/>
+      <entry key="moverRevocation" value="Do Nothing"/>
+      <entry key="nativeChangeDetectionAttributeScope" value="entitlements"/>
+      <entry key="nativeChangeDetectionAttributes"/>
+      <entry key="nativeChangeDetectionEnabled">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="nativeChangeDetectionOperations"/>
+      <entry key="nativeChangeProcess" value="Do Nothing"/>
+      <entry key="noPermissions" value="false"/>
+      <entry key="operations" value="Create, Modify, Delete, Enable, Disable, Unlock"/>
+      <entry key="partitionMode">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="partitionStatements"/>
+      <entry key="password" value="1:ACP:5c4fRsLKTwtxXbYzXhji0aS4mphEyTrSakzBltFLV7E="/>
+      <entry key="primarySyncaccounts">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="primarypasswordSyncaccounts">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="provisionRule" value="globalRule"/>
+      <entry key="rehirePrimaryaccount">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="rehireProcess" value="Do Nothing"/>
+      <entry key="renameLDAPaccount">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="reverseleaverProcess" value="Do Nothing"/>
+      <entry key="rtwloaProcess" value="Do Nothing"/>
+      <entry key="rtwltdProcess" value="Do Nothing"/>
+      <entry key="sysDescriptions">
+        <value>
+          <Map>
+            <entry key="en_US"/>
+          </Map>
+        </value>
+      </entry>
+      <entry key="templateApplication" value="JDBC Template"/>
+      <entry key="terminationProcess" value="Do Nothing"/>
+      <entry key="testConnSQL" value="Select A.WORKDAYID,A.GUID,B.STATUS,A.BID,A.ATLDAP from W_IDS A left join W_STATUS B ON A.WID=B.WID where A.WORKDAYID != 'NULL'"/>
+      <entry key="url" value="jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=ttcyk-uplodas0)(PORT=1521))(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=ORADEV.tmm.na.corp.toyota.com)))"/>
+      <entry key="useExecuteQuery">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="useStoredProcedureDelta">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="useStoredProcedureDirectPermission">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="useStoredProcedureGetObject">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="useStoredProcedurePartition">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="useStoredProcedureSqlStmt">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="useStoredProcedureTestConn">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="user" value="root"/>
+    </Map>
+  </Attributes>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+  <Schemas>
+    <Schema displayAttribute="WORKDAYID" identityAttribute="WORKDAYID" instanceAttribute="" nativeObjectType="account" objectType="account" permissionsRemediationModificationType="None">
+      <AttributeDefinition name="WORKDAYID" type="string">
+        <Description>WorkerDB WorkdayID</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="GUID" type="string">
+        <Description>WorkerDB GUID</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="STATUS" type="string">
+        <Description/>
+      </AttributeDefinition>
+      <AttributeDefinition name="BID" type="string">
+        <Description>BadgeID</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="ATLDAP" type="string">
+        <Description>AT-LDAP ID</Description>
+      </AttributeDefinition>
+    </Schema>
+  </Schemas>
+  <ApplicationScorecard/>
+</Application>

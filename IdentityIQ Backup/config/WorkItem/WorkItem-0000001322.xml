@@ -1,0 +1,129 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE WorkItem PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<WorkItem handler="sailpoint.api.Workflower" level="Normal" name="0000001322" renderer="workflow.xhtml" type="Form">
+  <Attributes>
+    <Map>
+      <entry key="identityDisplayName" value="Abdul samad"/>
+      <entry key="identityName" value="Abdul samad"/>
+      <entry key="launcher" value="spadmin"/>
+      <entry key="workItemDisableNotification">
+        <value>
+          <Boolean>true</Boolean>
+        </value>
+      </entry>
+      <entry key="workItemForm">
+        <value>
+          <Form name="Identity Update" targetUser="spadmin" type="Workflow">
+            <Attributes>
+              <Map>
+                <entry key="pageTitle" value="provision_identity_update_title"/>
+                <entry key="pageTitleParam" value="$(identityName)"/>
+              </Map>
+            </Attributes>
+            <Section type="text">
+              <Field displayName="provision_identity_update_description"/>
+            </Section>
+            <Section label="provision_request_information" type="datatable">
+              <Attributes>
+                <Map>
+                  <entry key="hideNulls" value="true"/>
+                </Map>
+              </Attributes>
+              <Field displayName="provision_requester">
+                <Script>
+                  <Source><![CDATA[
+          import sailpoint.object.Identity;
+
+          Identity launchIdentity = context.getObject(Identity.class, launcher);
+
+          return launchIdentity == null ? launcher : launchIdentity.getDisplayableName();
+        ]]></Source>
+                </Script>
+              </Field>
+              <Field displayName="provision_requested_roles" value="ref:newRoles"/>
+            </Section>
+            <Section columns="3" label="provision_target_identity" type="datatable">
+              <Attributes>
+                <Map>
+                  <entry key="hideNulls" value="true"/>
+                </Map>
+              </Attributes>
+              <Field columnSpan="1" displayName="provision_first_name" value="script:(identity != null) ? identity.getFirstname() : null"/>
+              <Field columnSpan="1" displayName="provision_last_name" value="script:(identity != null) ? identity.getLastname() : null"/>
+              <Field columnSpan="1" displayName="provision_account_id" value="script:(identity != null) ? identity.getDisplayableName() : null"/>
+              <Field columnSpan="3" displayName="provision_assigned_roles">
+                <Script>
+                  <Source><![CDATA[
+          import java.util.ArrayList;
+          import java.util.List;
+          import sailpoint.object.Bundle;
+          import sailpoint.tools.Util;
+
+          String names = null;
+
+          if (identity != null) {
+              List<String> roleNames = new ArrayList<String>();
+
+              for (Bundle bundle : Util.iterate(identity.getAssignedRoles())) {
+                  roleNames.add(bundle.getDisplayableName());
+              }
+
+              names = Util.listToCsv(roleNames);
+          }
+
+          return names;
+      ]]></Source>
+                </Script>
+              </Field>
+            </Section>
+            <Button action="next" label="button_ok"/>
+            <Button action="cancel" label="button_cancel"/>
+            <Button action="cancel" label="button_return" readOnly="true"/>
+            <Section label="SalesForceApp" name="SalesForceApp">
+              <Field application="SalesForceApp" displayName="con_prov_policy_salesforce_direct_Alias" name="Question:0:Alias" priority="10" required="true" reviewRequired="true" template="account" type="string" value="asamad"/>
+              <Field application="SalesForceApp" displayName="con_prov_policy_salesforce_direct_Active" name="Question:1:IsActive" priority="10" reviewRequired="true" template="account" type="boolean"/>
+              <Field application="SalesForceApp" displayName="con_prov_policy_salesforce_direct_Username" helpKey="help_prov_policy_salesforce_direct_Username" name="Question:2:Username" priority="10" required="true" reviewRequired="true" template="account" type="string" value="abdul.samad@sunrisers.com"/>
+              <Field application="SalesForceApp" displayName="con_prov_policy_salesforce_direct_Email" helpKey="help_prov_policy_salesforce_direct_Email" name="Question:3:Email" priority="10" required="true" reviewRequired="true" template="account" type="string" value="abdul.samad@sunrisers.com"/>
+              <Field application="SalesForceApp" displayName="con_prov_policy_salesforce_direct_FirstName" name="Question:4:FirstName" priority="10" required="true" reviewRequired="true" template="account" type="string" value="abdul"/>
+              <Field application="SalesForceApp" displayName="con_prov_policy_salesforce_direct_LastName" name="Question:5:LastName" priority="10" required="true" reviewRequired="true" template="account" type="string" value="samad"/>
+              <Field application="SalesForceApp" displayName="con_prov_policy_salesforce_direct_TimeZone" name="Question:6:TimeZoneSidKey" priority="10" required="true" reviewRequired="true" template="account" type="string" value="America/Los_Angeles">
+                <AllowedValuesDefinition>
+                  <Value>
+                    <List>
+                      <String>America/Chicago</String>
+                      <String>America/Bogota</String>
+                      <String>America/Lima</String>
+                      <String>America/Los_Angeles</String>
+                      <String>Atlantic/Bermuda</String>
+                    </List>
+                  </Value>
+                </AllowedValuesDefinition>
+              </Field>
+              <Field application="SalesForceApp" displayName="con_prov_policy_salesforce_direct_Locale" name="Question:7:LocaleSidKey" priority="10" required="true" reviewRequired="true" template="account" type="string" value="en_US"/>
+              <Field application="SalesForceApp" displayName="con_prov_policy_salesforce_direct_LanguageLocaleKey" name="Question:8:LanguageLocaleKey" priority="10" required="true" reviewRequired="true" template="account" type="string" value="en_US"/>
+              <Field application="SalesForceApp" displayName="con_prov_policy_salesforce_direct_EmailEncodingKey" name="Question:9:EmailEncodingKey" priority="10" required="true" reviewRequired="true" template="account" type="string" value="UTF-8"/>
+              <Field application="SalesForceApp" displayName="con_prov_policy_salesforce_direct_FederationIdentifier" name="Question:10:FederationIdentifier" priority="10" reviewRequired="true" template="account" type="string"/>
+              <Field application="SalesForceApp" displayName="con_prov_policy_salesforce_direct_UserType" helpKey="help_con_form_salesforce_usertype" name="Question:11:UserType" priority="10" reviewRequired="true" template="account" type="string"/>
+              <Field application="SalesForceApp" displayName="con_prov_policy_salesforce_direct_AccountName" helpKey="help_con_form_salesforce_accountname" name="Question:12:AccountName" priority="10" reviewRequired="true" template="account" type="string"/>
+            </Section>
+          </Form>
+        </value>
+      </entry>
+      <entry key="workItemPriority">
+        <value>
+          <WorkItemLevel>Normal</WorkItemLevel>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Description>Complete provisioning form for Abdul samad</Description>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+  <Requester>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Requester>
+  <WorkflowCaseRef>
+    <Reference class="sailpoint.object.WorkflowCase" name="Update Identity Abdul samad AccessRequest - 29"/>
+  </WorkflowCaseRef>
+</WorkItem>

@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="TestRole_Link1Rule" type="AccountSelector">
+  <Description>AccountSelector Rules are used by the role modeler to automatically select a target account for provisioning when there are multiple candidates.
+
+The return value is a Link instance that represents the selection. Value can be:
+
+null - indicates that no automatic selection can be made
+
+"prompt" - indicates that a separate account selector should be presented for the role
+
+existing Link - the selected Link from the list of possible target Links
+
+a new Link instance - indicates that a new account must be created with the identity specified by the create policy, or manually; in this case, the Link instance returned will have a null nativeIdentity attribute</Description>
+  <Signature returnType="Link"/>
+  <Source><![CDATA[log.error("  .......................Begin of TestRole_Link1Rule----.........");
+
+log.error("  source----........."+source);
+
+log.error("  role----........"+role.toXml());
+
+log.error("  links----........."+links);
+
+log.error("  project----........"+project.toXml());
+
+log.error("  accountRequest----........"+accountRequest.toXml());
+
+log.error("  allowCreate----........"+allowCreate);
+
+log.error("  .......................End of TestRole_Link1Rule----.........");
+
+
+return links.get(0);]]></Source>
+</Rule>

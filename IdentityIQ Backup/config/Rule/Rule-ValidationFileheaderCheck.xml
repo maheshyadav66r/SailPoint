@@ -1,0 +1,236 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Validation FileHeader Check" type="Validation">
+  <Source><![CDATA[
+ import java.io.BufferedReader;
+  import java.io.BufferedWriter;
+  import java.io.File;
+  import java.io.FileReader;
+  import java.io.FileWriter;
+  import java.io.IOException;
+  import java.text.SimpleDateFormat;
+  import java.util.List;
+  import java.util.HashMap; 
+  import java.util.Map;
+  import sailpoint.tools.RFC4180LineParser;
+  import sailpoint.tools.Util;
+  import sailpoint.object.Custom;
+  import org.apache.commons.logging.Log;
+  import org.apache.log4j.Logger;
+  import org.apache.log4j.Level;
+  
+  Logger logger = Logger.getLogger("TRE-Apps");
+  logger.debug("Entered inside the TRE-TCR-Daily Pre Iterate rule");
+
+  public Map readFileAndReturnList(String inputfileName, int skipLines, String stringToAppend) {
+    //String h=(String)application.getAttributes().getMap().get("file");
+     String h="C:/Users/Mahes/Downloads/TRE-TCR-ICAM_Target 1.csv";
+    int index=h.lastIndexOf("/");
+    String basePath=h.substring(0,(index+1));
+
+    String inputfile = basePath+inputfileName;
+    BufferedReader grpIn = null;
+    Map map = new HashMap();
+
+    try {
+      grpIn = new BufferedReader(new FileReader(inputfile));
+      logger.debug("Opening of input file");
+      String rawStr;
+      int count =0;
+      while ((rawStr = grpIn.readLine()) != null) {
+        if(count>skipLines && !rawStr.contains("Number")) {
+
+          logger.debug("Opening the input file");
+          String records = null;               				
+          RFC4180LineParser csvParser = new RFC4180LineParser(',');
+          ArrayList arl = new ArrayList();
+          arl = csvParser.parseLine(rawStr);
+          String key = arl.get(0);
+          key = key.replace("SSCDIRECT\\","");
+          String entValue = arl.get(2);
+          if(entValue!=null && !entValue.contains("SSCDIRECT\\")) {
+            entValue ="SSCDIRECT\\" +entValue;
+          }
+          String value = key+","+ entValue+","+arl.get(4)+","+arl.get(6);
+          
+          //"SSCDIRECT\wb208586",,"SSCDIRECT\TCR - Base Access",,"Yes","No",11-May-2022, 4:00.04,
+          
+          //value = wb208586 , SSCDIRECT\TCR - Base Access , Yes , 11-May-2022, 4:00.04
+          
+          value = value.replace("SSCDIRECT",stringToAppend);
+           //value = wb208586 , Daily/Monthly\TCR - Base Access , Yes , 11-May-2022, 4:00.04
+          logger.debug("The value of count is incremented by 1");
+          if(map.containsKey(key)) {
+            List curentLst = map.get(key);
+            curentLst.add(value);
+            map.put(key,curentLst);
+          } else {
+            List newList = new ArrayList();
+            newList.add(value);
+            map.put(key,newList);
+          }
+
+        }count++;
+      }
+
+    } 
+    catch (Exception e) 
+    {
+      e.printStackTrace();
+    }
+    finally
+    {
+      grpIn.close();
+      logger.debug("Closing the inputfile");
+    }   
+    return map;
+
+  }
+
+
+  Custom customObj = context.getObject(Custom.class, "Custom-Delimited Application Files");
+  try{
+
+    if(customObj!=null)
+    {
+
+      //String h=(String)application.getAttributes().getMap().get("file");
+      String h="C:/Users/Mahes/Downloads/TRE-TCR-ICAM_Target 1.csv";
+      
+      int index=h.lastIndexOf("/");
+      String basePath=h.substring(0,(index+1));
+
+      List lst=customObj.getAttributes().get("TRE-TCR_Treasury-Client-Reconciliation-and-Reporting").get("InputFile");
+      String target=customObj.getAttributes().get("TRE-TCR_Treasury-Client-Reconciliation-and-Reporting").get("TargetFile");	
+      Map dailyFile = readFileAndReturnList(lst.get(0), 7, "Daily");
+      Map monthlyFile = readFileAndReturnList(lst.get(1), 7, "Monthly");
+
+      Map monthlyFileCopy = monthlyFile;
+      logger.debug("Daily File --------"+dailyFile);
+      logger.debug("Monthly file------"+monthlyFile);
+      Map outMap = new HashMap();
+      for (String key : dailyFile.keySet())
+      {
+        List valueList = dailyFile.get(key);
+        List monthlyValuesList = monthlyFile.get(key);
+        for(String value: valueList) {
+          if(monthlyValuesList!=null && !monthlyValuesList.isEmpty() ) {
+            for(String value1: monthlyValuesList) {
+              ArrayList arl = new ArrayList();
+              RFC4180LineParser csvParser = new RFC4180LineParser(',');
+              arl = csvParser.parseLine(value1);
+              value = value+","+arl.get(1);
+
+              if(outMap.containsKey(key)) {
+                List extList = outMap.get(key);
+                extList.add(value);
+                outMap.put(key,extList);
+              } else  {
+                List newList = new ArrayList();
+                newList.add(value);
+                outMap.put(key,newList);
+              }
+              monthlyFileCopy.remove(key);
+            }
+          } else {
+            value = value+",";
+            if(outMap.containsKey(key)) {
+              List extList = outMap.get(key);
+              extList.add(value);
+              outMap.put(key,extList);
+            } else  {
+              List newList = new ArrayList();
+              newList.add(value);
+              outMap.put(key,newList);
+            }
+
+          }
+
+        }
+
+      }
+
+      for (String key : monthlyFileCopy.keySet())
+      {
+        List valueList = monthlyFileCopy.get(key);
+        if(outMap.containsKey(key)) {
+          List extList = outMap.get(key);
+          for(String newValue : valueList) {
+            ArrayList arl = new ArrayList();
+            RFC4180LineParser csvParser = new RFC4180LineParser(',');
+            arl = csvParser.parseLine(newValue);
+            newValue = ","+","+","+","+arl.get(1);
+            extList.add(newValue);
+            outMap.put(key,extList);
+          }
+
+        } else  {
+          List newList = new ArrayList();
+          for(String newValue : valueList) {
+            ArrayList arl = new ArrayList();
+            RFC4180LineParser csvParser = new RFC4180LineParser(',');
+            arl = csvParser.parseLine(newValue);
+            newValue = key+","+","+","+","+arl.get(1);
+            newList.add(newValue);
+            outMap.put(key,newList);
+          }
+
+        }
+
+      }
+
+
+      logger.debug("outmap is --"+outMap);
+      BufferedWriter grpOut = new BufferedWriter(new FileWriter(basePath+target));	
+      for (String key : outMap.keySet())
+      {
+        List valueList = outMap.get(key);
+        logger.debug("writing to file list --"+valueList);
+        for(String value: valueList) {
+			ArrayList arl = new ArrayList();
+			RFC4180LineParser csvParser = new RFC4180LineParser(',');
+			arl = csvParser.parseLine(value);
+			logger.debug("writing to file list --"+arl.size());
+			String ent1 = "";
+			String ent2 = null;
+			String user,ent,active,logonDate;	 
+			for(int i=4; i < arl.size(); ++i) {
+				if(ent2 == null){
+					ent2 = arl.get(i);				  
+				}else{
+					ent2 = ent2+","+arl.get(i);
+				}
+				logger.debug("writing to file list ent2--"+ent2);
+			}
+			if(arl.get(0)!=null) {
+				user = arl.get(0);
+			}
+			if(arl.get(1)!=null) {
+				ent = arl.get(1);
+			}
+			if(arl.get(2)!=null) {
+				active = arl.get(2);
+			}
+			if(arl.get(3)!=null) {
+				logonDate = arl.get(3);
+			}
+			value = user+","+ent+","+active+","+logonDate+","+"\""+ent+","+ent2+"\"";
+			value = value.replace("\\","|");
+			grpOut.write(value);
+			grpOut.newLine();
+        } 
+      }
+      grpOut.close();
+    }            
+  }
+  catch (Exception e) 
+  {
+    e.printStackTrace();
+  }
+  finally
+  {
+
+    logger.debug("Closing the targetfile");
+  }
+  ]]></Source>
+</Rule>

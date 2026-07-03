@@ -1,0 +1,51 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningTransaction PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningTransaction applicationName="LDAPApplication" identityDisplayName="Allison Johnson" identityName="Allison Johnson" integration="LDAPApplication" name="0000010497" operation="Create" source="IdentityRefresh" status="Failed" type="Auto">
+  <Attributes>
+    <Map>
+      <entry key="planResult">
+        <value>
+          <ProvisioningResult status="failed">
+            <Errors>
+              <Message key="sailpoint.connector.ConnectorException: 678504591 No object id specified for provisioning request.Cannot proceed with request." type="Error"/>
+            </Errors>
+          </ProvisioningResult>
+        </value>
+      </entry>
+      <entry key="request">
+        <value>
+          <AccountRequest application="LDAPApplication" assignmentIds="3655d5ceab454fe5a3a96ce53446f0c6" op="Create">
+            <Attributes>
+              <Map>
+                <entry key="provisioningTransactionId" value="c0a801289c451b3a819c460d59ae07aa"/>
+              </Map>
+            </Attributes>
+            <AttributeRequest name="groups" op="Add">
+              <Value>
+                <List>
+                  <String>cn=Users,ou=Group,dc=my-domain,dc=com</String>
+                  <String>cn=Employees,ou=Group,dc=my-domain,dc=com</String>
+                </List>
+              </Value>
+            </AttributeRequest>
+            <AttributeRequest name="dn" op="Set" value="cn=Allison.Johnson,ou=People,dc=my-domain,dc=com"/>
+            <AttributeRequest name="password" op="Set">
+              <Attributes>
+                <Map>
+                  <entry key="secret" value="true"/>
+                </Map>
+              </Attributes>
+            </AttributeRequest>
+            <AttributeRequest name="sn" op="Set" value="Johnson"/>
+            <AttributeRequest name="mail" op="Set" value="allison.johnson@eshiam.com"/>
+            <ProvisioningResult status="failed">
+              <Errors>
+                <Message key="sailpoint.connector.ConnectorException: 678504591 No object id specified for provisioning request.Cannot proceed with request." type="Error"/>
+              </Errors>
+            </ProvisioningResult>
+          </AccountRequest>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+</ProvisioningTransaction>

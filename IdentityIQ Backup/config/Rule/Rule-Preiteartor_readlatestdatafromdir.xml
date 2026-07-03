@@ -1,0 +1,129 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="PreIteartor_ReadLatestDataFromDir" type="PreIterate">
+  <Description>This rule is called before the connector processes the data in a file.</Description>
+  <Signature returnType="void">
+    <Inputs>
+      <Argument name="log" type="org.apache.commons.logging.Log">
+        <Description>
+          The log object associated with the SailPointContext.
+        </Description>
+      </Argument>
+      <Argument name="context" type="sailpoint.api.SailPointContext">
+        <Description>
+          A sailpoint.api.SailPointContext object that can be used to query the database if necessary.
+        </Description>
+      </Argument>
+      <Argument name="application">
+        <Description>
+          Application being iterated.
+        </Description>
+      </Argument>
+      <Argument name="schema">
+        <Description>
+          Schema representing the data being iterated.
+        </Description>
+      </Argument>
+      <Argument name="stats">
+        <Description>
+          A map passed by the connector of the stats for the file about to be iterated.
+          Contains keys:
+            fileName : (String) filename of the file about to be processed
+            absolutePath : (String) absolute filename
+            length : (Long) length in bytes
+            lastModified : (Long) last time the file was updated Java GMT
+        </Description>
+      </Argument>
+    </Inputs>
+  </Signature>
+  <Source><![CDATA[import java.io.*;
+  import sailpoint.tools.Util;
+  import java.io.IOException;
+
+  
+  if("account".equalsIgnoreCase(schema.getNativeObjectType())){
+    
+ // String accountFile =stats.get("absolutePath");
+    
+    String accountFile = application.getAttributes().get("file");
+    
+log.error("file path from application obj.."+accountFile);
+    
+		File directory = new File(accountFile);
+		File chosenFile = null;
+
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+		Date latestDate = null;
+		File latestFile = null;
+    String latestRedData;
+    BufferedInputStream bis =null;
+
+		if (directory.isDirectory()) {
+
+			File[] files = directory.listFiles();
+			for (File file : files) {
+
+				String fileName = file.getName();
+				String fileDateString = fileName.substring(11, fileName.indexOf("."));
+
+				// My file name pattern is like  CF_TestData22-08-2025.csv
+				
+				String datePart = fileName.substring(11, fileName.lastIndexOf("."));
+				log.error("date Part substring  : " + datePart);
+
+				Date fileDate = null;
+				try {
+					fileDate = sdf.parse(datePart);
+				} catch (ParseException e) {
+
+					log.error("date error "+e.getMessage());
+				}
+
+				if (latestDate == null || fileDate.after(latestDate)) {
+
+					latestDate = fileDate;
+					latestFile = file;
+				}
+			}
+
+			if (latestFile != null) {
+
+        try{
+				 latestRedData = readData(latestFile);
+          
+        }catch(IOException e){
+          
+         log.error(e.getMessage());
+          
+        }
+        
+				 bis = new BufferedInputStream(new ByteArrayInputStream(latestRedData.getBytes()));
+				log.error("MAIN...\n" + latestRedData);
+			}
+		}
+
+	
+	
+	private  String readData(File file) throws IOException {
+		String line;
+		String data = "";
+		BufferedReader br = new BufferedReader(new FileReader(file));
+		br.readLine();
+
+		while ((line = br.readLine()) != null) {
+
+			data += line + "\n";
+
+			log.error("line .....\n " + line);
+			log.error(" data ......\n " + data);
+		}
+
+		return data;
+	}
+
+
+ 
+
+  return bis ;
+ }]]></Source>
+</Rule>

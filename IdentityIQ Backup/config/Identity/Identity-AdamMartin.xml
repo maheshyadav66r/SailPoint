@@ -1,0 +1,249 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Identity PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Identity assignedRoleSummary="ADBusinessRole" bundleSummary="ActiveDirectoryITRole" correlated="true" lastRefresh="1779186175955" name="Adam Martin">
+  <Attributes>
+    <Map>
+      <entry key="department" value="Admin"/>
+      <entry key="displayName" value="Adam Martin"/>
+      <entry key="email" value="adam.martin@example.com"/>
+      <entry key="employeeId" value="EMP00424"/>
+      <entry key="firstname" value="Adam"/>
+      <entry key="lastname" value="Martin"/>
+      <entry key="networkId" value="amartin863"/>
+      <entry key="pendingRefreshWorkflow" value="Refresh identity Adam Martin"/>
+    </Map>
+  </Attributes>
+  <AssignedRoles>
+    <Reference class="sailpoint.object.Bundle" name="ad_business_role"/>
+  </AssignedRoles>
+  <AttributeMetaDatas>
+    <AttributeMetaData attribute="department" source="HR2:Department"/>
+    <AttributeMetaData attribute="displayName" source="HR2:Name"/>
+    <AttributeMetaData attribute="employeeId" source="HR2:EmployeeNo"/>
+    <AttributeMetaData attribute="networkId" source="HR2:NetworkID"/>
+    <AttributeMetaData attribute="email" source="HR2:Email"/>
+    <AttributeMetaData attribute="lastname" source="HR2:LastName"/>
+    <AttributeMetaData attribute="firstname" source="HR2:FirstName"/>
+    <AttributeMetaData attribute="inactive" source="SRH application:inactive"/>
+  </AttributeMetaDatas>
+  <Bundles>
+    <Reference class="sailpoint.object.Bundle" name="activeDirectoryITRole"/>
+  </Bundles>
+  <Exceptions>
+    <EntitlementGroup displayName="Adam Martin" nativeIdentity="CN=Adam Martin,OU=People,OU=Demo,DC=Eshiam,DC=com">
+      <ApplicationRef>
+        <Reference class="sailpoint.object.Application" name="ActiveDirectory"/>
+      </ApplicationRef>
+      <Attributes>
+        <Map>
+          <entry key="memberOf" value="CN=All_Users,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+        </Map>
+      </Attributes>
+    </EntitlementGroup>
+    <EntitlementGroup displayName="Adam Martin" nativeIdentity="EMP00424">
+      <ApplicationRef>
+        <Reference class="sailpoint.object.Application" name="WebServicesApplicationEshiam"/>
+      </ApplicationRef>
+      <Attributes>
+        <Map>
+          <entry key="groups">
+            <value>
+              <List>
+                <String>WS_GROUP_100</String>
+                <String>WS_GROUP_101</String>
+              </List>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+    </EntitlementGroup>
+  </Exceptions>
+  <Preferences>
+    <Map>
+      <entry key="attributeAssignments">
+        <value>
+          <List>
+            <AttributeAssignment applicationId="c0a8002691fb102b81920b47da880f63" applicationName="WebServicesTestApplication3" assigner="spadmin" name="groups" nativeIdentity="EMP00424" source="LCM" type="Entitlement" value="WS_GROUP_100"/>
+            <AttributeAssignment applicationId="c0a8002691fb102b81920b47da880f63" applicationName="WebServicesTestApplication3" assigner="spadmin" name="groups" nativeIdentity="EMP00424" source="LCM" type="Entitlement" value="WS_GROUP_101"/>
+          </List>
+        </value>
+      </entry>
+      <entry key="roleAssignments">
+        <value>
+          <List>
+            <RoleAssignment assigner="spadmin" date="1751004037783" roleName="ad_business_role" source="LCM">
+              <RoleTarget applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" displayName="Adam Martin" nativeIdentity="CN=Adam Martin,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+              <RoleTarget applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ADX" nativeIdentity="CN=Adam Martin,OU=XPeople,OU=Demo,DC=Eshiam,DC=com"/>
+            </RoleAssignment>
+          </List>
+        </value>
+      </entry>
+      <entry key="roleDetections">
+        <value>
+          <List>
+            <RoleDetection assignmentIds="43bf6a12458b45449b7823870988798d" date="1751004037839" roleName="activeDirectoryITRole">
+              <RoleTarget applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" displayName="Adam Martin" nativeIdentity="CN=Adam Martin,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                <AccountItem name="memberOf" value="CN=AuditMgmt,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+              </RoleTarget>
+            </RoleDetection>
+          </List>
+        </value>
+      </entry>
+    </Map>
+  </Preferences>
+  <RoleMetadatas>
+    <Reference class="sailpoint.object.RoleMetadata" name="activeDirectoryITRole"/>
+    <Reference class="sailpoint.object.RoleMetadata" name="ad_business_role"/>
+  </RoleMetadatas>
+  <Links>
+    <Link displayName="Adam Martin" entitlements="true" identity="CN=Adam Martin,OU=People,OU=Demo,DC=Eshiam,DC=com" lastRefresh="1779698519521" manuallyCorrelated="true" uuid="{39634d42-877b-4ead-b9c3-1c2f929c9f11}">
+      <ApplicationRef>
+        <Reference class="sailpoint.object.Application" name="ActiveDirectory"/>
+      </ApplicationRef>
+      <Attributes>
+        <Map>
+          <entry key="accountFlags">
+            <value>
+              <List>
+                <String>Normal User Account</String>
+              </List>
+            </value>
+          </entry>
+          <entry key="cn" value="Adam Martin"/>
+          <entry key="distinguishedName" value="CN=Adam Martin,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+          <entry key="givenName" value="Adam"/>
+          <entry key="mail" value="Admin"/>
+          <entry key="memberOf">
+            <value>
+              <List>
+                <String>CN=AuditMgmt,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                <String>CN=All_Users,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+              </List>
+            </value>
+          </entry>
+          <entry key="msDS-PrincipalName" value="ESHIAM\Adam Martin"/>
+          <entry key="msNPAllowDialin" value="Not Set"/>
+          <entry key="objectClass">
+            <value>
+              <List>
+                <String>top</String>
+                <String>person</String>
+                <String>organizationalPerson</String>
+                <String>user</String>
+              </List>
+            </value>
+          </entry>
+          <entry key="objectSid" value="S-1-5-21-2678700903-2778472132-3948167259-1476"/>
+          <entry key="objectType" value="user"/>
+          <entry key="objectguid" value="{39634d42-877b-4ead-b9c3-1c2f929c9f11}"/>
+          <entry key="sAMAccountName" value="Adam Martin"/>
+          <entry key="sn" value="Martin"/>
+        </Map>
+      </Attributes>
+    </Link>
+    <Link displayName="Adam Martin" entitlements="true" identity="EMP00424" lastRefresh="1756877656291" manuallyCorrelated="true">
+      <ApplicationRef>
+        <Reference class="sailpoint.object.Application" name="WebServicesApplicationEshiam"/>
+      </ApplicationRef>
+      <Attributes>
+        <Map>
+          <entry key="department" value="Admin"/>
+          <entry key="description" value="Created on Fri Aug 29 11:21:21 IST 2025"/>
+          <entry key="groups">
+            <value>
+              <List>
+                <String>WS_GROUP_100</String>
+                <String>WS_GROUP_101</String>
+              </List>
+            </value>
+          </entry>
+          <entry key="location" value="India"/>
+          <entry key="manager_id" value="1045"/>
+          <entry key="user_email" value="adam.martin@example.com"/>
+          <entry key="user_id" value="EMP00424"/>
+          <entry key="user_name" value="Adam Martin"/>
+          <entry key="user_status" value="ACTIVE"/>
+        </Map>
+      </Attributes>
+    </Link>
+    <Link displayName="Adam Martin" identity="Adam Martin" lastRefresh="1767083140360">
+      <ApplicationRef>
+        <Reference class="sailpoint.object.Application" name="SCIMApp"/>
+      </ApplicationRef>
+      <Attributes>
+        <Map>
+          <entry key="IIQDisabled">
+            <value>
+              <Boolean/>
+            </value>
+          </entry>
+          <entry key="accounts">
+            <value>
+              <List>
+                <String>{"displayName":"Adam Martin","value":"c0a8001697a21be78197aff940d32be2","$ref":"http://localhost:8080/identityiq-8.4/scim/v2/Accounts/c0a8001697a21be78197aff940d32be2"}</String>
+                <String>{"displayName":"Adam Martin","value":"c0a8008598f111308198f4616a3b0201","$ref":"http://localhost:8080/identityiq-8.4/scim/v2/Accounts/c0a8008598f111308198f4616a3b0201"}</String>
+                <String>{"displayName":"Adam Martin","value":"c0a801199b581419819b6a70d7dc19d6","$ref":"http://localhost:8080/identityiq-8.4/scim/v2/Accounts/c0a801199b581419819b6a70d7dc19d6"}</String>
+                <String>{"displayName":"Adam Martin","value":"c0a81d8995cd1eaa8195d15afc3a0928","$ref":"http://localhost:8080/identityiq-8.4/scim/v2/Accounts/c0a81d8995cd1eaa8195d15afc3a0928"}</String>
+              </List>
+            </value>
+          </entry>
+          <entry key="active">
+            <value>
+              <Boolean>true</Boolean>
+            </value>
+          </entry>
+          <entry key="department" value="Admin"/>
+          <entry key="displayName" value="Adam Martin"/>
+          <entry key="emails.work.primary.value" value="adam.martin@example.com"/>
+          <entry key="employeeId" value="EMP00424"/>
+          <entry key="id" value="Adam Martin"/>
+          <entry key="isManager">
+            <value>
+              <Boolean/>
+            </value>
+          </entry>
+          <entry key="lastRefresh">
+            <value>
+              <Date>1767017338866</Date>
+            </value>
+          </entry>
+          <entry key="name.familyName" value="Martin"/>
+          <entry key="name.formatted" value="Adam Martin"/>
+          <entry key="name.givenName" value="Adam"/>
+          <entry key="networkId" value="amartin863"/>
+          <entry key="riskScore">
+            <value>
+              <Integer>250</Integer>
+            </value>
+          </entry>
+          <entry key="userName" value="Adam Martin"/>
+        </Map>
+      </Attributes>
+    </Link>
+    <Link displayName="Adam Martin" identity="EMP00424" lastRefresh="1760088500966">
+      <ApplicationRef>
+        <Reference class="sailpoint.object.Application" name="HR2"/>
+      </ApplicationRef>
+      <Attributes>
+        <Map>
+          <entry key="Department" value="Admin"/>
+          <entry key="Email" value="adam.martin@example.com"/>
+          <entry key="EmployeeNo" value="EMP00424"/>
+          <entry key="FirstName" value="Adam"/>
+          <entry key="JoiningDate" value="2018-05-29"/>
+          <entry key="LastName" value="Martin"/>
+          <entry key="Manager" value="EMP00014"/>
+          <entry key="Name" value="Adam Martin"/>
+          <entry key="NetworkID" value="amartin863"/>
+        </Map>
+      </Attributes>
+    </Link>
+  </Links>
+  <Scorecard certificationScore="1000" compositeScore="250">
+    <ScoreItem compositePercentage="100" displayName="score_def_certificationAge_name" score="1000" scorePercentage="100" type="score_def_certificationAge_shortname">
+      <TargetMessage>
+        <Message key="cert_scorer_target_id_not_certified" type="Info"/>
+      </TargetMessage>
+    </ScoreItem>
+  </Scorecard>
+</Identity>

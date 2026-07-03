@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningTransaction PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningTransaction accountDisplayName="Boyd" applicationName="LDAPApplication" identityDisplayName="Kelly Boyd" identityName="Kelly Boyd" integration="LDAPApplication" name="0000010067" nativeIdentity="Boyd" operation="Create" source="IdentityRefresh" status="Failed" type="Auto">
+  <Attributes>
+    <Map>
+      <entry key="planResult">
+        <value>
+          <ProvisioningResult status="failed">
+            <Errors>
+              <Message key="[ InvalidConfigurationException ] &#10; [ Possible suggestions ] a) Furnish the correct host and port. b) Ensure the OpenLDAP host is up and running. &#10; [ Error details ] Failed to connect to server: localhost:389" type="Error"/>
+            </Errors>
+          </ProvisioningResult>
+        </value>
+      </entry>
+      <entry key="request">
+        <value>
+          <AccountRequest application="LDAPApplication" nativeIdentity="Boyd" op="Create">
+            <Attributes>
+              <Map>
+                <entry key="provisioningTransactionId" value="c0a801199c071190819c08465f0c0237"/>
+              </Map>
+            </Attributes>
+            <AttributeRequest name="groups" op="Add" value="cn=Contractors,ou=Group,dc=my-domain,dc=com">
+              <Attributes>
+                <Map>
+                  <entry key="assignment">
+                    <value>
+                      <Boolean>true</Boolean>
+                    </value>
+                  </entry>
+                </Map>
+              </Attributes>
+            </AttributeRequest>
+            <AttributeRequest name="dn" op="Set" value="cn=Kelly.Boyd,ou=People,dc=my-domain,dc=com"/>
+            <AttributeRequest name="password" op="Set">
+              <Attributes>
+                <Map>
+                  <entry key="secret" value="true"/>
+                </Map>
+              </Attributes>
+            </AttributeRequest>
+            <AttributeRequest name="mail" op="Set" value="kelly.boyd@eshiam.com"/>
+          </AccountRequest>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+</ProvisioningTransaction>

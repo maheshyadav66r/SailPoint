@@ -1,0 +1,370 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskDefinition PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskDefinition executor="sailpoint.reporting.LiveReportExecutor" name="SAP Leaver Report" progressMode="Percentage" resultAction="Rename" subType="Lifecycle Manager Reports" template="true" type="LiveReport">
+  <Attributes>
+    <Map>
+      <entry key="report">
+        <value>
+          <LiveReport title="SAP Leaver Status Report">
+            <DataSource objectType="sailpoint.object.IdentityRequest" type="Filter">
+              <QueryParameters>
+                <Parameter argument="accRequestType" property="name">
+                  <QueryScript>
+                    <Source><![CDATA[
+                      import java.util.ArrayList;
+                      import java.util.Iterator;
+                      import java.util.List;
+                      import java.util.HashSet;
+                      import java.util.Set;
+
+                      import sailpoint.api.SailPointContext;
+                      import sailpoint.object.Filter;
+                      import sailpoint.object.IdentityRequest;
+                      import sailpoint.object.IdentityRequestItem;
+                      import sailpoint.object.QueryOptions;
+                      import sailpoint.tools.GeneralException;
+                      import sailpoint.tools.Util;
+
+                      List value=new ArrayList();
+                      value.add("WBLeaver");
+                      List requestTypes = new ArrayList();
+                      List ARIDfilters = new ArrayList();
+                      List irIDFilters = new ArrayList();
+
+                      Set s=new HashSet();	
+                      requestTypes.add("WBLeaver");
+                      requestTypes.add("IFCLeaver");
+                      QueryOptions qo = new QueryOptions();
+                      Filter LeaverFilters = null;
+                      if(value != null )                 
+                      LeaverFilters = Filter.and(Filter.in("type", value), Filter.and(Filter.eq("items.application", "SAP")));
+                      else
+                      LeaverFilters = Filter.and(Filter.in("type", requestTypes), Filter.and(Filter.eq("items.application", "SAP")));
+                      qo.add(LeaverFilters);
+                      Iterator iter = context.search(IdentityRequest.class, qo);
+                      while (iter != null @and iter.hasNext()) {
+                      IdentityRequest ir=(IdentityRequest)iter.next();
+
+                      List iriLst= ir.getItems();
+                      for(int i=0;i<iriLst.size();i++) {
+                      IdentityRequestItem iri=(IdentityRequestItem)iriLst.get(i);
+                      if(iri.getApplication().equalsIgnoreCase("SAP")){
+                      s.add(ir.getName());
+                      break;
+                      }
+                      }
+                      }
+
+
+                      Filter irFilter = (Filter.in("name",s));
+                      irIDFilters.add(irFilter);
+                      Util.flushIterator(iter);
+                      Filter finalARfilter = Filter.or(irIDFilters);
+                      QueryOptions finalQO = new QueryOptions();
+                      finalQO.add(finalARfilter);
+                      return finalQO;    
+                    ]]></Source>
+                  </QueryScript>
+                </Parameter>
+                <Parameter argument="completionStatus" property="provisioningState"/>
+                <Parameter argument="reqStartDate" operation="GE" property="created"/>
+                <Parameter argument="reqEndDate" operation="LE" property="created"/>
+              </QueryParameters>
+            </DataSource>
+            <Columns>
+              <ReportColumnConfig field="requestId" header="rept_lcm_request_status_col_request_id" property="IdentityRequest.name" sortable="true" valueClass="java.lang.String" width="110"/>
+              <ReportColumnConfig field="type" header="Request type" property="IdentityRequest.type" sortable="true" valueClass="java.lang.String" width="110"/>
+              <ReportColumnConfig field="IdentityName" header="Requestee UPI" property="IdentityRequest.targetId" valueClass="java.lang.String" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.Identity;
+
+                    String name= null;
+                    if(null != value)
+                    {
+                    Identity id = context.getObjectById(Identity.class, value);
+                    if(null != request)
+                    {
+                    if(null != id)
+                    {
+                    name= id.getName();
+                    }
+                    }
+                    }
+                    return name;
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="RequesteeName" header="Requestee Name" property="IdentityRequest.targetId" valueClass="java.lang.String" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.Identity;
+
+                    String name= null;
+                    if(null != value)
+                    {
+                    Identity id = context.getObjectById(Identity.class, value);
+                    if(null != request)
+                    {
+                    if(null != id)
+                    {
+                    name= id.getDisplayName();
+                    }
+                    }
+                    }
+                    return name;
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="operation" header="Operation" property="IdentityRequest.targetId" sortable="true" valueClass="java.lang.String" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.QueryOptions;
+                    import java.util.List;
+                    import sailpoint.object.Filter;
+                    import sailpoint.object.Identity;
+                    import sailpoint.object.IdentityRequest;
+                    import sailpoint.object.IdentityRequestItem;
+                    import java.util.ArrayList;
+                    import java.util.Iterator;
+                    QueryOptions qoName = new QueryOptions();
+                    List propName = new ArrayList();
+                    String opr = "";
+                    Identity idn = context.getObjectById(Identity.class, value);
+                    qoName.add(Filter.eq("targetId", idn.getId()));
+                    qoName.add(Filter.or(Filter.eq("type", "WBLeaver"), Filter.eq("type", "IFCLeaver")));
+                    Iterator itr = context.search(IdentityRequest.class, qoName);
+                    while (itr.hasNext()) {
+                    IdentityRequest idRequest = (IdentityRequest) itr.next();
+                    List idnRequestItemLst = idRequest.getItems();
+                    for (int i = 0; i < idnRequestItemLst.size(); i++) {
+                    IdentityRequestItem idnRequestItem = (IdentityRequestItem) idnRequestItemLst.get(i);
+                    if(idnRequestItem.getApplication().equalsIgnoreCase("SAP")) {
+                    if(!idnRequestItem.getOperation().equalsIgnoreCase("set")) {
+                    opr=idnRequestItem.getOperation();
+                    if(idnRequestItem.getName()==null) {
+                    opr=opr+": Identity : "+idnRequestItem.getNativeIdentity()+"\n";
+                    }else {
+                    opr=opr+": "+idnRequestItem.getName()+" : "+idnRequestItem.getValue()+"\n";
+                    }
+                    propName.add(opr);
+                    }
+                    }
+
+                    }
+                    }
+                    return propName;
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="completionStatus" header="Completion Status" property="IdentityRequest.targetId" sortable="true" valueClass="java.lang.String" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.QueryOptions;
+                    import java.util.List;
+                    import sailpoint.object.Filter;
+                    import sailpoint.object.Identity;
+                    import sailpoint.object.IdentityRequest;
+                    import sailpoint.object.IdentityRequestItem;
+                    import java.util.ArrayList;
+                    import java.util.Iterator;
+                    QueryOptions qoName = new QueryOptions();
+                    List propName = new ArrayList();
+                    String provisioningState = "";
+                    Identity idn = context.getObjectById(Identity.class, value);
+                    qoName.add(Filter.eq("targetId", idn.getId()));
+                    qoName.add(Filter.or(Filter.eq("type", "WBLeaver"), Filter.eq("type", "IFCLeaver")));
+                    Iterator itr = context.search(IdentityRequest.class, qoName);
+                    while (itr.hasNext()) {
+                    IdentityRequest idRequest = (IdentityRequest) itr.next();
+                    List idnRequestItemLst = idRequest.getItems();
+                    for (int i = 0; i < idnRequestItemLst.size(); i++) {
+                    IdentityRequestItem idnRequestItem = (IdentityRequestItem) idnRequestItemLst.get(i);
+                    if(idnRequestItem.getApplication().equalsIgnoreCase("SAP")) {
+                    provisioningState = idnRequestItem.getProvisioningState().name();
+                    }
+                    }
+                    propName.add(provisioningState);
+                    }
+                    return propName;
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="requestDate" header="Requested Date" property="IdentityRequest.created" sortable="true" valueClass="java.lang.String" width="110"/>
+              <ReportColumnConfig field="completedDate" header="Completed Date" property="IdentityRequest.endDate" sortable="true" valueClass="java.lang.String" width="110"/>
+              <ReportColumnConfig field="APPT_TYPE" header="Appointment Type" property="IdentityRequest.targetId" sortable="true" valueClass="java.lang.String" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.Identity;
+                    String app_type= null;
+                    if(null != value)
+                    {
+                    Identity id = context.getObjectById(Identity.class, value);
+                    if(null != id)
+                    app_type = id.getAttribute("APPT_TYPE");
+                    }
+                    return app_type;
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="Current Organization" header="Current Organization" property="IdentityRequest.targetId" sortable="true" valueClass="java.lang.String" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.Identity;
+                    String orgCode= null;
+                    String orgName=null;
+                    if(value!=null)
+                    {
+                    Identity id = context.getObjectById(Identity.class, value);
+                    if(null != request)
+                    {
+                    if(null != id)
+                    {
+                    if(id.getAttribute("ORG_CODE")!=null){
+                    orgCode= id.getAttribute("ORG_CODE").toString();
+                    if(orgCode.equalsIgnoreCase("0")) {
+                    orgName="IFC";
+                    }else if(orgCode.equalsIgnoreCase("1")) {
+                    orgName="IBRD";
+                    }else if(orgCode.equalsIgnoreCase("2")) {
+                    orgName="MIGA";
+                    }else if(orgCode.equalsIgnoreCase("5")) {
+                    orgName="GEF";
+                    }
+                    }else{
+                    orgName="User not active";
+                    }
+                    }
+                    }
+                    }
+                    return orgName;
+
+
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="Department" header="Current Department" property="IdentityRequest.targetId" sortable="true" valueClass="java.lang.String" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.Identity;
+                    String department= null;
+                    if(null != value)
+                    {
+                    Identity id = context.getObjectById(Identity.class, value);
+                    if(id.getAttribute("Department")!=null){
+                    department = id.getAttribute("Department");
+                    }else{
+                    department ="User not active";
+                    }
+                    }
+                    return department;
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="VPU" header="Current VPU" property="IdentityRequest.targetId" sortable="true" valueClass="java.lang.String" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.Identity;
+                    String vpu= null;
+
+
+                    if(null != value)
+                    {
+                    Identity id = context.getObjectById(Identity.class, value);
+                    if(id.getAttribute("VPU")!=null){
+                    vpu = id.getAttribute("VPU");
+                    }
+                    else{
+                    vpu="User not active";
+                    }
+                    }
+                    return vpu;
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="errors" header="Errors occurred if any" property="IdentityRequest.targetId" sortable="true" valueClass="java.lang.String" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+
+                    import sailpoint.tools.Message;
+                    import org.apache.commons.lang.StringUtils;
+                    import sailpoint.object.QueryOptions;
+                    import java.util.List;
+                    import sailpoint.object.Filter;
+                    import sailpoint.object.Identity;
+                    import sailpoint.object.IdentityRequest;
+                    import sailpoint.object.IdentityRequestItem;
+                    import java.util.ArrayList;
+                    import java.util.Iterator;
+                    import sailpoint.tools.GeneralException;
+
+                    QueryOptions qoName = new QueryOptions();
+                    List propName = new ArrayList();
+                    String opr = "";
+                    Identity idn;
+                    try {
+                    idn = context.getObjectById(Identity.class, value);
+                    qoName.add(Filter.eq("targetId", idn.getId()));
+                    qoName.add(Filter.or(Filter.eq("type", "WBLeaver"), Filter.eq("type", "IFCLeaver")));
+                    Iterator itr = context.search(IdentityRequest.class, qoName);
+                    while (itr.hasNext()) {
+                    IdentityRequest idRequest = (IdentityRequest) itr.next();
+                    List idnRequestItemLst = idRequest.getItems();
+                    for (int i = 0; i < idnRequestItemLst.size(); i++) {
+                    IdentityRequestItem idnRequestItem = (IdentityRequestItem) idnRequestItemLst.get(i);
+                    if(idnRequestItem!=null){
+                    if (idnRequestItem.getApplication().equalsIgnoreCase("SAP")) {
+                    if (!idnRequestItem.getOperation().equalsIgnoreCase("set")) {
+                    List errLst = idnRequestItem.getErrors();
+                    if(errLst!=null){
+                    for (int k = 0; k < errLst.size(); k++) {
+                    Message msg=(Message) errLst.get(k);
+                    if(msg!=null) {
+                    String errMsgStr = msg.getMessage();
+                    propName.add(errMsgStr);
+                    }
+                    }
+                    }
+                    }
+                    }
+                    }
+                    }
+                    }
+                    } catch (GeneralException e) {
+                    e.printStackTrace();
+                    }
+                    return propName;
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+            </Columns>
+          </LiveReport>
+        </value>
+      </entry>
+      <entry key="reportTitle" value="rept_lcm_entitlement_request_status_title"/>
+    </Map>
+  </Attributes>
+  <Description>Displays information about SAP Leaver access requests status in detailed format.</Description>
+  <RequiredRights>
+    <Reference class="sailpoint.object.SPRight" name="FullAccessEntitlementRequestStatusReport"/>
+  </RequiredRights>
+  <Signature>
+    <Inputs>
+      <Argument multi="true" name="accRequestType" type="string">
+        <Description>rept_input_SAP_lcm_request_status_report_target_identity</Description>
+      </Argument>
+      <Argument multi="true" name="completionStatus" type="string">
+        <Description>rept_input_SAP_lcm_request_status_report_target_identity</Description>
+      </Argument>
+      <Argument multi="true" name="application" type="string">
+        <Description>rept_input_SAP_lcm_request_status_report_target_identity</Description>
+      </Argument>
+      <Argument name="reqStartDate" type="date">
+        <Description>rept_input_SAP_lcm_request_status_report_status</Description>
+      </Argument>
+      <Argument name="reqEndDate" type="date">
+        <Description>rept_input_SAP_lcm_request_status_report_status</Description>
+      </Argument>
+    </Inputs>
+  </Signature>
+</TaskDefinition>

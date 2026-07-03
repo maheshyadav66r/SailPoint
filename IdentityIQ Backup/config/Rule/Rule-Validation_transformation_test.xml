@@ -1,0 +1,350 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Validation_Transformation_Test" type="Validation">
+  <Source><![CDATA[
+
+  import sailpoint.object.*;
+  import sailpoint.api.*;
+  import sailpoint.object.Link;
+  import sailpoint.object.Identity;
+  import sailpoint.tools.Util;
+  import sailpoint.object.Bundle;
+  import sailpoint.api.Provisioner;
+  import sailpoint.object.Attributes;
+  import sailpoint.object.ProvisioningPlan;
+  import sailpoint.object.ProvisioningProject;
+  import sailpoint.object.ProvisioningPlan.Operation;
+  import sailpoint.object.ProvisioningPlan.AccountRequest;
+  import sailpoint.object.ProvisioningPlan.AttributeRequest;
+  import sailpoint.object.ProvisioningPlan.AccountRequest.Operation;
+
+
+  import org.apache.commons.logging.Log;
+  import org.apache.commons.logging.LogFactory;
+  import sailpoint.api.ObjectUtil;
+  import sailpoint.object.Link;
+  import sailpoint.object.Identity;
+  import sailpoint.tools.Util;
+  import sailpoint.object.Bundle;
+  import sailpoint.rapidapponboarding.logger.LogEnablement;
+  import org.apache.commons.logging.Log;
+  import org.apache.commons.logging.LogFactory;
+  import org.apache.log4j.Logger;  
+  import sailpoint.api.IdentityService;  
+  import sailpoint.rapidapponboarding.logger.LogEnablement;
+  import sailpoint.object.Application;
+  import sailpoint.object.Link;  
+  import sailpoint.tools.GeneralException;  
+  import sailpoint.tools.Util;
+  import sailpoint.object.*;
+  import sailpoint.api.*;
+  import sailpoint.tools.Util;
+
+
+
+  String attribute = "Ben";
+
+  QueryOptions qo = new QueryOptions();
+  log.error("  1..................   ");
+  // Base filters
+  // Filter targetFilter = Filter.eq("IdentityRequest.targetId", "Aaron Nichols");
+  Filter operationFilter = Filter.eq("operation", "Add");
+  Filter stateFilter = Filter.eq("provisioningState", "Pending");
+  Filter notIIQFilter = Filter.ne("name", "IIQ");
+  Filter nativeIdentity = Filter.eq("nativeIdentity", "CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com");
+  log.error("  2.............   ");
+
+  // ManagedAttribute join filters
+  Filter f = Filter.subquery( "value", ManagedAttribute.class , "value" ,Filter.like("displayName", attribute, Filter.MatchMode.ANYWHERE));
+  log.error("  3.............  ");
+  // Combine filters
+  Filter finalFilter = Filter.and(targetFilter,operationFilter,stateFilter,notIIQFilter,f);
+  log.error("  4...........   ");
+
+  // Add joins (VERY IMPORTANT)
+  qo.addFilter(finalFilter);
+  log.error("  5.............   ");
+  //qo.addFilter(Filter.join("IdentityRequest.id", "IdentityRequest.id"));
+  qo.addFilter(Filter.join("value", "ManagedAttribute.value"));
+  qo.addFilter(Filter.join("application", "ManagedAttribute.application.name"));
+  log.error("  6................  ");
+  log.error(" Filter ...........:: "+qo);
+
+  List identityRequests = context.getObjects(IdentityRequestItem.class, qo);
+
+
+  return identityRequests;
+
+
+  // PasswordPolicy policy = context.getObjectByName(PasswordPolicy.class,"PasswordForADAccount");
+  //PasswordGenerator pg = new PasswordGenerator(context);
+
+  // return pg.generatePassword(policy);
+
+
+
+
+  import sailpoint.object.*;
+  import sailpoint.api.*;
+  import java.util.*;
+
+  // Define the DNs that are no longer in your target system
+  List stringsToRemove = Arrays.asList(new String[]{
+    "CN=Cost-SavingsAnalysis,OU=Groups,OU=Demo,DC=Eshiam,DC=com",
+    "CN=customerDataCenter,OU=Groups,OU=Demo,DC=Eshiam,DC=com"
+  });
+
+  // 1. Fetch your specific bundle by name
+  Bundle bundle = context.getObjectByName(Bundle.class, "Testing");
+
+  if (bundle != null) {
+    List profiles = bundle.getProfiles();
+    if (profiles != null) {
+      List toDelete = new ArrayList();
+
+      for (Profile profile : profiles) {
+        // Check the constraints for the specific values
+        String xml = profile.toXml();
+        for (String dn : stringsToRemove) {
+          if (xml.contains(dn)) {
+            toDelete.add(profile);
+            break; 
+          }
+        }
+      }
+
+      // 2. Remove the matching profiles from the Bundle
+      for (Profile p : toDelete) {
+        bundle.remove(p);
+        log.warn("Removing profile " + p.getId() + " from Bundle: " + bundle.getName());
+      }
+
+      // 3. Save the Bundle and commit
+      context.saveObject(bundle);
+      context.commitTransaction();
+      return "Profiles removed successfully.";
+    }
+  }
+  return "Bundle not found or no profiles to remove.";
+
+
+
+
+
+
+
+  EmailTemplate emailTemplate = context.getObjectByName(EmailTemplate.class , "identity_Operation_ET_for_manager");
+
+  Map map = new HashMap();
+  map.put("operation","Modify");
+  map.put("applicationName","ADX");
+  map.put("user","Giridhar");
+  map.put("launcher","Mahesh.Nattali");
+  map.put("manager","Raju.Valemoni");
+
+
+  EmailOptions options = new EmailOptions(null,map);
+  Configuration configuration = context.getObjectByName(Configuration.class , "SystemConfiguration");
+
+  EmailTemplate compile = emailTemplate.compile(context , configuration , options);
+
+  String body = compile.getBody();
+  log.error(" email body  ..: "+body);
+
+  return body;
+
+
+
+
+  Application application = context.getObjectByName(Application.class,"ActiveDirectory");
+  String employeeNumber = "CN=Cindy Little-ADM,OU=People,OU=Demo,DC=Eshiam,DC=com";
+
+
+  String query = "from Link l "
+    + "where l.getAttribute('distinguishedName') = '" + employeeNumber + "'" 
+    +"and l.application.id = '" + application.getId() + "'";
+
+
+  log.error("   querrryryry  :   "+query);
+
+  QueryOptions qo = new QueryOptions();
+  qo.setQuery(query);
+  //qo.setResultLimit(1);
+
+
+  List idList = context.getObjects(Link.class, qo);
+  log.error("  identities list  :  "+idList);
+  return idList.get(0);
+
+
+
+  /*String[] s = {"Mahesh","nattali","DVk"};
+  List aList = Util.arrayToList(s);
+
+  List bLst = Util.asList("MAhesh NAttali");
+   bLst = Util.asList("nwhgs");  //old value is overriden by new one
+
+  log.error("12   "+Util.atoi("a"));
+
+  return Util.atob("12");*/
+
+
+  return context.decrypt("1:ACP:1wZ3+L0S5zxxqNAzkdZjSWYsYixrZwFrthZM37L5NDL90Knw7GNnnKihCiLgKhq8dIV0drzo2D8Ds7we61NUAg==");
+
+
+
+  {
+    Log tlog = LogFactory.getLog("rule.sp.rule.ToyotaAtldapIdTransformation");    
+    if (tlog.isTraceEnabled()) {
+      tlog.trace("TATLDAPT::001-Entering Toyota AtldapId Transformation");
+      tlog.trace( "TATLDAPT::002-with atldapid value = "+"value" );
+    }
+
+    IdentityService idService = new IdentityService(context);
+    Identity identity = context.getObjectByName(Identity.class,"Mahesh Nattali");;
+    Application orgLdap = null;
+    Application workerDB = context.getObjectByName(Application.class , "ActiveDirectory");;
+    Link link = null;
+    String value = "mahesh.nattali@eshiam.comrule";
+
+    if (workerDB != null) {
+      List workerDBLinks = idService.getLinks(identity,workerDB);
+      if (Util.nullSafeSize(workerDBLinks)>0) {
+        link = workerDBLinks.get(0);
+      }
+    }
+
+
+    String returnValue = link != null?link.getAttribute("mail"):identity.getEmail() ;  
+    log.error(" returnValue value  :  "+returnValue);
+
+
+
+    try {
+      orgLdap = context.getObjectByName(Application.class , "IntConApplication");
+      if (orgLdap != null) {
+        List orgLdapLinks = idService.getLinks(identity,orgLdap);
+        if (Util.nullSafeSize(orgLdapLinks)>0) {
+          Link orgLdapLink = orgLdapLinks.get(0);
+          if (orgLdapLink != null && !orgLdapLink.isDisabled()) { 
+            String atldapUserValue = orgLdapLink.getAttribute("atldapUser");
+            log.error(" atldapUser value  :  "+atldapUserValue);
+            if (atldapUserValue.equalsIgnoreCase("Y")){
+              returnValue = value;
+            }
+          }
+        }
+      }
+    } catch (Exception e) {
+      throw new GeneralException("TAAR::003-ERROR for User: " + identity.getName() + " Error Message: An exception was thrown while attempting to process AD After Provisioning rule: " + e.getMessage());          
+    } finally {
+      if (tlog.isTraceEnabled()) {
+        tlog.trace("TATLDAPT::004-Entering Toyota AtldapId Transformation");
+        tlog.trace( "TATLDAPT::005-with atldapid value = "+value );
+      }
+      context.decache(orgLdap);
+      context.decache(workerDB);
+    }
+
+    if (tlog.isTraceEnabled()) {
+      tlog.trace("TATLDAPT::006-Exiting Toyota AtldapId Transformation");
+      tlog.trace( "TATLDAPT::007-with atldapid returnValue = "+returnValue );
+    }        
+    return returnValue;
+
+  }
+
+  /* AttributeAssignment applicationId="c0a81ac792e61ed78192f6e9f5530482" applicationName="Duplicate_Ent" assigner="spadmin" assignmentId="74b20a4dc99e4fd28bd869119e27e3f8" name="roleId" nativeIdentity="EMP00357" source="LCM" type="Entitlement" value="3"*/
+
+
+
+
+
+  /*
+
+
+ IdentityEntitlement 
+IdentityEntitlement aggregationState="Disconnected" assigned="true" created="1760535839883" id="c0a805be99e318a58199e81d048b22b8" modified="1760705868008" name="atldapUser" nativeIdentity="uid=000133,ou=SORG310076,ou=91045,o=toyota.com" significantModified="1760705868008" source="Aggregation" type="Entitlement" value="N"
+
+    Reference class="sailpoint.object.Application" id="c0a805be99a21de28199a2ef531502a4" name="Org LDAP"
+
+
+    Reference class="sailpoint.object.Identity" id="c0a805be99ba157c8199d8872af57db8" name="000133"
+
+
+    Reference class="sailpoint.object.IdentityRequestItem" id="c0a805be99e318a58199e81d126222ec"
+  */
+
+
+
+
+
+
+  /*
+
+    ProvisioningPlan plan = new ProvisioningPlan();
+
+    Link link  = null;
+    String value = "000062@9104F";
+    Application orgLDAP = null;
+    Application workerDBApp =null;
+
+    IdentityService identityService = new IdentityService(context);
+
+    try {
+
+      orgLDAP = context.getObjectByName(Application.class , "IntConApplication");
+      workerDBApp = context.getObjectByName(Application.class , "ActiveDirectory");
+
+      if ( orgLDAP != null && workerDBApp != null && identity != null ){
+        int linksCount = identityService.countLinks( identity, orgLDAP);
+
+        if ( linksCount == 1){
+
+          List orgLDAPLinks = identityService.getLinks(identity,orgLDAP);
+          List links = identityService.getLinks(identity,workerDBApp);
+
+          if ( orgLDAPLinks !=null && links != null ) {
+
+            Link orgLDAPLink = orgLDAPLinks.get(0);
+            link = links.get(0);
+
+            if ( orgLDAPLink != null && link != null ) { 
+
+              String atldapUserValue = orgLDAPLink.getAttribute("atldapUser");
+
+              if ( atldapUserValue.equals("Y") ){
+                value = value;
+              }
+              else{
+                if ( link !=null ){
+                  value = link.getAttribute("mail");
+                }
+              }
+            }
+          }
+        }
+      }
+    }catch(Exception e){
+
+      log.error(" Attribute Sync Transformation  Rule error : "+e.toString());
+    }
+
+    log.error(" value   before creating plan  :  "+value);
+
+    AccountRequest accountRequest = new AccountRequest(ProvisioningPlan.AccountRequest.Operation.Modify, workerDBApp.getName(), null, null);
+    accountRequest.setNativeIdentity(link.getNativeIdentity());
+    accountRequest.add(new AttributeRequest("mail",ProvisioningPlan.Operation.Add,value));
+
+    plan.setIdentity(identity);
+    plan.add(accountRequest);
+
+
+    //log.error("plan : "+plan.toXml());
+
+    Provisioner provisioner  = new Provisioner(context);
+    provisioner.execute(plan);
+
+    return "ATTRIBUE SYNC";*/
+  ]]></Source>
+</Rule>

@@ -1,0 +1,618 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE WorkflowCase PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<WorkflowCase launcher="Scheduler" name="NativeChangeEvent: Aaron Stanley - 16">
+  <Messages>
+    <Message key="Exception occurred while performing 'Enable' operation on identity '???':  Error: No configuration found for'Enable Account'. Please add at least one operation and try again." type="Error"/>
+    <Message key="Exception occurred while performing 'Enable' operation on identity 'EMP00741':  Error: No configuration found for'Enable Account'. Please add at least one operation and try again." type="Error"/>
+  </Messages>
+  <Workflow currentStep="c836f22dcc674fcaa931c2638190024e" explicitTransitions="true" libraries="Identity" name="Lifecycle Event - Reinstate" type="IdentityLifecycle">
+    <Variable input="true" name="trigger"/>
+    <Variable input="true" name="event" transient="true"/>
+    <Variable input="true" name="identityName"/>
+    <Variable initializer="script:(identityDisplayName != void) ? identityDisplayName : resolveDisplayName(identityName)" input="true" name="identityDisplayName"/>
+    <Variable name="plan"/>
+    <Variable editable="true" initializer="false" name="optimisticProvisioning"/>
+    <Variable editable="true" initializer="true" name="foregroundProvisioning"/>
+    <Variable initializer="spadmin" input="true" name="fallbackApprover"/>
+    <Variable initializer="LCM" input="true" name="source"/>
+    <Variable initializer="false" input="true" name="trace"/>
+    <Variable name="project"/>
+    <Variable name="identityRequestId" output="true"/>
+    <Variable name="cart" output="true"/>
+    <Variable initializer="Normal" input="true" name="workItemPriority"/>
+    <Variable name="policyViolations"/>
+    <RuleLibraries>
+      <Reference class="sailpoint.object.Rule" name="LCM Workflow Library"/>
+    </RuleLibraries>
+    <Step action="call:buildEventPlan" complete="true" name="Build Provisioning Plan" posX="50" posY="10" resultVariable="plan">
+      <Arg name="identityName" value="ref:identityName"/>
+      <Arg name="op" value="Enable"/>
+      <Arg name="event" value="ref:event"/>
+      <Arg name="trigger" value="ref:trigger"/>
+      <Transition to="Initialize"/>
+    </Step>
+    <Step complete="true" icon="Task" name="Initialize" posX="170" posY="10">
+      <Arg name="formTemplate" value="Identity Update"/>
+      <Arg name="identityName" value="ref:identityName"/>
+      <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+      <Arg name="launcher" value="ref:launcher"/>
+      <Arg name="optimisticProvisioning" value="ref:optimisticProvisioning"/>
+      <Arg name="plan" value="ref:plan"/>
+      <Arg name="workItemPriority" value="ref:workItemPriority"/>
+      <Arg name="policyScheme" value="none"/>
+      <Arg name="source" value="ref:source"/>
+      <Arg name="trace" value="ref:trace"/>
+      <Arg name="flow" value="Lifecycle"/>
+      <Return name="project" to="project"/>
+      <Return name="approvalSet" to="cart"/>
+      <Return name="identityRequestId" to="identityRequestId"/>
+      <Return name="policyViolations" to="policyViolations"/>
+      <WorkflowRef>
+        <Reference class="sailpoint.object.Workflow" name="Identity Request Initialize"/>
+      </WorkflowRef>
+      <Transition to="Provision"/>
+    </Step>
+    <Step condition="script:!((size(policyViolations) &gt; 0 ) &amp;&amp; (policyScheme.equals(&quot;fail&quot;)))" icon="Task" name="Provision" posX="290" posY="10">
+      <Arg name="approvalScheme" value="ref:approvalScheme"/>
+      <Arg name="fallbackApprover" value="ref:fallbackApprover"/>
+      <Arg name="foregroundProvisioning" value="ref:foregroundProvisioning"/>
+      <Arg name="formTemplate" value="Identity Update"/>
+      <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+      <Arg name="identityName" value="ref:identityName"/>
+      <Arg name="identityRequestId" value="ref:identityRequestId"/>
+      <Arg name="launcher" value="ref:launcher"/>
+      <Arg name="manualActionsEmailTemplate" value="Pending Manual Changes"/>
+      <Arg name="optimisticProvisioning" value="ref:optimisticProvisioning"/>
+      <Arg name="workItemPriority" value="ref:workItemPriority"/>
+      <Arg name="project" value="ref:project"/>
+      <Arg name="policyScheme" value="none"/>
+      <Arg name="trace" value="ref:trace"/>
+      <Return name="project" to="project"/>
+      <WorkflowRef>
+        <Reference class="sailpoint.object.Workflow" name="Identity Request Provision"/>
+      </WorkflowRef>
+      <Transition to="Finalize"/>
+      <WorkflowCase launcher="Scheduler" name="Identity Request Provision">
+        <Messages>
+          <Message key="Modifications to Aaron Stanley are being provisioned." type="Info"/>
+        </Messages>
+        <Workflow currentStep="88d3915e38d14487ac3d072617d3b3be" libraries="Identity,IdentityRequest" name="Identity Request Provision" type="Subprocess">
+          <Variable editable="true" initializer="false" input="true" name="optimisticProvisioning"/>
+          <Variable editable="true" initializer="true" input="true" name="foregroundProvisioning"/>
+          <Variable input="true" name="fallbackApprover" required="true"/>
+          <Variable input="true" name="approvalSet"/>
+          <Variable initializer="Identity Update" input="true" name="formTemplate"/>
+          <Variable input="true" name="trace"/>
+          <Variable input="true" name="plan"/>
+          <Variable initializer="true" input="true" name="recompile"/>
+          <Variable initializer="Pending Manual Changes" input="true" name="manualActionsEmailTemplate"/>
+          <Variable input="true" name="noTriggers"/>
+          <Variable input="true" name="workItemComments"/>
+          <Variable input="true" name="approvalScheme"/>
+          <Variable input="true" name="identityRequestId"/>
+          <Variable input="true" name="workItemPriority"/>
+          <Variable input="true" name="splitProvisioning"/>
+          <Variable initializer="true" input="true" name="saveUnmanagedPlan"/>
+          <Variable initializer="false" input="true" name="saveUnmanagedPlan_WithProjectArgument"/>
+          <Variable input="true" name="project" output="true"/>
+          <Variable name="retries"/>
+          <RuleLibraries>
+            <Reference class="sailpoint.object.Rule" name="LCM Workflow Library"/>
+          </RuleLibraries>
+          <Step complete="true" icon="Start" name="Start" posX="15" posY="12">
+            <Transition to="Start Provisioning Process"/>
+          </Step>
+          <Step action="call:addMessage" complete="true" icon="Message" name="Start Provisioning Process" posX="130" posY="12">
+            <Arg name="message" value="Modifications to $(identityDisplayName) are being provisioned."/>
+            <Transition to="Process Approval Decisions"/>
+          </Step>
+          <Step action="call:processApprovalDecisions" complete="true" condition="script:!isNull(approvalSet)" icon="Task" name="Process Approval Decisions" posX="309" posY="11" resultVariable="project">
+            <Arg name="project" value="ref:project"/>
+            <Arg name="plan" value="ref:plan"/>
+            <Arg name="approvalSet" value="ref:approvalSet"/>
+            <Arg name="recompile" value="ref:recompile"/>
+            <Arg name="disableAudit" value="true"/>
+            <Transition to="Do Provisioning Forms Post-Approval"/>
+          </Step>
+          <Step complete="true" icon="Task" name="Do Provisioning Forms Post-Approval" posX="511" posY="12">
+            <Arg name="approvalSet" value="ref:approvalSet"/>
+            <Arg name="identityName" value="ref:identityName"/>
+            <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+            <Arg name="project" value="ref:project"/>
+            <Arg name="workItemPriority" value="ref:workItemPriority"/>
+            <Arg name="formTemplate" value="ref:formTemplate"/>
+            <Arg name="preferredOwner" value="ref:sessionOwner"/>
+            <Return name="project" to="project"/>
+            <Return name="approvalSet" to="approvalSet"/>
+            <WorkflowRef>
+              <Reference class="sailpoint.object.Workflow" name="Do Provisioning Forms"/>
+            </WorkflowRef>
+            <Transition to="Pre Provision"/>
+          </Step>
+          <Step action="call:assimilateAccountIdChanges" complete="true" icon="Task" name="Pre Provision" posX="682" posY="13" resultVariable="approvalSet">
+            <Arg name="approvalSet" value="ref:approvalSet"/>
+            <Arg name="project" value="ref:project"/>
+            <Arg name="identityRequestId" value="ref:identityRequestId"/>
+            <Transition to="Refresh Identity Request"/>
+          </Step>
+          <Step action="call:refreshIdentityRequestAfterApproval" complete="true" icon="Task" name="Refresh Identity Request" posX="813" posY="13">
+            <Arg name="project" value="ref:project"/>
+            <Arg name="splitProvisioning" value="ref:splitProvisioning"/>
+            <Transition to="Provision"/>
+          </Step>
+          <Step complete="true" icon="Task" name="Provision" posX="941" posY="13">
+            <Arg name="project" value="ref:project"/>
+            <Arg name="foregroundProvisioning" value="ref:foregroundProvisioning"/>
+            <Arg name="trace" value="ref:trace"/>
+            <Arg name="noTriggers" value="ref:noTriggers"/>
+            <Arg name="identityRequestId" value="ref:identityRequestId"/>
+            <Arg name="splitProvisioning" value="ref:splitProvisioning"/>
+            <Arg name="recompileBeforeProvisioning" value="!ref:foregroundProvisioning"/>
+            <Return name="retries" to="retries"/>
+            <Return name="project" to="project"/>
+            <WorkflowRef>
+              <Reference class="sailpoint.object.Workflow" name="Provision with retries"/>
+            </WorkflowRef>
+            <Transition to="Wait for Queued Items"/>
+          </Step>
+          <Step complete="true" icon="Task" name="Wait for Queued Items" posX="1074" posY="13">
+            <Arg name="project" value="ref:project"/>
+            <Arg name="splitProvisioning" value="ref:splitProvisioning"/>
+            <Arg name="trace" value="ref:trace"/>
+            <Return name="project" to="project"/>
+            <WorkflowRef>
+              <Reference class="sailpoint.object.Workflow" name="Check Status of queued items"/>
+            </WorkflowRef>
+            <Transition to="Post Provision"/>
+          </Step>
+          <Step complete="true" icon="Task" name="Post Provision" posX="1205" posY="13">
+            <Script>
+              <Source><![CDATA[
+        import sailpoint.api.ObjectUtil;
+        import sailpoint.tools.Util;
+        import sailpoint.object.ProvisioningProject;
+
+        if ( approvalSet != null ) {
+            // Set state to pending
+            approvalSet.initializeProvisioningState();
+            if ( Util.otob(trace) ) {
+                 System.out.println("ApprovalSet:\n" + approvalSet.toXml());
+            }
+        }
+        if ( project != null ) {
+            if ( Util.otob(trace) ) {
+                 // clone and scrub the project so passwords are not visible
+                 ProvisioningProject clonedProject = project.deepCopy(wfcontext.getSailPointContext());
+                 ObjectUtil.scrubPasswords(clonedProject);
+                 System.out.println("Project Executed in identitiy:\n" + clonedProject.toXml());
+            }
+        }
+      ]]></Source>
+            </Script>
+            <Transition to="Manual Actions"/>
+          </Step>
+          <Step condition="script:project.getUnmanagedPlan() != null" icon="Approval" name="Manual Actions" posX="1316" posY="13">
+            <Approval mode="parallelPoll" originalOwner="rule:Build Manual Action Approvals" renderer="lcmManualActionsRenderer.xhtml" send="identityDisplayName,identityName,policyViolations" started="true">
+              <AfterScript>
+                <Source><![CDATA[
+          
+          import sailpoint.object.ApprovalSet;
+          import sailpoint.object.ApprovalItem;
+          import sailpoint.object.WorkItem;
+          import sailpoint.object.WorkItem;
+          import sailpoint.workflow.IdentityRequestLibrary;
+          import sailpoint.workflow.IdentityLibrary;
+          import sailpoint.tools.Util;
+
+          if (item == null) {
+              // must not be a leaf approval...
+              return;
+          }
+
+          // mark all of the items finished once the item is complete
+          ApprovalSet set = (ApprovalSet)item.get("approvalSet");
+          if ( set != null ) {
+              List approvalItems = set.getItems();
+              for ( ApprovalItem approvalItem : approvalItems ) {
+                  approvalItem.setState(WorkItem.State.Finished);
+                  // update identity request provisioning state
+                  IdentityRequestLibrary.updateIdentityRequestItemProvisioningState(approvalItem, wfcontext);
+              }
+          }
+          
+          //save unmanaged plan as ProvisioningRequest
+          if ( Util.otob(saveUnmanagedPlan) ) {
+              if( ( Util.otob(saveUnmanagedPlan_WithProjectArgument) ) && ( project != null ) ) {
+                  IdentityLibrary.saveUnmanagedPlan(wfcontext, project);
+              } else {
+                  IdentityLibrary.saveUnmanagedPlan(wfcontext);
+              }
+          }
+          
+          // Audit the manual change
+          auditManualAction(item);
+          
+        ]]></Source>
+              </AfterScript>
+              <Arg name="project" value="ref:project"/>
+              <Arg name="workItemRequester" value="$(launcher)"/>
+              <Arg name="workItemDescription" value="Manual Changes requested for User: $(identityDisplayName)"/>
+              <Arg name="workItemPriority" value="ref:workItemPriority"/>
+              <Arg name="workItemType" value="ManualAction"/>
+              <Arg name="workItemNotificationTemplate" value="ref:manualActionsEmailTemplate"/>
+              <Arg name="saveUnmanagedPlan_WithProjectArgument" value="ref:saveUnmanagedPlan_WithProjectArgument"/>
+              <Approval originalOwner="&quot;spadmin&quot;" owner="spadmin" startDate="1755611480176" started="true" workItemDescription="Manual Changes requested for User: Aaron Stanley" workItemId="c0a81d8998c11a508198c299403410c5" workItemType="ManualAction">
+                <ApprovalSet>
+                  <ApprovalItem application="HR2" nativeIdentity="EMP00741" operation="Enable"/>
+                </ApprovalSet>
+                <Arg name="workItemTargetClass" value="sailpoint.object.Identity"/>
+                <Arg name="workItemTargetName" value="Aaron Stanley"/>
+              </Approval>
+            </Approval>
+            <Transition to="end"/>
+          </Step>
+          <Step icon="Stop" name="end" posX="1419" posY="13"/>
+          <Attributes>
+            <Map>
+              <entry key="approvalScheme"/>
+              <entry key="approvalSet"/>
+              <entry key="fallbackApprover" value="spadmin"/>
+              <entry key="foregroundProvisioning" value="true"/>
+              <entry key="formTemplate" value="Identity Update"/>
+              <entry key="identityDisplayName" value="Aaron Stanley"/>
+              <entry key="identityName" value="Aaron Stanley"/>
+              <entry key="identityRequestId" value="0000000849"/>
+              <entry key="launcher" value="Scheduler"/>
+              <entry key="manualActionsEmailTemplate" value="Pending Manual Changes"/>
+              <entry key="noTriggers"/>
+              <entry key="optimisticProvisioning" value="false"/>
+              <entry key="plan"/>
+              <entry key="policyScheme" value="none"/>
+              <entry key="project">
+                <value>
+                  <ProvisioningProject identity="Aaron Stanley">
+                    <Attributes>
+                      <Map>
+                        <entry key="disableRetryRequest">
+                          <value>
+                            <Boolean>true</Boolean>
+                          </value>
+                        </entry>
+                        <entry key="identityRequestId" value="0000000849"/>
+                        <entry key="noLocking">
+                          <value>
+                            <Boolean>true</Boolean>
+                          </value>
+                        </entry>
+                        <entry key="optimisticProvisioning" value="false"/>
+                        <entry key="requester" value="Scheduler"/>
+                        <entry key="source" value="LCM"/>
+                      </Map>
+                    </Attributes>
+                    <MasterPlan>
+                      <ProvisioningPlan>
+                        <AccountRequest application="WebServiceApplication-Eshiam" nativeIdentity="???" op="Enable"/>
+                        <AccountRequest application="WebServiceApplication-Eshiam" nativeIdentity="EMP00741" op="Enable"/>
+                        <AccountRequest application="WebServicesTestApplication3" nativeIdentity="EMP00741" op="Enable"/>
+                        <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Aaron Stanley,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Enable"/>
+                        <AccountRequest application="HR2" nativeIdentity="EMP00741" op="Enable"/>
+                        <Attributes>
+                          <Map>
+                            <entry key="identityRequestId" value="0000000849"/>
+                            <entry key="requester" value="Scheduler"/>
+                            <entry key="source" value="LCM"/>
+                          </Map>
+                        </Attributes>
+                      </ProvisioningPlan>
+                    </MasterPlan>
+                    <ProvisioningPlan nativeIdentity="Aaron Stanley" targetIntegration="ActiveDirectory" trackingId="fca2f108e3dc46a39344c60a0ef766f6">
+                      <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Aaron Stanley,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Enable" targetIntegration="ActiveDirectory">
+                        <Attributes>
+                          <Map>
+                            <entry key="provisioningTransactionId" value="c0a81d8998c11a508198c26b5fb00d97"/>
+                          </Map>
+                        </Attributes>
+                        <ProvisioningResult status="committed"/>
+                      </AccountRequest>
+                      <Attributes>
+                        <Map>
+                          <entry key="identityRequestId" value="0000000849"/>
+                          <entry key="requester" value="Scheduler"/>
+                          <entry key="source" value="LCM"/>
+                        </Map>
+                      </Attributes>
+                    </ProvisioningPlan>
+                    <ProvisioningPlan nativeIdentity="Aaron Stanley" targetIntegration="WebServiceApplication-Eshiam" trackingId="5d4ed2c815034b79a7c5026506bd50c5">
+                      <AccountRequest application="WebServiceApplication-Eshiam" nativeIdentity="???" op="Enable">
+                        <Attributes>
+                          <Map>
+                            <entry key="provisioningTransactionId" value="c0a81d8998c11a508198c26b61610d9e"/>
+                          </Map>
+                        </Attributes>
+                        <ProvisioningResult status="failed">
+                          <Errors>
+                            <Message key="Exception occurred while performing 'Enable' operation on identity '???':  Error: No configuration found for'Enable Account'. Please add at least one operation and try again." type="Error"/>
+                          </Errors>
+                        </ProvisioningResult>
+                      </AccountRequest>
+                      <AccountRequest application="WebServiceApplication-Eshiam" nativeIdentity="EMP00741" op="Enable">
+                        <Attributes>
+                          <Map>
+                            <entry key="provisioningTransactionId" value="c0a81d8998c11a508198c26b61880d9f"/>
+                          </Map>
+                        </Attributes>
+                        <ProvisioningResult status="failed">
+                          <Errors>
+                            <Message key="Exception occurred while performing 'Enable' operation on identity 'EMP00741':  Error: No configuration found for'Enable Account'. Please add at least one operation and try again." type="Error"/>
+                          </Errors>
+                        </ProvisioningResult>
+                      </AccountRequest>
+                      <Attributes>
+                        <Map>
+                          <entry key="identityRequestId" value="0000000849"/>
+                          <entry key="requester" value="Scheduler"/>
+                          <entry key="source" value="LCM"/>
+                        </Map>
+                      </Attributes>
+                      <ProvisioningResult status="failed"/>
+                    </ProvisioningPlan>
+                    <ProvisioningPlan nativeIdentity="Aaron Stanley" targetIntegration="WebServicesTestApplication3" trackingId="01f5ef27bd31490793e5229390f02706">
+                      <AccountRequest application="WebServicesTestApplication3" nativeIdentity="EMP00741" op="Enable" targetIntegration="WebServicesTestApplication3">
+                        <Attributes>
+                          <Map>
+                            <entry key="provisioningTransactionId" value="c0a81d8998c11a508198c26b62340da0"/>
+                          </Map>
+                        </Attributes>
+                        <ProvisioningResult status="committed"/>
+                      </AccountRequest>
+                      <Attributes>
+                        <Map>
+                          <entry key="identityRequestId" value="0000000849"/>
+                          <entry key="requester" value="Scheduler"/>
+                          <entry key="source" value="LCM"/>
+                        </Map>
+                      </Attributes>
+                      <ProvisioningResult status="committed"/>
+                    </ProvisioningPlan>
+                    <ProvisioningPlan trackingId="5fbd6ad473f845e781f678522f91f8b7">
+                      <AccountRequest application="HR2" nativeIdentity="EMP00741" op="Enable"/>
+                      <Attributes>
+                        <Map>
+                          <entry key="identityRequestId" value="0000000849"/>
+                          <entry key="requester" value="Scheduler"/>
+                          <entry key="source" value="LCM"/>
+                        </Map>
+                      </Attributes>
+                    </ProvisioningPlan>
+                    <ProvisioningTarget retain="true" role="ad_business_role">
+                      <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=Aaron Stanley,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                        <AccountInfo displayName="Aaron Stanley" nativeIdentity="CN=Aaron Stanley,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+                      </AccountSelection>
+                      <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ADX" doCreate="true" selection="CN=Aaron Stanley,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+                    </ProvisioningTarget>
+                  </ProvisioningProject>
+                </value>
+              </entry>
+              <entry key="recompile" value="true"/>
+              <entry key="retries">
+                <value>
+                  <Integer>0</Integer>
+                </value>
+              </entry>
+              <entry key="saveUnmanagedPlan" value="true"/>
+              <entry key="saveUnmanagedPlan_WithProjectArgument" value="false"/>
+              <entry key="sessionOwner" value="Scheduler"/>
+              <entry key="splitProvisioning"/>
+              <entry key="trace" value="false"/>
+              <entry key="workItemComments"/>
+              <entry key="workItemPriority" value="Normal"/>
+            </Map>
+          </Attributes>
+        </Workflow>
+      </WorkflowCase>
+    </Step>
+    <Step catches="complete" condition="script:!((size(policyViolations) &gt; 0 ) &amp;&amp; (policyScheme.equals(&quot;fail&quot;)))" icon="Task" name="Finalize" posX="410" posY="10">
+      <Arg name="approvalSet" value="ref:cart"/>
+      <Arg name="workItemPriority" value="ref:workItemPriority"/>
+      <Arg name="project" value="ref:project"/>
+      <Arg name="trace" value="ref:trace"/>
+      <Arg name="identityRequestId" value="ref:identityRequestId"/>
+      <Arg name="identityName" value="ref:identityName"/>
+      <WorkflowRef>
+        <Reference class="sailpoint.object.Workflow" name="Identity Request Finalize"/>
+      </WorkflowRef>
+      <Transition to="end"/>
+    </Step>
+    <Step icon="Stop" name="end" posX="530" posY="10"/>
+    <Attributes>
+      <Map>
+        <entry key="cart">
+          <value>
+            <ApprovalSet>
+              <ApprovalItem application="WebServiceApplication-Eshiam" nativeIdentity="???" operation="Enable"/>
+              <ApprovalItem application="WebServiceApplication-Eshiam" nativeIdentity="EMP00741" operation="Enable"/>
+              <ApprovalItem application="WebServicesTestApplication3" nativeIdentity="EMP00741" operation="Enable"/>
+              <ApprovalItem application="ActiveDirectory" nativeIdentity="CN=Aaron Stanley,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Enable"/>
+              <ApprovalItem application="HR2" nativeIdentity="EMP00741" operation="Enable"/>
+            </ApprovalSet>
+          </value>
+        </entry>
+        <entry key="fallbackApprover" value="spadmin"/>
+        <entry key="foregroundProvisioning" value="true"/>
+        <entry key="identityDisplayName" value="Aaron Stanley"/>
+        <entry key="identityName" value="Aaron Stanley"/>
+        <entry key="identityRequestId" value="0000000849"/>
+        <entry key="launcher" value="Scheduler"/>
+        <entry key="optimisticProvisioning" value="false"/>
+        <entry key="plan">
+          <value>
+            <ProvisioningPlan>
+              <AccountRequest application="WebServiceApplication-Eshiam" nativeIdentity="???" op="Enable"/>
+              <AccountRequest application="WebServiceApplication-Eshiam" nativeIdentity="EMP00741" op="Enable"/>
+              <AccountRequest application="WebServicesTestApplication3" nativeIdentity="EMP00741" op="Enable"/>
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Aaron Stanley,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Enable"/>
+              <AccountRequest application="HR2" nativeIdentity="EMP00741" op="Enable"/>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000849"/>
+                  <entry key="requester" value="Scheduler"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+            </ProvisioningPlan>
+          </value>
+        </entry>
+        <entry key="policyViolations"/>
+        <entry key="project">
+          <value>
+            <ProvisioningProject identity="Aaron Stanley">
+              <Attributes>
+                <Map>
+                  <entry key="disableRetryRequest">
+                    <value>
+                      <Boolean>true</Boolean>
+                    </value>
+                  </entry>
+                  <entry key="identityRequestId" value="0000000849"/>
+                  <entry key="noLocking">
+                    <value>
+                      <Boolean>true</Boolean>
+                    </value>
+                  </entry>
+                  <entry key="optimisticProvisioning" value="false"/>
+                  <entry key="requester" value="Scheduler"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <MasterPlan>
+                <ProvisioningPlan>
+                  <AccountRequest application="WebServiceApplication-Eshiam" nativeIdentity="???" op="Enable"/>
+                  <AccountRequest application="WebServiceApplication-Eshiam" nativeIdentity="EMP00741" op="Enable"/>
+                  <AccountRequest application="WebServicesTestApplication3" nativeIdentity="EMP00741" op="Enable"/>
+                  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Aaron Stanley,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Enable"/>
+                  <AccountRequest application="HR2" nativeIdentity="EMP00741" op="Enable"/>
+                  <Attributes>
+                    <Map>
+                      <entry key="identityRequestId" value="0000000849"/>
+                      <entry key="requester" value="Scheduler"/>
+                      <entry key="source" value="LCM"/>
+                    </Map>
+                  </Attributes>
+                </ProvisioningPlan>
+              </MasterPlan>
+              <ProvisioningPlan nativeIdentity="Aaron Stanley" targetIntegration="ActiveDirectory" trackingId="fca2f108e3dc46a39344c60a0ef766f6">
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Aaron Stanley,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Enable" targetIntegration="ActiveDirectory">
+                  <Attributes>
+                    <Map>
+                      <entry key="provisioningTransactionId" value="c0a81d8998c11a508198c26b5fb00d97"/>
+                    </Map>
+                  </Attributes>
+                  <ProvisioningResult status="committed"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000849"/>
+                    <entry key="requester" value="Scheduler"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+              <ProvisioningPlan nativeIdentity="Aaron Stanley" targetIntegration="WebServiceApplication-Eshiam" trackingId="5d4ed2c815034b79a7c5026506bd50c5">
+                <AccountRequest application="WebServiceApplication-Eshiam" nativeIdentity="???" op="Enable">
+                  <Attributes>
+                    <Map>
+                      <entry key="provisioningTransactionId" value="c0a81d8998c11a508198c26b61610d9e"/>
+                    </Map>
+                  </Attributes>
+                  <ProvisioningResult status="failed">
+                    <Errors>
+                      <Message key="Exception occurred while performing 'Enable' operation on identity '???':  Error: No configuration found for'Enable Account'. Please add at least one operation and try again." type="Error"/>
+                    </Errors>
+                  </ProvisioningResult>
+                </AccountRequest>
+                <AccountRequest application="WebServiceApplication-Eshiam" nativeIdentity="EMP00741" op="Enable">
+                  <Attributes>
+                    <Map>
+                      <entry key="provisioningTransactionId" value="c0a81d8998c11a508198c26b61880d9f"/>
+                    </Map>
+                  </Attributes>
+                  <ProvisioningResult status="failed">
+                    <Errors>
+                      <Message key="Exception occurred while performing 'Enable' operation on identity 'EMP00741':  Error: No configuration found for'Enable Account'. Please add at least one operation and try again." type="Error"/>
+                    </Errors>
+                  </ProvisioningResult>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000849"/>
+                    <entry key="requester" value="Scheduler"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <ProvisioningResult status="failed"/>
+              </ProvisioningPlan>
+              <ProvisioningPlan nativeIdentity="Aaron Stanley" targetIntegration="WebServicesTestApplication3" trackingId="01f5ef27bd31490793e5229390f02706">
+                <AccountRequest application="WebServicesTestApplication3" nativeIdentity="EMP00741" op="Enable" targetIntegration="WebServicesTestApplication3">
+                  <Attributes>
+                    <Map>
+                      <entry key="provisioningTransactionId" value="c0a81d8998c11a508198c26b62340da0"/>
+                    </Map>
+                  </Attributes>
+                  <ProvisioningResult status="committed"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000849"/>
+                    <entry key="requester" value="Scheduler"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <ProvisioningResult status="committed"/>
+              </ProvisioningPlan>
+              <ProvisioningPlan trackingId="5fbd6ad473f845e781f678522f91f8b7">
+                <AccountRequest application="HR2" nativeIdentity="EMP00741" op="Enable"/>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000849"/>
+                    <entry key="requester" value="Scheduler"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+              <ProvisioningTarget retain="true" role="ad_business_role">
+                <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=Aaron Stanley,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                  <AccountInfo displayName="Aaron Stanley" nativeIdentity="CN=Aaron Stanley,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+                </AccountSelection>
+                <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ADX" doCreate="true" selection="CN=Aaron Stanley,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+              </ProvisioningTarget>
+            </ProvisioningProject>
+          </value>
+        </entry>
+        <entry key="sessionOwner" value="Scheduler"/>
+        <entry key="source" value="LCM"/>
+        <entry key="taskResultId" value="c0a81d8998c11a508198c26b35c90d8d"/>
+        <entry key="trace" value="false"/>
+        <entry key="trigger">
+          <value>
+            <IdentityTrigger handler="sailpoint.api.WorkflowTriggerHandler" name="NativeChangeEvent" type="NativeChange">
+              <Owner>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Owner>
+              <HandlerParameters>
+                <Attributes>
+                  <Map>
+                    <entry key="businessProcess"/>
+                    <entry key="identityProcessingThreshold"/>
+                    <entry key="identityProcessingThresholdType"/>
+                    <entry key="workflow" value="Lifecycle Event - Reinstate"/>
+                  </Map>
+                </Attributes>
+              </HandlerParameters>
+            </IdentityTrigger>
+          </value>
+        </entry>
+        <entry key="workItemPriority" value="Normal"/>
+      </Map>
+    </Attributes>
+  </Workflow>
+</WorkflowCase>

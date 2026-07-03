@@ -1,0 +1,1805 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Rule_VSNT_Workflow_RuleLibrary">
+  <Source><![CDATA[
+
+  import java.util.ArrayList;
+  import java.util.Arrays;
+  import sailpoint.tools.Util;
+  import java.util.List;
+  import java.util.Iterator;
+  import sailpoint.object.Filter;
+  import sailpoint.object.Application;
+  import sailpoint.object.Form;
+  import sailpoint.object.Form.Section;
+  import sailpoint.object.Form.Button;
+  import sailpoint.object.Field;
+  import sailpoint.object.CustomGlobal;
+  import sailpoint.object.QueryOptions;
+  import sailpoint.object.Identity;
+  import sailpoint.object.Link;
+  import sailpoint.object.Field;
+  import org.apache.log4j.Level;
+  import sailpoint.object.Workflow; 
+  import sailpoint.api.Workflower;
+  import sailpoint.object.WorkflowLaunch;
+  import org.apache.log4j.Logger;
+  import javax.faces.context.FacesContext;
+  import javax.servlet.http.HttpSession;
+  import javax.faces.application.FacesMessage;
+  import sailpoint.object.TaskResult;
+  import javax.naming.AuthenticationException;
+  import sailpoint.connector.ConnectorFactory;
+  import sailpoint.connector.Connector;
+  import sailpoint.object.ResourceObject;
+  import sailpoint.tools.CloseableIterator;
+  import sailpoint.tools.Message;
+  import sailpoint.api.ManagedAttributer;
+  import sailpoint.transformer.IdentityTransformer;
+  import java.util.Map;
+  import java.util.HashMap;
+  import sailpoint.object.Custom;
+  import sailpoint.object.Attributes;
+  import sailpoint.object.Schema;
+  import sailpoint.api.ObjectUtil;
+  import sailpoint.object.ManagedAttribute;
+  import sailpoint.api.IdentityService;
+  import java.text.SimpleDateFormat;  
+  import java.util.Date;
+  import java.util.TimeZone;
+  import java.text.DateFormat;   
+  import sailpoint.object.AuditEvent;
+  import sailpoint.server.Auditor;
+  import java.time.Instant;
+  import java.time.LocalDate;
+  import java.time.ZoneId;
+  import java.time.ZonedDateTime;
+  import java.util.Calendar;
+
+  import org.springframework.http.HttpEntity;
+  import org.springframework.http.HttpHeaders;
+  import org.springframework.http.HttpMethod;
+  import org.springframework.http.ResponseEntity;
+  import org.springframework.web.client.HttpStatusCodeException;
+  import org.springframework.web.client.RestTemplate;
+  import java.io.BufferedReader;
+  import java.util.Base64;
+  import java.util.Locale;
+  import org.json.simple.JSONObject;
+  import org.json.simple.parser.JSONParser;
+  import org.json.simple.JSONArray;
+  import sailpoint.api.IdentityService;
+  import sailpoint.object.Filter;
+  import sailpoint.object.QueryOptions;
+  import sailpoint.object.Filter.MatchMode;
+  import sailpoint.tools.GeneralException;
+  import java.util.Random;
+  import sailpoint.object.ProvisioningPlan;
+  import sailpoint.object.IdentityEntitlement;
+
+  Logger logger = Logger.getLogger("rule.Rule_NBCU_Workflow_RuleLibrary");
+  boolean debugEnabled = logger.isDebugEnabled();
+  String ARGUMENT_PREFIX = "const#";
+  String Application_Custom_Object = "Custom_VSNT_Application_Data";
+  String CUSTOM_NBCU_VENDOR_NAME = "Custom_NBCU_Vendor_Name";
+  String CUSTOM_NBCU_LOCATION_NAME = "Custom_NBCU_Location_Data";
+  String NDI_APPLICATION_NAME = "Application_NBCU_LDAP_NDI";
+
+  /**
+  *Needed for Versant
+   * Method to get custom object Map based on name
+   * @param customObjectName
+   * @return customObjectMap
+   */
+  public Map getMap(String customObjectName) {
+
+    logger.info("Started getMap : "+customObjectName);
+
+    return getCustomObjectMap(customObjectName);
+
+  }
+
+  /**
+   * Takes the name of a custom object and returns the contents in the form of a map.
+   * Basically, this just gets the parent map contained within the Attributes entry
+   * of the specified custom object.
+   * @param customObjectName
+   * @return customObjMap
+   */
+  public Map getCustomObjectMap(String customObjectName) {
+
+    logger.info("Started getCustomObjectMap..."+customObjectName);
+
+    Map customObjMap = new HashMap();
+    try{
+      if(Util.isNotNullOrEmpty(customObjectName)) {
+        Custom cust = context.getObject(Custom.class, customObjectName);
+        if(null != cust) {
+          customObjMap = cust.getAttributes().getMap();
+          context.decache(cust);
+        }
+        else {
+          throw new Exception("Unable to get an IIQ custom object named " + customObjectName);
+        }
+      }
+      else {
+        throw new Exception("customObjectName is invalid. customObjectName = " + customObjectName);
+      }
+    }
+    catch(Exception e){
+      logger.error("Exception in getting custom object map",e);
+      throw e;
+    }
+    return customObjMap;
+  }
+
+
+  /**
+     * create the confirmation form
+     * @param displayForm - the form filled by the requester
+     * @param formModel - contains key-value pair
+     * @return Confirmation Form object
+     */
+  public Form getConfirmationForm(String displayFormName, String useCaseName, Map formModel) {
+    logger.debug("Started Method : getConfirmationForm");
+    Form confirmationForm = null;
+    List displayFormFields = null;
+    String displayName = null;
+    String name = null;
+    String type = null;
+    String displayType = null;
+    int span = 1;
+    boolean isMulti;
+    Form displayForm =context.getObjectByName(Form.class,displayFormName);
+
+    confirmationForm = new Form();
+    Section confirmationFormSection = new Section();
+    confirmationFormSection.setColumns(2);
+    confirmationForm.setTitle("Confirmation Form");
+    List formSectionNames = new ArrayList();
+
+    for(int i=0; i<=10; i++){
+      Form.Section secName = displayForm.getSection(i);
+      if(null!=secName){
+        formSectionNames.add(secName.getName());
+      }else{
+        break;
+      }
+    }
+    Map buttons = new HashMap();
+    buttons.put("Back","back");
+    buttons.put("Cancel","cancel");
+    buttons.put("Confirm","next");
+
+    useCaseName = useCaseName + " Review";
+    confirmationFormSection.setLabel(useCaseName);
+    for(String section:formSectionNames) {
+      displayFormFields = displayForm.getSection(section).getFields();
+      if(displayFormFields!=null) {
+        for (Field displayFormField : displayFormFields) {
+          if(formModel.get(displayFormField.getName())!=null){
+            Field confirmationFormField = new Field();
+            displayName = displayFormField.getDisplayName();
+            name = displayFormField.getName();
+            type = displayFormField.getType();
+            displayType = displayFormField.getDisplayType();
+            span = displayFormField.getColumnSpan();
+            isMulti = displayFormField.isMulti();
+            if(isMulti) {
+              confirmationFormField.setMulti(isMulti);
+            }
+            confirmationFormField.setType(type);
+            confirmationFormField.setDisplayName(displayName);
+            confirmationFormField.setName(name);
+            confirmationFormField.setColumnSpan(span);
+            confirmationFormField.setDisplayType(displayType);
+            confirmationFormField.setReadOnly(true);
+            confirmationFormSection.add(confirmationFormField);
+          }
+        }
+      }
+    }
+    for (Map.Entry entry : buttons.entrySet()) {
+      Button button = new Button(entry.getKey(),entry.getValue());
+      confirmationForm.add(button);
+    }
+    confirmationForm.add(confirmationFormSection);
+    logger.debug("Method Exit : getConfirmationForm");
+    return confirmationForm;
+  }
+
+
+
+  /*
+   * Method to display Submit/Cancellation Message for the request.
+   */
+  public void displayMessage(String infoMessage) {
+
+    logger.info("Started displayMessage");
+
+    HttpSession httpSession = null;
+
+    try{
+      if(CustomGlobal.get("UserSession")!=null){
+        httpSession= (HttpSession)CustomGlobal.get("UserSession");
+        if(httpSession!=null){
+          if (debugEnabled) {
+            logger.debug("Requester's Session is not null");
+          }
+          if (debugEnabled) {
+            logger.debug("Requester's Session is working...............");
+          }
+          FacesMessage myMessage = new FacesMessage(FacesMessage.SEVERITY_INFO, infoMessage, "This is ignored");
+          List<FacesMessage> myMessages = new ArrayList<FacesMessage>();
+          myMessages.add(myMessage);
+          // Overwrite current message list
+          httpSession.setAttribute("sailpoint.web.PageCodeBase.sessionMessages", myMessages);
+          if (debugEnabled) {
+            logger.debug("End of displayMessage");
+          }
+        }
+        else{
+          if (debugEnabled) {
+            logger.debug("Requester's Session is Null");
+          }
+        }
+        CustomGlobal.remove("UserSession");
+      }
+      else{
+        if (debugEnabled) {
+          logger.debug("CustomGlobal Object is Null");
+        }
+      }
+    }
+    catch(Exception e){
+      logger.error("Exception in display message",e);
+      throw e;
+    }
+    logger.info("Method Exit: displayMessage");
+  }
+
+  /**
+
+                * Launch workflow Subprocess
+
+                *@param wfArguments - workflow Subprocess input Variables
+
+                **/
+
+  public void initiateWorkflow(String launchWfName, Map wfArguments){
+
+    logger.debug("Starting method initiateWorkflow");
+    System.out.println("launchWfName ::::; "+launchWfName);
+    System.out.println("wfArguments ::::; "+wfArguments);
+    if(null != wfArguments){
+
+      WorkflowLaunch wfLaunch = new WorkflowLaunch();
+
+      if(null != launchWfName){
+
+        Workflow wf = context.getObjectByName(Workflow.class, launchWfName);
+        System.out.println("wf ::::; "+wf);
+        if(null != wf){
+          Workflower workflower = new Workflower(context);
+          String identityName = wfArguments.get("identityName");
+          String updatedLaunchWfName = Util.isNotNullOrEmpty(identityName)? (String) launchWfName+ " - "+identityName: (String)launchWfName;
+          logger.debug("Launching the workflow "+updatedLaunchWfName);
+          System.out.println("Launching the workflow "+updatedLaunchWfName);
+          WorkflowLaunch launch = workflower.launchSafely(wf, updatedLaunchWfName, wfArguments);
+        }
+      }
+    }
+    logger.debug("Ending method initiateWorkflow");
+  }
+
+
+
+  /**
+  *needed for versant
+   * Method to initialize formModel
+   * @param workflow - workflow
+   * @param operation - match operation from custom object ex. create, edit
+   * @param useCase - Attribute Name
+   * @return formModel
+   */
+  public HashMap initializeModelForOperation(Workflow workflow, String operation, String useCase) {
+
+    logger.info("Started initialize formModel : "+useCase);
+
+
+    Map formModel = new HashMap();
+    if(workflow.get("requesterName")!=null)
+      formModel.put("requester", workflow.get("requesterName"));
+    else
+      formModel.put("requester", workflow.get("requester"));
+    formModel.put("timeZone",workflow.get("httpSession").getAttribute("timeZone").getID());
+    formModel.put("transformerClass", "sailpoint.transformer.IdentityTransformer");
+    formModel.put("transformerOptions", "sailpoint.transformer.IdentityTransformerOptions");
+    formModel.put("operation", operation);
+    formModel.put("useCase", useCase);
+    // formModel.put("customVSNTWrapperConfigMap", workflow.get("customVSNTWrapperConfigMap") );
+    // formModel.put("customVSNTWrapperForms", workflow.get("customVSNTWrapperForms") );
+
+    logger.info("Method Exit: initializeModelForOperation");
+
+
+    return formModel;
+  }
+
+
+  //Returns a list of applications to be selected for functional accounts
+  public List getApplicationList() {
+
+    logger.info("started getApplicationList : ");
+
+    List applicationList = new ArrayList();
+    String value = null;
+    //return application list from custom file and attach the id as well so we can search with both
+    try{
+      Map map = getMap(Application_Custom_Object);
+      Map objectMap = map.get("SnowAppDetails");
+      for (Map.Entry entry : objectMap.entrySet())  {
+        value = (String) entry.getValue();
+        applicationList.add(value.concat(" ("+entry.getKey()+")"));
+
+      }
+
+    }catch (Exception e) {
+      logger.error("Exception in getAppicationList",e);
+      throw e;
+    }
+    logger.info("Method Exit: getAppicationList");
+
+    return applicationList;
+  }
+
+
+  public void UpdateRequiredWorkflowAttributesForServiceAccount(Workflow workflow, String appid, String appName, String requesterName){
+
+    import sailpoint.object.Attributes;
+    import sailpoint.object.Identity;
+    import java.util.HashMap;
+    import java.util.Date;
+    import java.util.List;
+    import java.text.DateFormat;
+    import java.text.SimpleDateFormat;
+    import sailpoint.object.*;
+
+
+    logger.error("Workflow_VSNT_ServceAccount_Creation: ---------------Starting Workflow - Workflow_VSNT_ServceAccount_Creation---------------");
+    logger.error("Workflow_VSNT_ServceAccount_Creation: ---------------requesterName -----------------"+requesterName);
+
+    if ((appid != null) && (appName != null))
+    {
+      firstName = appName;
+      lastName = appid;
+      workflow.put("firstName",appName);
+      workflow.put("lastName",appid);
+    }
+
+    Identity requester = context.getObjectByName(Identity.class,requesterName);
+    String requesterEmail = requester.getEmail();
+    requesterFullName = requester.getLastname()+", "+requester.getFirstname();
+    requestedBy = requesterFullName + "(" + requesterName + ")";
+
+    //requesteeFullName =lastName+", "+firstName;
+    logger.error("Workflow_VSNT_ServceAccount_Creation: --------------Before   managerDetailsMap --------------");
+    Map managerDetailsMap = createManagerDetailsMapForServiceAccount(workflow, managersso);
+    logger.error("Workflow_VSNT_ServceAccount_Creation: --------------managerDetailsMap --------------"+managerDetailsMap);
+    workflow.put("managerDetailsMap",managerDetailsMap);
+    if(requesterEmail != null)
+      workflow.put("requesterEmail",requesterEmail);
+    else
+      workflow.put("requesterEmail","idm.auto-mailer@nbcuni.com");
+    //workflow.put("requesteeFullName",requesteeFullName);
+    //workflow.put("requestedBy",requestedBy);
+
+    logger.error("Workflow_VSNT_ServceAccount_Creation: --------------requesterFullName --------------"+requesterFullName);
+
+    logger.error("Workflow_VSNT_ServceAccount_Creation: --------------requesterEmail ------------------"+requesterEmail);
+
+    logger.error("Workflow_VSNT_ServceAccount_Creation: --------------managerName --------------"+managerName);
+
+    logger.error("Workflow_VSNT_ServceAccount_Creation: --------------managerEmail ------------------"+managerEmail);
+
+
+    String reminderCCAddress="";
+    if (requesterEmail != null){
+      reminderCCAddress= requesterEmail;
+    }
+    else
+      reminderCCAddress = "idm.auto-mailer@nbcuni.com";
+
+    String rejectionToAddress="";
+    if (requesterEmail !=null){
+      rejectionToAddress=rejectionToAddress +requesterEmail;
+    }
+    if (null!=managerDetailsMap && null!=managerDetailsMap.get("managerEmail")){
+      rejectionToAddress=managerDetailsMap.get("managerEmail")+","+rejectionToAddress;
+    }
+
+    logger.error("Workflow_VSNT_ServceAccount_Creation: --------------reminderCCAddress ------------------"+reminderCCAddress);
+
+    logger.error("Workflow_VSNT_ServceAccount_Creation: --------------rejectionToAddress ------------------"+rejectionToAddress);
+
+    workflow.put("reminderCCAddress",reminderCCAddress);
+    workflow.put("rejectionToAddress",rejectionToAddress);
+    workflow.put("requesterFullName",requesterFullName);
+    // workflow.put("firstName",firstName);
+    // workflow.put("lastName",lastName);
+    logger.error("Workflow_VSNT_ServceAccount_Creation: 1   :::");
+    finalFirstName = firstName.replaceAll("[, ]","");
+    finalLastName = lastName.replaceAll("[, ]","");
+
+    workflow.put("finalFirstName",finalFirstName);
+    workflow.put("finalLastName",finalLastName);
+    logger.error("Workflow_VSNT_ServceAccount_Creation: 2   :::");
+    //String drupalToSailPointRequestDate = null ;
+
+    // DateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy HH:mm");
+    // Date date = new Date();
+    // drupalToSailPointRequestDate = dateFormat.format(date);
+    // workflow.put("drupalToSailPointRequestDate",drupalToSailPointRequestDate);
+
+    // setting flag as false for future use
+    String provFlag = "false";
+    String apprFlag = "false";
+    workflow.put("provFlag",provFlag);
+    workflow.put("apprFlag",apprFlag);
+
+    logger.error("Workflow_VSNT_ServceAccount_Creation: End method:::");
+
+  }
+
+  public Map createManagerDetailsMapForServiceAccount(Workflow workflow, String managersso) {
+
+    import sailpoint.object.Application;
+    import sailpoint.object.Identity;
+    import sailpoint.object.Link;
+    import java.util.HashMap;
+    import java.util.Map;
+    import sailpoint.object.Custom;
+    import java.util.ArrayList;
+
+    import sailpoint.object.*;
+
+    Boolean linkFlag= false;
+    logger.error("Starting : createManagerDetailsMapForServiceAccount ");
+
+    Identity managerObject = context.getObjectByName(Identity.class,managersso);
+    Map managerDetailsMap = null;
+    if (null!=managerObject){
+      managerDetailsMap = new HashMap();
+      managerDetailsMap.put("managerName", managerObject.getName());
+      managerDetailsMap.put("mngrFirstName", managerObject.getFirstname());
+      managerDetailsMap.put("mngrlastname", managerObject.getLastname());
+      managerDetailsMap.put("mngrname", managerObject.getAttribute("userName"));
+      managerDetailsMap.put("mngrDisplayName", managerObject.getAttribute("displayName"));
+      managerDetailsMap.put("mngrWorkCountry", managerObject.getAttribute("workCountry"));
+      logger.error("Starting : 1 ");
+
+      String managerEmail = managerObject.getEmail();
+      (managerEmail != null ? managerEmail : "idm.auto-mailer@nbcuni.com");
+      managerDetailsMap.put("managerEmail", managerEmail);
+      managerDetailsMap.put("managerFullName", managerObject.getLastname()+", "+managerObject.getFirstname());
+      managerDetailsMap.put("managerFullNameSSO",managerFullName + "(" + managersso + ")");
+      logger.error("Starting : 2 ");
+      Link links = managerObject.getLink(context.getObjectByName(Application.class, "Application_NBCU_HR"));
+      logger.error("Starting : 3 ");
+      if(links != null ){
+        logger.error("Starting : 4 ");
+        Map attributes= new HashMap();
+        attributes = links.getAttributes();
+        if(attributes != null)   {
+
+          if (attributes.get("C001_DEPARTMENT_NAME") != null)
+            managerDetailsMap.put("mngrdepartment", attributes.get("C001_DEPARTMENT_NAME").toString());
+          logger.error("Starting : 5 ");
+          if (attributes.get("C001_ORGID") != null)
+            managerDetailsMap.put("mngrorgid",attributes.get("C001_ORGID").toString());
+          logger.error("Starting : 6 ");
+          if (attributes.get("C001_BUSINESS_UNIT_ID") != null)
+            managerDetailsMap.put("mngrbusinessUnitId",attributes.get("C001_BUSINESS_UNIT_ID").toString());
+          else{
+            Custom customBusinessID = context.getObjectByName(Custom.class, "Custom_VSNT_ContractorBusinessID");
+            logger.error("Starting : 7 ");
+            Attributes attributes = customBusinessID.getAttributes();
+            Map businessIDMap=new HashMap();
+            String businessId = null;
+            businessIDMap = attributes.getMap();
+            logger.error("Starting : 8 ");
+            if((businessIDMap.get(managerOrgSegmentID)) != null)
+              businessId = businessIDMap.get(managerOrgSegmentID).toString();
+            logger.error("Starting : 9 ");
+            if(businessId != null){
+              managerDetailsMap.put("mngrbusinessUnitId",businessId.toString());
+              logger.error("Workflow_NBCU_ServceAccount_Creation: businessId Service Account Creation "+businessId.toString());
+            }
+            logger.error("Starting : 10 ");
+          }
+          logger.error("Starting : 1 ");
+          if (attributes.get("C001_PARENT_BIZ_ID") != null)
+            managerDetailsMap.put("mngrparentbusinessUnitId",attributes.get("C001_PARENT_BIZ_ID").toString());
+          else{
+            logger.error("Starting : 11 ");
+            Custom customBusinessID = context.getObjectByName(Custom.class, "Custom_VSNT_ContractorBusinessID");
+            Map businessIDMap=new HashMap();
+            Attributes attributes = customBusinessID.getAttributes();
+            String parentBusinessId = null;
+            businessIDMap = attributes.getMap();
+            logger.error("Starting : 12 ");
+            if((businessIDMap.get(managerOrgSegmentID))!= null)
+              parentBusinessId = businessIDMap.get(managerOrgSegmentID).toString();
+
+            if(parentBusinessId != null){
+              managerDetailsMap.put("mngrparentbusinessUnitId",parentBusinessId.toString());
+              logger.error("Workflow_NBCU_ServceAccount_Creation: parentBusinessId Service Account Creation "+parentBusinessId.toString());
+            }
+
+          }
+
+        }
+      }
+
+
+    }
+    return managerDetailsMap;
+
+  }
+
+  public void setInternationalFlagForServiceAccount(Workflow workflow) {
+
+    logger.error("setInternationalFlagForServiceAccount ::: ");
+    Map managerDetailsMap = workflow.get("managerDetailsMap");
+    logger.error("setInternationalFlagForServiceAccount :::managerDetailsMap :: "+managerDetailsMap);
+
+    String mngrWorkCountry = managerDetailsMap.get("mngrWorkCountry");
+    String mngrorgid = managerDetailsMap.get("mngrorgid");
+    String mngrbusinessUnitId = managerDetailsMap.get("mngrbusinessUnitId");
+    logger.error("setInternationalFlagForServiceAccount :::managerDetailsMap :: mngrWorkCountry " + mngrWorkCountry);
+    logger.error("setInternationalFlagForServiceAccount :::managerDetailsMap :: mngrorgid " + mngrorgid);
+    logger.error("setInternationalFlagForServiceAccount :::managerDetailsMap :: mngrbusinessUnitId " + mngrbusinessUnitId);
+    if (mngrorgid!=null && mngrorgid.equals("60000002")){
+      internationalflag = "true";
+    }
+    else if(mngrbusinessUnitId != null && mngrbusinessUnitId.equals("604200002")){
+      internationalflag = "true";
+    }
+    else if (mngrWorkCountry != "US" || mngrWorkCountry !="United States"){
+      internationalflag = "true";
+    }
+    else{
+      internationalflag = "false";
+    }
+    workflow.put("internationalflag",internationalflag);
+    logger.error("setInternationalFlagForServiceAccount :::END :: ");
+  }
+
+  public ProvisioningPlan createNDIProvPlanForServiceAccount(Workflow workflow) {
+    import sailpoint.object.QueryOptions;
+    import sailpoint.object.Filter;
+    import sailpoint.object.Link;
+    import sailpoint.api.IdentityService;
+    import sailpoint.api.Provisioner;
+    import sailpoint.provisioning.PlanCompiler;
+    import sailpoint.object.Application;
+    import sailpoint.object.Identity;
+    import sailpoint.object.ProvisioningPlan;
+    import sailpoint.object.ProvisioningPlan.ObjectRequest;
+    import sailpoint.object.ProvisioningPlan.AccountRequest;
+    import sailpoint.object.ProvisioningPlan.AttributeRequest;
+    import sailpoint.object.*;
+
+    logger.error("Workflow_NBCU_ServceAccount_Creation: plan Create_NDI_Provision_Plan :: Start ");
+
+    Identity identity = new Identity();
+    String NewID = workflow.get("NewID");
+    String firstName = workflow.get("firstName");
+    String lastName = workflow.get("lastName");
+    String managersso = workflow.get("managersso");
+    Map managerDetailsMap = workflow.get("managerDetailsMap");
+    logger.error("Workflow_NBCU_ServceAccount_Creation: plan Create_NDI_Provision_Plan ::   1   ::");
+    identity.setName(NewID);
+    identity.setFirstname(firstName);
+    identity.setLastname(lastName);
+    String idenDisplayName = createFormattedDisplayName(firstName,lastName,NewID);
+    logger.error("App service account dn :"+idenDisplayName+",  "+NewID);
+    identity.setDisplayName(idenDisplayName);
+    Identity identityObject = context.getObjectByName(Identity.class,managersso);
+    logger.error("Workflow_NBCU_ServceAccount_Creation: plan Create_NDI_Provision_Plan ::   2   ::");
+    if (null!=identityObject)
+      identity.setManager(identityObject);
+
+    context.saveObject(identity);
+    context.commitTransaction();
+    // Create Provisioning Plan and add needed attribute values
+    ProvisioningPlan planNDI = new ProvisioningPlan();
+    logger.error("Workflow_NBCU_ServceAccount_Creation: plan Create_NDI_Provision_Plan ::   3   ::");
+    ProvisioningPlan.AccountRequest acctRequest = new ProvisioningPlan.AccountRequest();
+
+    Application app = context.getObjectByName(Application.class,"Application_NBCU_LDAP_NDI");
+    if (app == null) {
+      throw new Exception("This workflow requires an application named 'Application_NBCU_LDAP_NDI', which could not be found.");
+    }
+    logger.error("Workflow_NBCU_ServceAccount_Creation: plan Create_NDI_Provision_Plan ::   4   ::");
+    acctRequest.setApplication("Application_NBCU_LDAP_NDI");
+
+    ndiAccountDN = "u,ou=worker,dc=tfayd,dc=com";
+
+    acctRequest.setNativeIdentity(ndiAccountDN);
+    acctRequest.setOperation(AccountRequest.Operation.Create);
+    workflow.put("OperationPerformed","Create");
+    acctRequest.setType("account");
+    logger.error("Workflow_NBCU_ServceAccount_Creation: plan Create_NDI_Provision_Plan ::   5   ::");
+    // Defining target application attribute
+    // Check below attributes are needed or not
+    acctRequest.add(new AttributeRequest("objectClass",ProvisioningPlan.Operation.Add,"inetorgperson"));
+    acctRequest.add(new AttributeRequest("objectClass",ProvisioningPlan.Operation.Add,"mdsCVLink"));
+    acctRequest.add(new AttributeRequest("objectClass",ProvisioningPlan.Operation.Add,"mdsMVLink"));
+    acctRequest.add(new AttributeRequest("objectClass",ProvisioningPlan.Operation.Add,"organizationalperson"));
+    acctRequest.add(new AttributeRequest("objectClass",ProvisioningPlan.Operation.Add,"person"));
+    acctRequest.add(new AttributeRequest("objectClass",ProvisioningPlan.Operation.Add,"top"));
+    acctRequest.add(new AttributeRequest("objectClass",ProvisioningPlan.Operation.Add,"worker"));
+    acctRequest.add(new AttributeRequest("cn", ProvisioningPlan.Operation.Set, lastName +", " + firstName));
+    acctRequest.add(new AttributeRequest("sn", ProvisioningPlan.Operation.Set, lastName));
+    acctRequest.add(new AttributeRequest("appid", ProvisioningPlan.Operation.Set, workflow.get("appid")));
+    acctRequest.add(new AttributeRequest("appName", ProvisioningPlan.Operation.Set, workflow.get("appName")));
+    acctRequest.add(new AttributeRequest("hrfullname", ProvisioningPlan.Operation.Set, lastName +", " + firstName));
+
+    acctRequest.add(new AttributeRequest("authsource", ProvisioningPlan.Operation.Set, "NBCUniversal IdM"));
+    acctRequest.add(new AttributeRequest("destination", ProvisioningPlan.Operation.Set, "GE"));
+    acctRequest.add(new AttributeRequest("givenName", ProvisioningPlan.Operation.Set, firstName));
+    acctRequest.add(new AttributeRequest("hrpersontypeid", ProvisioningPlan.Operation.Set, "99996"));
+    acctRequest.add(new AttributeRequest("persontypeid", ProvisioningPlan.Operation.Set, "99996"));
+
+    acctRequest.add(new AttributeRequest("hrpole", ProvisioningPlan.Operation.Set, "11I"));
+    acctRequest.add(new AttributeRequest("hrsupervisorid", ProvisioningPlan.Operation.Set, managersso));
+    acctRequest.add(new AttributeRequest("hrbusinessunitid", ProvisioningPlan.Operation.Set, managerDetailsMap.get("mngrbusinessUnitId")));
+    acctRequest.add(new AttributeRequest("hrusersubpersontype", ProvisioningPlan.Operation.Set, "Service"));
+    acctRequest.add(new AttributeRequest("ownerid", ProvisioningPlan.Operation.Set, managersso));
+
+    acctRequest.add(new AttributeRequest("locationid", ProvisioningPlan.Operation.Set, "IDMFUNCTIONAL"));
+    acctRequest.add(new AttributeRequest("orgid", ProvisioningPlan.Operation.Set, managerDetailsMap.get("mngrorgid")));
+    acctRequest.add(new AttributeRequest("hrparentbusinessunitid", ProvisioningPlan.Operation.Set, managerDetailsMap.get("mngrparentbusinessUnitId")));
+    acctRequest.add(new AttributeRequest("uid", ProvisioningPlan.Operation.Set, NewID));
+    acctRequest.add(new AttributeRequest("oraclehrid", ProvisioningPlan.Operation.Set, NewID));
+    logger.error("Workflow_NBCU_ServceAccount_Creation: plan Create_NDI_Provision_Plan ::   6   ::");
+    List accReqList = new ArrayList();
+    accReqList.add(acctRequest);
+    planNDI.setAccountRequests(accReqList);
+    logger.error("Workflow_NBCU_ServceAccount_Creation: plan Create_NDI_Provision_Plan ::   7   ::");
+    workflow.put("planNDI",planNDI);
+    logger.error("Workflow_NBCU_ServceAccount_Creation: plan Create_NDI_Provision_Plan "+planNDI);
+    return planNDI;
+  }
+
+  public void initializeAuditRequestForServiceAccount(Workflow workflow) {
+    import java.util.HashMap;
+    import java.util.List;
+    import sailpoint.object.Attributes;
+    import sailpoint.object.*;
+    import org.apache.log4j.Logger;
+    import org.apache.log4j.Level;
+    Logger log = Logger.getLogger(loggerClass);
+    HashMap userMapAudit = new HashMap();
+
+    String action = null;
+    String subFlag = workflow.get("subFlag");
+    String compFlag = workflow.get("compFlag");
+    String msg = null;
+    String mailStoreGroup = null;
+    String mailTYPE = null;
+
+    // set Attributes as a map for Audit purpose
+    HashMap attMap = new HashMap();
+    auditAttr = new Attributes();
+    //if(drupalToSailPointRequestDate != null){
+    //attMap.put("RequestDate",drupalToSailPointRequestDate);
+    //}
+    if(managersso != null){
+      attMap.put("Managersso",workflow.get("managersso"));
+    }
+    //if(requesterFromDrupal != null){
+    //attMap.put("RequesterFromDrupal",requesterFromDrupal);
+    //}
+    if(personType != null){
+      attMap.put("PersonType",workflow.get("personType"));
+    }
+
+    if(conStartDate != null){
+      attMap.put("EffectiveStartDate",workflow.get("conStartDate"));
+    }
+    if(firstName != null){
+      attMap.put("GivenFirstName",workflow.get("firstName"));
+    }
+    if(lastName != null){
+      attMap.put("GivenLastName",workflow.get("lastName"));
+    }
+    if((requestID != null) && (requestID.length() != 0)){
+      attMap.put("BulkRequestID",workflow.get("requestID"));
+    }
+    if(appid != null){
+      attMap.put("AppID",workflow.get("appName"));
+    }
+    if(appName != null){
+      attMap.put("AppName",workflow.get("appName"));
+    }
+    auditAttr.setMap(attMap);
+    userMapAudit.put("Attributes",auditAttr);
+    userMapAudit.put("EffectiveStartDate",workflow.get("conStartDate"));
+
+    String identityRequestId = workflow.get("identityRequestId");
+    String statuscheck = workflow.get("statuscheck");
+    String requesterFullName = workflow.get("requesterFullName");
+    String lastApprovalState = workflow.get("lastApprovalState");
+
+    if(subFlag != null && subFlag.equals("true")){
+      if (identityRequestId != null){
+        msg = identityRequestId + " - ";
+      }
+
+      msg= msg+"New Service Account Creation request was submitted by "+requesterFullName +" for user "+ requesteeFullName +".";
+      userMapAudit.put("msg",msg);
+      action="Submission";
+    }
+    else if((compFlag != null) && (compFlag.equals("true"))){
+      if(statuscheck != null && statuscheck.equalsIgnoreCase("Success")){
+        if (identityRequestId != null){
+          msg = identityRequestId + " - ";
+        }
+        msg= msg+"New Service Account Creation request was submitted by "+requesterFullName+" for user "+requesteeFullName+"("+NewID+") has been Created.";
+      }
+      else{
+        if (identityRequestId != null){
+          msg = identityRequestId + " - ";
+        }
+        msg= msg+"New Service Account Creation request was submitted by "+requesterFullName+" for user "+requesteeFullName+"("+NewID+") is not created successfully.";
+      }
+      userMapAudit.put("msg",msg);
+      action="Completion";
+      logger.debug("Workflow_NBCU_ServceAccount_Creation: end of audit "+action);
+    }
+    else{
+      logger.debug("Workflow_NBCU_ServceAccount_Creation: lastApprovalState");
+
+      if (identityRequestId != null){
+        msg = identityRequestId + " - ";
+      }
+      if (lastApprovalState != null && lastApprovalState.equalsIgnoreCase("Finished")){
+        msg= msg+"New Service Account Creation request was Approved by "+workflow.get("requestApprover");
+        if(managerComments != null){
+          msg = msg +" with comments "+managerComments;
+        }
+        workflow.put("Approved","true");
+        userMapAudit.put("msg",msg);
+        action="Approved";
+
+      }
+      else if (lastApprovalState != null && lastApprovalState.equalsIgnoreCase("Rejected")){
+        msg= msg+"New Service Account Creation request was Rejected by "+workflow.get("requestApprover");
+        if(managerComments != null){
+          msg = msg +" with comments "+managerComments;
+        }
+        userMapAudit.put("msg",msg);
+        action="Rejected";
+      }
+      else if (lastApprovalState != null && lastApprovalState.equalsIgnoreCase("Expired")){
+        msg= msg+"New Service Account Creation request was submitted by "+requesterFullName+" has been Expired. Since no action was taken by " +managerFullName+ ".";
+        userMapAudit.put("msg",msg);
+        action="Expired";
+      }
+    }
+
+    userMapAudit.put("action",action);
+    userMapAudit.put("fName",firstName);
+    userMapAudit.put("lName",lastName);
+    //userMapAudit.put("requestBy",requesterFromDrupal);
+    userMapAudit.put("mgr",managersso);
+    userMapAudit.put("type",personType);
+    userMapAudit.put("interfaceSource","Drupal");
+    userMapAudit.put("statuscheck",statuscheck);
+    userMapAudit.put("appName","Service Account Creation Form");
+    userMapAudit.put("auditAppName",serviceAccountCreationAppName);
+    if(requestID != null){
+      userMapAudit.put("bulkRequestID",requestID);
+    }
+    if(identityRequestId != null){
+      userMapAudit.put("identityRequestId",identityRequestId);
+    }
+
+    if(NewID != null){
+      userMapAudit.put("SSO",NewID);
+    }
+    logger.debug("Workflow_NBCU_ServceAccount_Creation: action "+action);
+    workflow.put("userMapAudit",userMapAudit);
+  }
+
+  public void auditRequestForServiceAccount(Workflow workflow, Map userMapAudit) {
+
+
+
+    Logger log = Logger.getLogger("log4j.logger.sailpoint");
+
+
+
+    try
+    {
+      if(userMapAudit!=null && userMapAudit instanceof List)
+      {
+        logger.error("Rule_NBCU_AuditEvent_Request : Map has list");
+        for(HashMap mapAudit:userMapAudit)
+        {
+          auditRequestHelper(workflow, mapAudit);
+        }
+      }
+      else if(userMapAudit!=null && userMapAudit instanceof HashMap)
+      {
+        logger.error("Rule_NBCU_AuditEvent_Request : Single Map");
+        auditRequestHelper(workflow, userMapAudit);
+      }
+    }
+    catch (Exception ex) {
+      logger.error("Error in Rule_NBCU_AuditEvent_Request first catch : ", ex);
+      error = ex.getMessage();
+    }
+
+    logger.error("Final Exit Rule_NBCU_AuditEvent_Request :");
+
+  }
+
+  public void auditRequestHelper(Workflow workflow, HashMap userMapAudit)
+  {
+
+    Logger log = Logger.getLogger("log4j.logger.sailpoint");
+
+    String msg = null;
+    String action = null;
+    String appName = null;
+    String fName = null;
+    String lName = null;
+    String requestBy = null;
+    String requestFor = null;
+    String mgr = null;
+    String type = null;
+    String interfaceSource = null;
+    String isADRequired = null;
+    String ADRequired = null;
+    String error = null;
+    String requesterFullName = null;
+    String managerFullName = null;
+    String userSSO = null;
+    String Status = null;
+    String errMsg = null;
+    String identityRequestId = null;
+    String statuscheck = null;
+    String bulkRequestID = null;
+    Attributes attr = null;
+    logger.error("Rule_NBCU_AuditEvent_Request : Enter auditRequest");
+
+    action = userMapAudit.get("action");
+    logger.error("Rule_NBCU_AuditEvent_Request : action "+action);
+
+    appName = userMapAudit.get("appName");
+    logger.error("Rule_NBCU_AuditEvent_Request : appName "+appName);
+
+    fName = userMapAudit.get("fName");
+    logger.error("Rule_NBCU_AuditEvent_Request : fName "+fName);
+
+    lName = userMapAudit.get("lName");
+    logger.error("Rule_NBCU_AuditEvent_Request : lName "+lName);
+
+    requestBy = userMapAudit.get("requestBy");
+    logger.error("Rule_NBCU_AuditEvent_Request : requestBy "+requestBy);
+
+    requestFor = userMapAudit.get("requestFor");
+    logger.error("Rule_NBCU_AuditEvent_Request : requestFor "+requestFor);
+
+    mgr = userMapAudit.get("mgr");
+    logger.error("Rule_NBCU_AuditEvent_Request : mgr "+mgr);
+
+    type = userMapAudit.get("type");
+    logger.error("Rule_NBCU_AuditEvent_Request : type "+type);
+
+    userSSO = userMapAudit.get("SSO");
+    logger.error("Rule_NBCU_AuditEvent_Request : userSSO "+userSSO);
+
+    identityRequestId = userMapAudit.get("identityRequestId");
+    logger.error("Rule_NBCU_AuditEvent_Request : identityRequestId "+identityRequestId);
+
+    msg = userMapAudit.get("msg");
+    logger.error("Rule_NBCU_AuditEvent_Request : msg "+msg);
+
+    bulkRequestID = userMapAudit.get("bulkRequestID");
+    logger.error("Rule_NBCU_AuditEvent_Request : bulkRequestID "+bulkRequestID);
+
+    //Below are used for future - Start
+    String ADCreationFrmDrupal= null;
+
+    ADCreationFrmDrupal = userMapAudit.get("ADCreationFrmDrupal");
+    logger.error("Rule_NBCU_AuditEvent_Request : ADCreationFrmDrupal "+ADCreationFrmDrupal);
+
+    Status = userMapAudit.get("status");
+    logger.error("Rule_NBCU_AuditEvent_Request : Status "+Status);
+
+    statuscheck = userMapAudit.get("statuscheck");
+    logger.error("Rule_NBCU_AuditEvent_Request : statuscheck "+statuscheck);
+
+    errMsg = userMapAudit.get("errMsg");
+    logger.error("Rule_NBCU_AuditEvent_Request : errMsg "+errMsg);
+
+    attr = userMapAudit.get("Attributes");
+
+    interfaceSource = userMapAudit.get("interfaceSource");
+    logger.error("Rule_NBCU_AuditEvent_Request : interfaceSource "+interfaceSource);
+
+    //Test Account Creation
+    isADRequired = (String)userMapAudit.get("isADRequired");
+    logger.error("Rule_NBCU_AuditEvent_Request : isADRequired "+isADRequired);
+
+    if(isADRequired != null)
+    {
+      if(isADRequired.equalsIgnoreCase("true"))
+        ADRequired = "Selected";
+      else if(isADRequired.equalsIgnoreCase("false"))
+        ADRequired = "Not Selected";
+    }
+
+    AuditEvent ae=new AuditEvent();
+
+    try
+    {
+      if (Auditor.isEnabled(action))
+      {
+        logger.error("Rule_NBCU_AuditEvent_Request : Enter method Auditor");
+
+        //Setting Interface
+        if(interfaceSource != null)
+          ae.setInterface(interfaceSource);
+
+        //Setting Source
+        if(requestBy !=null)
+          ae.setSource(requestBy);
+
+
+        //Setting Target
+        if(requestFor !=null)
+          ae.setTarget(requestFor);
+        else if(userSSO != null)
+          ae.setTarget(userSSO);
+
+
+          //Setting AccountName
+          if(requestFor != null)
+          ae.setAccountName(requestFor);
+          else if(userSSO != null)
+          ae.setAccountName(userSSO);
+          else
+          ae.setAccountName(type);
+
+
+          if((action.equalsIgnoreCase("Create")) || (action.equalsIgnoreCase("Modify")) || (action.equalsIgnoreCase("Delete")) || (action.equalsIgnoreCase("Score Create")) || (action.equalsIgnoreCase("Score Modify")) || (action.equalsIgnoreCase("Score Delete")))
+        {
+          if(Status !=null)
+          {
+            if(Status.equalsIgnoreCase("Success"))
+              ae.setString2(Status);
+            else if (Status.equalsIgnoreCase("Failure") || Status.equalsIgnoreCase("Failed"))
+            {
+              String FailureMsg = Status + ": " + errMsg ;
+              ae.setString2(FailureMsg);
+            }
+            else
+              ae.setString2(Status);
+          }
+        }
+        else {
+          //Setting statuscheck
+          if(statuscheck != null && action.equalsIgnoreCase("Completion")){
+            ae.setString2(statuscheck);
+            ae.setString4(errMsg);
+          }
+        }
+
+        ae.setAction(action);
+        ae.setApplication(appName);
+        ae.setString1(msg);
+
+        //Setting Name
+        if(fName!=null && lName !=null)
+        {
+          String name=lName+", "+fName;
+          ae.setString3(name);
+        }
+
+        //Setting Attributes
+        if(attr != null)
+          ae.setAttributes(attr);
+
+        if(identityRequestId != null)
+          ae.setTrackingId(identityRequestId);
+
+        if(bulkRequestID != null)
+          ae.setAttributeValue(bulkRequestID);
+
+        logger.error("Rule_NBCU_AuditEvent_Request :  Exit method Auditor");
+      }
+    }
+    catch (Exception ef) {
+      logger.error("Error in Rule_NBCU_AuditEvent_Request: method ", ef);
+      error = ef.getMessage();
+    }
+
+    Auditor.log(ae);
+    context.commitTransaction();
+    logger.error("Final method Exit Rule_NBCU_AuditEvent_Request :");
+  }
+
+  public ProvisioningPlan createNDIProvPlanForAdminAccount(Workflow workflow) {
+
+    import sailpoint.object.QueryOptions;
+    import sailpoint.object.Filter;
+    import sailpoint.object.Link;
+    import sailpoint.api.IdentityService;
+    import sailpoint.api.Provisioner;
+    import sailpoint.provisioning.PlanCompiler;
+    import sailpoint.object.Application;
+    import sailpoint.object.Identity;
+    import sailpoint.object.ProvisioningPlan;
+    import sailpoint.object.ProvisioningPlan.ObjectRequest;
+    import sailpoint.object.ProvisioningPlan.AccountRequest;
+    import sailpoint.object.ProvisioningPlan.AttributeRequest;
+    import sailpoint.object.*;
+    import org.apache.log4j.Logger;
+    import org.apache.log4j.Level;
+
+    Logger logger = Logger.getLogger(loggerClass);
+
+    SimpleDateFormat sdf=new SimpleDateFormat("dd-MMM-YYYY");
+    Date d=new Date();
+    String startDate=sdf.format(d);
+    workflow.put("startDate",startDate);
+
+    String NewID = workflow.get("NewID");
+    String firstName = workflow.get("firstName");
+    String lastName = workflow.get("lastName");
+
+    Identity identity = new Identity();
+
+    identity.setName(NewID);
+    identity.setFirstname(firstName);
+    identity.setLastname(lastName);
+    String idenName = createFormattedDisplayName(firstName,lastName,NewID);
+    logger.debug("Admin Account dn :"+idenName);
+    identity.setDisplayName(idenName);
+    if (null!=memberemail){
+      identity.setEmail(memberemail);
+    }
+
+    Identity identityObject = context.getObjectByName(Identity.class,supervisorid);
+
+    if (null!=identityObject){
+      identity.setManager(identityObject);
+    }
+
+    context.saveObject(identity);
+    context.commitTransaction();
+
+    // Create Provisioning Plan and add needed attribute values
+    ProvisioningPlan planNDI = new ProvisioningPlan();
+    ProvisioningPlan.AccountRequest acctRequest = new ProvisioningPlan.AccountRequest();
+
+    Application app = context.getObjectByName(Application.class,"Application_NBCU_LDAP_NDI");
+    if (app == null) {
+      throw new Exception(
+        "This workflow requires an application named 'Application_NBCU_LDAP_NDI', which could not be found.");
+    }
+
+    acctRequest.setApplication("Application_NBCU_LDAP_NDI");
+
+    String ndiAccountDN = "u%%WorkflowNBCUAdminAccountCreationMigration-ndiAccountDN%%";
+
+    acctRequest.setNativeIdentity(ndiAccountDN);
+    acctRequest.setOperation(AccountRequest.Operation.Create);
+    workflow.put("OperationPerformed","Create");
+    acctRequest.setType("account");
+
+    // Defining target application attribute
+
+    acctRequest.add(new AttributeRequest("objectClass",ProvisioningPlan.Operation.Add,"inetorgperson"));
+    acctRequest.add(new AttributeRequest("objectClass",ProvisioningPlan.Operation.Add,"mdsMVLink"));
+    acctRequest.add(new AttributeRequest("objectClass",ProvisioningPlan.Operation.Add,"organizationalperson"));
+    acctRequest.add(new AttributeRequest("objectClass",ProvisioningPlan.Operation.Add,"person"));
+    acctRequest.add(new AttributeRequest("objectClass",ProvisioningPlan.Operation.Add,"top"));
+    acctRequest.add(new AttributeRequest("objectClass",ProvisioningPlan.Operation.Add,"worker"));
+    acctRequest.add(new AttributeRequest("cn", ProvisioningPlan.Operation.Set, lastName +", " + firstName));
+    acctRequest.add(new AttributeRequest("sn", ProvisioningPlan.Operation.Set, lastName));
+
+    if((middleName != null) && (middleName.length() != 0)){
+      acctRequest.add(new AttributeRequest("hrmiddlename", ProvisioningPlan.Operation.Set, middleName));
+    }
+
+    acctRequest.add(new AttributeRequest("authsource", ProvisioningPlan.Operation.Set, "NBCUniversal IdM"));
+    acctRequest.add(new AttributeRequest("destination", ProvisioningPlan.Operation.Set, "GE"));
+    acctRequest.add(new AttributeRequest("givenName", ProvisioningPlan.Operation.Set, firstName));
+    acctRequest.add(new AttributeRequest("hreffectiveenddate", ProvisioningPlan.Operation.Set, endDate));
+    acctRequest.add(new AttributeRequest("hreffectivestartdate", ProvisioningPlan.Operation.Set, startDate));
+    acctRequest.add(new AttributeRequest("hrpersontypeid", ProvisioningPlan.Operation.Set, "99996"));
+    acctRequest.add(new AttributeRequest("persontypeid", ProvisioningPlan.Operation.Set, "99996"));
+    acctRequest.add(new AttributeRequest("hrpole", ProvisioningPlan.Operation.Set, "11I"));
+    acctRequest.add(new AttributeRequest("hrsupervisorid", ProvisioningPlan.Operation.Set, mngrDisplayName));
+    acctRequest.add(new AttributeRequest("hrusersubpersontype", ProvisioningPlan.Operation.Set, "Admin"));
+    acctRequest.add(new AttributeRequest("hrfullname", ProvisioningPlan.Operation.Set, lastName +", " + firstName));
+
+
+    acctRequest.add(new AttributeRequest("hrbusinessunitid", ProvisioningPlan.Operation.Set, mngrbusinessUnitId));
+    acctRequest.add(new AttributeRequest("hrlegalentityid", ProvisioningPlan.Operation.Set, mngrhrlegalentity));
+    acctRequest.add(new AttributeRequest("hrlegalentityname", ProvisioningPlan.Operation.Set, mngrhrlegalentityname));
+    acctRequest.add(new AttributeRequest("locationid", "IDMFUNCTIONAL"));
+    acctRequest.add(new AttributeRequest("orgid", ProvisioningPlan.Operation.Set, mngrorgid));
+
+
+    acctRequest.add(new AttributeRequest("ownerid", ProvisioningPlan.Operation.Set, membername));
+    acctRequest.add(new AttributeRequest("hrparentbusinessunitid", ProvisioningPlan.Operation.Set, mngrparentbusinessUnitId));
+    acctRequest.add(new AttributeRequest("oraclehrid", ProvisioningPlan.Operation.Set, NewID));
+
+
+
+    List accReqList = new ArrayList();
+    accReqList.add(acctRequest);
+    planNDI.setObjectRequests(accReqList);
+
+    workflow.put("planNDI",planNDI);
+    logger.error("Workflow_NBCU_AdminAccount_Creation: plan Create_NDI_Provision_Plan "+planNDI);
+    return planNDI;
+
+  }
+
+  public void UpdateRequiredWorkflowAttributesForAdminAccount(Workflow workflow, String requesterName, String supervisorid, String requestedFor, String firstName, String lastName, String startDate, String endDate){
+
+    import sailpoint.object.Attributes;
+    import sailpoint.object.Identity;
+    import java.util.HashMap;
+    import java.util.Date;
+    import java.util.List;
+    import java.text.DateFormat;
+    import java.text.SimpleDateFormat;
+    import sailpoint.object.*;
+    import org.apache.log4j.Logger;
+    import org.apache.log4j.Level;
+
+    Logger logger = Logger.getLogger(loggerClass);
+    logger.error("Workflow_VSNT_AdminAccount_Creation_Migration: ---------------Starting Workflow - Workflow_NBCU_AdminAccount_Creation_Migration---------------");
+    logger.error("Workflow_NBCU_AdminAccount_Creation_Migration: ---------------requester -----------------"+requesterName);
+
+    Identity requester = context.getObjectByName(Identity.class,requesterName);
+    if(requester.getEmail()!=null)
+    {
+      requesterEmail = requester.getEmail();
+    }
+    if(requester.getLastname()!=null && requester.getFirstname()!=null)
+    {
+      requesterFullName = requester.getLastname()+", "+requester.getFirstname();
+      requestedBy = requesterFullName + "(" + requester + ")";
+    }
+
+    Identity identityObject = context.getObjectByName(Identity.class,requestedFor);
+
+    if(identityObject.getEmail()!=null)
+    {
+      requesteeEmail = identityObject.getEmail();
+    }
+    if(identityObject.getAttribute("endDate")!=null)
+    {
+      SimpleDateFormat sdf=new SimpleDateFormat("dd-MMM-YYYY");
+      SimpleDateFormat formatter=new SimpleDateFormat("MM/dd/yyyy hh:mm:ss a z");
+      String d=identityObject.getAttribute("endDate");
+      Date d2=formatter.parse(d);
+      String endDate=sdf.format(d2);
+      workflow.put("endDate",endDate);
+
+    }
+    if(identityObject.getLastname()!=null && identityObject.getFirstname()!=null)
+    {
+      requesteeFullName = identityObject.getLastname()+", "+identityObject.getFirstname();
+      requesteeFirstName = identityObject.getFirstname();
+      requesteeLastName = identityObject.getLastname();
+      requesteeFullSSO = requesteeFullName + "(" + requestedFor + ")";
+    }
+
+    if(supervisorid == null)
+    {
+      supervisorid = "spadmin";
+    }
+
+    Identity managerObject = context.getObjectByName(Identity.class,supervisorid);
+    if(managerObject.getName()!=null)
+    {
+      managerName=managerObject.getName();
+    }
+    if(managerObject.getLastname()!=null && managerObject.getFirstname()!=null)
+    {
+      managerFullName=managerObject.getLastname()+", "+managerObject.getFirstname();
+      managerEmail = managerObject.getEmail();
+      managerFullSSO= managerFullName + "(" + supervisorid + ")";
+    }
+    if(managerEmail != null || managerEmail !="" )
+      workflow.put("managerEmail",managerEmail);
+    else
+      workflow.put("managerEmail","nbcuniidmsupportteam@nbcuni.com");
+    if(requesterEmail != null || requesterEmail !="" )
+      workflow.put("requesterEmail",requesterEmail);
+    else
+      workflow.put("requesterEmail","nbcuniidmsupportteam@nbcuni.com");
+
+    workflow.put("managerName",managerName);
+    workflow.put("managerFullName",managerFullName);
+    workflow.put("managerFullSSO",managerFullSSO);
+    workflow.put("requesteeFullName",requesteeFullName);
+    workflow.put("requesteeFirstName",requesteeFirstName);
+    workflow.put("requesteeLastName",requesteeLastName);
+    workflow.put("requesterFullName",requesterFullName);
+    workflow.put("requestedBy",requestedBy);
+    workflow.put("requesteeFullSSO",requesteeFullSSO);
+
+    if(requesteeEmail != null && requesteeEmail !=""){
+      workflow.put("requesteeEmail",requesteeEmail);
+    }
+    else{
+      Link link = identityObject.getLink(context.getObjectByName(Application.class, "Application_VSNT_HR"));
+      if(link!=null){
+        email = link.getAttribute("C001_EMAIL");
+        logger.debug("--------------email --------------"+email);
+        if(email!=null){
+          workflow.put("requesteeEmail",email);
+        }
+        else{
+          workflow.put("requesteeEmail","nbcuniidmsupportteam@nbcuni.com");
+        }
+      }
+    }
+
+
+    logger.debug("--------------requesterFullName --------------"+requesterFullName);
+
+    logger.debug("--------------requesterEmail ------------------"+requesterEmail);
+
+    logger.debug("--------------requesteeFullName --------------"+requesteeFullName);
+
+    logger.debug("--------------requesteeEmail ------------------"+requesteeEmail);
+
+    logger.debug("--------------managerName --------------"+managerName);
+
+    logger.debug("--------------managerEmail ------------------"+managerEmail);
+
+    logger.debug("--------------managerFullSSO ------------------"+managerFullSSO);
+
+    String CCAddress= "";
+    if (requesterEmail==null){
+      CCAddress=CCAddress +","+requesteeEmail;
+    }
+    CCAddress = CCAddress+","+"nbcuniidmsupportteam@nbcuni.com";
+    String rejectionToAddress="";
+    if (requesterEmail !=null){
+      rejectionToAddress=rejectionToAddress +","+requesterEmail;
+    }
+    if (managerEmail!=null){
+      rejectionToAddress=managerEmail+","+rejectionToAddress;
+    }
+
+    logger.debug("--------------rejectionToAddress ------------------"+rejectionToAddress);
+    logger.debug("--------------CCAddress ------------------"+CCAddress);
+    workflow.put("CCAddress",CCAddress);
+    workflow.put("rejectionToAddress",rejectionToAddress);
+    //workflow.put("requesterEmail",requesterEmail);
+
+    String ExpirationCCAddress = "";
+    ExpirationCCAddress = ExpirationCCAddress+","+workflow.get("requesteeEmail");
+    ExpirationCCAddress = ExpirationCCAddress+","+workflow.get("managerEmail");
+    workflow.put("ExpirationCCAddress",ExpirationCCAddress);
+    logger.debug("--------------ExpirationCCAddress ------------------"+ExpirationCCAddress);
+
+    String AccessdetailCCAddress = "";
+    AccessdetailCCAddress = AccessdetailCCAddress+","+workflow.get("requesterEmail");
+    AccessdetailCCAddress = AccessdetailCCAddress+","+workflow.get("managerEmail");
+    workflow.put("AccessdetailCCAddress",AccessdetailCCAddress);
+    logger.debug("--------------AccessdetailCCAddress ------------------"+AccessdetailCCAddress);
+
+
+    identityFullName = lastName+ ", " +firstName;
+    logger.debug("--------------identityFullName ------------------"+identityFullName);
+    workflow.put("identityFullName",identityFullName);
+
+    // setting flag as false for future use
+    String provFlag = "false";
+    String apprFlag = "false";
+    workflow.put("provFlag",provFlag);
+    workflow.put("apprFlag",apprFlag);
+
+    logger.error("Workflow_NBCU_AdminAccount_Creation_Migration: End method");
+  }
+  public ProvisioningPlan getConsolidatedPlan(List plansList, String identityId) {
+    ProvisioningPlan provPlan = new ProvisioningPlan();
+    List consolidatedAcctRequests = new ArrayList();
+    logger.error("consolidatedAcctRequests:  "+consolidatedAcctRequests);
+    if(plansList != null && plansList.size() > 0) {
+      for(ProvisioningPlan plan:plansList) {
+        logger.error("ProvisioningPlan:  "+plan.toXml());
+        if(plan != null) {
+          logger.debug("plan "+plan.toXml());
+          List acctRequest = plan.getAccountRequests();
+          if(acctRequest != null && acctRequest.size() > 0) {
+            consolidatedAcctRequests.addAll(acctRequest);
+          }
+        }
+      }
+    }
+    logger.error("consolidatedAcctRequests:  "+consolidatedAcctRequests);
+    if(consolidatedAcctRequests != null && consolidatedAcctRequests.size() > 0) {
+      Identity identityObject = context.getObjectByName(Identity.class, identityId);
+      provPlan.setAccountRequests(consolidatedAcctRequests);
+      provPlan.setNativeIdentity(identityId);
+      provPlan.setIdentity(identityObject);
+    }
+    return provPlan;
+  }
+
+
+
+  /*********************************************************************************************************************************************************
+	*																																																																												 *
+	*																																																																												 *	
+	*																												Test Account Creation Helper Methods.. 																													 *
+	*																																																																												 *
+	*																																																																												 *
+	*********************************************************************************************************************************************************/
+
+
+  public void updateRequiredWorkflowAttributesForTestAccount(Workflow workflow, String appid, String appName, String requesterName) {
+
+    import sailpoint.object.Attributes;
+    import java.util.HashMap;
+    import java.util.Date;
+    import java.util.List;
+    import java.text.DateFormat;
+    import java.text.SimpleDateFormat;
+
+    import sailpoint.tools.Util;
+
+    import java.text.DateFormat;
+    import java.text.SimpleDateFormat;
+
+    import sailpoint.object.Link;
+    import sailpoint.object.Custom;
+    import sailpoint.object.Identity;
+    import sailpoint.object.Application;
+
+    import sailpoint.api.IdentityService;
+
+    import org.apache.log4j.Level;
+    import org.apache.log4j.Logger;
+
+    Logger logger = Logger.getLogger(loggerClass);
+
+    String firstName = null;
+    String lastName = null;
+
+    if (Util.isNotNullOrEmpty(appid) && Util.isNotNullOrEmpty(appName)) {
+      firstName = appName;
+      lastName = appid;
+      workflow.put("firstName", appName);
+      workflow.put("lastName", appid);
+    }
+
+    Identity requester = context.getObjectByName(Identity.class, requesterName); 
+    String requesterEmail = requester.getEmail() != null ? requester.getEmail() : null;
+    String requesterFullName = requester.getLastname() + ", " + requester.getFirstname(); 
+    String requestedBy = requesterFullName + "(" + requesterName + ")";
+
+    log.error("Workflow_VSNT_Test_Account_Migration: ---------------requester -----------------" + requester);
+    log.error("Workflow_VSNT_Test_Account_Migration: ---------------requesterEmail -----------------" + requesterEmail);
+    log.error("Workflow_VSNT_Test_Account_Migration: ---------------requesterFullName -----------------" + requesterFullName);
+    log.error("Workflow_VSNT_Test_Account_Migration: ---------------requestedBy -----------------" + requestedBy);
+
+    workflow.put("requesterEmail", requesterEmail);
+    workflow.put("requesterFullName", requesterFullName);
+    workflow.put("requestedBy", requestedBy);
+
+    String requestee = workflow.get("requestee");
+
+    log.error("Workflow_VSNT_Test_Account_Migration: ---------------requestee -----------------" + requestee);
+
+    if (Util.isNotNullOrEmpty(requestee)) {
+      Identity identityObject = context.getObjectByName(Identity.class, requestee);
+      String requesteeEmail = identityObject.getEmail() != null ? identityObject.getEmail() : null;
+      String requesteeFullName = identityObject.getLastname() + ", " + identityObject.getFirstname(); 
+      String requestedfor = requesteeFullName + "(" + requestee + ")";
+
+      log.error("Workflow_VSNT_Test_Account_Migration: ---------------identityObject -----------------" + identityObject);
+      log.error("Workflow_VSNT_Test_Account_Migration: ---------------requesteeEmail -----------------" + requesteeEmail);
+      log.error("Workflow_VSNT_Test_Account_Migration: ---------------requesteeFullName -----------------" + requesteeFullName);
+      log.error("Workflow_VSNT_Test_Account_Migration: ---------------requestedfor -----------------" + requestedfor);
+
+      if (Util.isNotNullOrEmpty(requesteeEmail)) {
+        workflow.put("requesteeEmail", requesteeEmail);
+      } else {
+
+        IdentityService idService = new IdentityService(context);
+        List<Link> links = idService.getLinks(identityObject, context.getObjectByName(Application.class, "Application_VSNT_HR"));
+        Link link = Util.nullSafeSize(links) > 0 && links.get(0) != null ? links.get(0) : null;
+
+        String email = null;
+        if (link != null) {
+          email = link.getAttribute("C001_EMAIL");
+        }
+        log.debug("--------------requesteeEmail_insideloop --------------" + email);
+        if (null != email) {
+          workflow.put("requesteeEmail", email);
+        } else {
+          Custom nbcuemailaddress = context.getObjectByName(Custom.class, "Custom_VSNT_Mail_box_Name");
+          String nbcumailbox = nbcuemailaddress.get("emailaddress");
+          workflow.put("requesteeEmail", nbcumailbox);
+        }
+      }
+      workflow.put("requesteeFullName", requesteeFullName);
+      workflow.put("requestedfor", requestedfor);
+    }
+
+    String managersso = workflow.get("managersso");
+
+    if (Util.isNotNullOrEmpty(managersso)) {
+
+      log.error("Workflow_VSNT_ServceAccount_Creation: --------------Before   managerDetailsMap --------------");
+      Map managerDetailsMap = createManagerDetailsMapForTestAccount(workflow, managersso);
+      log.error("Workflow_VSNT_ServceAccount_Creation: --------------managerDetailsMap --------------"+managerDetailsMap);
+      workflow.put("managerDetailsMap", managerDetailsMap);
+
+
+      Identity managerObject = context.getObjectByName(Identity.class, managersso);
+      String managerName = managerObject.getName();
+      String managerFullName = managerObject.getLastname() + ", " + managerObject.getFirstname();
+      String managerEmail = managerObject.getEmail();
+      String managerFullSSO = managerFullName + "(" + supervisorid + ")";
+
+      workflow.put("managerName", managerName);
+      workflow.put("managerEmail", managerEmail);
+      workflow.put("managerFullName", managerFullName);
+      workflow.put("managerFullSSO", managerFullSSO);
+
+      String identityFullName = lastname + ", " + firstname;
+      workflow.put("identityFullName", identityFullName);
+
+      String drupalToSailPointRequestDate = "";
+      DateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy HH:mm");
+      Date date = new Date();
+      drupalToSailPointRequestDate = dateFormat.format(date);
+
+      workflow.put("drupalToSailPointRequestDate", drupalToSailPointRequestDate);
+
+      String reminderCCAddress="";
+      if (null != requesterEmail) {
+        reminderCCAddress = reminderCCAddress + "," + requesterEmail;
+      } else {
+        Custom nbcuemailaddress = context.getObjectByName(Custom.class, "Custom_VSNT_Mail_box_Name");
+        String nbcumailbox = nbcuemailaddress.get("emailaddress");
+        reminderCCAddress = reminderCCAddress + nbcumailbox;	
+      }
+      if (null != requesteeEmail) {
+        reminderCCAddress = reminderCCAddress + "," + requesteeEmail;
+      }
+
+      workflow.put("reminderCCAddress", reminderCCAddress);
+
+      String rejectionToAddress = "";
+      if (null != requesterEmail) {
+        rejectionToAddress=rejectionToAddress + "," + requesterEmail;
+      }
+      if (null != managerEmail) {
+        rejectionToAddress = managerEmail + "," + rejectionToAddress;
+      }
+      workflow.put("rejectionToAddress", rejectionToAddress);
+
+    }
+    //setting flag as false for future use
+    String provFlag = "false";
+    String apprFlag = "false";
+    workflow.put("provFlag", provFlag);
+    workflow.put("apprFlag", apprFlag);
+
+    log.error("Workflow_VSNT_Test_Account_Migration: End method:::");
+
+  }
+
+
+  public ProvisioningPlan createNDIProvPlanForTestAccount(Workflow workflow) {
+
+    import sailpoint.object.Link;
+    import sailpoint.object.Filter;
+    import sailpoint.object.Identity;
+    import sailpoint.object.Application;
+    import sailpoint.object.QueryOptions;
+    import sailpoint.object.ProvisioningPlan;
+    import sailpoint.object.ProvisioningPlan.Operation;
+    import sailpoint.object.ProvisioningPlan.ObjectRequest;
+    import sailpoint.object.ProvisioningPlan.ObjectOperation;
+    import sailpoint.object.ProvisioningPlan.AttributeRequest;
+
+    import sailpoint.tools.Util;
+
+    import sailpoint.api.IdentityService;
+
+    import org.apache.log4j.Level;
+    import org.apache.log4j.Logger;
+
+    Logger logger = Logger.getLogger(loggerClass); 
+
+    Identity identity = new Identity();
+    identity.setName(NewID);
+    identity.setFirstname(firstname);
+    identity.setLastname(lastname);
+    String idenDisplayName = createFormattedDisplayName(firstname, lastname, NewID);
+    identity.setDisplayName(idenDisplayName);
+
+    if ( Util.isNotNullOrEmpty(memberemail) ) {
+      identity.setEmail(memberemail);
+    }
+    Identity identityObject = context.getObjectByName(Identity.class, supervisorid);
+
+    if ( null != identityObject) {
+      identity.setManager(identityObject);
+    }
+    context.saveObject(identity);
+    context.commitTransaction();
+
+    ProvisioningPlan planNDI = new ProvisioningPlan();
+
+    ProvisioningPlan.AccountRequest acctRequest = new ProvisioningPlan.AccountRequest();
+
+    Application app = context.getObjectByName(Application.class, "Application_VSNT_LDAP_NDI");
+    if (null == app) {
+      throw new Exception(
+        "This workflow requires an application named 'Application_VSNT_LDAP_NDI', which could not be found.");
+    }
+
+    acctRequest.setApplication("Application_VSNT_LDAP_NDI"); 
+
+    String fullName = null;
+    if ((middlename != null) && (middlename.length() != 0))
+      fullName = lastname + ", " + firstname + " " + middlename;
+    else
+      fullName = lastname + ", " + firstname;
+
+    String ndiAccountDN = "u,ou=worker,dc=tfayd,dc=com";
+
+    acctRequest.setNativeIdentity(ndiAccountDN); 
+    acctRequest.setOp(ProvisioningPlan.ObjectOperation.Create);
+    workflow.put("OperationPerformed", "Create");    
+    acctRequest.setType("account");
+
+    // Defining target application attribute
+    acctRequest.add(new AttributeRequest("objectClass", ProvisioningPlan.Operation.Add, "inetorgperson"));
+    acctRequest.add(new AttributeRequest("objectClass", ProvisioningPlan.Operation.Add, "mdsCVLink"));
+    acctRequest.add(new AttributeRequest("objectClass", ProvisioningPlan.Operation.Add, "mdsMVLink"));
+    acctRequest.add(new AttributeRequest("objectClass", ProvisioningPlan.Operation.Add, "organizationalperson"));
+    acctRequest.add(new AttributeRequest("objectClass", ProvisioningPlan.Operation.Add, "person"));
+    acctRequest.add(new AttributeRequest("objectClass", ProvisioningPlan.Operation.Add, "top"));
+    acctRequest.add(new AttributeRequest("objectClass", ProvisioningPlan.Operation.Add, "worker"));
+    acctRequest.add(new AttributeRequest("cn", ProvisioningPlan.Operation.Set, fullName));
+    acctRequest.add(new AttributeRequest("sn", ProvisioningPlan.Operation.Set, lastname));
+    acctRequest.add(new AttributeRequest("authsource", ProvisioningPlan.Operation.Set, "VSNTniversal IdM")); 
+    acctRequest.add(new AttributeRequest("destination", ProvisioningPlan.Operation.Set, "GE")); 
+    acctRequest.add(new AttributeRequest("givenName", ProvisioningPlan.Operation.Set, firstname));
+    if ((middlename != null) && (middlename.length() != 0)) {
+      acctRequest.add(new AttributeRequest("hrmiddlename", ProvisioningPlan.Operation.Set, middlename));
+    }
+    acctRequest.add(new AttributeRequest("hreffectiveenddate", ProvisioningPlan.Operation.Set, endDate));
+    acctRequest.add(new AttributeRequest("hreffectivestartdate", ProvisioningPlan.Operation.Set, startDate));
+    acctRequest.add(new AttributeRequest("hrpersontypeid", ProvisioningPlan.Operation.Set, "99996"));
+    acctRequest.add(new AttributeRequest("hrpole", ProvisioningPlan.Operation.Set, "11I"));
+    acctRequest.add(new AttributeRequest("hrsupervisorid", ProvisioningPlan.Operation.Set, mngrDisplayName));
+    acctRequest.add(new AttributeRequest("hrusersubpersontype", ProvisioningPlan.Operation.Set, "Test"));
+    acctRequest.add(new AttributeRequest("hrfullname", ProvisioningPlan.Operation.Set, lastname + ", " + firstname));        
+
+    if(mngrbusinessUnitId != null)
+      acctRequest.add(new AttributeRequest("hrbusinessunitid", ProvisioningPlan.Operation.Set, mngrbusinessUnitId));
+    acctRequest.add(new AttributeRequest("locationid", "IDMFUNCTIONAL"));
+    if(mngrorgid != null)
+      acctRequest.add(new AttributeRequest("orgid", ProvisioningPlan.Operation.Set, mngrorgid));
+    acctRequest.add(new AttributeRequest("persontypeid", ProvisioningPlan.Operation.Set, "99996"));
+
+    acctRequest.add(new AttributeRequest("ownerid", ProvisioningPlan.Operation.Set, membername));
+    if(mngrparentbusinessUnitId != null)
+      acctRequest.add(new AttributeRequest("hrparentbusinessunitid", ProvisioningPlan.Operation.Set, mngrparentbusinessUnitId));
+    acctRequest.add(new AttributeRequest("oraclehrid", ProvisioningPlan.Operation.Set, NewID));
+    acctRequest.add(new AttributeRequest("ssostatus", ProvisioningPlan.Operation.Set, "U"));
+
+    List accReqList = new ArrayList();
+    accReqList.add(acctRequest);
+    planNDI.setAccountRequests(accReqList);
+    workflow.put("planNDI", planNDI);
+    log.error("plan Create_NDI_Provision_Plan " + planNDI);
+    return planNDI;
+  }
+
+
+
+  /** 
+  * This method is used to calculate the date based on Current time Zone
+  * @param dateValue
+  * @param timeZone
+  * @return
+  */
+  public Date getTimezoneCorrectedDate(Date dateValue, String timeZone) {
+
+    log.error("Start getTimezoneCorrectedDate");
+    Instant instant = Instant.ofEpochMilli(dateValue.getTime());
+    ZoneId userTimeZone = TimeZone.getTimeZone(timeZone).toZoneId();
+    ZonedDateTime zonedDateTime = instant.atZone(userTimeZone);
+    ZoneId serverTimeZone = TimeZone.getDefault().toZoneId();
+    LocalDate timelessDate = LocalDate.of(zonedDateTime.getYear(), zonedDateTime.getMonth(), zonedDateTime.getDayOfMonth());
+    Date correctedDate = new Date(timelessDate.atStartOfDay(serverTimeZone).toInstant().toEpochMilli());
+    log.error("correctedDate is: " + correctedDate);
+    log.error("Leave getTimezoneCorrectedDate");
+    return correctedDate;
+  }
+
+
+  /**
+     * create the confirmation form 
+     * @param displayForm - the form filled by the requester
+     * @param formModel - contains key-value pair
+     * @return Confirmation Form object
+     */
+  public Form getConfirmationForm(String displayFormName, Map formModel) {
+    logger.debug("Started Method : getConfirmationForm");
+    Form confirmationForm = null;
+    List displayFormFields = null;
+    String displayName = null;
+    String name = null;
+    String type = null;
+    String displayType = null;
+    int span = 1;
+    boolean isMulti;
+    Form displayForm =context.getObjectByName(Form.class,displayFormName);
+
+    if(displayForm!=null && formModel!=null) {
+      Map customFormMap = formModel.get("customVSNTWrapperForms").get(formModel.get("useCase")).get(formModel.get("operation"));
+      if(customFormMap!=null && customFormMap.get("section")!=null && customFormMap.get("useCaseName")!=null && formModel.get("customVSNTWrapperForms").get("buttons")!=null) {
+        logger.debug("inside if");
+        confirmationForm = new Form();
+        Section confirmationFormSection = new Section();
+        confirmationFormSection.setColumns(2);
+        confirmationForm.setTitle("Confirmation Form");
+        List formSectionNames = customFormMap.get("section"); 
+        String useCaseName = customFormMap.get("useCaseName");
+        Map buttons =  formModel.get("customVSNTWrapperForms").get("buttons");
+        useCaseName = useCaseName + " Review";    
+        confirmationFormSection.setLabel(useCaseName);
+        for(String section:formSectionNames) {
+          displayFormFields = displayForm.getSection(section).getFields();
+          if(displayFormFields!=null) {
+            for (Field displayFormField : displayFormFields) {
+              if(formModel.get(displayFormField.getName())!=null){
+                Field confirmationFormField = new Field();
+                displayName = displayFormField.getDisplayName();
+                name = displayFormField.getName();
+                type = displayFormField.getType();
+                displayType = displayFormField.getDisplayType();
+                span = displayFormField.getColumnSpan();
+                isMulti = displayFormField.isMulti();
+                if(isMulti) {
+                  confirmationFormField.setMulti(isMulti);
+                }
+                confirmationFormField.setType(type);
+                confirmationFormField.setDisplayName(displayName);
+                confirmationFormField.setName(name);
+                confirmationFormField.setColumnSpan(span);
+                confirmationFormField.setDisplayType(displayType);
+                confirmationFormField.setReadOnly(true);
+                confirmationFormSection.add(confirmationFormField);
+              }
+            }
+          }
+        }
+        for (Map.Entry entry : buttons.entrySet()) {
+          Button button = new Button(entry.getKey(),entry.getValue());
+          confirmationForm.add(button);
+        }
+        confirmationForm.add(confirmationFormSection);
+      }
+    }
+    logger.debug("Method Exit : getConfirmationForm");
+    return confirmationForm;
+  }
+
+  public Map createManagerDetailsMapForTestAccount(Workflow workflow, String managersso) {
+
+    import sailpoint.object.Application;
+    import sailpoint.object.Identity;
+    import sailpoint.object.Link;
+    import java.util.HashMap;
+    import java.util.Map;
+    import sailpoint.object.Custom;
+    import java.util.ArrayList;
+
+    import sailpoint.object.*;
+
+    Boolean linkFlag= false;
+    log.error("Starting : createManagerDetailsMapForTestAccount ");
+
+    Identity managerObject = context.getObjectByName(Identity.class,managersso);
+    Map managerDetailsMap = null;
+    if (null!=managerObject){
+      managerDetailsMap = new HashMap();
+      managerDetailsMap.put("managerName", managerObject.getName());
+      managerDetailsMap.put("mngrFirstName", managerObject.getFirstname());
+      managerDetailsMap.put("mngrlastname", managerObject.getLastname());
+      managerDetailsMap.put("mngrname", managerObject.getAttribute("userName"));
+      managerDetailsMap.put("mngrDisplayName", managerObject.getAttribute("displayName"));
+      managerDetailsMap.put("mngrWorkCountry", managerObject.getAttribute("workCountry"));
+      log.error("Starting : 1 ");
+
+      String managerEmail = managerObject.getEmail();
+      (managerEmail != null ? managerEmail : "idm.auto-mailer@nbcuni.com");
+      managerDetailsMap.put("managerEmail", managerEmail);
+      managerDetailsMap.put("managerFullName", managerObject.getLastname()+", "+managerObject.getFirstname());
+      managerDetailsMap.put("managerFullNameSSO",managerFullName + "(" + managersso + ")");
+      log.error("Starting : 2 ");
+      Link links = managerObject.getLink(context.getObjectByName(Application.class, "Application_VSNT_HR"));
+      log.error("Starting : 3 ");
+      if(links != null ){
+        log.error("Starting : 4 ");
+        Map attributes= new HashMap();
+        attributes = links.getAttributes();
+        if(attributes != null)   {
+
+          if (attributes.get("C001_DEPARTMENT_NAME") != null)
+            managerDetailsMap.put("mngrdepartment", attributes.get("C001_DEPARTMENT_NAME").toString());
+          log.error("Starting : 5 ");
+          if (attributes.get("C001_ORGID") != null)
+            managerDetailsMap.put("mngrorgid",attributes.get("C001_ORGID").toString());
+          log.error("Starting : 6 ");
+          if (attributes.get("C001_BUSINESS_UNIT_ID") != null)
+            managerDetailsMap.put("mngrbusinessUnitId",attributes.get("C001_BUSINESS_UNIT_ID").toString());
+          else{
+            Custom customBusinessID = context.getObjectByName(Custom.class, "Custom_VSNT_ContractorBusinessID");
+            log.error("Starting : 7 ");
+            Attributes attributes = customBusinessID.getAttributes();
+            Map businessIDMap=new HashMap();
+            String businessId = null;
+            businessIDMap = attributes.getMap();
+            log.error("Starting : 8 ");
+            if((businessIDMap.get(managerOrgSegmentID)) != null)
+              businessId = businessIDMap.get(managerOrgSegmentID).toString();
+            log.error("Starting : 9 ");
+            if(businessId != null){
+              managerDetailsMap.put("mngrbusinessUnitId",businessId.toString());
+              log.error("Workflow_NBCU_TestAccount_Creation: businessId Test Account Creation "+businessId.toString());
+            }
+            log.error("Starting : 10 ");
+          }
+          log.error("Starting : 1 ");
+          if (attributes.get("C001_PARENT_BIZ_ID") != null)
+            managerDetailsMap.put("mngrparentbusinessUnitId",attributes.get("C001_PARENT_BIZ_ID").toString());
+          else{
+            log.error("Starting : 11 ");
+            Custom customBusinessID = context.getObjectByName(Custom.class, "Custom_VSNT_ContractorBusinessID");
+            Map businessIDMap=new HashMap();
+            Attributes attributes = customBusinessID.getAttributes();
+            String parentBusinessId = null;
+            businessIDMap = attributes.getMap();
+            log.error("Starting : 12 ");
+            if((businessIDMap.get(managerOrgSegmentID))!= null)
+              parentBusinessId = businessIDMap.get(managerOrgSegmentID).toString();
+            if(parentBusinessId != null){
+              managerDetailsMap.put("mngrparentbusinessUnitId",parentBusinessId.toString());
+              log.error("Workflow_NBCU_TestAccount_Creation: parentBusinessId Test Account Creation "+parentBusinessId.toString());
+            }
+          }
+        }
+      }
+    }
+    return managerDetailsMap;
+  }
+
+  ]]></Source>
+</Rule>

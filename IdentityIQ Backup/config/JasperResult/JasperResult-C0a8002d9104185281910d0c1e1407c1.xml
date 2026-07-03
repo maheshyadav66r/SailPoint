@@ -1,0 +1,266 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE JasperResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<JasperResult handlerPageCount="-1" pageCount="-1" pagesPerBucket="-1">
+  <Attributes>
+    <Map>
+      <entry key="chart">
+        <value>
+          <Chart category="application.name" groupBy="application.name" title="Uncorrelated Accounts by Application" type="pie" value="count(*)">
+            <Attributes>
+              <Map>
+                <entry key="chartData">
+                  <value>
+                    <List>
+                      <Map>
+                        <entry key="category" value="JDBC OPChecking"/>
+                        <entry key="value">
+                          <value>
+                            <Long>8</Long>
+                          </value>
+                        </entry>
+                      </Map>
+                    </List>
+                  </value>
+                </entry>
+              </Map>
+            </Attributes>
+          </Chart>
+        </value>
+      </entry>
+      <entry key="csvRowsPerBucket">
+        <value>
+          <Integer>1000</Integer>
+        </value>
+      </entry>
+      <entry key="header">
+        <value>
+          <LiveReportSummary title="Uncorrelated Accounts Report">
+            <Values>
+              <LiveReportSummaryValue label="Creator" name="creator">
+                <Value>
+                  <String>spadmin</String>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="Creation Date" name="date">
+                <Value>
+                  <String>8/1/24, 1:56 PM</String>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="Correlated Applications" name="correlatedApps">
+                <Value>
+                  <String>JDBC OPChecking</String>
+                </Value>
+              </LiveReportSummaryValue>
+            </Values>
+          </LiveReportSummary>
+        </value>
+      </entry>
+      <entry key="reportDefinition">
+        <value>
+          <LiveReport title="Uncorrelated Accounts Report">
+            <Chart category="application.name" groupBy="application.name" title="rept_uncorrelated_ids_chart_title" type="pie" value="count(*)"/>
+            <DataSource objectType="sailpoint.object.Link" type="Filter">
+              <QueryParameters>
+                <Parameter argument="correlatedApps" property="application.id"/>
+                <Parameter defaultValue="false" property="identity.correlated" valueClass="boolean"/>
+                <Parameter defaultValue="false" property="application.authoritative" valueClass="boolean"/>
+                <Parameter defaultValue="false" property="application.logical" valueClass="boolean"/>
+              </QueryParameters>
+              <SortOrder>
+                <Sort ascending="true" field="firstName"/>
+              </SortOrder>
+            </DataSource>
+            <ReportForm>
+              <Reference class="sailpoint.object.Form" name="Report Form Skeleton"/>
+            </ReportForm>
+            <Columns>
+              <ReportColumnConfig field="identity" header="Identity" property="identity.name" sortable="true" width="146"/>
+              <ReportColumnConfig field="account" header="Account" property="nativeIdentity" sortable="true" width="146"/>
+              <ReportColumnConfig field="firstName" header="First Name" property="identity.firstname" sortable="true" width="146"/>
+              <ReportColumnConfig field="lastName" header="Last Name" property="identity.lastname" sortable="true" width="146"/>
+              <ReportColumnConfig field="applicationName" header="Application Name" property="application.name" sortable="true" width="146"/>
+            </Columns>
+            <ReportHeader title="Uncorrelated Accounts Report">
+              <Values>
+                <LiveReportSummaryValue label="Creator" name="creator">
+                  <Value>
+                    <String>spadmin</String>
+                  </Value>
+                </LiveReportSummaryValue>
+                <LiveReportSummaryValue label="Creation Date" name="date">
+                  <Value>
+                    <String>8/1/24, 1:56 PM</String>
+                  </Value>
+                </LiveReportSummaryValue>
+                <LiveReportSummaryValue label="Correlated Applications" name="correlatedApps">
+                  <Value>
+                    <String>JDBC OPChecking</String>
+                  </Value>
+                </LiveReportSummaryValue>
+              </Values>
+            </ReportHeader>
+            <ReportSummary title="Uncorrelated Account Details">
+              <DataSourceScript>
+                <Source><![CDATA[
+                        
+                        import java.util.*;
+                        import sailpoint.tools.Util;
+                        import java.lang.Math;
+                        import sailpoint.object.*;
+                        import sailpoint.api.ObjectUtil;
+
+                        QueryOptions ops = new QueryOptions();
+                        ops.addGroupBy("correlated");
+
+                        String sources = "";
+                        if (reportArgs.containsKey("correlatedApps")){
+                           List apps = reportArgs.getList("correlatedApps");
+                           if (apps != null){
+                             ops.addFilter(Filter.in("links.application.id", apps));
+                             List appNames = ObjectUtil.convertIdsToNames(context, Application.class, apps);
+                             sources = Util.listToCsv(appNames);
+                           }
+                        }
+
+                        List fields = new ArrayList();
+                        fields.add("correlated");
+                        fields.add("count(distinct id)");
+
+                        int correlated = 0;
+                        int uncorrelated = 0;
+                        Iterator results = context.search(Identity.class, ops, fields);
+                        while(results.hasNext()){
+                            Object[] row = results.next();
+                            int count = Util.otoi(row[1]);
+                            if ((Boolean)row[0]){
+                                correlated += count;
+                            } else {
+                                uncorrelated += count;
+                            }
+                        }
+
+                        int totalIdentities =  correlated + uncorrelated;
+                        float percent =  totalIdentities != 0 ? (float)uncorrelated/totalIdentities : 0;
+                        String percentString = ((int)Math.floor(percent * 100)) +  "%";
+
+                        Map map = new HashMap();
+                        map.put("sources", sources);
+                        map.put("correlatedIdentities", correlated);
+                        map.put("uncorrelatedIdentities", uncorrelated);
+                        map.put("totalIdentities", totalIdentities);
+                        map.put("percentCorrelated", percentString);
+
+                        return map;
+                        
+                      ]]></Source>
+              </DataSourceScript>
+              <Values>
+                <LiveReportSummaryValue label="rept_uncorrelated_ids_grid_label_auth_sources" name="sources"/>
+                <LiveReportSummaryValue label="rept_uncorrelated_ids_summary_correlated" name="correlatedIdentities"/>
+                <LiveReportSummaryValue label="rept_uncorrelated_ids_summary_uncorrelated" name="uncorrelatedIdentities"/>
+                <LiveReportSummaryValue label="rept_uncorrelated_ids_summary_total_ids" name="totalIdentities"/>
+                <LiveReportSummaryValue label="rept_uncorrelated_ids_summary_percent" name="percentCorrelated"/>
+              </Values>
+            </ReportSummary>
+          </LiveReport>
+        </value>
+      </entry>
+      <entry key="reportRowCount">
+        <value>
+          <Integer>8</Integer>
+        </value>
+      </entry>
+      <entry key="summary">
+        <value>
+          <LiveReportSummary title="Uncorrelated Account Details">
+            <DataSourceScript>
+              <Source><![CDATA[
+                        
+                        import java.util.*;
+                        import sailpoint.tools.Util;
+                        import java.lang.Math;
+                        import sailpoint.object.*;
+                        import sailpoint.api.ObjectUtil;
+
+                        QueryOptions ops = new QueryOptions();
+                        ops.addGroupBy("correlated");
+
+                        String sources = "";
+                        if (reportArgs.containsKey("correlatedApps")){
+                           List apps = reportArgs.getList("correlatedApps");
+                           if (apps != null){
+                             ops.addFilter(Filter.in("links.application.id", apps));
+                             List appNames = ObjectUtil.convertIdsToNames(context, Application.class, apps);
+                             sources = Util.listToCsv(appNames);
+                           }
+                        }
+
+                        List fields = new ArrayList();
+                        fields.add("correlated");
+                        fields.add("count(distinct id)");
+
+                        int correlated = 0;
+                        int uncorrelated = 0;
+                        Iterator results = context.search(Identity.class, ops, fields);
+                        while(results.hasNext()){
+                            Object[] row = results.next();
+                            int count = Util.otoi(row[1]);
+                            if ((Boolean)row[0]){
+                                correlated += count;
+                            } else {
+                                uncorrelated += count;
+                            }
+                        }
+
+                        int totalIdentities =  correlated + uncorrelated;
+                        float percent =  totalIdentities != 0 ? (float)uncorrelated/totalIdentities : 0;
+                        String percentString = ((int)Math.floor(percent * 100)) +  "%";
+
+                        Map map = new HashMap();
+                        map.put("sources", sources);
+                        map.put("correlatedIdentities", correlated);
+                        map.put("uncorrelatedIdentities", uncorrelated);
+                        map.put("totalIdentities", totalIdentities);
+                        map.put("percentCorrelated", percentString);
+
+                        return map;
+                        
+                      ]]></Source>
+            </DataSourceScript>
+            <Values>
+              <LiveReportSummaryValue label="Source Application(s)" name="sources">
+                <Value>
+                  <String>JDBC OPChecking</String>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="Correlated Identities" name="correlatedIdentities">
+                <Value>
+                  <Integer>0</Integer>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="Uncorrelated Identities" name="uncorrelatedIdentities">
+                <Value>
+                  <Integer>8</Integer>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="Total Identities" name="totalIdentities">
+                <Value>
+                  <Integer>8</Integer>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="Percent Uncorrelated" name="percentCorrelated">
+                <Value>
+                  <String>100%</String>
+                </Value>
+              </LiveReportSummaryValue>
+            </Values>
+          </LiveReportSummary>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Files>
+    <Reference class="sailpoint.object.PersistedFile" name="UAR.pdf"/>
+    <Reference class="sailpoint.object.PersistedFile" name="UAR.csv"/>
+  </Files>
+</JasperResult>

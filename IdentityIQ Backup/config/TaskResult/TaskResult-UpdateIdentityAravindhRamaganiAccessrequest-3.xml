@@ -1,0 +1,152 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1738662278518" completionStatus="Error" launched="1738662264972" launcher="spadmin" name="Update Identity Aravindh Ramagani AccessRequest - 3" targetClass="Identity" targetName="Aravindh Ramagani" type="LCM">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000478"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Aravindh Ramagani">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000478"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="ActiveDirectory" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800fc94cb1e358194ccac8a802828"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="nativeIdUpdated">
+                        <value>
+                          <Boolean>true</Boolean>
+                        </value>
+                      </entry>
+                      <entry key="operation" value="EntitlementAdd"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest displayValue="AccountingGeneral" name="memberOf" op="Add" value="CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                    <Attributes>
+                      <Map>
+                        <entry key="assignment" value="true"/>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000478"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <ProvisioningTargets>
+                  <ProvisioningTarget application="ActiveDirectory" attribute="memberOf" value="CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                    <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" implicitCreate="true"/>
+                  </ProvisioningTarget>
+                </ProvisioningTargets>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Aravindh Ramagani" targetIntegration="ActiveDirectory" trackingId="8ce4dfdd71e94c7598586ff879fc4ddb">
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Aravindh Ramagani,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create" targetIntegration="ActiveDirectory">
+                <Attributes>
+                  <Map>
+                    <entry key="attachmentConfigList"/>
+                    <entry key="attachments"/>
+                    <entry key="flow" value="AccessRequest"/>
+                    <entry key="id" value="c0a800fc94cb1e358194ccac8a802828"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="nativeIdUpdated">
+                      <value>
+                        <Boolean>true</Boolean>
+                      </value>
+                    </entry>
+                    <entry key="operation" value="EntitlementAdd"/>
+                    <entry key="provisioningTransactionId" value="c0a800fc94cb1e358194d058f20b3dba"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest displayValue="AccountingGeneral" name="memberOf" op="Add" value="CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                  <Attributes>
+                    <Map>
+                      <entry key="assignment" value="true"/>
+                    </Map>
+                  </Attributes>
+                </AttributeRequest>
+                <AttributeRequest name="sAMAccountName" op="Set" value="Aravindh Ramagani"/>
+                <AttributeRequest name="givenName" op="Set" value="Aravindh">
+                  <ProvisioningResult status="failed"/>
+                </AttributeRequest>
+                <AttributeRequest name="sn" op="Set" value="Ramagani">
+                  <ProvisioningResult status="failed"/>
+                </AttributeRequest>
+                <AttributeRequest name="mail" op="Set" value="Aravindh.Ramagani@eshiam.com">
+                  <ProvisioningResult status="failed"/>
+                </AttributeRequest>
+                <AttributeRequest name="passWord" op="Add"/>
+                <ProvisioningResult status="committed">
+                  <Errors>
+                    <Message key="Account created but some attributes are not updated properly." type="Error"/>
+                  </Errors>
+                  <Warnings>
+                    <Message key="Account created but failed to modify : Failed to update attributes for identity CN=Aravindh Ramagani,OU=People,OU=Demo,DC=Eshiam,DC=com. The specified directory service attribute or value does not exist.&#10;" type="Warn"/>
+                  </Warnings>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000478"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+            <ProvisioningTarget application="ActiveDirectory" attribute="memberOf" value="CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+              <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" implicitCreate="true"/>
+            </ProvisioningTarget>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a800fc94cb1e358194d058c3843da9"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="end"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="Account created but failed to modify : Failed to update attributes for identity CN=Aravindh Ramagani,OU=People,OU=Demo,DC=Eshiam,DC=com. The specified directory service attribute or value does not exist.&#10;" type="Warn"/>
+    <Message key="Account created but some attributes are not updated properly." type="Error"/>
+  </Messages>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

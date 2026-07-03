@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningTransaction PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningTransaction accountDisplayName="cn=Anna.Ward,ou=People,dc=my-domain,dc=com" applicationName="LDAPApplication" identityDisplayName="Anna Ward" identityName="Anna Ward" integration="LDAPApplication" name="0000010341" nativeIdentity="cn=Anna.Ward,ou=People,dc=my-domain,dc=com" operation="Create" source="IdentityRefresh" status="Failed" type="Auto">
+  <Attributes>
+    <Map>
+      <entry key="planResult">
+        <value>
+          <ProvisioningResult status="failed">
+            <Errors>
+              <Message key="sailpoint.connector.InvalidConfigurationException: [ InvalidConfigurationException ] &#10; [ Error details ] [LDAP: error code 17 - dn: attribute type undefined]" type="Error"/>
+            </Errors>
+          </ProvisioningResult>
+        </value>
+      </entry>
+      <entry key="request">
+        <value>
+          <AccountRequest application="LDAPApplication" assignmentIds="70d676b2599c432fad6f5aeef3bc9e56" nativeIdentity="cn=Anna.Ward,ou=People,dc=my-domain,dc=com" op="Create" targetIntegration="LDAPApplication">
+            <Attributes>
+              <Map>
+                <entry key="provisioningTransactionId" value="c0a801289c401bab819c414102f3028c"/>
+              </Map>
+            </Attributes>
+            <AttributeRequest name="groups" op="Add">
+              <Value>
+                <List>
+                  <String>cn=WebApplicationAccess,ou=Group,dc=my-domain,dc=com</String>
+                  <String>cn=Contractors,ou=Group,dc=my-domain,dc=com</String>
+                </List>
+              </Value>
+            </AttributeRequest>
+            <AttributeRequest name="dn" op="Set" value="cn=Anna.Ward,ou=People,dc=my-domain,dc=com"/>
+            <AttributeRequest name="password" op="Set">
+              <Attributes>
+                <Map>
+                  <entry key="secret" value="true"/>
+                </Map>
+              </Attributes>
+            </AttributeRequest>
+            <AttributeRequest name="mail" op="Set" value="anna.ward@eshiam.com"/>
+            <ProvisioningResult status="failed">
+              <Errors>
+                <Message key="sailpoint.connector.InvalidConfigurationException: [ InvalidConfigurationException ] &#10; [ Error details ] [LDAP: error code 17 - dn: attribute type undefined]" type="Error"/>
+              </Errors>
+            </ProvisioningResult>
+          </AccountRequest>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+</ProvisioningTransaction>

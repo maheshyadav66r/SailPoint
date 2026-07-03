@@ -1,0 +1,55 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningTransaction PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningTransaction accountDisplayName="Randy Knight" applicationName="ActiveDirectory" identityDisplayName="Randy Knight" identityName="Randy Knight" integration="ActiveDirectory" name="0000009621" nativeIdentity="Randy Knight" operation="Create" source="LCM" status="Failed" type="Auto">
+  <Attributes>
+    <Map>
+      <entry key="accessRequestId" value="0000001013"/>
+      <entry key="request">
+        <value>
+          <AccountRequest application="ActiveDirectory" nativeIdentity="Randy Knight" op="Create">
+            <Attributes>
+              <Map>
+                <entry key="attachmentConfigList"/>
+                <entry key="attachments"/>
+                <entry key="flow" value="AccessRequest"/>
+                <entry key="id" value="c0a800fc94cb1e358194ccac8c4b2836"/>
+                <entry key="interface" value="LCM"/>
+                <entry key="nativeIdUpdated">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="operation" value="EntitlementAdd"/>
+                <entry key="provisioningTransactionId" value="c0a800049b321cb8819b3270662d0088"/>
+              </Map>
+            </Attributes>
+            <AttributeRequest displayValue="Corporate-VPN" name="memberOf" op="Add" value="CN=Corporate-VPN,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+              <Attributes>
+                <Map>
+                  <entry key="assignment" value="true"/>
+                </Map>
+              </Attributes>
+            </AttributeRequest>
+            <AttributeRequest displayValue="customerDataCenter" name="memberOf" op="Add" value="CN=customerDataCenter,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+              <Attributes>
+                <Map>
+                  <entry key="assignment" value="true"/>
+                </Map>
+              </Attributes>
+            </AttributeRequest>
+            <AttributeRequest name="distinguishedName" op="Set" value="CN=Randy Knight,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+            <AttributeRequest name="givenName" op="Set" value="Randy"/>
+            <AttributeRequest name="sn" op="Set" value="Knight"/>
+            <AttributeRequest name="mail" op="Set" value="randy.knight@eshiam.com"/>
+            <AttributeRequest name="password" op="Set"/>
+            <ProvisioningResult status="failed">
+              <Errors>
+                <Message key="Exception occurred while executing the RPCRequest: Errors returned from IQService. &quot;Attribute DistinguishedNamedoes not contain expected character ,. Value supplied : Randy KnightAttribute DistinguishedNamedoes not contain expected character ,. Value supplied : Randy Knight. HRESULT:[0x80131500]&quot;" type="Error"/>
+              </Errors>
+            </ProvisioningResult>
+          </AccountRequest>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+</ProvisioningTransaction>

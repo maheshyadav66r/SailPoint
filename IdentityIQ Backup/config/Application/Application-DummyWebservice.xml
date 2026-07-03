@@ -1,0 +1,255 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Application PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Application connector="sailpoint.connector.webservices.WebServicesConnector" featuresString="PROVISIONING, ENABLE, PASSWORD, AUTHENTICATE, UNLOCK" name="Dummy Webservice" profileClass="" type="Web Services">
+  <Attributes>
+    <Map>
+      <entry key="acctAggregationEnd">
+        <value>
+          <Date>1765437924655</Date>
+        </value>
+      </entry>
+      <entry key="acctAggregationStart">
+        <value>
+          <Date>1765437924304</Date>
+        </value>
+      </entry>
+      <entry key="afterProvisioningRule"/>
+      <entry key="aggregationPartitioned">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="aggregationType" value="account"/>
+      <entry key="authenticationMethod" value="BasicLogin"/>
+      <entry key="beforeProvisioningRule"/>
+      <entry key="clientCertAuthEnabled">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="compositeDefinition"/>
+      <entry key="connectionParameters">
+        <value>
+          <List>
+            <Map>
+              <entry key="afterRule"/>
+              <entry key="beforeRule" value="WebServiceBeforeOperationRule1045"/>
+              <entry key="body">
+                <value>
+                  <Map>
+                    <entry key="bodyFormData"/>
+                    <entry key="bodyFormat" value="raw"/>
+                    <entry key="jsonBody" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&#13;&#10;&lt;env:Envelope xmlns:env=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:xsd=&quot;https://www.w3.org/201/XMLSchema&quot;&gt;&#13;&#10;    &lt;env:Body&gt;&#13;&#10;        &lt;bsvc:Get_Workers_Request bsvc:version=&quot;v43.0&quot; xmlns:bsvc=&quot;urn:com.workday/bsvc&quot;&gt;&#13;&#10;            &lt;bsvc:Request_Criteria&gt;&#13;&#10;                &lt;bsvc:Field_And_Parameter_Criteria_Data&gt;&#13;&#10;                    &lt;bsvc:Provider_Reference&gt;&#13;&#10;                        &lt;bsvc:ID bsvc:type=&quot;Integration_System_ID&quot;&gt;INTH0178SailPointFOService&lt;/bsvc:ID&gt;&#13;&#10;                    &lt;/bsvc:Provider_Reference&gt;&#13;&#10;                &lt;/bsvc:Field_And_Parameter_Criteria_Data&gt;&#13;&#10;                &lt;bsvc:Transaction_Log_Criteria_Data&gt;&#13;&#10;                    &lt;bsvc:Transaction_Date_Range_Data&gt;&#13;&#10;                        &lt;bsvc:Effective_From&gt;terminationDate&lt;/bsvc:Effective_From&gt;  &lt;!2025-06-06T02:00:00Z  180days in past&gt;&#13;&#10;                        &lt;bsvc:Effective_Through&gt;currentDate&lt;/bsvc:Effective_Through&gt;  &lt;!2025-12-03T02:00:00Z&gt;&#13;&#10;                    &lt;/bsvc:Transaction_Date_Range_Data&gt;&#13;&#10;                    &lt;bsvc:Transaction_Type_References&gt;&#13;&#10;                        &lt;bsvc:Transaction_Type_Reference&gt;&#13;&#10;                            &lt;bsvc:ID bsvc:type=&quot;Business_Process_Type&quot;&gt;Terminate Employee&lt;/bsvc:ID&gt;&#13;&#10;                        &lt;/bsvc:Transaction_Type_Reference&gt;&#13;&#10;                        &lt;bsvc:Transaction_Type_Reference&gt;&#13;&#10;                            &lt;bsvc:ID bsvc:type=&quot;Business_Process_Type&quot;&gt;End Contingent Worker Contract&lt;/bsvc:ID&gt;&#13;&#10;                        &lt;/bsvc:Transaction_Type_Reference&gt;&#13;&#10;                    &lt;/bsvc:Transaction_Type_References&gt;&#13;&#10;                &lt;/bsvc:Transaction_Log_Criteria_Data&gt;&#13;&#10;            &lt;/bsvc:Request_Criteria&gt;&#13;&#10;            &lt;bsvc:Response_Group&gt;&#13;&#10;                &lt;bsvc:Include_Reference&gt;true&lt;/bsvc:Include_Reference&gt;&#13;&#10;                &lt;bsvc:Include_Personal_Information&gt;true&lt;/bsvc:Include_Personal_Information&gt;&#13;&#10;                &lt;bsvc:Include_Employment_Information&gt;true&lt;/bsvc:Include_Employment_Information&gt;&#13;&#10;                &lt;bsvc:Include_Management_Chain_Data&gt;true&lt;/bsvc:Include_Management_Chain_Data&gt;&#13;&#10;                &lt;bsvc:Include_Organizations&gt;true&lt;/bsvc:Include_Organizations&gt;&#13;&#10;                &lt;bsvc:Include_Transaction_Log_Data&gt;true&lt;/bsvc:Include_Transaction_Log_Data&gt;&#13;&#10;                &lt;bsvc:Include_Additional_Jobs&gt;true&lt;/bsvc:Include_Additional_Jobs&gt;&#13;&#10;            &lt;/bsvc:Response_Group&gt;&#13;&#10;            &lt;bsvc:Response_Filter&gt;&#13;&#10;                &lt;bsvc:As_Of_Effective_Date&gt;$currentDate$&lt;/bsvc:As_Of_Effective_Date&gt;  &lt;!2025-12-03T02:00:00Z&gt;&#13;&#10;            &lt;/bsvc:Response_Filter&gt;&#13;&#10;        &lt;/bsvc:Get_Workers_Request&gt;&#13;&#10;    &lt;/env:Body&gt;&#13;&#10;&lt;/env:Envelope&gt;"/>
+                  </Map>
+                </value>
+              </entry>
+              <entry key="contextUrl" value="getAllUsers"/>
+              <entry key="curlCommand"/>
+              <entry key="curlEnabled">
+                <value>
+                  <Boolean/>
+                </value>
+              </entry>
+              <entry key="customAuthUrl"/>
+              <entry key="header">
+                <value>
+                  <Map>
+                    <entry key="Content-Type" value="application/xml"/>
+                  </Map>
+                </value>
+              </entry>
+              <entry key="httpMethodType" value="POST"/>
+              <entry key="operationType" value="Account Aggregation"/>
+              <entry key="paginationSteps"/>
+              <entry key="pagingInitialOffset">
+                <value>
+                  <Integer>0</Integer>
+                </value>
+              </entry>
+              <entry key="pagingSize">
+                <value>
+                  <Integer>50</Integer>
+                </value>
+              </entry>
+              <entry key="parentEndpointName"/>
+              <entry key="resMappingObj"/>
+              <entry key="rootPath"/>
+              <entry key="sequenceNumberForEndpoint" value="1"/>
+              <entry key="uniqueNameForEndPoint" value="PastTerminated Full Aggregation"/>
+              <entry key="xpathNamespaces"/>
+            </Map>
+            <Map>
+              <entry key="afterRule"/>
+              <entry key="beforeRule" value="WebServiceBeforeOperationRule1045"/>
+              <entry key="body">
+                <value>
+                  <Map>
+                    <entry key="bodyFormData"/>
+                    <entry key="bodyFormat" value="raw"/>
+                    <entry key="jsonBody" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&#13;&#10;&lt;env:Envelope xmlns:env=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:xsd=&quot;https://www.w3.org/201/XMLSchema&quot;&gt;&#13;&#10;    &lt;env:Body&gt;&#13;&#10;        &lt;bsvc:Get_Workers_Request bsvc:version=&quot;v43.0&quot; xmlns:bsvc=&quot;urn:com.workday/bsvc&quot;&gt;&#13;&#10;            &lt;bsvc:Request_Criteria&gt;&#13;&#10;                &lt;bsvc:Field_And_Parameter_Criteria_Data&gt;&#13;&#10;                    &lt;bsvc:Provider_Reference&gt;&#13;&#10;                        &lt;bsvc:ID bsvc:type=&quot;Integration_System_ID&quot;&gt;INTH0178SailPointFOService&lt;/bsvc:ID&gt;&#13;&#10;                    &lt;/bsvc:Provider_Reference&gt;&#13;&#10;                &lt;/bsvc:Field_And_Parameter_Criteria_Data&gt;&#13;&#10;                &lt;bsvc:Transaction_Log_Criteria_Data&gt;&#13;&#10;                    &lt;bsvc:Transaction_Date_Range_Data&gt;&#13;&#10;                        &lt;bsvc:Effective_From&gt;hireDate&lt;/bsvc:Effective_From&gt;  &lt;!2025-12-13T02:00:00Z   10days in future&gt;&#13;&#10;                        &lt;bsvc:Effective_Through&gt;currentDate&lt;/bsvc:Effective_Through&gt; &lt;!2025-12-03T02:00:00Z&gt;&#13;&#10;                    &lt;/bsvc:Transaction_Date_Range_Data&gt;&#13;&#10;                    &lt;bsvc:Transaction_Type_References&gt;&#13;&#10;                        &lt;bsvc:Transaction_Type_Reference&gt;&#13;&#10;                            &lt;bsvc:ID bsvc:type=&quot;Business_Process_Type&quot;&gt;Hire Employee&lt;/bsvc:ID&gt;&#13;&#10;                        &lt;/bsvc:Transaction_Type_Reference&gt;&#13;&#10;                        &lt;bsvc:Transaction_Type_Reference&gt;&#13;&#10;                            &lt;bsvc:ID bsvc:type=&quot;Business_Process_Type&quot;&gt;Contract Contingent Worker&lt;/bsvc:ID&gt;&#13;&#10;                        &lt;/bsvc:Transaction_Type_Reference&gt;&#13;&#10;                    &lt;/bsvc:Transaction_Type_References&gt;&#13;&#10;                &lt;/bsvc:Transaction_Log_Criteria_Data&gt;&#13;&#10;            &lt;/bsvc:Request_Criteria&gt;&#13;&#10;            &lt;bsvc:Response_Group&gt;&#13;&#10;                &lt;bsvc:Include_Reference&gt;true&lt;/bsvc:Include_Reference&gt;&#13;&#10;                &lt;bsvc:Include_Personal_Information&gt;true&lt;/bsvc:Include_Personal_Information&gt;&#13;&#10;                &lt;bsvc:Include_Employment_Information&gt;true&lt;/bsvc:Include_Employment_Information&gt;&#13;&#10;                &lt;bsvc:Include_Management_Chain_Data&gt;true&lt;/bsvc:Include_Management_Chain_Data&gt;&#13;&#10;                &lt;bsvc:Include_Organizations&gt;true&lt;/bsvc:Include_Organizations&gt;&#13;&#10;                &lt;bsvc:Include_Transaction_Log_Data&gt;true&lt;/bsvc:Include_Transaction_Log_Data&gt;&#13;&#10;                &lt;bsvc:Include_Additional_Jobs&gt;true&lt;/bsvc:Include_Additional_Jobs&gt;&#13;&#10;            &lt;/bsvc:Response_Group&gt;&#13;&#10;            &lt;bsvc:Response_Filter&gt;&#13;&#10;                &lt;bsvc:As_Of_Effective_Date&gt;$currentDate$&lt;/bsvc:As_Of_Effective_Date&gt;  &lt;!2025-12-03T02:00:00Z&gt;&#13;&#10;            &lt;/bsvc:Response_Filter&gt;&#13;&#10;        &lt;/bsvc:Get_Workers_Request&gt;&#13;&#10;    &lt;/env:Body&gt;&#13;&#10;&lt;/env:Envelope&gt;"/>
+                  </Map>
+                </value>
+              </entry>
+              <entry key="contextUrl" value="getAllUsers"/>
+              <entry key="curlCommand"/>
+              <entry key="curlEnabled">
+                <value>
+                  <Boolean/>
+                </value>
+              </entry>
+              <entry key="customAuthUrl"/>
+              <entry key="header">
+                <value>
+                  <Map>
+                    <entry key="Content-Type" value="application/xml"/>
+                  </Map>
+                </value>
+              </entry>
+              <entry key="httpMethodType" value="POST"/>
+              <entry key="operationType" value="Account Aggregation"/>
+              <entry key="paginationSteps"/>
+              <entry key="pagingInitialOffset">
+                <value>
+                  <Integer>0</Integer>
+                </value>
+              </entry>
+              <entry key="pagingSize">
+                <value>
+                  <Integer>50</Integer>
+                </value>
+              </entry>
+              <entry key="parentEndpointName"/>
+              <entry key="resMappingObj"/>
+              <entry key="rootPath"/>
+              <entry key="sequenceNumberForEndpoint" value="2"/>
+              <entry key="uniqueNameForEndPoint" value="FutureHired Full Aggregation"/>
+              <entry key="xpathNamespaces"/>
+            </Map>
+            <Map>
+              <entry key="afterRule"/>
+              <entry key="beforeRule" value="WebServiceBeforeOperationRule1045"/>
+              <entry key="body">
+                <value>
+                  <Map>
+                    <entry key="bodyFormData"/>
+                    <entry key="bodyFormat" value="raw"/>
+                    <entry key="jsonBody" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&#13;&#10;&lt;env:Envelope xmlns:env=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot; xmlns:xsd=&quot;https://www.w3.org/201/XMLSchema&quot;&gt;&#13;&#10;    &lt;env:Body&gt;&#13;&#10;        &lt;bsvc:Get_Workers_Request bsvc:version=&quot;v43.0&quot; xmlns:bsvc=&quot;urn:com.workday/bsvc&quot;&gt;&#13;&#10;            &lt;bsvc:Request_Criteria&gt;&#13;&#10;                &lt;bsvc:Field_And_Parameter_Criteria_Data&gt;&#13;&#10;                    &lt;bsvc:Provider_Reference&gt;&#13;&#10;                        &lt;bsvc:ID bsvc:type=&quot;Integration_System_ID&quot;&gt;INTH0178SailPointFOService&lt;/bsvc:ID&gt;&#13;&#10;                    &lt;/bsvc:Provider_Reference&gt;&#13;&#10;                &lt;/bsvc:Field_And_Parameter_Criteria_Data&gt;&#13;&#10;                &lt;bsvc:Transaction_Log_Criteria_Data&gt;&#13;&#10;                    &lt;bsvc:Transaction_Date_Range_Data&gt;&#13;&#10;                        &lt;bsvc:Updated_From&gt;lastAggregationDate&lt;/bsvc:Updated_From&gt; &lt;!2025-12-01T02:00:00Z&gt;&#13;&#10;                        &lt;bsvc:Updated_Through&gt;currentDate&lt;/bsvc:Updated_Through&gt; &lt;!2025-12-03T02:00:00Z&gt;&#13;&#10;                    &lt;/bsvc:Transaction_Date_Range_Data&gt;&#13;&#10;                &lt;/bsvc:Transaction_Log_Criteria_Data&gt;&#13;&#10;            &lt;/bsvc:Request_Criteria&gt;&#13;&#10;            &lt;bsvc:Response_Group&gt;&#13;&#10;                &lt;bsvc:Include_Reference&gt;true&lt;/bsvc:Include_Reference&gt;&#13;&#10;                &lt;bsvc:Include_Personal_Information&gt;true&lt;/bsvc:Include_Personal_Information&gt;&#13;&#10;                &lt;bsvc:Include_Employment_Information&gt;true&lt;/bsvc:Include_Employment_Information&gt;&#13;&#10;                &lt;bsvc:Include_Management_Chain_Data&gt;true&lt;/bsvc:Include_Management_Chain_Data&gt;&#13;&#10;                &lt;bsvc:Include_Organizations&gt;true&lt;/bsvc:Include_Organizations&gt;&#13;&#10;                &lt;bsvc:Include_Transaction_Log_Data&gt;true&lt;/bsvc:Include_Transaction_Log_Data&gt;&#13;&#10;                &lt;bsvc:Include_Additional_Jobs&gt;true&lt;/bsvc:Include_Additional_Jobs&gt;&#13;&#10;            &lt;/bsvc:Response_Group&gt;&#13;&#10;            &lt;bsvc:Response_Filter&gt;&#13;&#10;                &lt;bsvc:As_Of_Effective_Date&gt;currentDate&lt;/bsvc:As_Of_Effective_Date&gt;  &lt;!2025-12-03T02:00:00Z&gt;&#13;&#10;            &lt;/bsvc:Response_Filter&gt;&#13;&#10;        &lt;/bsvc:Get_Workers_Request&gt;&#13;&#10;    &lt;/env:Body&gt;&#13;&#10;&lt;/env:Envelope&gt;"/>
+                  </Map>
+                </value>
+              </entry>
+              <entry key="contextUrl" value="getUsers"/>
+              <entry key="curlCommand"/>
+              <entry key="curlEnabled">
+                <value>
+                  <Boolean/>
+                </value>
+              </entry>
+              <entry key="customAuthUrl"/>
+              <entry key="header">
+                <value>
+                  <Map>
+                    <entry key="Content-Type" value="application/xml"/>
+                  </Map>
+                </value>
+              </entry>
+              <entry key="httpMethodType" value="POST"/>
+              <entry key="operationType" value="Account Delta Aggregation"/>
+              <entry key="paginationSteps"/>
+              <entry key="pagingInitialOffset">
+                <value>
+                  <Integer>0</Integer>
+                </value>
+              </entry>
+              <entry key="pagingSize">
+                <value>
+                  <Integer>50</Integer>
+                </value>
+              </entry>
+              <entry key="parentEndpointName"/>
+              <entry key="resMappingObj"/>
+              <entry key="rootPath"/>
+              <entry key="sequenceNumberForEndpoint" value="3"/>
+              <entry key="uniqueNameForEndPoint" value="Delta Agrregation"/>
+              <entry key="xpathNamespaces"/>
+            </Map>
+          </List>
+        </value>
+      </entry>
+      <entry key="createAccountWithEntReq">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="enableHasMore" value="true"/>
+      <entry key="enableStatus"/>
+      <entry key="encrypted" value="accesstoken,refresh_token,oauth_token_info,client_secret,private_key,private_key_password,clientCertificate,clientKeySpec,resourceOwnerPassword,custom_auth_token_info"/>
+      <entry key="fixedPlanMultivaluedAttribute" value="true"/>
+      <entry key="genericWebServiceBaseUrl" value="https://docs.oracle.com/javase/8/docs/api/"/>
+      <entry key="httpCookieSpecsStandard" value="true"/>
+      <entry key="isGetObjectRequiredForPTA">
+        <value>
+          <Boolean>true</Boolean>
+        </value>
+      </entry>
+      <entry key="lastAggregationDate_account" value="2025-12-09T06:44:35Z"/>
+      <entry key="nativeChangeDetectionAttributeScope" value="entitlements"/>
+      <entry key="nativeChangeDetectionAttributes"/>
+      <entry key="nativeChangeDetectionEnabled">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="nativeChangeDetectionOperations"/>
+      <entry key="oAuthJwtHeader">
+        <value>
+          <Map>
+            <entry key="alg" value="RS256"/>
+          </Map>
+        </value>
+      </entry>
+      <entry key="oAuthJwtPayload">
+        <value>
+          <Map>
+            <entry key="aud"/>
+            <entry key="exp" value="15f"/>
+            <entry key="iss"/>
+            <entry key="sub"/>
+          </Map>
+        </value>
+      </entry>
+      <entry key="password" value="1:ACP:oav1t3DVNMS1+dQqghrVxohuDEeq1ZeAHJfff+sWMIc="/>
+      <entry key="private_key_to_update"/>
+      <entry key="saml_assertion_url"/>
+      <entry key="saml_request_body"/>
+      <entry key="sysDescriptions">
+        <value>
+          <Map>
+            <entry key="en_US"/>
+          </Map>
+        </value>
+      </entry>
+      <entry key="templateApplication" value="Web Services"/>
+      <entry key="throwProvAfterRuleException">
+        <value>
+          <Boolean>true</Boolean>
+        </value>
+      </entry>
+      <entry key="throwProvBeforeRuleException">
+        <value>
+          <Boolean>true</Boolean>
+        </value>
+      </entry>
+      <entry key="timeoutInSeconds"/>
+      <entry key="username" value="spadmin"/>
+      <entry key="version" value="v2"/>
+    </Map>
+  </Attributes>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+  <Schemas>
+    <Schema displayAttribute="" groupAttribute="" identityAttribute="" instanceAttribute="" nativeObjectType="user" objectType="account"/>
+    <Schema descriptionAttribute="" displayAttribute="" identityAttribute="" instanceAttribute="" nativeObjectType="group" objectType="group"/>
+  </Schemas>
+  <ApplicationScorecard/>
+</Application>

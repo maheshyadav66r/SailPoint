@@ -1,0 +1,148 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE WorkItem PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<WorkItem handler="sailpoint.api.Workflower" level="Normal" name="0000001649" renderer="workflow.xhtml" type="Form">
+  <Attributes>
+    <Map>
+      <entry key="quickLinkIdentityId" value="c0a81d8995cd1eaa8195d15b21df0b9f"/>
+      <entry key="workItemForm">
+        <value>
+          <Form name="Get Access Items">
+            <Attributes>
+              <Map>
+                <entry key="pageTitle" value="Get Access Items"/>
+              </Map>
+            </Attributes>
+            <Section label="Select Items" name="selectItems">
+              <Field displayType="radio" name="Type" type="string">
+                <AllowedValues>
+                  <String>Entitlements</String>
+                  <String>Roles</String>
+                </AllowedValues>
+              </Field>
+              <Field name="searchItem" type="string"/>
+              <Field name="SearchedItems" readOnly="true" type="string">
+                <Script>
+                  <Source><![CDATA[
+                import sailpoint.object.Filter;
+                import sailpoint.object.IdentityEntitlement;
+                import sailpoint.object.Application;
+                import sailpoint.object.QueryOptions;
+                import sailpoint.tools.Util;
+
+                import java.util.Iterator;
+                import java.util.Arrays;
+
+                Filter filter = null;
+
+                Filter idFilter = Filter.eq("identity.id", quickLinkIdentityId);
+
+                if (Util.nullSafeEq(selectItems, "Entitlements")) {
+
+                Filter nameFilter = Filter.ne("name", "assignedRoles");
+                Filter nameFilter2 = Filter.ne("name", "detectedRoles");
+                Filter nameFilter3 = Filter.like("value", searchItem, Filter.MatchMode.ANYWHERE);
+
+                filter = Filter.and(idFilter, nameFilter, nameFilter2, nameFilter3);
+
+                } else {
+
+                Filter nameFilter = Filter.eq("name", "assignedRoles");
+                Filter nameFilter2 = Filter.eq("name", "detectedRoles");
+                Filter nameFilter3 = Filter.like("value", searchItem, Filter.MatchMode.ANYWHERE);
+
+                filter = Filter.and(idFilter, nameFilter3,
+                Filter.or(nameFilter, nameFilter2));
+                }
+
+                QueryOptions qo = new QueryOptions();
+                qo.addFilter(filter);
+
+                Iterator it = context.search(
+                IdentityEntitlement.class,
+                qo,
+                Arrays.asList("name", "value", "application", "type")
+                );
+
+                StringBuilder html = new StringBuilder();
+
+                html.append("<div style='padding:10px; font-family:Arial, sans-serif;'>");
+                html.append("<div style='border:1px solid #ccc;'>");
+                html.append("<table border='1' cellspacing='0' style='border-collapse:collapse; width:100%; font-size:13px; table-layout:fixed;'>");
+
+                html.append("<colgroup>")
+                .append("<col style='width:5%;'>")
+                .append("<col style='width:12%;'>")
+                .append("<col style='width:12%;'>")
+                .append("<col style='width:15%;'>")
+                .append("<col style='width:15%;'>")
+                .append("</colgroup>");
+
+                html.append("<tr style='background-color:#011E69; color:white;'>")
+                .append("<th style='padding:8px; text-align:center;'>SNo</th>")
+                .append("<th style='padding:8px; text-align:center;'>ItemName</th>")
+                .append("<th style='padding:8px; text-align:center;'>ItemValue</th>")
+                .append("<th style='padding:8px; text-align:center;'>Application</th>")
+                .append("<th style='padding:8px; text-align:center;'>Type</th>")
+                .append("</tr>");
+
+                int serialNo = 1;
+
+                while (it.hasNext()) {
+
+                Object[] row = (Object[]) it.next();
+
+                String name = (String) row[0];
+                String value = (String) row[1];
+                String appId = (String) row[2];
+                String type = (String) row[3];
+
+                String appName = "";
+                if (appId != null) {
+                Application app = context.getObjectById(Application.class, appId);
+                if (app != null) {
+                appName = app.getName();
+                }
+                }
+
+                String rowColor = (serialNo % 2 == 0) ? "#ffffff" : "#f9f9f9";
+
+                html.append("<tr style='background-color:" + rowColor + "; text-align:center;'>")
+                .append("<td style='padding:5px;'>").append(serialNo).append("</td>")
+                .append("<td style='padding:8px;'>").append(name).append("</td>")
+                .append("<td style='padding:8px;'>").append(value).append("</td>")
+                .append("<td style='padding:8px;'>").append(appName).append("</td>")
+                .append("<td style='padding:8px;'>").append(type).append("</td>")
+                .append("</tr>");
+
+                serialNo++;
+                }
+
+                html.append("</table>");
+                html.append("</div>");
+                html.append("</div>");
+                
+                
+                log.error(" html :::::  "+html.toString());
+
+              ]]></Source>
+                </Script>
+              </Field>
+            </Section>
+            <Button action="next" label="Submit"/>
+            <Button action="back" label="Cancel"/>
+          </Form>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Description>Get Access Items</Description>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+  <Requester>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Requester>
+  <WorkflowCaseRef>
+    <Reference class="sailpoint.object.WorkflowCase" name="QuickLink Launch for identity spadmin - 814"/>
+  </WorkflowCaseRef>
+</WorkItem>

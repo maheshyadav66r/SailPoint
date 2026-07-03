@@ -1,0 +1,120 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1773152639636" completionStatus="Error" launched="1773152626377" launcher="spadmin" name="RapidSetup Joiner FOR Itachi Uchiha 1773152618488" targetClass="Identity" targetName="Itachi Uchiha" type="Workflow">
+  <Attributes>
+    <Map>
+      <entry key="approvalScheme" value="none"/>
+      <entry key="identityRequestId" value="0000001074"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Itachi Uchiha">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000001074"/>
+                <entry key="noLocking">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="RapidSetup"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="ActiveDirectory" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="flow" value="Lifecycle"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="nativeIdUpdated">
+                        <value>
+                          <Boolean>true</Boolean>
+                        </value>
+                      </entry>
+                      <entry key="operation" value="Create"/>
+                    </Map>
+                  </Attributes>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000001074"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="RapidSetup"/>
+                  </Map>
+                </Attributes>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Itachi Uchiha" targetIntegration="ActiveDirectory" trackingId="adc5e60077b94374bf85ae76d23f6322">
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Itachi Uchiha,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create" targetIntegration="ActiveDirectory">
+                <Attributes>
+                  <Map>
+                    <entry key="flow" value="Lifecycle"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="nativeIdUpdated">
+                      <value>
+                        <Boolean>true</Boolean>
+                      </value>
+                    </entry>
+                    <entry key="operation" value="Create"/>
+                    <entry key="provisioningTransactionId" value="c0a801289cd51899819cd822188905a6"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="sAMAccountName" op="Set" value="Itachi Uchiha"/>
+                <AttributeRequest name="givenName" op="Set" value="Itachi"/>
+                <AttributeRequest name="sn" op="Set" value="Uchiha"/>
+                <AttributeRequest name="mail" op="Set" value="itachi.uchiha@eshiam.com"/>
+                <AttributeRequest name="password" op="Set"/>
+                <ProvisioningResult status="committed"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000001074"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="RapidSetup"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a801289cd51899819cd821e784059b"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="Notify Manager"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="err_exception" type="Error">
+      <Parameters>
+        <Message key="sailpoint.tools.GeneralException: The application script threw an exception: java.lang.NullPointerException: Null Pointer in Method Invocation BSF info: script at line: 0 column: columnNo" type="Error"/>
+      </Parameters>
+    </Message>
+  </Messages>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

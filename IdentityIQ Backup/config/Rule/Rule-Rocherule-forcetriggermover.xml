@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="RocheRule-ForceTriggerMover">
+  <Source><![CDATA[
+  import sailpoint.object.IdentityChangeEvent;
+  import sailpoint.object.IdentityTrigger;
+  import sailpoint.tools.GeneralException;
+  import sailpoint.tools.xml.XMLObjectFactory;
+  import sailpoint.object.Attributes;
+  import sailpoint.tools.Util;
+
+  import org.apache.log4j.Logger;
+  import org.apache.log4j.Level;
+
+  import sailpoint.api.RequestManager;
+  import sailpoint.object.Identity;
+  import sailpoint.object.Request;
+  import sailpoint.object.RequestDefinition;
+  import sailpoint.request.WorkflowRequestExecutor;
+  import sailpoint.workflow.StandardWorkflowHandler;
+  import sailpoint.object.AuditEvent;
+  import sailpoint.server.Auditor;
+  import sailpoint.tools.Message;
+
+
+
+  IdentityTrigger trigger = context.getObjectByName(IdentityTrigger.class, "RocheEventJMLConversionMover"); String workflowName = "Custom-Joiner";//"RocheWorkflowJMLConversionMover";
+  String filePath = "D:/Sailpoint Files/csv files/roche.csv";
+  log.error("filePath : " + filePath);
+  BufferedReader bf = null;
+  try{
+    bf = new BufferedReader(new FileReader(filePath));
+    int lineNumber = 0; String line = "";
+    while((line = bf.readLine()) != null)
+    {
+      lineNumber++;
+      try{
+        int num = line.indexOf(",");
+        String identityName = line.substring(0,num).trim();
+        log.error("identityName : " + identityName);
+        if(null != identityName){
+          Identity newIdentity = context.getObjectByName(Identity.class, identityName);
+          log.error("newIdentity : " + newIdentity);
+          if( null != newIdentity @and sailpoint.tools.Util.isNotNullOrEmpty(newIdentity.getName())){
+            Identity oldIdentity = (Identity) XMLObjectFactory.getInstance().clone(newIdentity, context);
+            String finalAttrsLine = line.substring(num+1);
+            log.error("finalAttrsLine : " + finalAttrsLine);
+            String[] attrs = finalAttrsLine.split(",");
+            for(String eachAttrValue : attrs){
+              String[] attrValue = eachAttrValue.split(":");
+              String attribute = attrValue[0].trim();
+              String value = attrValue[1].trim();
+              if(sailpoint.tools.Util.isNotNullOrEmpty(attribute)){
+                oldIdentity.setAttribute(attribute, value);
+              }
+            }
+            IdentityChangeEvent event = new IdentityChangeEvent();
+            event.setNewObject(newIdentity);
+            event.setOldObject(oldIdentity);
+            String caseName = caseNamePrefix + newIdentity.getName();
+            Attributes reqArgs = new Attributes();
+            log.error("workflowName : " + workflowName);
+            String caseName = "TestP"+workflowName+"ForceMover";
+            log.error("caseName : " + caseName);
+            Attributes reqArgs = new Attributes();
+            reqArgs.put(StandardWorkflowHandler.ARG_REQUEST_DEFINITION,WorkflowRequestExecutor.DEFINITION_NAME);
+            reqArgs.put(StandardWorkflowHandler.ARG_WORKFLOW,workflowName);
+            reqArgs.put(StandardWorkflowHandler.ARG_REQUEST_NAME, caseName);
+            reqArgs.put("requestName", caseName);
+            Attributes wfArgs = new Attributes();
+            wfArgs.put("identityName", newIdentity.getName());
+            wfArgs.put("workflow", workflowName);
+            wfArgs.put("trigger", trigger);
+            wfArgs.put("identityName", identityName);
+            wfArgs.put("flow", "Mover");
+            wfArgs.put("requester", "CIDMJMLG");
+            wfArgs.put("sessionOwner", "CIDMJMLG");
+            wfArgs.put("event", event);
+            reqArgs.putAll(wfArgs);
+            Request req = new Request();
+            RequestDefinition reqdef = context.getObject(RequestDefinition.class,"Workflow Request");
+            req.setDefinition(reqdef); req.setLauncher("spadmin"); req.setName(caseName);
+            req.setAttributes(reqdef, reqArgs); req.setOwner(newIdentity);
+            Calendar cal = Calendar.getInstance(); cal.setTime(new Date());
+            cal.add(Calendar.HOUR, 1); req.setEventDate(cal.getTime());
+            RequestManager.addRequest(context, req);
+            log.error("Request object Created !!!!" );
+          }
+        }
+      }
+      catch(Exception e){ log.error("Exception for lineNumber : "+lineNumber+ " line :"+line+" ERROR "+e.getMessage()); }
+    }
+  }catch(Exception ex){  
+    log.error("Exception while reading the file location : "+filePath+" ERROR "+e.getMessage());
+  }finally
+  {
+    if(bf != null){
+      bf.close();
+    }
+  }
+
+
+
+
+  ]]></Source>
+</Rule>

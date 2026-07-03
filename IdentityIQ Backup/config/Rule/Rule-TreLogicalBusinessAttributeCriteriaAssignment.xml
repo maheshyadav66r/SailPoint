@@ -1,0 +1,122 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="TRE Logical Business attribute Criteria assignment" type="IdentitySelector">
+  <Description>This rule is used to select an Identity that is related to the given Identity</Description>
+  <Signature returnType="boolean">
+    <Inputs>
+      <Argument name="log" type="org.apache.commons.logging.Log">
+        <Description>
+          The log object associated with the SailPointContext.
+        </Description>
+      </Argument>
+      <Argument name="context" type="sailpoint.api.SailPointContext">
+        <Description>
+          A sailpoint.api.SailPointContext object that can be used to query the database if necessary.
+        </Description>
+      </Argument>
+      <Argument name="identity" type="Identity">
+        <Description>
+          The identity.
+        </Description>
+      </Argument>
+      <Argument name="roleName" type="String">
+        <Description>
+          The name of the sailpoint.object.Bundle (role) that is being selected for the Identity. 
+          If roles are not applicable to this Identity selection, this value will be void.
+        </Description>
+      </Argument>
+    </Inputs>
+    <Returns>
+      <Argument name="success">
+        <Description>
+          True if the selection was successful; false otherwise.
+        </Description>
+      </Argument>
+    </Returns>
+  </Signature>
+  <Source><![CDATA[
+  import sailpoint.object.Filter;
+  import sailpoint.object.QueryOptions;
+  import sailpoint.object.Link;
+  import sailpoint.object.Bundle;
+  import sailpoint.tools.Util;
+  import sailpoint.object.ManagedAttribute;
+  import sailpoint.object.IdentityEntitlement;
+
+  boolean isLogicalBusiness = false;
+
+  log.error("entered into testrule6413081");
+
+  try {
+
+    Filter filter = Filter.and(Filter.eq("identity.id",identity.getId()),Filter.ignoreCase(Filter.like("application.name","TRE", Filter.MatchMode.START)));
+    QueryOptions options = new QueryOptions();
+    options.addFilter(filter);
+    int count = context.countObjects(Link.class,options);
+    if(count > 0){
+      log.error("application account checking TRE");
+      isLogicalBusiness = true;
+    }
+
+    if(!isLogicalBusiness){
+      log.error("detected role checking641308");
+      String appName = null;
+
+      List detectedRoles = identity.getDetectedRoles();
+      if(Util.nullSafeSize(detectedRoles) > 0){
+        for(Bundle bundle : detectedRoles){
+          appName = bundle.getAttribute("appName");
+          if(Util.isNotNullOrEmpty(appName)){
+            if(appName.startsWith("TRE")){
+              isLogicalBusiness = true;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    if(!isLogicalBusiness){
+      log.error("entitlement app name checking6413081");
+      Filter filter = Filter.and(Filter.notnull("value"),Filter.eq("identity.id",identity.getId()),Filter.not(Filter.ignoreCase(Filter.like("application.name","TRE", Filter.MatchMode.START))));
+      QueryOptions qo = new QueryOptions();
+      qo.addFilter(filter);
+      Iterator iterator = context.search(IdentityEntitlement.class,qo,"value,application.name");
+
+      while(iterator.hasNext()){
+        Object[] obj = iterator.next();
+
+        ManagedAttribute ma = null;
+        try{
+          if(Util.isNotNullOrEmpty(obj[0]) && Util.isNotNullOrEmpty(obj[1])){
+            ma = (ManagedAttribute)context.getUniqueObject(ManagedAttribute.class,Filter.and(Filter.eq("application.name",obj[1]),Filter.eq("value",obj[0])));
+            if(ma != null){
+              String logicalAppName = ma.getAttribute("entAppName");
+              log.error("logical app name :" +logicalAppName);
+              if(Util.isNotNullOrEmpty(logicalAppName)){
+                if(logicalAppName.startsWith("TRE")){
+                  isLogicalBusiness = true;
+                  break;
+                }
+              }else{
+                continue;
+              }
+            }
+          }
+        }catch(Exception e){
+          log.error("Exception in managedAttribute attribute Logical Business attribute Criteria assignment Rule : "+e.getMessage());
+        }finally{
+          if(ma != null) {
+            context.decache(ma);
+          }
+        }
+      }
+    }
+  }
+  catch(Exception e){
+    log.error("Exception in Logical Business attribute Criteria assignment Rule : "+e.getMessage());
+  }
+
+  return isLogicalBusiness;
+  ]]></Source>
+</Rule>

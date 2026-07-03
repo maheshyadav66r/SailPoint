@@ -1,0 +1,351 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Pre-Iterator TRE-TCR-ICAM" type="PreIterate">
+  <Description>This rule is called before the connector processes the data in a file.</Description>
+  <Signature returnType="void">
+    <Inputs>
+      <Argument name="log" type="org.apache.commons.logging.Log">
+        <Description>
+          The log object associated with the SailPointContext.
+        </Description>
+      </Argument>
+      <Argument name="context" type="sailpoint.api.SailPointContext">
+        <Description>
+          A sailpoint.api.SailPointContext object that can be used to query the database if necessary.
+        </Description>
+      </Argument>
+      <Argument name="application">
+        <Description>
+          Application being iterated.
+        </Description>
+      </Argument>
+      <Argument name="schema">
+        <Description>
+          Schema representing the data being iterated.
+        </Description>
+      </Argument>
+      <Argument name="stats">
+        <Description>
+          A map passed by the connector of the stats for the file about to be iterated.
+          Contains keys:
+          fileName : (String) filename of the file about to be processed
+          absolutePath : (String) absolute filename
+          length : (Long) length in bytes
+          lastModified : (Long) last time the file was updated Java GMT
+        </Description>
+      </Argument>
+    </Inputs>
+  </Signature>
+  <Source><![CDATA[
+ import java.io.BufferedReader;
+  import java.io.BufferedWriter;
+  import java.io.File;
+  import java.io.FileReader;
+  import java.io.FileWriter;
+  import java.io.IOException;
+  import java.text.SimpleDateFormat;
+  import java.util.List;
+  import java.util.HashMap; 
+  import java.util.Map;
+  import sailpoint.tools.RFC4180LineParser;
+  import sailpoint.tools.Util;
+  import sailpoint.object.Custom;
+  import org.apache.commons.logging.Log;
+  import org.apache.log4j.Logger;
+  import org.apache.log4j.Level;
+  import sailpoint.tools.GeneralException;
+  Logger logger = Logger.getLogger("TRE-Apps");
+  logger.error("Entered inside the TRE-TCR-Daily Pre Iterate rule");
+
+  public void headerValidation (String filePath ,String expectedHeader, int linesToBeRead){
+    String line = "";
+    boolean isValid = false;
+    List finalHeaders = new ArrayList();
+    int lineCount = 0;
+    StringBuilder headerBuilder = new StringBuilder();
+    BufferedReader reader = null;
+
+    try {
+      reader = new BufferedReader(new FileReader(filePath));
+      while ((line = reader.readLine()) != null) {
+
+        if (lineCount == 0) {
+          lineCount++;
+          continue;
+        }
+
+        if (lineCount <= linesToBeRead) {
+          headerBuilder.append(line).append("\n");
+        } else {
+          break;
+        }
+        lineCount++;
+      }
+      if (!headerBuilder.toString().isEmpty()) {
+        for (String h : headerBuilder.toString().replaceAll("\\r?\\n", " ").replaceAll("\\s+", " ").trim().split("\\s*,\\s*")) {
+          finalHeaders.add(h.replaceAll("^\"+|\"+$", "").trim());
+        }
+      }
+      //  normalize both
+      String finalHeader = Util.listToCsv(finalHeaders).replaceAll("\\s*,\\s*", ",").trim();
+      String expected = expectedHeader.replaceAll("\\s*,\\s*", ",").trim();
+      log.error("EXPECTED HEADER  :: " + expected);
+      log.error("ACTUAL HEADER  :: " + finalHeader);
+      if (expected.equalsIgnoreCase(finalHeader)) {
+        isValid = true;
+      }
+    } catch (Exception ex) {
+      throw new sailpoint.tools.GeneralException("Error while validating header", ex);
+
+    } finally {
+      try {
+        if (reader != null) reader.close();
+      } catch (Exception e) {
+        // ignore
+      }
+    }
+    log.error("isValid :"+isValid);
+    if (!isValid) {
+      throw new sailpoint.tools.GeneralException("The header in the TRE-TCR file  "+filePath+"   has been changed. Please upload the correct file.");
+    }
+  }
+
+
+  public Map readFileAndReturnList(String inputfileName, int skipLines, String stringToAppend) {
+    log.error("enter into readFileAndReturnList method");
+    String h=(String)application.getAttributes().getMap().get("file");
+    int index=h.lastIndexOf("\\");
+    String basePath=h.substring(0,(index+1));
+
+    String inputfile = basePath+inputfileName;
+    BufferedReader grpIn = null;
+    Map map = new HashMap();
+    String expectedHeader = "User ID, User Name, Levels of Access, Location, Active, Logged On, Last Logon Date, Last Logon Time";
+    //  User ID, User Name, Levels of Access, Location, Active, Logged On, Last Logon Date, Last Logon
+
+    headerValidation(inputfile, expectedHeader, skipLines);
+    // log.error("isHeaderValid :" +isHeaderValid);
+
+    try {
+      grpIn = new BufferedReader(new FileReader(inputfile));
+      //logger.error("Opening of input file");
+      String rawStr;
+      int count =0;
+
+      while ((rawStr = grpIn.readLine()) != null) {
+        if(count>skipLines && !rawStr.contains("Number")) {
+         // logger.error("Opening the input file");
+
+          String records = null;               				
+          RFC4180LineParser csvParser = new RFC4180LineParser(',');
+          ArrayList arl = new ArrayList();
+          arl = csvParser.parseLine(rawStr);
+          String key = arl.get(0);
+          key = key.replace("SSCDIRECT\\","");
+          String entValue = arl.get(2);
+          if(entValue!=null && !entValue.contains("SSCDIRECT\\")) {
+            entValue ="SSCDIRECT\\" +entValue;
+          }
+          String value = key+","+ entValue+","+arl.get(4)+","+arl.get(6);
+          value = value.replace("SSCDIRECT",stringToAppend);
+          //logger.error("The value of count is incremented by 1");
+          if(map.containsKey(key)) {
+            List curentLst = map.get(key);
+            curentLst.add(value);
+            map.put(key,curentLst);
+          } else {
+            List newList = new ArrayList();
+            newList.add(value);
+            map.put(key,newList);
+          }
+
+        }count++;
+      }
+    } 
+    catch (Exception e) 
+    {
+      logger.error("Error while reading file: " + inputfileName, e);
+      // throw new sailpoint.tools.GeneralException(e);
+      e.printStackTrace();
+    }
+    finally
+    {
+      if (grpIn != null) grpIn.close();
+      logger.error("Closing the inputfile");
+    }  
+    log.error("exit into readFileAndReturnList method");
+    return map;
+
+  }
+
+  
+  
+  
+  
+  logger.error("Entered into  the before customobject  TRE-TCR-Daily Pre Iterate rule");
+  Custom customObj = context.getObject(Custom.class, "Custom-Delimited Application Files");
+
+  String h,target,basePath;
+  int index=0;
+  List lst = null;
+  Map dailyFile= null;
+  Map monthlyFile=null;
+
+  if(customObj!=null){
+    h=(String)application.getAttributes().getMap().get("file");
+    index=h.lastIndexOf("\\");
+    basePath=h.substring(0,(index+1));
+
+    lst=customObj.getAttributes().get("TRE-TCR_Treasury-Client-Reconciliation-and-Reporting").get("InputFile");
+    target=customObj.getAttributes().get("TRE-TCR_Treasury-Client-Reconciliation-and-Reporting").get("TargetFile");	
+    dailyFile = readFileAndReturnList(lst.get(0), 7, "Daily");
+    monthlyFile = readFileAndReturnList(lst.get(1), 7, "Monthly");
+  }
+  try{
+    /*   String h=(String)application.getAttributes().getMap().get("file");
+      int index=h.lastIndexOf("/");
+      String basePath=h.substring(0,(index+1));
+
+      List lst=customObj.getAttributes().get("TRE-TCR_Treasury-Client-Reconciliation-and-Reporting").get("InputFile");
+      String target=customObj.getAttributes().get("TRE-TCR_Treasury-Client-Reconciliation-and-Reporting").get("TargetFile");	
+      Map dailyFile = readFileAndReturnList(lst.get(0), 7, "Daily");
+      Map monthlyFile = readFileAndReturnList(lst.get(1), 7, "Monthly");*/
+
+    Map monthlyFileCopy = monthlyFile;
+    // logger.debug("Daily File --------"+dailyFile);
+    //logger.debug("Monthly file------"+monthlyFile);
+    Map outMap = new HashMap();
+    logger.error("Entered into  befor daily file iteration  TRE-TCR-Daily Pre Iterate rule");
+    for (String key : dailyFile.keySet())
+    {
+      List valueList = dailyFile.get(key);
+      List monthlyValuesList = monthlyFile.get(key);
+      for(String value: valueList) {
+        if(monthlyValuesList!=null && !monthlyValuesList.isEmpty() ) {
+          for(String value1: monthlyValuesList) {
+            ArrayList arl = new ArrayList();
+            RFC4180LineParser csvParser = new RFC4180LineParser(',');
+            arl = csvParser.parseLine(value1);
+            value = value+","+arl.get(1);
+
+            if(outMap.containsKey(key)) {
+              List extList = outMap.get(key);
+              extList.add(value);
+              outMap.put(key,extList);
+            } else  {
+              List newList = new ArrayList();
+              newList.add(value);
+              outMap.put(key,newList);
+            }
+            monthlyFileCopy.remove(key);
+          }
+        } else {
+          value = value+",";
+          if(outMap.containsKey(key)) {
+            List extList = outMap.get(key);
+            extList.add(value);
+            outMap.put(key,extList);
+          } else  {
+            List newList = new ArrayList();
+            newList.add(value);
+            outMap.put(key,newList);
+          }
+
+        }
+
+      }
+
+    }
+    logger.error("Entered into  the after dailyfile and before monthlyfile copy iteration TRE-TCR-Daily Pre Iterate rule");
+
+    for (String key : monthlyFileCopy.keySet())
+    {
+      List valueList = monthlyFileCopy.get(key);
+      if(outMap.containsKey(key)) {
+        List extList = outMap.get(key);
+        for(String newValue : valueList) {
+          ArrayList arl = new ArrayList();
+          RFC4180LineParser csvParser = new RFC4180LineParser(',');
+          arl = csvParser.parseLine(newValue);
+          newValue = ","+","+","+","+arl.get(1);
+          extList.add(newValue);
+          outMap.put(key,extList);
+        }
+
+      } else  {
+        List newList = new ArrayList();
+        for(String newValue : valueList) {
+          ArrayList arl = new ArrayList();
+          RFC4180LineParser csvParser = new RFC4180LineParser(',');
+          arl = csvParser.parseLine(newValue);
+          newValue = key+","+","+","+","+arl.get(1);
+          newList.add(newValue);
+          outMap.put(key,newList);
+        }
+
+      }
+
+    }
+
+    logger.error("Entered into  before writing into target file  TRE-TCR-Daily Pre Iterate rule");
+    //logger.error("outmap is --"+outMap);
+    BufferedWriter grpOut = new BufferedWriter(new FileWriter(basePath+target));	
+    for (String key : outMap.keySet())
+    {
+
+      List valueList = outMap.get(key);
+      //logger.debug("writing to file list --"+valueList);
+      for(String value: valueList) {
+        ArrayList arl = new ArrayList();
+        RFC4180LineParser csvParser = new RFC4180LineParser(',');
+        arl = csvParser.parseLine(value);
+        // logger.debug("writing to file list --"+arl.size());
+        String ent1 = "";
+        String ent2 = null;
+        String user,ent,active,logonDate;	 
+        for(int i=4; i < arl.size(); ++i) {
+          if(ent2 == null){
+            ent2 = arl.get(i);				  
+          }else{
+            ent2 = ent2+","+arl.get(i);
+          }
+          // logger.debug("writing to file list ent2--"+ent2);
+        }
+        if(arl.get(0)!=null) {
+          user = arl.get(0);
+        }
+        if(arl.get(1)!=null) {
+          ent = arl.get(1);
+        }
+        if(arl.get(2)!=null) {
+          active = arl.get(2);
+        }
+        if(arl.get(3)!=null) {
+          logonDate = arl.get(3);
+        }
+        value = user+","+ent+","+active+","+logonDate+","+"\""+ent+","+ent2+"\"";
+        value = value.replace("\\","|");
+        //log.error("value :" +value);
+        grpOut.write(value);
+        grpOut.newLine();
+      }
+    }
+    grpOut.close();
+    //} 
+    logger.error("Entered into  after writing into target file  TRE-TCR-Daily Pre Iterate rule");
+  }
+  catch (Exception e) 
+  {
+    //e.printStackTrace();
+    logger.error("exception msg in main catch " + e.getMessage());
+    // throw new sailpoint.tools.GeneralException(e);
+    e.printStackTrace();
+  }
+  finally
+  {
+
+    logger.error("Closing the targetfile");
+  }
+
+  ]]></Source>
+</Rule>

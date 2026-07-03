@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="ADFieldValue" type="FieldValue">
+  <Description>This rule can be used to generate a field value (eg - an account name) using data from the given Identity. If this rule is run in the context of a workflow step then the arguments passed into the step will also be available. Also, any field values that have been processed so far from the policy related to the Application/Role will be available.</Description>
+  <Signature returnType="String"/>
+  <Source><![CDATA[import sailpoint.object.ProvisioningPlan;
+      import sailpoint.object.ProvisioningPlan.AccountRequest;
+      import sailpoint.object.ProvisioningPlan.AttributeRequest;
+      import sailpoint.object.ProvisioningPlan.Operation;
+      import sailpoint.object.Application;
+
+      Application application = context.getObjectByName(Application.class, "ActiveDirectory");
+      log.error("application : "+application);
+
+       if (accountRequest != null @and accountRequest != void @and field != null @and field != void ) {    
+        log.error("AccountRequest Operation :" + accountRequest.getOperation());
+        log.error("AttributeRequest Operation :" + accountRequest.getAttributeRequest("memberOf").getOperation());
+        if (accountRequest.getOperation().equals(AccountRequest.Operation.Create) @and accountRequest.getAttributeRequest("memberOf").getOperation().equals(ProvisioningPlan.Operation.Add) ) {
+          String entValue = accountRequest.getAttributeRequest("memberOf").getValue();
+          log.error("entValue : "+entValue);
+          if (entValue != null @and entValue.equalsIgnoreCase("CN=BenefitCommittee,OU=Groups,OU=Demo,DC=Eshiam,DC=com")) {
+            log.error("Entered into the entValue");
+            field.setRequired(true);
+            field.setReviewRequired(false);
+            return "NewValue";
+          }else{return null;}
+        } else {
+          log.error("Entered into the else condition ");
+          field.setRequired(false);
+          return null;
+        }
+      }
+      log.error("END FieldValue - SelectBusinessUnit - iSPARC 5629");
+
+
+
+]]></Source>
+</Rule>

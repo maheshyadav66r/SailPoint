@@ -1,0 +1,326 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Identity PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Identity assignedRoleSummary="ADBusinessRole" bundleSummary="ActiveDirectoryITRole" correlated="true" lastRefresh="1779186249964" name="Adrian Costa">
+  <Attributes>
+    <Map>
+      <entry key="department" value="Sales"/>
+      <entry key="displayName" value="Adrian Costa"/>
+      <entry key="email" value="adrian.costa@example.com"/>
+      <entry key="employeeId" value="EMP01309"/>
+      <entry key="firstname" value="Adrian"/>
+      <entry key="lastname" value="Costa"/>
+      <entry key="networkId" value="acosta675"/>
+      <entry key="pendingRefreshWorkflow" value="Refresh identity Adrian Costa"/>
+    </Map>
+  </Attributes>
+  <AssignedRoles>
+    <Reference class="sailpoint.object.Bundle" name="ad_business_role"/>
+  </AssignedRoles>
+  <AttributeMetaDatas>
+    <AttributeMetaData attribute="department" source="HR2:Department"/>
+    <AttributeMetaData attribute="displayName" source="HR2:Name"/>
+    <AttributeMetaData attribute="employeeId" source="HR2:EmployeeNo"/>
+    <AttributeMetaData attribute="networkId" source="HR2:NetworkID"/>
+    <AttributeMetaData attribute="email" source="HR2:Email"/>
+    <AttributeMetaData attribute="lastname" source="HR2:LastName"/>
+    <AttributeMetaData attribute="firstname" source="HR2:FirstName"/>
+    <AttributeMetaData attribute="inactive" source="SRH application:inactive"/>
+  </AttributeMetaDatas>
+  <Bundles>
+    <Reference class="sailpoint.object.Bundle" name="activeDirectoryITRole"/>
+  </Bundles>
+  <Exceptions>
+    <EntitlementGroup displayName="Adrian Costa" nativeIdentity="EMP01309">
+      <ApplicationRef>
+        <Reference class="sailpoint.object.Application" name="WebServicesApplicationEshiam"/>
+      </ApplicationRef>
+      <Attributes>
+        <Map>
+          <entry key="groups">
+            <value>
+              <List>
+                <String>WS_GROUP_100</String>
+              </List>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+    </EntitlementGroup>
+    <EntitlementGroup displayName="Adrian Costa" nativeIdentity="CN=Adrian Costa,OU=People,OU=Demo,DC=Eshiam,DC=com">
+      <ApplicationRef>
+        <Reference class="sailpoint.object.Application" name="ActiveDirectory"/>
+      </ApplicationRef>
+      <Attributes>
+        <Map>
+          <entry key="memberOf" value="CN=All_Users,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+        </Map>
+      </Attributes>
+    </EntitlementGroup>
+  </Exceptions>
+  <MitigationExpirations>
+    <MitigationExpiration action="NOTHING" comments="saf" expiration="1756113960838" lastActionDate="1756180069544">
+      <CertifiableDescriptor>
+        <PolicyViolation active="true" constraintId="c0a81d8992c311298192d6a1c3e60ea5" constraintName="Multiple Application Accounts" policyName="Task_conflicting_two_accounts" renderer="policyAccountDetails.xhtml" status="Open">
+          <Attributes>
+            <Map>
+              <entry key="AccountPolicyViolationAccounts">
+                <value>
+                  <List>
+                    <String>???</String>
+                    <String>Adrian Costa</String>
+                  </List>
+                </value>
+              </entry>
+              <entry key="AccountPolicyViolationAppName" value="WebServiceApplication-Eshiam"/>
+              <entry key="RelevantApplications">
+                <value>
+                  <List>
+                    <String>WebServiceApplication-Eshiam</String>
+                  </List>
+                </value>
+              </entry>
+            </Map>
+          </Attributes>
+          <IdentityRef>
+            <Reference class="sailpoint.object.Identity" name="Adrian Costa"/>
+          </IdentityRef>
+          <Owner>
+            <Reference class="sailpoint.object.Identity" name="Mahesh Nattali"/>
+          </Owner>
+        </PolicyViolation>
+      </CertifiableDescriptor>
+      <IdentityRef>
+        <Reference class="sailpoint.object.Identity" name="Adrian Costa"/>
+      </IdentityRef>
+      <Mitigator>
+        <Reference class="sailpoint.object.Identity" name="Mahesh Nattali"/>
+      </Mitigator>
+    </MitigationExpiration>
+  </MitigationExpirations>
+  <Preferences>
+    <Map>
+      <entry key="attributeAssignments">
+        <value>
+          <List>
+            <AttributeAssignment applicationId="c0a8002691fb102b81920b47da880f63" applicationName="WebServicesTestApplication3" assigner="spadmin" name="groups" nativeIdentity="EMP01309" source="LCM" type="Entitlement" value="WS_GROUP_100"/>
+          </List>
+        </value>
+      </entry>
+      <entry key="roleAssignments">
+        <value>
+          <List>
+            <RoleAssignment assigner="spadmin" date="1751008688259" roleName="ad_business_role" source="LCM">
+              <RoleTarget applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" displayName="Adrian Costa" nativeIdentity="CN=Adrian Costa,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+              <RoleTarget applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ADX" displayName="ESHIAM\XAdrian Costa" nativeIdentity="CN=Adrian Costa,OU=XPeople,OU=Demo,DC=Eshiam,DC=com"/>
+            </RoleAssignment>
+          </List>
+        </value>
+      </entry>
+      <entry key="roleDetections">
+        <value>
+          <List>
+            <RoleDetection assignmentIds="e6d137b41dfb4d4c9c65219bb0f41f8f" date="1751008688274" roleName="activeDirectoryITRole">
+              <RoleTarget applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" displayName="Adrian Costa" nativeIdentity="CN=Adrian Costa,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                <AccountItem name="memberOf" value="CN=AuditMgmt,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+              </RoleTarget>
+            </RoleDetection>
+          </List>
+        </value>
+      </entry>
+    </Map>
+  </Preferences>
+  <RoleMetadatas>
+    <Reference class="sailpoint.object.RoleMetadata" name="activeDirectoryITRole"/>
+    <Reference class="sailpoint.object.RoleMetadata" name="ad_business_role"/>
+  </RoleMetadatas>
+  <Links>
+    <Link displayName="Adrian Costa" entitlements="true" identity="EMP01309" lastRefresh="1757000238978">
+      <ApplicationRef>
+        <Reference class="sailpoint.object.Application" name="WebServicesApplicationEshiam"/>
+      </ApplicationRef>
+      <Attributes>
+        <Map>
+          <entry key="department" value="Sales"/>
+          <entry key="description" value="Created for Test"/>
+          <entry key="groups">
+            <value>
+              <List>
+                <String>WS_GROUP_100</String>
+              </List>
+            </value>
+          </entry>
+          <entry key="job_title" value="Engineer"/>
+          <entry key="location" value="India"/>
+          <entry key="manager_id" value="1045"/>
+          <entry key="user_email" value="adrian.costa@example.com"/>
+          <entry key="user_id" value="EMP01309"/>
+          <entry key="user_name" value="Adrian Costa"/>
+          <entry key="user_status" value="ACTIVE"/>
+        </Map>
+      </Attributes>
+    </Link>
+    <Link displayName="Adrian Costa" entitlements="true" identity="CN=Adrian Costa,OU=People,OU=Demo,DC=Eshiam,DC=com" lastRefresh="1779698519521" manuallyCorrelated="true" uuid="{86e1f2e7-5869-4965-9647-ad195b890697}">
+      <ApplicationRef>
+        <Reference class="sailpoint.object.Application" name="ActiveDirectory"/>
+      </ApplicationRef>
+      <Attributes>
+        <Map>
+          <entry key="accountFlags">
+            <value>
+              <List>
+                <String>Normal User Account</String>
+              </List>
+            </value>
+          </entry>
+          <entry key="cn" value="Adrian Costa"/>
+          <entry key="distinguishedName" value="CN=Adrian Costa,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+          <entry key="givenName" value="Adrian"/>
+          <entry key="mail" value="Sales"/>
+          <entry key="memberOf">
+            <value>
+              <List>
+                <String>CN=AuditMgmt,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                <String>CN=All_Users,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+              </List>
+            </value>
+          </entry>
+          <entry key="msDS-PrincipalName" value="ESHIAM\Adrian Costa"/>
+          <entry key="msNPAllowDialin" value="Not Set"/>
+          <entry key="objectClass">
+            <value>
+              <List>
+                <String>top</String>
+                <String>person</String>
+                <String>organizationalPerson</String>
+                <String>user</String>
+              </List>
+            </value>
+          </entry>
+          <entry key="objectSid" value="S-1-5-21-2678700903-2778472132-3948167259-1477"/>
+          <entry key="objectType" value="user"/>
+          <entry key="objectguid" value="{86e1f2e7-5869-4965-9647-ad195b890697}"/>
+          <entry key="sAMAccountName" value="Adrian Costa"/>
+          <entry key="sn" value="Costa"/>
+        </Map>
+      </Attributes>
+    </Link>
+    <Link displayName="ESHIAM\XAdrian Costa" identity="CN=Adrian Costa,OU=XPeople,OU=Demo,DC=Eshiam,DC=com" lastRefresh="1760088842726" manuallyCorrelated="true" uuid="{227adbfa-dbb9-4dde-978c-95a927445ccd}">
+      <ApplicationRef>
+        <Reference class="sailpoint.object.Application" name="ADX"/>
+      </ApplicationRef>
+      <Attributes>
+        <Map>
+          <entry key="accountFlags">
+            <value>
+              <List>
+                <String>Normal User Account</String>
+              </List>
+            </value>
+          </entry>
+          <entry key="cn" value="Adrian Costa"/>
+          <entry key="distinguishedName" value="CN=Adrian Costa,OU=XPeople,OU=Demo,DC=Eshiam,DC=com"/>
+          <entry key="givenName" value="Adrian"/>
+          <entry key="mail" value="adrian.costa@eshiam.com"/>
+          <entry key="memberOf"/>
+          <entry key="msDS-PrincipalName" value="ESHIAM\XAdrian Costa"/>
+          <entry key="msNPAllowDialin" value="Not Set"/>
+          <entry key="objectClass">
+            <value>
+              <List>
+                <String>top</String>
+                <String>person</String>
+                <String>organizationalPerson</String>
+                <String>user</String>
+              </List>
+            </value>
+          </entry>
+          <entry key="objectSid" value="S-1-5-21-2678700903-2778472132-3948167259-1478"/>
+          <entry key="objectType" value="user"/>
+          <entry key="objectguid" value="{227adbfa-dbb9-4dde-978c-95a927445ccd}"/>
+          <entry key="sAMAccountName" value="XAdrian Costa"/>
+          <entry key="sn" value="Costa"/>
+        </Map>
+      </Attributes>
+      <PasswordHistory>1:ACP:WPDhFiStH2tk8JMcSJ1zY6Qq2XBGdzq8hzReB3kMJ4g=</PasswordHistory>
+    </Link>
+    <Link displayName="Adrian Costa" identity="Adrian Costa" lastRefresh="1767083222733">
+      <ApplicationRef>
+        <Reference class="sailpoint.object.Application" name="SCIMApp"/>
+      </ApplicationRef>
+      <Attributes>
+        <Map>
+          <entry key="IIQDisabled">
+            <value>
+              <Boolean/>
+            </value>
+          </entry>
+          <entry key="accounts">
+            <value>
+              <List>
+                <String>{"displayName":"Adrian Costa","value":"c0a8001697a21be78197acfed4bb1e56","$ref":"http://localhost:8080/identityiq-8.4/scim/v2/Accounts/c0a8001697a21be78197acfed4bb1e56"}</String>
+                <String>{"displayName":"Adrian Costa","value":"c0a8001697a21be78197b04010712c94","$ref":"http://localhost:8080/identityiq-8.4/scim/v2/Accounts/c0a8001697a21be78197b04010712c94"}</String>
+                <String>{"displayName":"ESHIAM\\XAdrian Costa","value":"c0a8001697a21be78197b04038442c96","$ref":"http://localhost:8080/identityiq-8.4/scim/v2/Accounts/c0a8001697a21be78197b04038442c96"}</String>
+                <String>{"displayName":"Adrian Costa","value":"c0a801199b581419819b6a716e671d41","$ref":"http://localhost:8080/identityiq-8.4/scim/v2/Accounts/c0a801199b581419819b6a716e671d41"}</String>
+                <String>{"displayName":"Adrian Costa","value":"c0a81d8995cd1eaa8195d15b4ac9100f","$ref":"http://localhost:8080/identityiq-8.4/scim/v2/Accounts/c0a81d8995cd1eaa8195d15b4ac9100f"}</String>
+              </List>
+            </value>
+          </entry>
+          <entry key="active">
+            <value>
+              <Boolean>true</Boolean>
+            </value>
+          </entry>
+          <entry key="department" value="Sales"/>
+          <entry key="displayName" value="Adrian Costa"/>
+          <entry key="emails.work.primary.value" value="adrian.costa@example.com"/>
+          <entry key="employeeId" value="EMP01309"/>
+          <entry key="id" value="Adrian Costa"/>
+          <entry key="isManager">
+            <value>
+              <Boolean/>
+            </value>
+          </entry>
+          <entry key="lastRefresh">
+            <value>
+              <Date>1767017377398</Date>
+            </value>
+          </entry>
+          <entry key="name.familyName" value="Costa"/>
+          <entry key="name.formatted" value="Adrian Costa"/>
+          <entry key="name.givenName" value="Adrian"/>
+          <entry key="networkId" value="acosta675"/>
+          <entry key="riskScore">
+            <value>
+              <Integer>250</Integer>
+            </value>
+          </entry>
+          <entry key="userName" value="Adrian Costa"/>
+        </Map>
+      </Attributes>
+    </Link>
+    <Link displayName="Adrian Costa" identity="EMP01309" lastRefresh="1760088503096">
+      <ApplicationRef>
+        <Reference class="sailpoint.object.Application" name="HR2"/>
+      </ApplicationRef>
+      <Attributes>
+        <Map>
+          <entry key="Department" value="Sales"/>
+          <entry key="Email" value="adrian.costa@example.com"/>
+          <entry key="EmployeeNo" value="EMP01309"/>
+          <entry key="FirstName" value="Adrian"/>
+          <entry key="JoiningDate" value="2018-03-10"/>
+          <entry key="LastName" value="Costa"/>
+          <entry key="Name" value="Adrian Costa"/>
+          <entry key="NetworkID" value="acosta675"/>
+        </Map>
+      </Attributes>
+    </Link>
+  </Links>
+  <Scorecard certificationScore="1000" compositeScore="250">
+    <ScoreItem compositePercentage="100" displayName="score_def_certificationAge_name" score="1000" scorePercentage="100" type="score_def_certificationAge_shortname">
+      <TargetMessage>
+        <Message key="cert_scorer_target_id_not_certified" type="Info"/>
+      </TargetMessage>
+    </ScoreItem>
+  </Scorecard>
+</Identity>

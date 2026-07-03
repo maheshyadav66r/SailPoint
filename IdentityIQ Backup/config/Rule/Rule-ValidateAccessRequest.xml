@@ -1,0 +1,190 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Validate Access Request">
+  <Description>Validate the access request under manage user access module via Validate Access Request Plugin</Description>
+  <Signature returnType="java.util.List">
+    <Inputs>
+      <Argument name="log">
+        <Description>
+          The log object associated with the SailPoint Context.
+        </Description>
+      </Argument>
+      <Argument name="logger">
+        <Description>
+          The log object associated with the Validate Access Request Plugin.
+        </Description>
+      </Argument>
+      <Argument name="context">
+        <Description>
+          A sailpoint.api.SailPointContext object that can be used to query the database if necessary.
+        </Description>
+      </Argument>
+      <Argument name="requestor" type="sailpoint.object.Identity">
+        <Description>
+          Identity that is making the Life Cycle Manager request.
+        </Description>
+      </Argument>
+      <Argument name="selectedIdentities" type="java.util.List">
+        <Description>
+          Identity on whose behalf the Life Cycle Manager request is being made. It will get the list of identities selected.
+
+          Below are the attributes:
+
+          "selectedIdentities": [
+          {
+          "id": "c0a81d5487a31e0c8187a3440027007d",
+          "name": "john",
+          "displayName": "John Doe",
+          "displayableName": "John Doe",
+          "managerName": "Jimmy S",
+          "attributes": {
+          "displayName": "John Doe",
+          "manager-displayName": "Jimmy S"
+          }
+          }
+          ]
+        </Description>
+      </Argument>
+      <Argument name="addedItems" type="java.util.List">
+        <Description>
+          Items added in the basket for addition.
+          Below are the attributes:
+          "addedItems": [{
+          "item": {
+          "id": "c0a81d5487f91c908187fbd3e51d03e7",
+          "accessType": "Entitlement",
+          "displayableAccessType": "Entitlement",
+          "type": "group",
+          "displayableName": "DelimGrp-11",
+          "owner": null,
+          "description": "",
+          "icon": "enterpriseIcon",
+          "application": "Deimited-Auth",
+          "attribute": "groups",
+          "value": "DelimGrp-11",
+          "classifications": [],
+          "attributes": {
+          "owner": null,
+          "application.icon": "enterpriseIcon",
+          "icon": "enterpriseIcon",
+          "description": "",
+          "type": "group",
+          "accessType": "Entitlement",
+          "classifications": [],
+          "application": "Deimited-Auth",
+          "displayableName": "DelimGrp-11",
+          "displayableAccessType": "Entitlement",
+          "attribute": "groups",
+          "id": "c0a81d5487f91c908187fbd3e51d03e7",
+          "owner.displayName": null,
+          "value": "DelimGrp-11",
+          "application.name": "Deimited-Auth",
+          "attachments": []
+          }
+          },
+          "permittedById": null,
+          "accountSelections": null,
+          "sunriseDate": null,
+          "sunsetDate": null,
+          "comment": null,
+          "assignmentNote": null,
+          "assignmentId": null,
+          "approvalItemId": null
+          }
+          ]
+        </Description>
+      </Argument>
+      <Argument name="removedItems" type="java.util.List">
+        <Description>
+          Items added in the basket for the removal.
+          Below are the attributes:
+          "removedItems": [{
+          "item": {
+          "id": "c0a81d5487a31e0c8187a345c50800b5",
+          "accessType": "Entitlement",
+          "displayableAccessType": "Entitlement",
+          "type": "group",
+          "displayableName": "DelimGrp-1",
+          "owner": "IAM-Team",
+          "description": "",
+          "icon": "enterpriseIcon",
+          "application": "Deimited-Auth",
+          "attribute": "groups",
+          "value": "DelimGrp-1",
+          "classifications": [],
+          "attributes": {
+          "owner": "IAM-Team",
+          "removePending": false,
+          "application.icon": "enterpriseIcon",
+          "accountName": "john",
+          "icon": "enterpriseIcon",
+          "description": "",
+          "type": "group",
+          "statusLabel": "Active",
+          "nativeIdentity": "John",
+          "accessType": "Entitlement",
+          "classifications": [],
+          "application": "Deimited-Auth",
+          "removable": true,
+          "displayableName": "DelimGrp-1",
+          "displayableAccessType": "Entitlement",
+          "attribute": "groups",
+          "id": "c0a81d5487a31e0c8187a345c50800b5",
+          "owner.displayName": "IAM-Team",
+          "value": "DelimGrp-1",
+          "application.name": "Deimited-Auth",
+          "status": "active",
+          "attachments": []
+          },
+          "status": "active",
+          "statusLabel": "Active",
+          "nativeIdentity": "John",
+          "accountName": "john1",
+          "removable": true,
+          "removePending": false
+          },
+          "comment": null,
+          "sunsetDate": null
+          }]
+        </Description>
+      </Argument>
+    </Inputs>
+    <Returns>
+      <Argument name="validationErrors">
+        <Description>
+          A list containing the errors.
+        </Description>
+      </Argument>
+    </Returns>
+  </Signature>
+  <Source><![CDATA[
+  import java.util.List;
+  import java.util.ArrayList;
+  
+  logger.trace("Entry Rule:: Validate Access Request");
+  logger.trace("requestor: "+requestor);
+  logger.trace("selectedIdentities: "+selectedIdentities);
+  logger.trace("addedItems: "+addedItems);
+  logger.trace("removedItems: "+removedItems);
+
+  logger.trace("Starting validation");
+  
+  //Do not modify
+  List validationErrors = new ArrayList();
+  if(addedItems==void){
+    addedItems=new ArrayList();
+  }
+  if(removedItems==void){
+    removedItems=new ArrayList();
+  }
+  //
+  
+  //Custom Validation
+  validationErrors.add("Custom Validation Message");
+  
+  logger.trace("Finishing validation");
+  logger.trace("Exit Rule:: Validate Access Request");
+
+  return validationErrors;
+  ]]></Source>
+</Rule>

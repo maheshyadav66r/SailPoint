@@ -1,0 +1,237 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Refresh Azure License Entitlements">
+  <Source><![CDATA[
+
+  import java.util.*;
+  import openconnector.AbstractConnector;
+  import openconnector.ConnectorConfig;
+  import openconnector.ConnectorException;
+  import openconnector.Filter;
+  import openconnector.ObjectNotFoundException;
+  import org.apache.commons.logging.Log;
+  import org.apache.commons.logging.LogFactory;
+  import sailpoint.tools.*;
+  import sailpoint.object.*;
+  import openconnector.connector.*;
+  import sailpoint.connector.*;
+  import java.net.URI;
+  import org.apache.http.HttpEntity;
+  import org.apache.http.HttpHeaders;
+  import org.apache.http.HttpResponse;
+  import org.apache.http.NameValuePair;
+  import org.apache.http.client.HttpClient;
+  import org.apache.http.client.entity.UrlEncodedFormEntity;
+  import org.apache.http.client.methods.HttpGet;
+  import org.apache.http.client.methods.HttpPost;
+  import org.apache.http.client.utils.URIBuilder;
+  import org.apache.http.impl.client.HttpClients;
+  import org.apache.http.message.BasicNameValuePair;
+  import org.apache.http.util.EntityUtils;
+  import flexjson.JSONDeserializer;
+  import sailpoint.object.Filter;
+  import sailpoint.object.ManagedAttribute;
+  import sailpoint.object.QueryOptions;
+  import com.fasterxml.jackson.databind.JsonDeserializer;
+  import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
+  public static HashMap getSubscribedLicenses(String azureADDomain, String resource, String clientID, String clientSecret) throws Exception{
+    HttpClient httpclient = HttpClients.createDefault();
+    String accessToken = "";
+    HashMap returnMap = new HashMap();
+
+    URIBuilder builder = new URIBuilder("https://graph.windows.net/"+azureADDomain+"/subscribedSkus?api-version=1.5");
+    URI uri = builder.build();
+    HttpGet request = new HttpGet(uri);
+    request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+    request.setHeader(HttpHeaders.AUTHORIZATION, getAccessToken(azureADDomain,resource,clientID,clientSecret));
+
+    HttpResponse response = httpclient.execute(request);
+    HttpEntity entity = response.getEntity();
+
+    if (entity != null) {
+      JSONDeserializer deserializer = new JSONDeserializer();
+      returnMap = (HashMap)deserializer.deserialize(EntityUtils.toString(entity));
+    }
+    return returnMap;
+  }
+
+  // This method can be used to check if a license is available to be assigned after a user requests for the license. 
+  public static boolean isLicenseAvailable(String entitlement,String azureADDomain, String resource, String clientID, String clientSecret) throws Exception{
+    boolean isAvailable = false;
+    HashMap map = getSubscribedLicenses(azureADDomain,resource,clientID,clientSecret);
+    String licenseName = entitlement.substring(0,entitlement.indexOf(" : ")).trim();
+    int consumedUnits = 0;
+    int prepaidUnitsEnabled = 0;
+    Map licenseMap;
+    List licenseList = new ArrayList();
+    licenseList = (List) map.get("value");
+    Object obj;
+
+    Iterator iterator = licenseList.iterator();
+    while (iterator.hasNext()) {
+      licenseMap = (Map)iterator.next();
+      if (!((String)licenseMap.get("skuPartNumber")).equalsIgnoreCase(licenseName)){
+        continue;
+      }
+      if (((String)licenseMap.get("capabilityStatus")).equalsIgnoreCase("Suspended")){
+        continue;
+      }
+      obj = licenseMap.get("consumedUnits");
+      if (null != obj){
+        consumedUnits = ((Integer)obj).intValue();
+        obj = ((Map)licenseMap.get("prepaidUnits")).get("enabled");
+        prepaidUnitsEnabled = ((Integer)obj).intValue();
+        if (prepaidUnitsEnabled > consumedUnits){
+          isAvailable = true;
+        }
+      }
+    }
+    return isAvailable;
+  }
+
+  public static String getAccessToken(String azureADDomain, String resource, String clientID, String clientSecret) throws Exception{
+    HttpClient httpclient = HttpClients.createDefault();
+    String accessToken = "";
+    URIBuilder builder = new URIBuilder("https://login.windows.net/"+azureADDomain+"/oauth2/token?api-version=1.5");
+    URI uri = builder.build();
+    HttpPost post = new HttpPost(uri);
+    List nameValuePairs = new ArrayList(4);    
+    nameValuePairs.add(new BasicNameValuePair("resource",resource));
+    nameValuePairs.add(new BasicNameValuePair("client_id",clientID));
+    nameValuePairs.add(new BasicNameValuePair("client_secret",clientSecret));
+    nameValuePairs.add(new BasicNameValuePair("grant_type","client_credentials"));
+    post.setEntity(new UrlEncodedFormEntity(nameValuePairs));  
+    HttpResponse response = httpclient.execute(post);
+    HttpEntity entity = response.getEntity();
+
+    if (entity != null) {
+      JSONDeserializer deserializer = new JSONDeserializer();
+      HashMap map = (HashMap)deserializer.deserialize(EntityUtils.toString(entity));
+      accessToken = (String)map.get("access_token");
+    }
+    return accessToken;
+  }
+
+  public static HashSet getAzureManagedAttributeNamesSet(List licenseList){
+    HashSet maSet = new HashSet();
+    Map map = null;
+    List servicePlansList;
+    String skuPartNumber;
+    String servicePlanName;
+    String capabilityStatus;
+
+    for (int i=0; i<licenseList.size(); i++){
+      map = (Map)licenseList.get(i);
+      //If a license is suspended, exclude it from this list as we do not want suspended licenses to be requestable.
+      capabilityStatus = (String)map.get("capabilityStatus");
+      if (capabilityStatus.equalsIgnoreCase("Suspended")){
+        continue;
+      }
+
+      skuPartNumber = (String)map.get("skuPartNumber");
+      servicePlansList = (List)map.get("servicePlans");
+      for (int j=0; j<servicePlansList.size(); j++){
+        map = (Map)servicePlansList.get(j);
+        servicePlanName = (String)map.get("servicePlanName");
+        maSet.add(skuPartNumber+" : "+servicePlanName);
+      }
+    }
+    return maSet;
+  }
+
+  public static ManagedAttribute createManagedAttribute(String entitlement, Application app) throws GeneralException{
+    ManagedAttribute managedAttribute = new ManagedAttribute(app,"assignedPlans",entitlement);
+    managedAttribute.setRequestable(true);
+    managedAttribute.setType("Entitlement");
+    return managedAttribute;
+  }
+
+  // Entry point
+  String appName="Azure Active Directory"; // Specify the name of the Azure application in IdentityIQ
+  String resource = "https://graph.windows.net";
+
+  try{
+    Application app = context.getObjectByName(Application.class, appName);
+    String azureADDomain = (String)app.getAttributeValue("domainName");
+    String clientID = (String)app.getAttributeValue("clientID");
+    String clientSecret = context.decrypt((String)app.getAttributeValue("clientSecret"));
+
+
+    HashMap map = getSubscribedLicenses(azureADDomain,resource,clientID,clientSecret);
+    Map licenseObject;
+    List licenseList = new ArrayList();
+    List objectList = null;
+    objectList = (List) map.get("value");
+
+
+    if(objectList != null) {
+      Iterator iterator = objectList.iterator();
+      while (iterator.hasNext()) {
+        licenseObject = (Map)iterator.next();
+        licenseList.add(licenseObject);
+      }
+    }
+
+    app.setAttribute("subscribedSkus",licenseList);
+    //Now save the application definition
+    context.startTransaction();
+    context.saveObject(app);
+    context.commitTransaction();
+
+    //Get the set of the MA names in the Entitlements Catalog
+    HashSet iiqManagedAttributeNamesSet = new HashSet();
+    QueryOptions qo = new QueryOptions();  
+    qo.addFilter(Filter.eq("application", app));  
+    ArrayList colsToRead = new ArrayList();  
+    colsToRead.add("value");  
+    Iterator it = context.search(ManagedAttribute.class, qo, colsToRead);  
+
+    while ( (null != it) && (it.hasNext()) ) {  
+      Object[] thisRecord = (Object[])it.next();
+      String name = (String) thisRecord[0]; 
+      if (name.contains(" : ")){
+        iiqManagedAttributeNamesSet.add(name);
+      } 
+    }
+
+    //Get a set of names that Azure has
+    HashSet azureManagedAttributeNamesSet = getAzureManagedAttributeNamesSet(licenseList);
+
+    //Now we need to compare azureManagedAttributeNamesSet and iiqManagedAttributeNamesSet.
+    //If the entitlement is present in IIQ and not present in Azure, then it means that the license was either suspended or removed from Azure and should be 
+    //removed from IIQ
+    Iterator iterator = iiqManagedAttributeNamesSet.iterator();
+    String entitlement;
+    while (iterator.hasNext()){
+      entitlement = (String)iterator.next();
+      if (!azureManagedAttributeNamesSet.contains(entitlement)){
+        // This means that we need to delete this from the IIQ catalog
+        Filter valueFilter = Filter.eq("value", entitlement);
+        ManagedAttribute ma = context.getUniqueObject(ManagedAttribute.class, valueFilter);
+        context.startTransaction();
+        context.removeObject(ma);
+        context.commitTransaction();
+      }
+    }
+
+    //If the entitlement is present in Azure and not present in IIQ it needs to be added to IIQ entitlements catalog. This would happen if the aggregation 
+    //task did not create the managed entitlement since it wasn't assigned to anyone
+    iterator = azureManagedAttributeNamesSet.iterator();
+    ManagedAttribute managedAttribute;
+    while (iterator.hasNext()){
+      entitlement = (String)iterator.next();
+      if (!iiqManagedAttributeNamesSet.contains(entitlement)){
+        // This means that we need to add this to the IIQ catalog
+        managedAttribute = createManagedAttribute(entitlement,app);
+        context.startTransaction();
+        context.saveObject(managedAttribute);
+        context.commitTransaction();
+      }
+    }
+  } catch (Exception e){
+    System.out.println(e);
+  }
+
+  ]]></Source>
+</Rule>

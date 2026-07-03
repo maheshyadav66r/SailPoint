@@ -1,0 +1,113 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1773150099965" completionStatus="Success" launched="1773150085219" launcher="spadmin" name="RapidSetup Joiner FOR Kamado Tanjiro 1773150081599" targetClass="Identity" targetName="Kamado Tanjiro" type="Workflow">
+  <Attributes>
+    <Map>
+      <entry key="approvalScheme" value="none"/>
+      <entry key="identityRequestId" value="0000001070"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Kamado Tanjiro">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000001070"/>
+                <entry key="noLocking">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="RapidSetup"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="ActiveDirectory" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="flow" value="Lifecycle"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="nativeIdUpdated">
+                        <value>
+                          <Boolean>true</Boolean>
+                        </value>
+                      </entry>
+                      <entry key="operation" value="Create"/>
+                    </Map>
+                  </Attributes>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000001070"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="RapidSetup"/>
+                  </Map>
+                </Attributes>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Kamado Tanjiro" targetIntegration="ActiveDirectory" trackingId="df55dee31d844741af11ef049056630c">
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Kamado Tanjiro,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create" targetIntegration="ActiveDirectory">
+                <Attributes>
+                  <Map>
+                    <entry key="flow" value="Lifecycle"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="nativeIdUpdated">
+                      <value>
+                        <Boolean>true</Boolean>
+                      </value>
+                    </entry>
+                    <entry key="operation" value="Create"/>
+                    <entry key="provisioningTransactionId" value="c0a801289cd51899819cd7fb54e904cf"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="sAMAccountName" op="Set" value="Kamado Tanjiro"/>
+                <AttributeRequest name="givenName" op="Set" value="Kamado"/>
+                <AttributeRequest name="sn" op="Set" value="Tanjiro"/>
+                <AttributeRequest name="mail" op="Set" value="kamado.tanjiro@eshiam.com"/>
+                <AttributeRequest name="password" op="Set"/>
+                <ProvisioningResult status="committed"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000001070"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="RapidSetup"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a801289cd51899819cd7fb214404c4"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="Stop"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

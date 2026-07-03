@@ -1,0 +1,98 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE WorkflowCase PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<WorkflowCase launcher="spadmin" lock="3080b25664964224883165105c395857|1768907758875|1768908058875|???" name="QuickLink Launch for identity spadmin - 805">
+  <Workflow currentStep="2804e42979fb478ba0ab737b99b67702" explicitTransitions="true" libraries="Identity" name="TestAccountManagement">
+    <Variable name="inputForm"/>
+    <Variable name="identityId"/>
+    <Variable name="identityName"/>
+    <Variable name="identityModel"/>
+    <Variable name="launcher"/>
+    <Variable name="confirmationForm"/>
+    <Variable initializer="false" name="trace"/>
+    <Step complete="true" icon="Start" name="Start" posX="109" posY="91">
+      <Transition to="initialze identityModel"/>
+    </Step>
+    <Step action="call:getIdentityModel" complete="true" icon="Default" name="initialze identityModel" posX="299" posY="92" resultVariable="identityModel">
+      <Script>
+        <Source><![CDATA[
+      log.error(" identityModel  without id or name of an identity  :  "+identityModel);
+      ]]></Source>
+      </Script>
+      <Transition to="initializeInputForm"/>
+    </Step>
+    <Step icon="Default" name="initializeInputForm" posX="481" posY="93">
+      <Approval mode="serial" name="Display Form" originalOwner="ref:launcher" owner="spadmin" return="identityModel,workItemForm,confirmRequest,exitRequest" send="identityModel,launcher" startDate="1767610020879" started="true" workItemDescription="Display Form" workItemId="c0a801199b8c1257819b8dc4740703f3" workItemType="Form">
+        <Arg name="workItemType" value="Form"/>
+        <Arg name="workItemFormBasePath" value="identityModel"/>
+        <Arg name="workItemForm" value="DB_operation_Selction_form"/>
+      </Approval>
+      <Script>
+        <Source><![CDATA[
+      log.error(" identityModel  after filling form   :  "+identityModel);
+      ]]></Source>
+      </Script>
+      <Transition to="confirmation form"/>
+    </Step>
+    <Step action="call:buildReadOnlyForm" name="confirmation form" posX="588" resultVariable="confirmationForm">
+      <Arg name="form" value="DB_operation_Selction_form"/>
+      <Arg name="nextButtonLabel" value="label_confirm"/>
+      <Transition to="review initializeInputForm"/>
+    </Step>
+    <Step icon="Default" name="review initializeInputForm" posX="690" posY="165">
+      <Approval mode="serial" name="Display Form" owner="ref:launcher" renderer="lcmEditableWorkItemRenderer.xhtml" return="identityModel,workItemForm" send="identityModel,launcher,confirmationForm">
+        <Arg name="workItemType" value="Form"/>
+        <Arg name="workItemForm" value="ref:confirmationForm"/>
+        <Arg name="form" value="DB_operation_Selction_form"/>
+        <Arg name="workItemFormBasePath" value="identityModel"/>
+        <Arg name="workItemDescription" value="Review Service Account Form"/>
+      </Approval>
+      <Transition to="Generic Step (2)"/>
+    </Step>
+    <Step icon="Default" name="Generic Step (2)" posX="806" posY="82">
+      <Script>
+        <Source><![CDATA[
+        import sailpoint.object.*;
+        import sailpoint.api.*;
+        
+        
+        log.error("Generic Step 2 identityModel :  " + identityModel);
+
+       /* for(int i=0;i<this.variables.length;i++){
+        log.error(this.variables[i]);
+        }*/
+        
+        log.error(" workflowcontext agrs   :  "+wfcontext.getArguments());
+        log.error(" workflow variable  :  "+workflow.toXml());
+
+      ]]></Source>
+      </Script>
+      <Transition to="Stop"/>
+    </Step>
+    <Step icon="Stop" name="Stop" posX="939" posY="87"/>
+    <Attributes>
+      <Map>
+        <entry key="confirmationForm"/>
+        <entry key="currentUserName" value="spadmin"/>
+        <entry key="identityId"/>
+        <entry key="identityModel"/>
+        <entry key="identityName"/>
+        <entry key="inputForm"/>
+        <entry key="launcher" value="spadmin"/>
+        <entry key="quickLink" value="IdCreation"/>
+        <entry key="quickLinkIdentityId" value="Aaron Dickerson"/>
+        <entry key="quickLinkIdentityIds">
+          <value>
+            <List>
+              <String>Aaron Dickerson</String>
+            </List>
+          </value>
+        </entry>
+        <entry key="sessionOwner" value="spadmin"/>
+        <entry key="taskResultId" value="c0a801199b8c1257819b8dc473ec03f1"/>
+        <entry key="trace" value="false"/>
+        <entry key="workflowName" value="TestAccountManagement"/>
+        <entry key="workflowSuccess" value="DBOrderCheckWF workflow Executed Successfully"/>
+      </Map>
+    </Attributes>
+  </Workflow>
+</WorkflowCase>

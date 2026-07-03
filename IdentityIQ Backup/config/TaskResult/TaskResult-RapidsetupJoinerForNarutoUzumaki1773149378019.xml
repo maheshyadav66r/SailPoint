@@ -1,0 +1,120 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1773149390627" completionStatus="Error" launched="1773149386046" launcher="spadmin" name="RapidSetup Joiner FOR Naruto Uzumaki 1773149378019" targetClass="Identity" targetName="Naruto Uzumaki" type="Workflow">
+  <Attributes>
+    <Map>
+      <entry key="approvalScheme" value="none"/>
+      <entry key="identityRequestId" value="0000001068"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Naruto Uzumaki">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000001068"/>
+                <entry key="noLocking">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="RapidSetup"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="ActiveDirectory" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="flow" value="Lifecycle"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="nativeIdUpdated">
+                        <value>
+                          <Boolean>true</Boolean>
+                        </value>
+                      </entry>
+                      <entry key="operation" value="Create"/>
+                    </Map>
+                  </Attributes>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000001068"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="RapidSetup"/>
+                  </Map>
+                </Attributes>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Naruto Uzumaki" targetIntegration="ActiveDirectory" trackingId="5676615c57944e68836445436f074cb0">
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Naruto Uzumaki,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create">
+                <Attributes>
+                  <Map>
+                    <entry key="flow" value="Lifecycle"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="nativeIdUpdated">
+                      <value>
+                        <Boolean>true</Boolean>
+                      </value>
+                    </entry>
+                    <entry key="operation" value="Create"/>
+                    <entry key="provisioningTransactionId" value="c0a801289cd51899819cd7f0834d048b"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="sAMAccountName" op="Set" value="Naruto Uzumaki"/>
+                <AttributeRequest name="givenName" op="Set" value="Naruto"/>
+                <AttributeRequest name="sn" op="Set" value="Uzumaki"/>
+                <AttributeRequest name="mail" op="Set" value="naruto.uzumaki@eshiam.com"/>
+                <AttributeRequest name="password" op="Set"/>
+                <ProvisioningResult status="failed">
+                  <Errors>
+                    <Message key="Exception occurred while executing the RPCRequest: Errors returned from IQService. &quot;The object already exists. The object already exists. 00000524: UpdErr: DSID-031A1261, problem 6005 (ENTRY_EXISTS), data 0 00000524: UpdErr: DSID-031A1261, problem 6005 (ENTRY_EXISTS), data 0 . HRESULT:[0x80071392] For identity: CN=Naruto Uzumaki,OU=People,OU=Demo,DC=Eshiam,DC=com&quot;" type="Error"/>
+                  </Errors>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000001068"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="RapidSetup"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a801289cd51899819cd7f07651047f"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="Stop"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="Exception occurred while executing the RPCRequest: Errors returned from IQService. &quot;The object already exists. The object already exists. 00000524: UpdErr: DSID-031A1261, problem 6005 (ENTRY_EXISTS), data 0 00000524: UpdErr: DSID-031A1261, problem 6005 (ENTRY_EXISTS), data 0 . HRESULT:[0x80071392] For identity: CN=Naruto Uzumaki,OU=People,OU=Demo,DC=Eshiam,DC=com&quot;" type="Error"/>
+  </Messages>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

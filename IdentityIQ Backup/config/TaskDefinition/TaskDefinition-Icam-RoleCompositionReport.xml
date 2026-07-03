@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskDefinition PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskDefinition executor="sailpoint.reporting.LiveReportExecutor" name="ICAM - Role Composition Report" progressMode="Percentage" resultAction="Rename" subType="Administration Reports" template="true" type="LiveReport">
+  <Attributes>
+    <Map>
+      <entry key="report">
+        <value>
+          <LiveReport title="ICAM - Role Composition Report">
+            <DataSource dataSourceClass="sailpoint.reporting.datasource.RoleCompositionDataSource" type="Java"/>
+            <Columns>
+              <ReportColumnConfig field="businessRole" header="BusinessRoleName" sortable="true" width="110"/>
+              <ReportColumnConfig field="businessRoleDesc" header="BusinessRoleDescription" sortable="true" width="110"/>
+              <ReportColumnConfig field="businessRoleOwner" header="BusinessRoleOwner" sortable="true" width="110"/>
+              <ReportColumnConfig field="businessRoleDepartment" header="BusinessRoleDepartment" sortable="true" width="110"/>
+              <ReportColumnConfig field="businessRoleDivision" header="BusinessRoleDivision" sortable="true" width="110"/>
+              <ReportColumnConfig field="itRole" header="FunctionalRole" sortable="true" width="110"/>
+              <ReportColumnConfig field="itRoletype" header="Permitted/Required" sortable="true" width="110"/>
+              <ReportColumnConfig field="application" header="ApplicationName" sortable="true" width="110"/>
+              <ReportColumnConfig field="entitlement" header="Entitlement" sortable="true" width="110"/>
+              <ReportColumnConfig field="entitlementDisplayName" header="EntitlementDisplayName" sortable="true" width="110"/>
+              <ReportColumnConfig field="acctType" header="AccountType" sortable="true" width="110"/>
+            </Columns>
+          </LiveReport>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Description>Displays information about Role Composition Entitlements</Description>
+  <Signature>
+    <Inputs>
+      <Argument name="roleDivision" type="String"/>
+    </Inputs>
+  </Signature>
+</TaskDefinition>

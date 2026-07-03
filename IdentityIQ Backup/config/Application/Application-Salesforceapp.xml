@@ -1,0 +1,483 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Application PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Application connector="sailpoint.connector.ForceConnector" featuresString="SEARCH, ENABLE, PROVISIONING, DIRECT_PERMISSIONS, SYNC_PROVISIONING, PASSWORD" icon="internetIcon" name="SalesForceApp" profileClass="" type="Salesforce">
+  <AccountCorrelationConfig>
+    <Reference class="sailpoint.object.CorrelationConfig" name="SalesForceCorrelation"/>
+  </AccountCorrelationConfig>
+  <Attributes>
+    <Map>
+      <entry key="PublicGroupIdentityAttributeAsDeveloperName">
+        <value>
+          <Boolean>true</Boolean>
+        </value>
+      </entry>
+      <entry key="acctAggregationEnd">
+        <value>
+          <Date>1756029424730</Date>
+        </value>
+      </entry>
+      <entry key="acctAggregationStart">
+        <value>
+          <Date>1756029424039</Date>
+        </value>
+      </entry>
+      <entry key="afterProvisioningRule"/>
+      <entry key="aggregationPartitioned">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="aggregationType" value="account"/>
+      <entry key="audience"/>
+      <entry key="auth_type" value="Basic"/>
+      <entry key="beforeProvisioningRule"/>
+      <entry key="clientId"/>
+      <entry key="clientSecret" value="1:ACP:lm7I2tYML0tuIncVtaXla7L8gl5DNyNDOzJFE7wpieQ="/>
+      <entry key="compositeDefinition"/>
+      <entry key="createContacts">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="customTimeOut"/>
+      <entry key="encrypted" value="clientSecret, private_key, privateKeyPassword, refreshToken"/>
+      <entry key="excludeFrozen">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="grant_type" value="Password"/>
+      <entry key="isActive">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="issuer"/>
+      <entry key="nativeChangeDetectionAttributeScope" value="entitlements"/>
+      <entry key="nativeChangeDetectionAttributes"/>
+      <entry key="nativeChangeDetectionEnabled">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="nativeChangeDetectionOperations"/>
+      <entry key="password" value="1:ACP:tBRjRSfDYEFPNt8ETXG8P2p0apQoGlp8ati1pHM4HesKnEjOlO+obnW/Xo9tjidCuF7rIy0zUnoB/9DbUof1rg=="/>
+      <entry key="privateKeyPassword" value="1:ACP:n2tGuvtpRleSP3YNJyQestvpDgiAhbb+qb+Atm42ggE="/>
+      <entry key="private_key_to_update"/>
+      <entry key="refreshToken" value="1:ACP:9x6pMwAqQ1BAqi8XEDLGUw+QcJNmb3z2i8r+rg4yS/E="/>
+      <entry key="serverUrl" value="https://site-power-4614.my.salesforce.com/services/Soap/u/60.0/00DdN00000kHkGB"/>
+      <entry key="sessionId" value="00DdN00000kHkGB!AQEAQP6l7sMkVQWWYuhjTZQR8mTKPr1smoj_zAJu3KfnHq0O32KAR9bnc6RVn.peEwlY9U9AA_Ia7qEAb1LKzE84iZyOvgDp"/>
+      <entry key="subject"/>
+      <entry key="sysDescriptions">
+        <value>
+          <Map>
+            <entry key="en_US"/>
+          </Map>
+        </value>
+      </entry>
+      <entry key="templateApplication" value="Salesforce Template"/>
+      <entry key="url" value="https://login.salesforce.com/services/Soap/u/64.0"/>
+      <entry key="user" value="maheshyadavn66-fmbw@force.com"/>
+    </Map>
+  </Attributes>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+  <ProvisioningConfig deleteToDisable="true"/>
+  <ProvisioningForms>
+    <Form name="account" objectType="account" type="Create">
+      <Attributes>
+        <Map>
+          <entry key="pageTitle" value="account"/>
+        </Map>
+      </Attributes>
+      <Section>
+        <Field displayName="con_prov_policy_salesforce_direct_Alias" name="Alias" required="true" type="string">
+          <Description> Take first letter of first name and squish it together for an 8 character alias.  Otherwise use first 8 characters of the identity's name.</Description>
+          <Script>
+            <Source><![CDATA[
+                            
+                             String first = identity.getFirstname();
+                             String last = identity.getLastname();
+                             if ( last == null )
+                                 last = identity.getName();
+
+                             String alias = null;
+                             int max = 7;
+                             if ( last.length() < max ) {
+                                 max = last.length();
+                             }
+
+                             if ( first != null ) {
+                                 alias = first.charAt(0) + last.substring(0,max);
+                             } else {
+                                 if ( last.length() < 8 )
+                                     max = last.length();
+                                 alias = last.substring(0,max);
+                             }
+                             return alias;
+                            
+                          ]]></Source>
+          </Script>
+        </Field>
+        <Field displayName="con_prov_policy_salesforce_direct_Active" name="IsActive" type="boolean"/>
+        <Field displayName="con_prov_policy_salesforce_direct_Username" helpKey="help_prov_policy_salesforce_direct_Username" name="Username" required="true" type="string">
+          <Script>
+            <Source><![CDATA[
+                            return identity.getEmail();
+                          ]]></Source>
+          </Script>
+        </Field>
+        <Field displayName="con_prov_policy_salesforce_direct_Email" helpKey="help_prov_policy_salesforce_direct_Email" name="Email" required="true" type="string">
+          <Script>
+            <Source><![CDATA[
+                            return identity.getEmail();
+                          ]]></Source>
+          </Script>
+        </Field>
+        <Field displayName="con_prov_policy_salesforce_direct_FirstName" name="FirstName" required="true" type="string">
+          <Script>
+            <Source><![CDATA[
+                            return identity.getFirstname();
+                          ]]></Source>
+          </Script>
+        </Field>
+        <Field displayName="con_prov_policy_salesforce_direct_LastName" name="LastName" required="true" type="string">
+          <Script>
+            <Source><![CDATA[
+                            return identity.getLastname();
+                          ]]></Source>
+          </Script>
+        </Field>
+        <Field displayName="con_prov_policy_salesforce_direct_NickName" name="CommunityNickname" required="true" type="string">
+          <Script>
+            <Source><![CDATA[
+                            return identity.getFullName();
+                          ]]></Source>
+          </Script>
+        </Field>
+        <Field displayName="con_prov_policy_salesforce_direct_TimeZone" name="TimeZoneSidKey" required="true" type="string" value="America/Los_Angeles">
+          <AllowedValuesDefinition>
+            <Value>
+              <List>
+                <String>America/Chicago</String>
+                <String>America/Bogota</String>
+                <String>America/Lima</String>
+                <String>America/Los_Angeles</String>
+                <String>Atlantic/Bermuda</String>
+              </List>
+            </Value>
+          </AllowedValuesDefinition>
+        </Field>
+        <Field displayName="con_prov_policy_salesforce_direct_Locale" name="LocaleSidKey" required="true" type="string" value="en_US"/>
+        <Field displayName="con_prov_policy_salesforce_direct_LanguageLocaleKey" name="LanguageLocaleKey" required="true" type="string" value="en_US"/>
+        <Field displayName="con_prov_policy_salesforce_direct_EmailEncodingKey" name="EmailEncodingKey" required="true" type="string" value="UTF-8"/>
+        <Field displayName="con_prov_policy_salesforce_direct_FederationIdentifier" name="FederationIdentifier" type="string"/>
+        <Field displayName="con_prov_policy_salesforce_direct_UserType" helpKey="help_con_form_salesforce_usertype" name="UserType" type="string"/>
+        <Field displayName="con_prov_policy_salesforce_direct_AccountName" helpKey="help_con_form_salesforce_accountname" name="AccountName" type="string"/>
+        <Field displayName="Profile Name" name="ProfileName" type="string"/>
+      </Section>
+    </Form>
+    <Form name="Create PublicGroups" objectType="PublicGroups" type="Create">
+      <Attributes>
+        <Map>
+          <entry key="pageTitle" value="Create PublicGroups"/>
+        </Map>
+      </Attributes>
+      <Section>
+        <Field displayName="con_prov_policy_salesforce_direct_Name" helpKey="Public Group Name." name="Name" required="true" reviewRequired="true" type="string"/>
+        <Field displayName="con_prov_policy_salesforce_direct_DeveloperName" helpKey="It is unique name for the Public Group. This name can contain only underscores and alphanumeric characters, and must be unique in your org. It must begin with a letter, not include spaces, not end with an underscore, and not contain two consecutive underscores." name="DeveloperName" reviewRequired="true" type="string"/>
+        <Field displayName="con_prov_policy_salesforce_direct_DoesIncludeBosses" helpKey="Indicates whether the managers have access (true) or do not have access (false) to records shared with members of the group." name="DoesIncludeBosses" reviewRequired="true" type="boolean" value="true"/>
+      </Section>
+    </Form>
+    <Form name="Update PublicGroups" objectType="PublicGroups" type="Update">
+      <Attributes>
+        <Map>
+          <entry key="pageTitle" value="Update PublicGroups"/>
+        </Map>
+      </Attributes>
+      <Section>
+        <Field displayName="con_prov_policy_salesforce_direct_Id" helpKey="Public Group Id." name="Id" reviewRequired="true" type="string">
+          <Attributes>
+            <Map>
+              <entry key="readOnly" value="true"/>
+            </Map>
+          </Attributes>
+        </Field>
+        <Field displayName="con_prov_policy_salesforce_direct_Name" helpKey="Public Group Name." name="Name" reviewRequired="true" type="string"/>
+        <Field displayName="con_prov_policy_salesforce_direct_DeveloperName" helpKey="It is unique name for the Public Group.This name can contain only underscores and alphanumeric characters, and must be unique in your org. It must begin with a letter, not include spaces, not end with an underscore, and not contain two consecutive underscores." name="DeveloperName" reviewRequired="true" type="string"/>
+        <Field displayName="con_prov_policy_salesforce_direct_OwnerId" helpKey="ID of the user who owns the group." name="OwnerId" reviewRequired="true" type="string">
+          <Attributes>
+            <Map>
+              <entry key="readOnly" value="true"/>
+            </Map>
+          </Attributes>
+        </Field>
+        <Field displayName="con_prov_policy_salesforce_direct_DoesIncludeBosses" helpKey="Indicates whether the managers have access (true) or do not have access (false) to records shared with members of the group." name="DoesIncludeBosses" reviewRequired="true" type="boolean"/>
+      </Section>
+    </Form>
+  </ProvisioningForms>
+  <Schemas>
+    <Schema displayAttribute="Username" identityAttribute="Id" instanceAttribute="" nativeObjectType="User" objectType="account" permissionsRemediationModificationType="None">
+      <AttributeDefinition name="Id" type="string">
+        <Description>Internal salesforce id.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="Alias" type="string">
+        <Description>User's assigned alias.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="City" type="string">
+        <Description>User's city.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="CommunityNickname" type="string">
+        <Description>DisplayNames for user's online communities.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="CompanyName" type="string">
+        <Description>User's company name.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="CallCenterId" type="string">
+        <Description>User's call center.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="Country" type="string">
+        <Description>User's country.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="Department" type="string">
+        <Description>User's department.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="Email" type="string">
+        <Description>User's Email address.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="Division" type="string">
+        <Description>User's division.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="EmployeeNumber" type="string">
+        <Description>User's employee number.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="Extension" type="string">
+        <Description>User's telephone extension.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="Street" type="string">
+        <Description>The street address associated with the User.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="Fax" type="string">
+        <Description>User's fax number.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="IsActive" type="boolean">
+        <Description>Flag that indicates if the user is active in Salesforce.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="IsFrozen" type="boolean">
+        <Description>Flag that indicates if the user is frozen in Salesforce.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="Username" type="string">
+        <Description>Contains the name that a user enters to log into the API or the user interface.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="FirstName" type="string">
+        <Description>User's first name.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="LastName" type="string">
+        <Description>User's last name.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="EmailEncodingKey" type="string">
+        <Description>Encoding that should be used during email communications.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="Name" type="string">
+        <Description>User's fullname.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="UserPermissionsMarketingUser" type="boolean">
+        <Description>Maps to the Marketing User Flag.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="UserPermissionsOfflineUser" type="boolean">
+        <Description>Maps to the Offline user Flag.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="UserPermissionsSFContentUser" type="boolean">
+        <Description>Maps to Sales Anywhere User.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="Phone" type="string">
+        <Description>User's phone number.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition entitlement="true" managed="true" name="ProfileId" schemaObjectType="group" type="string">
+        <Description>ID of the profile assigned to a user.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="ProfileName" type="string">
+        <Description>Name of the profile assigned to a user.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition entitlement="true" managed="true" multi="true" name="PublicGroups" schemaObjectType="PublicGroups" type="string">
+        <Description>Public groups are the entitlements for user.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition entitlement="true" managed="true" multi="true" name="QueueNames" type="string">
+        <Description>Queues assigned to the user.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="ReceivesAdminInfoEmails" type="string">
+        <Description>Receive the salesforce.com administrator newsletter.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition entitlement="true" managed="true" name="Role" schemaObjectType="Role" type="string">
+        <Description>The Role assigned to a user.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="UserType" type="string">
+        <Description>This is user type of salesforce user i.e Standard, Partner, AutomatedProcess.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="State" type="string">
+        <Description>User's state.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="Title" type="string">
+        <Description>User's title.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="ReceivesInfoEmails" type="string">
+        <Description>Receive the salesforce.com newsletter.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition entitlement="true" managed="true" multi="true" name="PermissionSet" schemaObjectType="PermissionSet" type="string">
+        <Description>PermissionSet assigned to a user.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition entitlement="true" managed="true" multi="true" name="PermissionSetGroup" schemaObjectType="PermissionSetGroup" type="string">
+        <Description>PermissionSetGroup assigned to a user.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition entitlement="true" managed="true" multi="true" name="PermissionSetLicense" schemaObjectType="PermissionSetLicense" type="string">
+        <Description>PermissionSetLicense assigned to a user.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition entitlement="true" managed="true" multi="true" name="ManagedPackage" schemaObjectType="ManagedPackage" type="string">
+        <Description>Managed Package assigned to a user.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition entitlement="true" managed="true" multi="true" name="CollaborationGroup" schemaObjectType="CollaborationGroup" type="string">
+        <Description>Collaboration Group Id assigned to a user.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="UserLicense" remediationModificationType="None" type="string">
+        <Description>User's license.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="LanguageLocaleKey" type="string">
+        <Description>The user's language.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="LocaleSidKey" type="string">
+        <Description>This is the user's locale.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="TimeZoneSidKey" type="string">
+        <Description>The timezone of the user.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="FederationIdentifier" type="string">
+        <Description>A Federation IDs is an identifier that is unique within a salesforce Organization.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="ManagerId" type="string">
+        <Description>User's manager id.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition entitlement="true" managed="true" multi="true" name="DelegateGroup" schemaObjectType="DelegateGroup" type="string">
+        <Description>The ID of the Delegate Group assigned to the user</Description>
+      </AttributeDefinition>
+    </Schema>
+    <Schema aggregationType="group" descriptionAttribute="" displayAttribute="Name" hierarchyAttribute="ParentRoleId" identityAttribute="Id" instanceAttribute="" nativeObjectType="Role" objectType="Role" permissionsRemediationModificationType="None">
+      <AttributeDefinition name="Id" type="string">
+        <Description>The Role's unique identifier</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="Name" type="string">
+        <Description>The Role's name</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="CaseAccessForAccountOwner" type="string">
+        <Description>The case access level for the account owner</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="ContactAccessForAccountOwner" type="string">
+        <Description>The contact access level for the account owner</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="OpportunityAccessForAccountOwner" type="string">
+        <Description>The opportunity access level for the account owner</Description>
+      </AttributeDefinition>
+      <AttributeDefinition multi="true" name="ParentRoleId" type="string">
+        <Description>Unique identifier for the Role's parent Role</Description>
+      </AttributeDefinition>
+    </Schema>
+    <Schema aggregationType="group" descriptionAttribute="" displayAttribute="NamespacePrefix" identityAttribute="Id" instanceAttribute="" nativeObjectType="ManagedPackage" objectType="ManagedPackage" permissionsRemediationModificationType="None">
+      <AttributeDefinition name="Id" type="string">
+        <Description>Managed Package Id.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="NamespacePrefix" type="string">
+        <Description>Managed Package NamespacePrefix.</Description>
+      </AttributeDefinition>
+    </Schema>
+    <Schema aggregationType="group" descriptionAttribute="" displayAttribute="Name" featuresString="PROVISIONING" identityAttribute="Id" instanceAttribute="" nativeObjectType="PublicGroups" objectType="PublicGroups" permissionsRemediationModificationType="None">
+      <AttributeDefinition name="Id" type="string">
+        <Description>Public Group Id.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="Name" type="string">
+        <Description>Public Group Name.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="DeveloperName" type="string">
+        <Description>It is unique name for the Public Group</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="DoesIncludeBosses" type="boolean">
+        <Description>Indicates whether the managers have access (true) or do not have access (false) to records shared with members of the group</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="OwnerId" type="string">
+        <Description>ID of the user who owns the group.</Description>
+      </AttributeDefinition>
+    </Schema>
+    <Schema aggregationType="group" descriptionAttribute="Description" displayAttribute="Name" identityAttribute="Id" instanceAttribute="" nativeObjectType="CollaborationGroup" objectType="CollaborationGroup" permissionsRemediationModificationType="None">
+      <AttributeDefinition name="Id" type="string">
+        <Description>Collaboration Group Id.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="Name" type="string">
+        <Description>Collaboration Group Name.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="CollaborationType" type="string">
+        <Description>Collaboration Group Type.</Description>
+      </AttributeDefinition>
+    </Schema>
+    <Schema aggregationType="group" descriptionAttribute="" displayAttribute="Name" identityAttribute="Id" instanceAttribute="" nativeObjectType="DelegateGroup" objectType="DelegateGroup" permissionsRemediationModificationType="None">
+      <AttributeDefinition name="Id" type="string">
+        <Description>The Delegate Group's unique identifier</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="DeveloperName" type="string">
+        <Description>The unique developer name for the delegate group</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="IsLoginAccessEnabled" type="boolean">
+        <Description>Indicates if login access is enabled for the developer group</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="Name" type="string">
+        <Description>The developer group's unique label</Description>
+      </AttributeDefinition>
+    </Schema>
+    <Schema aggregationType="group" descriptionAttribute="Description" displayAttribute="Name" identityAttribute="Name" instanceAttribute="" nativeObjectType="PermissionSet" objectType="PermissionSet" permissionsRemediationModificationType="None">
+      <AttributeDefinition name="Name" type="string">
+        <Description>The internal id for this group.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="Label" type="string">
+        <Description>The friendly name assigned to the profile.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="Description" type="string">
+        <Description>Description for the profiles.</Description>
+      </AttributeDefinition>
+    </Schema>
+    <Schema aggregationType="group" descriptionAttribute="" displayAttribute="MasterLabel" identityAttribute="Id" instanceAttribute="" nativeObjectType="PermissionSetLicense" objectType="PermissionSetLicense" permissionsRemediationModificationType="None">
+      <AttributeDefinition name="Id" type="string">
+        <Description>PermissionSetLicense Id.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="MasterLabel" type="string">
+        <Description>PermissionSetLicense MasterLabel.</Description>
+      </AttributeDefinition>
+    </Schema>
+    <Schema aggregationType="group" descriptionAttribute="Description" displayAttribute="MasterLabel" identityAttribute="Id" instanceAttribute="" nativeObjectType="PermissionSetGroup" objectType="PermissionSetGroup" permissionsRemediationModificationType="None">
+      <AttributeDefinition name="Id" type="string">
+        <Description>PermissionSetGroup Id.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="MasterLabel" type="string">
+        <Description>PermissionSetGroup Name.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="Description" type="string">
+        <Description>PermissionSetGroup Description.</Description>
+      </AttributeDefinition>
+    </Schema>
+    <Schema descriptionAttribute="Description" displayAttribute="Name" identityAttribute="Id" includePermissions="true" instanceAttribute="" nativeObjectType="Profile" objectType="group" permissionsRemediationModificationType="None">
+      <AttributeDefinition name="Id" type="string">
+        <Description>The internal id for this group.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="Name" type="string">
+        <Description>The friendly name assigned to the profile.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="Description" type="string">
+        <Description>Description for the profiles.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="UserType" type="string">
+        <Description>This is the type of profile even though the attribute name would indicate a user.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="UserLicense" remediationModificationType="None" type="string">
+        <Description>User's license.</Description>
+      </AttributeDefinition>
+    </Schema>
+  </Schemas>
+  <ApplicationScorecard/>
+</Application>

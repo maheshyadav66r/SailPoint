@@ -1,0 +1,487 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow explicitTransitions="true" name="Impersonate Plugin - Manage Tokens" type="IdentityUpdate">
+  <Variable input="true" name="launcher"/>
+  <Variable initializer="ref:launcher" input="true" name="identityName" required="true"/>
+  <Variable name="menuAction">
+    <Description>Selected Action From Menu</Description>
+  </Variable>
+  <Variable name="tokenModel">
+    <Description>The model Map used for the token creation form.</Description>
+  </Variable>
+  <Variable initializer="true" name="transient"/>
+  <Variable initializer="false" input="true" name="trace"/>
+  <Step icon="Start" name="Start" posX="20" posY="20">
+    <Transition to="Menu"/>
+  </Step>
+  <Step icon="Message" name="Menu" posX="170" posY="20">
+    <Approval name="Menu" owner="ref:launcher" return="menuAction" send="">
+      <Arg name="identityName" value="ref:identityName"/>
+      <Form name="Menu">
+        <Attributes>
+          <Map>
+            <entry key="pageTitle" value="Menu"/>
+          </Map>
+        </Attributes>
+        <Section label="Menu" type="datatable">
+          <Field name="explanation" type="textarea" value="This wizard allows you to create new tokens and invite people to impersonate, and to manage or remove existing tokens.&#10;&#9;&#9;&#9;&#9;&#9;&#9;&#9;&#9;"/>
+        </Section>
+        <Button action="next" label="Create Token" parameter="menuAction" value="Create"/>
+        <Button action="next" label="Manage Existing Tokens" parameter="menuAction" value="Manage"/>
+        <Button action="back" label="Exit"/>
+      </Form>
+    </Approval>
+    <Transition to="Create Token Model" when="approved &amp;&amp; &quot;Create&quot;.equals(menuAction)"/>
+    <Transition to="Manage Tokens" when="approved &amp;&amp; &quot;Manage&quot;.equals(menuAction)"/>
+    <Transition to="Stop"/>
+  </Step>
+  <Step icon="Task" name="Create Token Model" posX="320" posY="170" resultVariable="tokenModel">
+    <Script>
+      <Source><![CDATA[
+Map tokenModel = new HashMap();
+return tokenModel;
+				
+				]]></Source>
+    </Script>
+    <Transition to="Create Token"/>
+  </Step>
+  <Step icon="Approval" name="Create Token" posX="470" posY="170">
+    <Approval name="Create Token" owner="ref:launcher" return="menuAction, tokenModel" send="tokenModel">
+      <Arg name="workItemFormBasePath" value="tokenModel"/>
+      <Form name="Create Token">
+        <Attributes>
+          <Map>
+            <entry key="pageTitle" value="Create Token"/>
+          </Map>
+        </Attributes>
+        <Section label="Token Parameters" name="Token Parameters">
+          <Field name="id" type="string">
+            <Attributes>
+              <Map>
+                <entry key="hidden" value="true"/>
+                <entry key="readOnly" value="true"/>
+              </Map>
+            </Attributes>
+            <Script>
+              <Source><![CDATA[return sailpoint.tools.Util.uuid();
+								]]></Source>
+            </Script>
+          </Field>
+          <Field displayName="Token" name="token" required="true" type="string" value="123456">
+            <Attributes>
+              <Map>
+                <entry key="readOnly" value="true"/>
+              </Map>
+            </Attributes>
+            <Script>
+              <Source><![CDATA[
+import sailpoint.tools.Util;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+Log logger = LogFactory.getLog("sailpoint.impersonatePlugin.workflow.createToken.script.Token");
+logger.debug("Generate token");
+
+String TOKENCHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+int TOKENLENGTH = 12;
+int NUMCHARS= TOKENCHARS.length();
+
+String token = "";
+for (int i = 0; i < TOKENLENGTH; i++) {
+  int n = Util.rand(0, NUMCHARS - 1);
+  String c = TOKENCHARS.substring(n, n+1);
+  token += c;
+}
+return token;
+
+								]]></Source>
+            </Script>
+          </Field>
+          <Field displayName="Description" name="description" required="true" type="string"/>
+          <Field displayName="Single Use" name="oneTime" type="boolean"/>
+          <Field displayName="Expiration Date (optional)" name="expiration" type="date"/>
+        </Section>
+        <Section label="Invite to Impersonate" name="Invite">
+          <Attributes>
+            <Map>
+              <entry key="subtitle" value="Optionally invite people to use the impersonation token"/>
+            </Map>
+          </Attributes>
+          <Field displayName="Recipients" filterString="(correlated == true  &amp;&amp; capabilities.name == &quot;ImpersonatePluginCapability&quot;) || workgroup == true" multi="true" name="recipients" type="sailpoint.object.Identity"/>
+        </Section>
+        <Button action="next" label="Create Token"/>
+        <Button action="back" label="Return" parameter="menuAction" value="Return"/>
+        <Button action="back" label="Exit" parameter="menuAction" value="Exit"/>
+      </Form>
+    </Approval>
+    <Transition to="Save Token" when="approved"/>
+    <Transition to="Stop" when="!approved &amp;&amp; &quot;Exit&quot;.equals(menuAction)"/>
+    <Transition to="Menu"/>
+  </Step>
+  <Step icon="Provision" name="Save Token" posX="620" posY="170">
+    <Arg name="identityName" value="ref:identityName"/>
+    <Arg name="tokenModel" value="ref:tokenModel"/>
+    <Script>
+      <Source><![CDATA[
+//Expect:java.util.Map tokenModel
+import sailpoint.object.Identity;
+import sailpoint.api.ObjectUtil;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+Log logger = LogFactory.getLog("sailpoint.impersonatePlugin.workflow.saveToken.script.StepAction");
+
+if (tokenModel != null) {
+  logger.debug("Token Model: " + tokenModel.toString());
+  Map token = new HashMap();
+  token.put("id", tokenModel.get("id"));
+  String tokenStr = tokenModel.get("token");
+  if (tokenStr != null) {
+    tokenStr = context.encrypt(tokenStr);
+  }
+  token.put("token", tokenStr);
+  token.put("expiration", tokenModel.get("expiration"));
+  token.put("oneTime", tokenModel.get("oneTime"));
+  token.put("description", tokenModel.get("description"));
+  token.put("recipients", tokenModel.get("recipients"));
+
+  Identity identity = ObjectUtil.lockIdentity(context, identityName);
+  if (identity != null) {
+    try {
+      Map preferences = identity.getPreferences();
+      if (preferences == null) {
+        logger.info("Creating new preferences map");
+        preferences = new HashMap();
+      }
+      List impersonatePluginTokens = (List) preferences.get("impersonatePluginTokens");
+      if (impersonatePluginTokens == null) {
+        logger.info("Creating new token list");
+        impersonatePluginTokens = new ArrayList();
+      }
+      impersonatePluginTokens.add(token);
+      preferences.put("impersonatePluginTokens", impersonatePluginTokens);
+      identity.setPreferences(preferences);
+      logger.debug("Saving tokens");
+      context.startTransaction();
+      context.saveObject(identity);
+      context.commitTransaction();
+      logger.debug("Tokens saved");
+    } finally {
+      logger.debug("Unlock");
+      ObjectUtil.unlockIdentity(context, identity); 
+    }
+  }
+}
+				]]></Source>
+    </Script>
+    <Transition to="Notify"/>
+  </Step>
+  <Step action="call:sendEmail" icon="Email" name="Notify" posX="770" posY="170">
+    <Arg name="to">
+      <Script>
+        <Source><![CDATA[
+import sailpoint.api.ObjectUtil;
+import sailpoint.tools.Util;
+import sailpoint.object.Identity;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+Log logger = LogFactory.getLog("sailpoint.impersonatePlugin.workflow.notify.script.arg.To");
+
+// Expect: java.util.Map tokenModel
+
+if (tokenModel != null && !tokenModel.isEmpty()) {
+  List recipients = tokenModel.get("recipients");
+  if (recipients != null && !recipients.isEmpty()) {
+    Set emails = new HashSet();
+    for (String recipient: recipients) {
+      logger.debug("Recipient: " + recipient);
+      Identity ri = context.getObjectByName(Identity.class, recipient);
+      if (ri != null) {
+        List effectiveEmails = ObjectUtil.getEffectiveEmails(context, ri);
+        emails.addAll(effectiveEmails);
+      }
+    }
+    logger.debug(emails);
+    return Util.setToCsv(emails);
+  }
+}
+return null;
+					]]></Source>
+      </Script>
+    </Arg>
+    <Arg name="template" value="Impersonation Invitation"/>
+    <Arg name="targetIdentity" value="ref:identityName"/>
+    <Arg name="targetDisplayName">
+      <Script>
+        <Source><![CDATA[
+import sailpoint.object.Identity;
+Identity target = context.getObjectByName(Identity.class, identityName);
+if (target != null) {
+  return target.getDisplayableName();
+}
+return identityName
+					]]></Source>
+      </Script>
+    </Arg>
+    <Arg name="token">
+      <Script>
+        <Source><![CDATA[
+return (String) tokenModel.get("token");					
+					]]></Source>
+      </Script>
+    </Arg>
+    <Arg name="oneTime">
+      <Script>
+        <Source><![CDATA[
+import sailpoint.tools.Util;
+return Util.otob(tokenModel.get("oneTime"));					
+					]]></Source>
+      </Script>
+    </Arg>
+    <Arg name="expiration">
+      <Script>
+        <Source><![CDATA[
+return (Date) tokenModel.get("expiration");					
+					]]></Source>
+      </Script>
+    </Arg>
+    <ConditionScript>
+      <Source><![CDATA[
+					
+if (tokenModel instanceof Map) {
+  log.error(tokenModel.toString());
+  return (tokenModel.get("recipients") != null);
+}
+return false;
+					
+				]]></Source>
+    </ConditionScript>
+    <Transition to="Audit Create"/>
+  </Step>
+  <Step action="call:audit" icon="Audit" name="Audit Create" posX="920" posY="170">
+    <Arg name="source" value="string:Workflow"/>
+    <Arg name="action" value="string:createImpersonationToken"/>
+    <Arg name="accountName" value="script:context.getUserName();"/>
+    <Arg name="target" value="ref:identityName"/>
+    <Arg name="string1" value="script:sailpoint.tools.Util.listToCsv(tokenModel.get(&quot;recipients&quot;));"/>
+    <Arg name="string2" value="script:tokenModel.get(&quot;oneTime&quot;);"/>
+    <Arg name="string3" value="script:tokenModel.get(&quot;expiration&quot;);"/>
+    <Arg name="string4" value="script:tokenModel.get(&quot;id&quot;);"/>
+    <Transition to="Stop"/>
+  </Step>
+  <Step icon="Approval" name="Manage Tokens" posX="320" posY="320">
+    <Approval name="Manage Tokens" owner="ref:launcher" return="selectedTokens,menuAction" send="identityName">
+      <Form>
+        <Section>
+          <Field displayName="Warning" name="warning" value="No tokens found!">
+            <Attributes>
+              <Map>
+                <entry key="hidden">
+                  <value>
+                    <Script>
+                      <Source><![CDATA[
+import sailpoint.object.Identity;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+Log logger = LogFactory.getLog("sailpoint.impersonatePlugin.workflow.manageTokens.script.fieldWarning.hidden");
+logger.debug("Show field if no existing tokens found.");
+
+// Expect: String identityName
+List allowedValues = new ArrayList();
+Identity identity = context.getObjectByName(Identity.class, identityName);
+if (identity != null) {
+  Map preferences = identity.getPreferences();
+  if (preferences != null) {
+    List impersonatePluginTokens = (List) preferences.get("impersonatePluginTokens");
+    if (impersonatePluginTokens != null && !impersonatePluginTokens.isEmpty()) {
+      return true;
+    }
+  }
+}
+
+return false;
+									
+												]]></Source>
+                    </Script>
+                  </value>
+                </entry>
+                <entry key="readOnly" value="true"/>
+              </Map>
+            </Attributes>
+          </Field>
+          <Field displayName="Tokens" displayType="combobox" multi="true" name="selectedTokens" type="string">
+            <AllowedValuesDefinition>
+              <Script>
+                <Source><![CDATA[
+import sailpoint.object.Identity;
+import sailpoint.tools.Util;
+import java.text.SimpleDateFormat;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+Log logger = LogFactory.getLog("sailpoint.impersonatePlugin.workflow.manageTokens.script.allowedValues.Tokens");
+logger.debug("Get existing tokens to manage");
+
+// Expect: String identityName
+List allowedValues = new ArrayList();
+Identity identity = context.getObjectByName(Identity.class, identityName);
+if (identity != null) {
+  Map preferences = identity.getPreferences();
+  if (preferences != null) {
+    List impersonatePluginTokens = (List) preferences.get("impersonatePluginTokens");
+    if (impersonatePluginTokens != null && !impersonatePluginTokens.isEmpty()) {
+      for (Map token: impersonatePluginTokens) {
+        String id = (String) token.get("id");
+        if (id != null) {
+          List item = new ArrayList();
+          item.add(id);
+          String description = (String) token.get("description");
+          if (Util.isNullOrEmpty(description)) {
+            description = id;
+          }
+          Date expiration = (Date) token.get("expiration");
+          if (expiration != null) {
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+            description += " (Exp: " + format.format(expiration) + ")";
+          }
+          if (Util.otob(token.get("oneTime"))) {
+            description += " [1x]";
+          }
+          List recipients = token.get("recipients");
+          if (recipients != null && !recipients.isEmpty()) {
+            description += " [" + Util.listToCsv(recipients) + "]";
+          }
+          if (description.length() > 128) {
+            description = description.substring(0, 125) + "...";
+          }
+          item.add(description);
+          allowedValues.add(item);
+        }
+      }
+    }
+  }
+}
+
+if (allowedValues.isEmpty()) {
+  logger.warn("No values - adding default.");
+  allowedValues.add("-----XX-----");
+}
+return allowedValues;
+									
+									]]></Source>
+              </Script>
+            </AllowedValuesDefinition>
+            <Attributes>
+              <Map>
+                <entry key="hidden">
+                  <value>
+                    <Script>
+                      <Source><![CDATA[
+import sailpoint.object.Identity;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+Log logger = LogFactory.getLog("sailpoint.impersonatePlugin.workflow.manageTokens.script.fieldTokens.hidden");
+logger.debug("Hide field if no existing tokens found.");
+
+// Expect: String identityName
+List allowedValues = new ArrayList();
+Identity identity = context.getObjectByName(Identity.class, identityName);
+if (identity != null) {
+  Map preferences = identity.getPreferences();
+  if (preferences != null) {
+    List impersonatePluginTokens = (List) preferences.get("impersonatePluginTokens");
+    if (impersonatePluginTokens != null && !impersonatePluginTokens.isEmpty()) {
+      return false;
+    }
+  }
+}
+
+return true;
+									
+												]]></Source>
+                    </Script>
+                  </value>
+                </entry>
+              </Map>
+            </Attributes>
+          </Field>
+        </Section>
+        <Button action="back" label="Return"/>
+        <Button action="next" label="Revoke" parameter="menuAction" value="Revoke"/>
+        <Button action="next" label="Done" parameter="menuAction" value="Done"/>
+      </Form>
+    </Approval>
+    <Transition to="Revoke Tokens" when="approved &amp;&amp; &quot;Revoke&quot;.equals(menuAction) &amp;&amp; selectedTokens != null &amp;&amp; !selectedTokens.isEmpty();"/>
+    <Transition to="Stop" when="approved"/>
+    <Transition to="Menu"/>
+  </Step>
+  <Step icon="Provision" name="Revoke Tokens" posX="470" posY="320">
+    <Arg name="identityName" value="ref:identityName"/>
+    <Arg name="selectedTokens" value="ref:selectedTokens"/>
+    <Script>
+      <Source><![CDATA[
+// Expect: List selectedTokens
+
+import sailpoint.object.Identity;
+import sailpoint.api.ObjectUtil;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+Log logger = LogFactory.getLog("sailpoint.impersonatePlugin.workflow.revokeTokens.script.StepAction");
+
+if (selectedTokens != null && !selectedTokens.isEmpty()) {
+  logger.debug("Tokens to revoke: " + selectedTokens.toString());
+
+  Identity identity = ObjectUtil.lockIdentity(context, identityName);
+  if (identity != null) {
+    try {
+      Map preferences = identity.getPreferences();
+      if (preferences == null) {
+        logger.info("Creating new preferences map");
+        preferences = new HashMap();
+      }
+      List impersonatePluginTokens = (List) preferences.get("impersonatePluginTokens");
+      if (impersonatePluginTokens == null) {
+        logger.info("Creating new token list");
+        impersonatePluginTokens = new ArrayList();
+      }
+      
+      List newImpersonatePluginTokens = new ArrayList();
+      for (Map token: impersonatePluginTokens) {
+        String tokenId = (String) token.get("id");
+        if (tokenId != null && !selectedTokens.contains(tokenId)) {
+          logger.debug("Keeping a non-selected token");
+          newImpersonatePluginTokens.add(token);
+        }
+      }
+      
+      preferences.put("impersonatePluginTokens", newImpersonatePluginTokens);
+      identity.setPreferences(preferences);
+      logger.debug("Saving tokens");
+      context.startTransaction();
+      context.saveObject(identity);
+      context.commitTransaction();
+      logger.debug("Tokens saved");
+    } finally {
+      logger.debug("Unlock");
+      ObjectUtil.unlockIdentity(context, identity); 
+    }
+  }
+}
+				]]></Source>
+    </Script>
+    <Transition to="Adit Revoke"/>
+  </Step>
+  <Step action="call:audit" icon="Audit" name="Adit Revoke" posX="620" posY="320">
+    <Arg name="source" value="string:Workflow"/>
+    <Arg name="action" value="string:deleteImpersonationToken"/>
+    <Arg name="accountName" value="script:context.getUserName();"/>
+    <Arg name="target" value="ref:identityName"/>
+    <Arg name="string4" value="script:sailpoint.tools.Util.listToCsv(selectedTokens);"/>
+    <Transition to="Stop"/>
+  </Step>
+  <Step icon="Stop" name="Stop" posX="920" posY="20"/>
+</Workflow>

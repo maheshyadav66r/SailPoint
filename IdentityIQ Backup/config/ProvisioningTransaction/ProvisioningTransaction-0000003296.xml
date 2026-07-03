@@ -1,0 +1,69 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningTransaction PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningTransaction accountDisplayName="CN=Bryan Ryan,OU=Finance,OU=People,OU=Demo,DC=Eshiam,DC=com" applicationName="ActiveDirectory" identityDisplayName="Bryan Ryan" identityName="Bryan Ryan" integration="ActiveDirectory" name="0000003296" nativeIdentity="CN=Bryan Ryan,OU=Finance,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Modify" source="IdentityRefresh" status="Failed" type="Auto">
+  <Attributes>
+    <Map>
+      <entry key="filtered">
+        <value>
+          <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Bryan Ryan,OU=Finance,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+            <AttributeRequest name="memberOf" op="Add" value="CN=Buyer,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+              <Attributes>
+                <Map>
+                  <entry key="assignment" value="true"/>
+                  <entry key="reason">
+                    <value>
+                      <FilterReason>Exists</FilterReason>
+                    </value>
+                  </entry>
+                </Map>
+              </Attributes>
+            </AttributeRequest>
+            <AttributeRequest name="memberOf" op="Add">
+              <Attributes>
+                <Map>
+                  <entry key="reason">
+                    <value>
+                      <FilterReason>Exists</FilterReason>
+                    </value>
+                  </entry>
+                </Map>
+              </Attributes>
+              <Value>
+                <List>
+                  <String>CN=DataArchive,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                </List>
+              </Value>
+            </AttributeRequest>
+          </AccountRequest>
+        </value>
+      </entry>
+      <entry key="request">
+        <value>
+          <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Bryan Ryan,OU=Finance,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+            <Attributes>
+              <Map>
+                <entry key="provisioningTransactionId" value="c0a81d8993b918a48193b983278e0517"/>
+              </Map>
+            </Attributes>
+            <AttributeRequest name="memberOf" op="Add" value="CN=campusAccess,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+              <Attributes>
+                <Map>
+                  <entry key="assignment">
+                    <value>
+                      <Boolean>true</Boolean>
+                    </value>
+                  </entry>
+                </Map>
+              </Attributes>
+            </AttributeRequest>
+            <ProvisioningResult status="failed">
+              <Errors>
+                <Message key="Error(s) reported back from the IQService - Failed to update attributes for identity CN=Bryan Ryan,OU=Finance,OU=People,OU=Demo,DC=Eshiam,DC=com. Failed to connect to the server for CN=Bryan Ryan,OU=Finance,OU=People,OU=Demo,DC=Eshiam,DC=com:There is no such object on the server. There is no such object on the server. 0000208D: NameErr: DSID-03100238, problem 2001 (NO_OBJECT), data 0, best match of: &#9;'OU=Finance,OU=People,OU=Demo,DC=Eshiam,DC=com' 0000208D: NameErr: DSID-03100238, problem 2001 (NO_OBJECT), data 0, best match of: &#9;'OU=Finance,OU=People,OU=Demo,DC=Eshiam,DC=com' . HRESULT:[0x80072030]Failed to connect to the server for CN=Bryan Ryan,OU=Finance,OU=People,OU=Demo,DC=Eshiam,DC=com:There is no such object on the server. There is no such object on the server. 0000208D: NameErr: DSID-03100238, problem 2001 (NO_OBJECT), data 0, best match of: &#9;'OU=Finance,OU=People,OU=Demo,DC=Eshiam,DC=com' 0000208D: NameErr: DSID-03100238, problem 2001 (NO_OBJECT), data 0, best match of: &#9;'OU=Finance,OU=People,OU=Demo,DC=Eshiam,DC=com' . HRESULT:[0x80072030] Possible reasons for failure include a) The Domain Controller is currently not reachable b) The object has either been moved or renamed c) The object has been deleted &#10; Please Ensure the data has been aggregated before performing the operation " type="Error"/>
+              </Errors>
+            </ProvisioningResult>
+          </AccountRequest>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+</ProvisioningTransaction>

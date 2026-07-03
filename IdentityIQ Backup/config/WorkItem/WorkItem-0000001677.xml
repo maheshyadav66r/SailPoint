@@ -1,0 +1,186 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE WorkItem PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<WorkItem handler="sailpoint.api.Workflower" level="Normal" name="0000001677" renderer="workflow.xhtml" type="Form">
+  <Attributes>
+    <Map>
+      <entry key="quickLinkIdentityId" value="c0a81d898f331f7b818f3404c0cf0148"/>
+      <entry key="workItemForm">
+        <value>
+          <Form name="Get Access Items">
+            <Attributes>
+              <Map>
+                <entry key="pageTitle" value="Get Access Items"/>
+              </Map>
+            </Attributes>
+            <Section label="Select Items" name="selectItems">
+              <Field name="accessType" postBack="true" type="string">
+                <AllowedValues>
+                  <String>Entitlements</String>
+                  <String>Roles</String>
+                </AllowedValues>
+              </Field>
+              <Field dynamic="true" name="searchItem" postBack="true" type="text">
+                <Attributes>
+                  <Map>
+                    <entry key="hidden">
+                      <value>
+                        <Script>
+                          <Source><![CDATA[
+                        import sailpoint.tools.Util;
+
+                        if(!Util.isNullOrEmpty(accessType))
+                        return false;
+                        return true;
+                      ]]></Source>
+                        </Script>
+                      </value>
+                    </entry>
+                  </Map>
+                </Attributes>
+              </Field>
+            </Section>
+            <Section label="Searched Items" name="searchedItems" type="text">
+              <Attributes>
+                <Map>
+                  <entry key="hidden">
+                    <value>
+                      <Script>
+                        <Source><![CDATA[
+                      import sailpoint.tools.Util;
+
+                      if(!Util.isNullOrEmpty(accessType) &&!Util.isNullOrEmpty(searchItem))
+                      return false;
+                      return true;
+                    ]]></Source>
+                      </Script>
+                    </value>
+                  </entry>
+                </Map>
+              </Attributes>
+              <Field dynamic="true" name="searchedItems" type="text">
+                <Attributes>
+                  <Map>
+                    <entry key="contentIsEscaped" value="true"/>
+                  </Map>
+                </Attributes>
+                <Script>
+                  <Source><![CDATA[
+                import sailpoint.object.Filter;
+                import sailpoint.object.IdentityEntitlement;
+                import sailpoint.object.Application;
+                import sailpoint.object.QueryOptions;
+                import sailpoint.tools.Util;
+
+                import java.util.Iterator;
+                import java.util.Arrays;
+
+                Filter filter = null;
+                Filter idFilter = Filter.eq("identity.id", quickLinkIdentityId);
+                Filter nameFilter3 = Filter.like("value", searchItem, Filter.MatchMode.ANYWHERE);
+
+                if(Util.nullSafeEq(accessType, "Entitlements")) {
+
+                Filter nameFilter = Filter.ne("name", "assignedRoles");
+                Filter nameFilter2 = Filter.ne("name", "detectedRoles");
+                filter = Filter.and(idFilter, nameFilter, nameFilter2, nameFilter3);
+                } else {
+                Filter nameFilter = Filter.eq("name", "assignedRoles");
+                Filter nameFilter2 = Filter.eq("name", "detectedRoles");
+                filter = Filter.and(idFilter, Filter.or(nameFilter, nameFilter2) , nameFilter3);
+                }
+
+                QueryOptions qo = new QueryOptions();
+                qo.addFilter(filter);
+
+                StringBuilder html = new StringBuilder();
+
+                log.error("   7   ");
+                html.append("<div style='padding:10px; font-family:Arial, sans-serif;'>");
+                html.append("<div style='border:1px solid #ccc;'>");
+                html.append("<table border='1' cellspacing='0' style='border-collapse:collapse; width:100%; font-size:13px;'>");
+
+                html.append("<colgroup>")
+                .append("<col style='width:10%;'>")
+                .append("<col style='width:25%;'>")
+                .append("<col style='width:40%;'>")
+                .append("<col style='width:25%;'>")
+                .append("</colgroup>");
+
+                html.append("<tr style='background-color:#011E69; color:white;'>")
+                .append("<th style='padding:8px; text-align:center;'>SNo</th>")
+                .append("<th style='padding:8px; text-align:center;'>ItemName</th>")
+                .append("<th style='padding:8px; text-align:center;'>ItemValue</th>")
+                .append("<th style='padding:8px; text-align:center;'>Application</th>")
+                .append("</tr>");
+
+                int serialNo = 1;
+                int count = 0;
+                log.error("  8  ");
+                Iterator it = context.search(
+                IdentityEntitlement.class,qo,"name,value,application,type");
+
+                while (it.hasNext()) {
+
+                Object[] row = (Object[]) it.next();
+                log.error("  9  ");
+
+                String name = (String) row[0];
+                log.error("  name  " +name);
+                String value = (String) row[1];
+                log.error("  value  " +value);
+                Application app = (Application) row[2];
+                String type = row[3]!=null?row[3].toString():"Role";
+
+                String appName = "";
+
+                if (app != null) {
+                appName = app.getName();
+                }else{
+                appName = "IIQ";
+                }
+
+                log.error("  2mmnnm  name: "+name+" value : "+value+" appName :  "+appName+" Type :  "+type);
+                //String rowColor = (serialNo % 2 == 0) ? "#ffffff" : "#f9f9f9";
+
+                html.append("<tr style='background-color:" + "#ffffff" + "; text-align:center;'>")
+                .append("<td style='padding:5px;'>").append(serialNo).append("</td>")
+                .append("<td style='padding:8px;'>").append(name).append("</td>")
+                .append("<td style='padding:8px;'>").append(value).append("</td>")
+                .append("<td style='padding:8px;'>").append(appName).append("</td>")
+                .append("</tr>");
+
+                serialNo++;
+                count++;
+                }
+
+                html.append("</table>");
+                html.append("</div>");
+                html.append("</div>");
+
+
+               // log.error("   html :::::  "+html.toString() +" ......  "+count);
+                log.error(" Count :: "+count);
+
+                return html.toString();
+              ]]></Source>
+                </Script>
+              </Field>
+            </Section>
+            <Button action="next" label="Submit"/>
+            <Button action="back" label="Cancel"/>
+          </Form>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Description>Get Access Items</Description>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+  <Requester>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Requester>
+  <WorkflowCaseRef>
+    <Reference class="sailpoint.object.WorkflowCase" name="QuickLink Launch for identity spadmin - 842"/>
+  </WorkflowCaseRef>
+</WorkItem>

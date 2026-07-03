@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Validation_HistoricalIdentityEvent_check" type="Validation">
+  <Source><![CDATA[
+  import sailpoint.object.accesshistory.QueryableAccessHistory;
+  import sailpoint.object.accesshistory.HistoricalEvent;
+  import sailpoint.object.accesshistory.HistoricalIdentityEvent;
+  import sailpoint.object.Filter;
+  import sailpoint.object.QueryOptions;
+  import  sailpoint.api.SailPointContext;
+  import sailpoint.accesshistory.AccessHistoryUtil;
+
+
+  SailPointContext ahcontext = AccessHistoryUtil.getAccessHistoryContext();
+
+  QueryOptions qo = new QueryOptions();
+  Filter filter = Filter.and(Filter.eq("eventCategory", "Identity"),Filter.eq("eventType", "IdentityChanged"),Filter.eq("eventSourceType", "CAPTURE_DIFF"));
+  qo.addFilter(filter);
+
+
+ /* int count = ahcontext.countObjects(HistoricalIdentityEvent.class, qo);
+  log.error("   count of HistoricalIdentityEvent objects  : "+count);
+  return count;*/
+
+
+  Iterator it = ahcontext.search(HistoricalIdentityEvent.class, qo);
+
+  while (it.hasNext()) {
+    HistoricalIdentityEvent hie = (HistoricalIdentityEvent) it.next();
+
+    if (hie.getNewValue() != null @and hie.getOldValue() != null) {
+      log.error("new value : " + hie.getNewValue()+"    "+"old value : " + hie.getOldValue());
+      // log.error("old value : " + hie.getOldValue());
+    } else {
+      log.error("Skipped due to null values.");
+    }
+  }
+
+  return "Filter";
+  ]]></Source>
+</Rule>

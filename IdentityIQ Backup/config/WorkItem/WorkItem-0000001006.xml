@@ -1,0 +1,198 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE WorkItem PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<WorkItem handler="sailpoint.api.Workflower" identityRequestId="0000000740" level="Normal" name="0000001006" renderer="lcmManualActionsRenderer.xhtml" targetClass="sailpoint.object.Identity" targetName="Abigail Frey" type="ManualAction">
+  <Attributes>
+    <Map>
+      <entry key="approvalSet">
+        <value>
+          <ApprovalSet>
+            <ApprovalItem application="Duplicate_Ent" operation="Create" value="roleId = '2'"/>
+          </ApprovalSet>
+        </value>
+      </entry>
+      <entry key="identityDisplayName" value="Abigail Frey"/>
+      <entry key="identityName" value="Abigail Frey"/>
+      <entry key="policyViolations"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Abigail Frey">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan trackingId="2969398cb19c44bbac062e69308f7e64">
+                <AccountRequest application="IIQ" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a81d8995dc1a288195f5d3990c37b8"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="Add"/>
+                      <entry key="requester" value="spadmin"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="assignedRoles" op="Add" value="remidiateBusinessRole"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000740"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <ProvisioningTargets>
+                  <ProvisioningTarget role="remidiateBusinessRole">
+                    <AccountSelection applicationId="c0a81ac792e61ed78192f6e9f5530482" applicationName="Duplicate_Ent" doCreate="true"/>
+                    <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" doCreate="true"/>
+                    <AccountSelection applicationId="c0a800fb954110f0819541ab1dfd00b1" applicationName="IntConApplication" doCreate="true"/>
+                  </ProvisioningTarget>
+                </ProvisioningTargets>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <Messages>
+              <Message key="No account creation template for application: Duplicate_Ent" type="Info"/>
+            </Messages>
+            <ProvisioningPlan targetIntegration="IIQ" trackingId="ed18956031794a78b45a1b97db672e7a">
+              <AccountRequest application="IIQ" op="Modify" targetIntegration="IIQ">
+                <Attributes>
+                  <Map>
+                    <entry key="attachmentConfigList"/>
+                    <entry key="attachments"/>
+                    <entry key="flow" value="AccessRequest"/>
+                    <entry key="id" value="c0a81d8995dc1a288195f5d3990c37b8"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="operation" value="Add"/>
+                    <entry key="provisioningTransactionId" value="c0a8001697a21be78197afaacc322932"/>
+                    <entry key="requester" value="spadmin"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="assignedRoles" op="Add" value="remidiateBusinessRole"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000740"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+            <ProvisioningPlan trackingId="d362a31e15514ef78e308e65c1772a29">
+              <AccountRequest application="Duplicate_Ent" assignmentIds="4badefcb1333487e9fec1eeaccdecc74" op="Create">
+                <AttributeRequest name="roleId" op="Add" value="2"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000740"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+            <ProvisioningPlan nativeIdentity="Abigail Frey" targetIntegration="ActiveDirectory" trackingId="992025619e18420c8b118513a6747ed3">
+              <AccountRequest application="ActiveDirectory" assignmentIds="4badefcb1333487e9fec1eeaccdecc74" nativeIdentity="CN=Abigail Frey,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create" targetIntegration="ActiveDirectory">
+                <Attributes>
+                  <Map>
+                    <entry key="provisioningTransactionId" value="c0a8001697a21be78197afaac8f6292c"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="memberOf" op="Add" value="CN=AccountsReceivable,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                <AttributeRequest name="sAMAccountName" op="Set" value="Abigail Frey"/>
+                <AttributeRequest name="givenName" op="Set" value="Abigail"/>
+                <AttributeRequest name="sn" op="Set" value="Frey"/>
+                <AttributeRequest name="mail" op="Set" value="abigail.frey@eshiam.com"/>
+                <AttributeRequest name="password" op="Set" value="1:ACP:58i5DVpXf3Ri8k7FnRrvjTRBStMO7v0k/MZZt3Tq6bE="/>
+                <ProvisioningResult status="committed">
+                  <Errors>
+                    <Message key="Connection timed out: connect" type="Error"/>
+                  </Errors>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000740"/>
+                  <entry key="inRetry">
+                    <value>
+                      <Boolean>true</Boolean>
+                    </value>
+                  </entry>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+            <ProvisioningPlan nativeIdentity="Abigail Frey" targetIntegration="ProvisionIntegrMod" trackingId="10f5883845404720ade7bd342f96f005">
+              <AccountRequest application="IntConApplication" assignmentIds="4badefcb1333487e9fec1eeaccdecc74" nativeIdentity="EMP01663" op="Create">
+                <AttributeRequest name="GroupId" op="Add" value="GIC2"/>
+                <AttributeRequest name="Name" op="Set" value="Abigail Frey"/>
+                <AttributeRequest name="FirstName" op="Set" value="Abigail"/>
+                <AttributeRequest name="LastName" op="Set" value="Frey"/>
+                <AttributeRequest name="Department" op="Set" value="Finance"/>
+                <AttributeRequest name="Email" op="Set" value="abigail.frey@example.com"/>
+                <AttributeRequest name="manager" op="Set" value="Mahesh Nattali"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000740"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+              <ProvisioningResult status="failed">
+                <Errors>
+                  <Message key="sailpoint.tools.GeneralException: The application script threw an exception: java.lang.NullPointerException: Attempt to invoke method trim on null value BSF info: IntegrationConfigRule at line: 0 column: columnNo" type="Error"/>
+                </Errors>
+              </ProvisioningResult>
+            </ProvisioningPlan>
+            <ProvisioningTarget role="remidiateBusinessRole">
+              <AccountSelection applicationId="c0a81ac792e61ed78192f6e9f5530482" applicationName="Duplicate_Ent" doCreate="true"/>
+              <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" doCreate="true"/>
+              <AccountSelection applicationId="c0a800fb954110f0819541ab1dfd00b1" applicationName="IntConApplication" doCreate="true"/>
+            </ProvisioningTarget>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="saveUnmanagedPlan_WithProjectArgument" value="false"/>
+      <entry key="workItemPriority">
+        <value>
+          <WorkItemLevel>Normal</WorkItemLevel>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Description>Manual Changes requested for User: Abigail Frey</Description>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+  <Requester>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Requester>
+  <WorkflowCaseRef>
+    <Reference class="sailpoint.object.WorkflowCase" name="Update Identity Abigail Frey AccessRequest - 1"/>
+  </WorkflowCaseRef>
+</WorkItem>

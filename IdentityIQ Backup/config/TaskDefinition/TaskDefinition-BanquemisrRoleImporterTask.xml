@@ -1,0 +1,51 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskDefinition PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskDefinition name="BanqueMisr Role Importer Task" resultAction="Rename" subType="task_item_type_generic" type="Generic">
+  <Attributes>
+    <Map>
+      <entry key="TaskSchedule.host"/>
+      <entry key="roleFile" value="WEB-INF/config/demo/sampleRoleImport.csv"/>
+      <entry key="ruleName" value="BanqueMisr Role Importer Rule"/>
+      <entry key="taskCompletionEmailNotify" value="Disabled"/>
+      <entry key="taskCompletionEmailRecipients"/>
+      <entry key="taskCompletionEmailTemplate"/>
+    </Map>
+  </Attributes>
+  <Description>A task that can be used to run an arbitrary rule.</Description>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+  <Parent>
+    <Reference class="sailpoint.object.TaskDefinition" name="Run Rule"/>
+  </Parent>
+  <Signature>
+    <Inputs>
+      <Argument name="roleFile" required="true" type="string">
+        <Prompt>CSV file containing role definitions.</Prompt>
+      </Argument>
+    </Inputs>
+    <Returns>
+      <Argument name="lines" type="String">
+        <Prompt>Lines Processed:</Prompt>
+      </Argument>
+      <Argument name="rolesCreated" type="String">
+        <Prompt>Roles Created:</Prompt>
+      </Argument>
+      <Argument name="rolesDeleted" type="String">
+        <Prompt>Roles Deleted:</Prompt>
+      </Argument>
+      <Argument name="rolesAssigned" type="String">
+        <Prompt>Roles Assigned:</Prompt>
+      </Argument>
+      <Argument name="profilesCreated" type="String">
+        <Prompt>Profiles Created:</Prompt>
+      </Argument>
+      <Argument name="scopesCreated" type="String">
+        <Prompt>Scopes Created:</Prompt>
+      </Argument>
+      <Argument name="scopesAssigned" type="String">
+        <Prompt>Scopes Assigned:</Prompt>
+      </Argument>
+    </Returns>
+  </Signature>
+</TaskDefinition>

@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow explicitTransitions="true" name="VB_TestOnQuicklink">
+  <Step icon="Start" name="Start" posX="31" posY="76">
+    <Transition to="Generic Step"/>
+  </Step>
+  <Step icon="Default" name="Generic Step" posX="491" posY="74">
+    <Approval name="VB_TestOnQuicklinkForm" owner="$(launcher)" return="name,launcher" send="name,launcher">
+      <Form name="VB_TestOnQuicklinkForm">
+        <Attributes>
+          <Map>
+            <entry key="pageTitle" value="VB_TestOnQuicklinkForm"/>
+          </Map>
+        </Attributes>
+        <Section name="Information">
+          <Field displayName="Select an Identity" name="name" required="true" type="sailpoint.object.Identity"/>
+        </Section>
+      </Form>
+    </Approval>
+    <Transition to="Stop"/>
+  </Step>
+  <Step icon="Stop" name="Stop" posX="973" posY="75"/>
+</Workflow>

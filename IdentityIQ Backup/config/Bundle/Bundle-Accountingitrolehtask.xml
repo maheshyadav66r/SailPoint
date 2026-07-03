@@ -1,0 +1,45 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Bundle PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Bundle displayName="AccountingITRoleHTask" name="AccountingITRoleHTask" type="it">
+  <Attributes>
+    <Map>
+      <entry key="accountSelectorRules"/>
+      <entry key="allowDuplicateAccounts" value="false"/>
+      <entry key="allowMultipleAssignments" value="false"/>
+      <entry key="mergeTemplates" value="false"/>
+      <entry key="roleCriticality" value="High"/>
+      <entry key="roleLevel" value="CADM"/>
+      <entry key="sysDescriptions">
+        <value>
+          <Map>
+            <entry key="en_US" value="AccountingITRoleHTask Role dddd"/>
+          </Map>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Inheritance>
+    <Reference class="sailpoint.object.Bundle" name="roleForACCSelection"/>
+  </Inheritance>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="Mahesh Nattali"/>
+  </Owner>
+  <Profiles>
+    <Profile>
+      <ApplicationRef>
+        <Reference class="sailpoint.object.Application" name="ADX"/>
+      </ApplicationRef>
+      <Constraints>
+        <Filter operation="CONTAINS_ALL" property="memberOf">
+          <Value>
+            <List>
+              <String>CN=Compensation,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+              <String>CN=DBAs,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+            </List>
+          </Value>
+        </Filter>
+      </Constraints>
+    </Profile>
+  </Profiles>
+  <RoleIndex associatedToRole="true" detectedCount="14" entitlementCount="1" entitlementCountInheritance="1" lastCertifiedComposition="1757090061097"/>
+</Bundle>

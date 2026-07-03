@@ -1,0 +1,99 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1749361606960" completionStatus="Error" launched="1749361579498" launcher="spadmin" name="QuickLink Launch for identity spadmin - 560" type="Workflow">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000701"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Brianna Stevens">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan trackingId="054f66c311484658a2da989c0d3dd915">
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Brianna Stevens,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create">
+                  <AttributeRequest name="memberOf" op="Add" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000701"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Brianna Stevens" targetIntegration="ActiveDirectory" trackingId="99c4b131f51d4404ba4fbb9935501843">
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Brianna Stevens,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create" targetIntegration="ActiveDirectory">
+                <Attributes>
+                  <Map>
+                    <entry key="provisioningTransactionId" value="c0a8a40197481f2d81974e13bda50c72"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="memberOf" op="Add" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                <AttributeRequest name="sAMAccountName" op="Set" value="Brianna Stevens"/>
+                <AttributeRequest name="givenName" op="Set" value="Brianna"/>
+                <AttributeRequest name="sn" op="Set" value="Stevens"/>
+                <AttributeRequest name="mail" op="Set" value="brianna.stevens@eshiam.com"/>
+                <AttributeRequest name="password" op="Set"/>
+                <ProvisioningResult status="committed"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000701"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a8a40197481f2d81974e1356260c0a"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="createAd_AuditEvent">
+            <Interactions>
+              <ApprovalSummary completer="The Administrator" endDate="1749361594319" owner="spadmin" request="IdentitySelectionForm" startDate="1749361579662" state="Finished" workItemId="c0a8a40197481f2d81974e1356650c0b" workItemType="Form"/>
+            </Interactions>
+          </WorkflowSummary>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="err_exception" type="Error">
+      <Parameters>
+        <Message key="sailpoint.tools.GeneralException: The application script threw an exception: org.hibernate.LazyInitializationException: could not initialize proxy [sailpoint.object.TaskDefinition#Workflow Launcher] - no Session BSF info: script at line: 0 column: columnNo" type="Error"/>
+      </Parameters>
+    </Message>
+  </Messages>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

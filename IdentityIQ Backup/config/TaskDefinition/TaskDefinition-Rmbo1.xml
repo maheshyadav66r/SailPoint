@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskDefinition PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskDefinition name="RMBO1" resultAction="Rename" subType="Role Management Reports" type="LiveReport">
+  <Attributes>
+    <Map>
+      <entry key="TaskDefinition.runLengthAverage" value="5"/>
+      <entry key="TaskDefinition.runLengthTotal" value="20"/>
+      <entry key="TaskDefinition.runs" value="4"/>
+      <entry key="TaskSchedule.host"/>
+      <entry key="disableDetail" value="false"/>
+      <entry key="disableHeader" value="false"/>
+      <entry key="disableSummary" value="false"/>
+      <entry key="dontEmailEmptyReport">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="emailFileFormat">
+        <value>
+          <List>
+            <String>CSV</String>
+          </List>
+        </value>
+      </entry>
+      <entry key="enableCsvHeader" value="false"/>
+      <entry key="reportColumnOrder" value="identityName, identityFirstName, identityLastName, identityDepartment, roleName, roleType, roleOwner, roleDescription, roleDivision, roleLogicalAppName"/>
+      <entry key="roleDivision">
+        <value>
+          <List>
+            <String>Medium</String>
+            <String>High</String>
+          </List>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Description>Displays Role Membership of users based on role division</Description>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+  <Parent>
+    <Reference class="sailpoint.object.TaskDefinition" name="Role Membership Report by RoleDivision"/>
+  </Parent>
+</TaskDefinition>

@@ -1,0 +1,194 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow explicitTransitions="true" handler="sailpoint.api.StandardWorkflowHandler" libraries="Identity,Role,LCM,BatchRequest" name="Workflow_VSNT_Create_New_Test_Account_Wrapper" taskType="LCM" type="LCMProvisioning">
+  <Variable initializer="true" name="transient">
+    <Description>
+      It can be used to build
+      the provisioning plan, but does not need to be
+      persisted with the case, so marked as transient.
+    </Description>
+  </Variable>
+  <Variable initializer="true" name="trace">
+    <Description>
+      Used for debugging this workflow and when set to true trace
+      will be sent to stdout.
+    </Description>
+  </Variable>
+  <Variable initializer="script:wfcontext.getWorkflowCase().get(&quot;quickLinkIdentityId&quot;);" name="requesterNameId"/>
+  <Variable initializer="script:context.getObject(Identity.class,requesterNameId).getName();" name="requesterName"/>
+  <Variable name="identityName">
+    <Description>The name of the identity.</Description>
+  </Variable>
+  <Variable name="identityDisplayName">
+    <Description>
+      The displayName of the identity being updated.
+    </Description>
+  </Variable>
+  <Variable name="lastApprovalState"/>
+  <Variable name="plan">
+    <Description>The provisioning plan ready to execute.</Description>
+  </Variable>
+  <Variable input="true" name="launcher"/>
+  <Variable input="true" name="timeZone"/>
+  <Variable input="true" name="httpSession" transient="true">
+    <Description>httpSession</Description>
+  </Variable>
+  <Variable initializer="Form_VSNT_Create_New_Test_Account" name="currentForm"/>
+  <Variable initializer="workflow.Workflow_VSNT_Create_New_Test_Account_Wrapper" name="loggerClass"/>
+  <Variable initializer="LCM" input="true" name="source">
+    <Description>String version of sailpoint.object.Source to indicate
+      where the request originated.  Defaults to LCM.</Description>
+  </Variable>
+  <Variable name="formModel"/>
+  <RuleLibraries>
+    <Reference class="sailpoint.object.Rule" name="Rule_VSNT_Workflow_RuleLibrary"/>
+  </RuleLibraries>
+  <Step icon="Start" name="Start" posX="28" posY="10">
+    <Script>
+      <Source><![CDATA[
+
+        import sailpoint.object.CustomGlobal;
+        import sailpoint.object.SailPointObject;
+        import org.apache.log4j.Level;
+        import org.apache.log4j.Logger;
+
+        Logger logger = Logger.getLogger(loggerClass);  
+        CustomGlobal.put("UserSession",httpSession);
+
+        logger.debug("Start");
+        for (int i = 0; i < this.variables.length; i++) {
+        String name = this.variables[i];
+        if ("transient".equals(name)) {continue;}
+        Object value = eval(name);
+
+        if (value == void)
+        logger.trace(name + " = void");
+        else if (value == null) 
+        logger.trace(name + " = null");
+        else if (value instanceof SailPointObject) 
+        logger.trace(name + ": " + value);
+        else 
+        logger.trace(name + ": " + value.getClass().getSimpleName() + " = " + value);
+        }
+
+      ]]></Source>
+    </Script>
+    <Transition to="Initialize Form Model For Operation"/>
+  </Step>
+  <Step name="Initialize Form Model For Operation" posX="98" posY="10" resultVariable="formModel">
+    <Description>
+      Initialize the data in the model
+    </Description>
+    <Script>
+      <Source><![CDATA[
+
+        return initializeModelForOperation(workflow, "CreateNewTestAccount", "My Managed Accounts");
+
+      ]]></Source>
+    </Script>
+    <Transition to="Display Form"/>
+  </Step>
+  <Step name="Display Form" posX="502" posY="10">
+    <Approval mode="serial" name="Display Form" owner="ref:launcher" return="formModel" send="formModel,workflow">
+      <Arg name="workItemType" value="Form"/>
+      <Arg name="workItemForm" value="ref:currentForm"/>
+      <Arg name="workItemDescription" value="Test Account Creation"/>
+      <Arg name="workItemFormBasePath" value="formModel"/>
+      <Arg name="requester" value="ref:launcher"/>
+    </Approval>
+    <Transition to="Cancellation Message" when="&quot;Rejected&quot;.equals(lastApprovalState);"/>
+    <Transition to="Update Form" when="&quot;Finished&quot;.equals(lastApprovalState);"/>
+  </Step>
+  <Step icon="Default" name="Update Form" posX="416" posY="171" resultVariable="updatedForm">
+    <Script>
+      <Source><![CDATA[
+
+        return getConfirmationForm(currentForm, "Test Account Create", formModel);
+
+      ]]></Source>
+    </Script>
+    <Transition to="Confirmation Form"/>
+  </Step>
+  <Step icon="Default" name="Confirmation Form" posX="528" posY="208">
+    <Approval mode="serial" name="Confirmation Form" owner="ref:launcher" return="formModel" send="formModel, workflow">
+      <Arg name="workItemType" value="Form"/>
+      <Arg name="workItemForm" value="ref:updatedForm"/>
+      <Arg name="workItemDescription" value="Create Test Account Confirmation"/>
+      <Arg name="workItemFormBasePath" value="formModel"/>
+      <Arg name="requester" value="ref:launcher"/>
+    </Approval>
+    <Transition to="Display Form" when="&quot;Rejected&quot;.equals(lastApprovalState);"/>
+    <Transition to="Submit" when="&quot;Finished&quot;.equals(lastApprovalState);"/>
+  </Step>
+  <Step icon="Message" name="Submit" posX="628" posY="10">
+    <Script>
+      <Source><![CDATA[
+
+        displayMessage("Request was Submitted");
+
+      ]]></Source>
+    </Script>
+    <Transition to="Provision"/>
+  </Step>
+  <Step icon="Message" name="Cancellation Message" posX="628" posY="10">
+    <Script>
+      <Source><![CDATA[
+
+        displayMessage("Request was Cancelled");
+
+      ]]></Source>
+    </Script>
+    <Transition to="end"/>
+  </Step>
+  <Step name="Provision" posX="830" posY="242">
+    <Description>
+      Call the sub workflow.
+    </Description>
+    <Script>
+      <Source><![CDATA[
+
+        
+        import sailpoint.tools.Util;
+
+        Map wfArgsMap = new HashMap();
+        wfArgsMap.put("managersso", formModel.get("managerId"));
+        wfArgsMap.put("requesterNameId", requesterNameId);
+        wfArgsMap.put("requesterName", requesterName);
+
+        wfArgsMap.put("ADAccountOption", Util.atob(formModel.get("ADAccountOption")));
+
+        if (!Util.nullSafeCaseInsensitiveEq(requesterName,formModel.get("testAccountRequestOwner"))) {
+        wfArgsMap.put("requestee", formModel.get("testAccountRequestOwner"));
+        }
+
+        wfArgsMap.put("appid", formModel.get("firstNameTestUser"));
+        wfArgsMap.put("appName", formModel.get("lastNameTestUser"));
+
+        initiateWorkflow("Workflow_VSNT_Test_Account_Migration", wfArgsMap);
+
+      ]]></Source>
+    </Script>
+    <Transition to="end"/>
+  </Step>
+  <Step icon="Stop" name="end" posX="890" posY="10">
+    <Script>
+      <Source><![CDATA[
+
+        import org.apache.log4j.Level;
+        import org.apache.log4j.Logger;
+        Logger logger = Logger.getLogger(loggerClass);  
+
+        logger.debug("Stop");
+
+        List messages = wfcase.getMessages();            
+        if (messages != null) for (Message message : messages)
+        {
+        if (message.isError()) logger.error(message.toString());
+        else if (message.isWarning()) logger.warn(message.toString());
+        else logger.info(message.toString());
+        }
+
+      ]]></Source>
+    </Script>
+  </Step>
+</Workflow>

@@ -1,0 +1,64 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE WorkItemArchive PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<WorkItemArchive archived="1746700824703" completer="The Administrator" handler="sailpoint.api.Workflower" level="Normal" name="0000000675" ownerName="spadmin" renderer="workflow.xhtml" requester="spadmin" state="Finished" type="Form" workItemId="c0a800fc96a415518196af7b599813d7">
+  <Attributes>
+    <Map>
+      <entry key="formModel">
+        <value>
+          <Map>
+            <entry key="transformerClass" value="sailpoint.transformer.IdentityTransformer"/>
+            <entry key="transformerOptions"/>
+          </Map>
+        </value>
+      </entry>
+      <entry key="launcher" value="spadmin"/>
+      <entry key="primaryAccount"/>
+      <entry key="secondaryIdType" value="ADAdmin"/>
+      <entry key="workItemForm">
+        <value>
+          <Form name="SecodaryIdRegistrationForm">
+            <Attributes>
+              <Map>
+                <entry key="pageTitle" value="SecodaryIdRegistrationForm"/>
+                <entry key="title" value="SecodaryIdRegistrationFormTitle"/>
+              </Map>
+            </Attributes>
+            <Section name="IdType">
+              <Field displayName="SecondaryIdType" name="secondaryIdType" required="true" type="string" value="ADAdmin">
+                <AllowedValuesDefinition>
+                  <Value>
+                    <List>
+                      <String>ADAdmin</String>
+                      <String>CloudAdmin</String>
+                      <String>WireLessAdmin</String>
+                    </List>
+                  </Value>
+                </AllowedValuesDefinition>
+              </Field>
+              <Field displayName="PrimaryAccount" name="primaryAccount" required="true" type="Identity">
+                <Attributes>
+                  <Map>
+                    <entry key="hidden">
+                      <value>
+                        <Script>
+                          <Source><![CDATA[
+                        if((primaryAccount!=null) @and(primaryAccount.equals("ADAdmin") @or primaryAccount.equals("CloudAdmin")))
+                        return false;
+                        return true;
+                      ]]></Source>
+                        </Script>
+                      </value>
+                    </entry>
+                  </Map>
+                </Attributes>
+              </Field>
+            </Section>
+            <Button action="next" label="Submit"/>
+            <Button action="back" label="Cancel"/>
+          </Form>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Description>SecodaryIdRegistrationForm</Description>
+</WorkItemArchive>

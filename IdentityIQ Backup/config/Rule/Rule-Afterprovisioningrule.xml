@@ -1,0 +1,149 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="AfterProvisioningRule" type="AfterProvisioning">
+  <Description>An IdentityIQ server-side rule that is executed after the connector's provisioning method is called. This gives the customer the ability to customize or react to anything in the ProvisioningPlan AFTER it has been sent out to the specific applications. 
+
+This rule will be called for any application found in a plan that also has a configured 'afterProvisioningRule' configured.</Description>
+  <Signature>
+    <Inputs>
+      <Argument name="log" type="org.apache.commons.logging.Log">
+        <Description>
+          The log object associated with the SailPointContext.
+        </Description>
+      </Argument>
+      <Argument name="context" type="sailpoint.api.SailPointContext">
+        <Description>
+          A sailpoint.api.SailPointContext object that can be used to query the database if necessary.
+        </Description>
+      </Argument>
+      <Argument name="plan">
+        <Description>
+          The ProvisioningPlan object on its way to the Connector.
+        </Description>
+      </Argument>
+      <Argument name="application">
+        <Description>
+          The application object that references this before/after script.
+        </Description>
+      </Argument>
+      <Argument name="result">
+        <Description>
+          The ProvisioningResult object returned by the connectors provision method. This can be null and in many cases the connector will  not return a result and instead will annotate the plan's ProvisioningResult either at the plan or account level.        
+        </Description>
+      </Argument>
+    </Inputs>
+  </Signature>
+  <Source><![CDATA[import sailpoint.object.ProvisioningPlan;
+  import sailpoint.tools.Util;
+  import sailpoint.object.ProvisioningPlan.AttributeRequest;
+  import sailpoint.object.ProvisioningPlan.AbstractRequest;
+  import sailpoint.api.IdentityService;
+  import sailpoint.object.Application;
+  import sailpoint.object.ProvisioningPlan;
+  import sailpoint.object.ProvisioningPlan.AccountRequest;
+  import sailpoint.object.Link;
+  import sailpoint.api.Provisioner;
+  import org.apache.commons.logging.Log;
+  import org.apache.commons.logging.LogFactory;
+  import org.apache.log4j.Logger;
+  import sailpoint.rapidapponboarding.logger.LogEnablement;
+  import sailpoint.tools.GeneralException;
+  import sailpoint.object.Identity;
+  import sailpoint.object.ProvisioningResult;
+
+
+log.error("--------------------AfterProvisioning Rule--------------------------"+plan.toXml());
+
+  /*					
+  atldapUser Y/N                  =atldapUser  
+  ATLDAP-ID (ia)/uniqueUid(la)   =Department
+  ATLDAP                         = mail
+
+  log.error("--------------------AfterProvisioning Rule--------------------------"+plan.toXml());
+
+  {
+    Link workerDbLink = null;
+    Application workerDbAppObj = null;
+    List workerDbLinks = null;
+    Identity identity = null;
+    Link orgLdapLink = null;
+    String attReqOp, attReqValue;
+
+    try{
+      IdentityService idService = new IdentityService(context);
+      Provisioner provisioner = new Provisioner(context);
+
+      if(null != plan){
+        identity = plan.getIdentity();
+        log.error("======Identity====="+identity);
+        List accountRequests = plan.getAccountRequests();
+        if(Util.nullSafeSize(accountRequests) > 0){
+          for(AccountRequest accReq:accountRequests){
+            if("Modify".equals(accReq.getOperation().toString()) && null != accReq.getResult() && accReq.getResult().isCommitted()){
+              log.error("===Entered into Modify request  and committed result====");
+              workerDbAppObj = context.getObjectByName(Application.class,"ActiveDirectory");
+
+              List orgLdapLinks = idService.getLinks(identity,application);
+              if(workerDbAppObj != null){
+                workerDbLinks = idService.getLinks(identity,workerDbAppObj);
+                if(Util.nullSafeSize(workerDbLinks) > 0 && Util.nullSafeSize(orgLdapLinks) > 0){
+                  orgLdapLink = orgLdapLinks.get(0);
+                  workerDbLink = workerDbLinks.get(0);
+                  log.error(" orgLdapLink    workerDbLink  "+orgLdapLink +"   "+workerDbLink);
+                  AttributeRequest attrReq = accReq.getAttributeRequest("atldapUser");
+                  log.error(" attrReq  of atldapUser  "+attrReq.toXml());
+                  if(null != attrReq) {
+                    attReqOp = attrReq.getOperation().toString();
+                    attReqValue = attrReq.getValue();
+                    if("Add".equals(attReqOp) && "Y".equalsIgnoreCase(attReqValue)){
+                      log.error("===Enter Add request====");
+
+                      if(!workerDbLink.isDisabled() && orgLdapLink.isDisabled()){
+                        String atldapValue = identity.getStringAttribute("Department") != null?identity.getStringAttribute("Department") : orgLdapLink.getAttribute("Department");
+                        if(!atldapValue.equals(workerDbLink.getAttribute("mail"))){
+                          ProvisioningPlan workerDbPlan = new ProvisioningPlan();
+                          workerDbPlan.setIdentity(identity);
+                          AccountRequest workerDbAccReq = new AccountRequest(ProvisioningPlan.AccountRequest.Operation.Modify,workerDbAppObj.getName(),null, null);
+                          workerDbAccReq.setNativeIdentity(workerDbLink.getNativeIdentity());
+                          workerDbAccReq.add(new AttributeRequest("mail",ProvisioningPlan.Operation.Set,atldapValue));
+                          workerDbPlan.add(workerDbAccReq);
+                          provisioner.execute(workerDbPlan);
+                        }
+                      }
+                    }
+                  }
+                  else if(null != attrReq && "Remove".equals(attReqOp) && "Y".equalsIgnoreCase(attReqValue)){
+                    log.error("===Entered into remove condition===");
+                    String ldapName = plan.getApplicationDisplayName();
+                    log.error(" ldapName  ...in else remove op  : "+ldapName);
+                    
+                    ProvisioningPlan ldapPlan = new ProvisioningPlan();
+                    ldapPlan.setIdentity(identity);
+                    AccountRequest ldapAccReq = new AccountRequest(ProvisioningPlan.AccountRequest.Operation.Modify,ldapName,null, null);
+                    ldapAccReq.setNativeIdentity(workerDbLink.getNativeIdentity());
+                    ldapAccReq.add(new AttributeRequest("atldapUser",ProvisioningPlan.Operation.Add,"N"));
+                    ldapPlan.add(accReq);
+                    provisioner.execute(ldapPlan);
+                    log.error("====Added to ldapAccReq succesfully to ldapPlan ==="+ldapPlan.toXml());
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  catch(Exception ex){
+    log.error("error in rule : "+ex.toString());
+    //nablement.isLogTraceEnabled(tlog, "TMNA-TAT-003-ERROR for User: " +identity.getName()+ "Error Message: An exception was thrown while attempting to Exiting Toyota Org Ldap Before Provisioning Rule: " + ex.toString()); 
+  }finally{
+    context.decache(workerDbAppObj);
+    //context.decache(workerDbAppObj);
+
+  } 
+  log.error("=====end of file=====");
+
+  }*/]]></Source>
+</Rule>

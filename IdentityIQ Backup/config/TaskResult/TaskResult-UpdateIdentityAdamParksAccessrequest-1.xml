@@ -1,0 +1,281 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1770700450313" completionStatus="Error" launched="1770700427954" launcher="spadmin" name="Update Identity Adam Parks AccessRequest - 1" targetClass="Identity" targetName="Adam Parks" type="LCM">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000001064"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Adam Parks">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000001064"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="IIQ" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a801289c401bab819c424cce930822"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="RoleAdd"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="assignedRoles" op="Add" value="roleExploration"/>
+                </AccountRequest>
+                <AccountRequest application="IIQ" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a801289c401bab819c4250f5a4082d"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="RoleAdd"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="assignedRoles" op="Add" value="permittedITRole">
+                    <Attributes>
+                      <Map>
+                        <entry key="permittedBy" value="roleExploration"/>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000001064"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <ProvisioningTargets>
+                  <ProvisioningTarget role="roleExploration">
+                    <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" doCreate="true"/>
+                    <AccountSelection applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" doCreate="true"/>
+                    <AccountSelection applicationId="c0a8002691fb102b81920b47da880f63" applicationName="WebServicesApplicationEshiam" selection="EMP01617">
+                      <AccountInfo displayName="Adam Parks" nativeIdentity="EMP01617"/>
+                    </AccountSelection>
+                    <AccountSelection applicationId="c0a81d8994081c0a81940900fe78020c" applicationName="JDBCProvisioning" doCreate="true"/>
+                  </ProvisioningTarget>
+                </ProvisioningTargets>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan targetIntegration="IIQ" trackingId="9324331cf37746f3b91dcddb163ae303">
+              <AccountRequest application="IIQ" op="Modify" targetIntegration="IIQ">
+                <Attributes>
+                  <Map>
+                    <entry key="attachmentConfigList"/>
+                    <entry key="attachments"/>
+                    <entry key="flow" value="AccessRequest"/>
+                    <entry key="id" value="c0a801289c401bab819c4250f5a4082d"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="operation" value="RoleAdd"/>
+                    <entry key="provisioningTransactionId" value="c0a801289c451b3a819c45f8a46a0766"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="assignedRoles" op="Add" value="roleExploration"/>
+                <AttributeRequest name="assignedRoles" op="Add" value="permittedITRole">
+                  <Attributes>
+                    <Map>
+                      <entry key="permittedBy" value="roleExploration"/>
+                    </Map>
+                  </Attributes>
+                </AttributeRequest>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000001064"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+            <ProvisioningPlan nativeIdentity="Adam Parks" targetIntegration="ActiveDirectory" trackingId="80271f2a65b94250b28d4ddb627acb06">
+              <AccountRequest application="ActiveDirectory" assignmentIds="3f7c839d679e436ca147c36afafc1914" nativeIdentity="CN=Adam Parks,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create" targetIntegration="ActiveDirectory">
+                <Attributes>
+                  <Map>
+                    <entry key="provisioningTransactionId" value="c0a801289c451b3a819c45f89c1b075b"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="memberOf" op="Add">
+                  <Value>
+                    <List>
+                      <String>CN=IT,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                      <String>CN=Admins,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                      <String>CN=DEV_Stage,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                      <String>CN=Finance,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                    </List>
+                  </Value>
+                </AttributeRequest>
+                <AttributeRequest name="sAMAccountName" op="Set" value="Adam Parks"/>
+                <AttributeRequest name="givenName" op="Set" value="Adam"/>
+                <AttributeRequest name="sn" op="Set" value="Parks"/>
+                <AttributeRequest name="mail" op="Set" value="adam.parks@eshiam.com"/>
+                <AttributeRequest name="password" op="Set"/>
+                <ProvisioningResult status="committed"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000001064"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+            <ProvisioningPlan nativeIdentity="Adam Parks" targetIntegration="LDAPApplication" trackingId="39618bfa969943168c9b2f982954091f">
+              <AccountRequest application="LDAPApplication" assignmentIds="3f7c839d679e436ca147c36afafc1914" op="Create">
+                <Attributes>
+                  <Map>
+                    <entry key="provisioningTransactionId" value="c0a801289c451b3a819c45f89d5c075f"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="groups" op="Add">
+                  <Value>
+                    <List>
+                      <String>cn=Users,ou=Group,dc=my-domain,dc=com</String>
+                      <String>cn=Employees,ou=Group,dc=my-domain,dc=com</String>
+                    </List>
+                  </Value>
+                </AttributeRequest>
+                <AttributeRequest name="dn" op="Set" value="cn=Adam.Parks,ou=People,dc=my-domain,dc=com"/>
+                <AttributeRequest name="password" op="Set">
+                  <Attributes>
+                    <Map>
+                      <entry key="secret" value="true"/>
+                    </Map>
+                  </Attributes>
+                </AttributeRequest>
+                <AttributeRequest name="sn" op="Set" value="Parks"/>
+                <AttributeRequest name="mail" op="Set" value="adam.parks@eshiam.com"/>
+                <ProvisioningResult status="failed">
+                  <Errors>
+                    <Message key="sailpoint.connector.ConnectorException: 1396324339 No object id specified for provisioning request.Cannot proceed with request." type="Error"/>
+                  </Errors>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000001064"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+              <ProvisioningResult status="failed">
+                <Errors>
+                  <Message key="sailpoint.connector.ConnectorException: 1396324339 No object id specified for provisioning request.Cannot proceed with request." type="Error"/>
+                </Errors>
+              </ProvisioningResult>
+            </ProvisioningPlan>
+            <ProvisioningPlan nativeIdentity="Adam Parks" targetIntegration="WebServicesApplicationEshiam" trackingId="6cc78083464349999dbc32a2fed78a57">
+              <AccountRequest application="WebServicesApplicationEshiam" nativeIdentity="EMP01617" op="Modify" targetIntegration="WebServicesApplicationEshiam">
+                <Attributes>
+                  <Map>
+                    <entry key="provisioningTransactionId" value="c0a801289c451b3a819c45f89e610762"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="groups" op="Add" value="WS_GROUP_103">
+                  <ProvisioningResult status="committed"/>
+                </AttributeRequest>
+                <ProvisioningResult status="committed"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000001064"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+              <ProvisioningResult status="committed"/>
+            </ProvisioningPlan>
+            <ProvisioningPlan nativeIdentity="Adam Parks" targetIntegration="JDBCProvisioning" trackingId="592230c91c6d4072990ecbf03152c7d7">
+              <AccountRequest application="JDBCProvisioning" assignmentIds="3f7c839d679e436ca147c36afafc1914" nativeIdentity="EMP01617" op="Create" targetIntegration="JDBCProvisioning">
+                <Attributes>
+                  <Map>
+                    <entry key="provisioningTransactionId" value="c0a801289c451b3a819c45f8a4220765"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="GroupName" op="Add" value="5"/>
+                <AttributeRequest name="Name" op="Set" value="Adam Parks"/>
+                <AttributeRequest name="FirstName" op="Set" value="Adam"/>
+                <AttributeRequest name="LastName" op="Set" value="Parks"/>
+                <AttributeRequest name="Department" op="Set" value="HR"/>
+                <AttributeRequest name="EmailAddress" op="Set" value="adam.parks@example.com"/>
+                <AttributeRequest name="NetworkID" op="Set" value="Adam.Parks"/>
+                <AttributeRequest name="managerID" op="Set" value="1045"/>
+                <ProvisioningResult status="committed"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000001064"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+              <ProvisioningResult status="committed"/>
+            </ProvisioningPlan>
+            <ProvisioningTarget role="roleExploration">
+              <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" doCreate="true"/>
+              <AccountSelection applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" doCreate="true"/>
+              <AccountSelection applicationId="c0a8002691fb102b81920b47da880f63" applicationName="WebServicesApplicationEshiam" selection="EMP01617">
+                <AccountInfo displayName="Adam Parks" nativeIdentity="EMP01617"/>
+              </AccountSelection>
+              <AccountSelection applicationId="c0a81d8994081c0a81940900fe78020c" applicationName="JDBCProvisioning" doCreate="true"/>
+            </ProvisioningTarget>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a801289c451b3a819c45f8558a0716"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="end"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="sailpoint.connector.ConnectorException: 1396324339 No object id specified for provisioning request.Cannot proceed with request." type="Error"/>
+  </Messages>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

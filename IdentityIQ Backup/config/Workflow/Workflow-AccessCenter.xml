@@ -1,0 +1,176 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow explicitTransitions="true" name="Access Center" type="Subprocess">
+  <Variable initializer="High" input="true" name="workItemPriority">
+    <Description>work item priority</Description>
+  </Variable>
+  <Variable initializer="$(launcher)" input="true" name="identityName">
+    <Description>identity name</Description>
+  </Variable>
+  <Variable input="true" name="alias">
+    <Description>used to indicate that a named person is also known or more familiar under another specified name</Description>
+  </Variable>
+  <Variable initializer="true" input="true" name="trace">
+    <Description>Used for debugging this workflow and when set to true trace will be sent to stdout.</Description>
+  </Variable>
+  <Description>Create Database user using SailPoint IIQ through Quicklink.</Description>
+  <Step icon="Start" name="Start" posX="18" posY="36">
+    <Transition to="Access"/>
+  </Step>
+  <Step name="Access">
+    <Approval name="Need Access" owner="ref:launcher" return="" send="identityName">
+      <Arg name="workItemDescription" value="string:Access Center Request for $(identityName)"/>
+      <Form>
+        <Attributes>
+          <Map>
+            <entry key="title" value="Access Center"/>
+          </Map>
+        </Attributes>
+        <Button action="back" label="Abort"/>
+        <Button action="next" label="Submit"/>
+        <Button action="cancel" label="Return to Dashboard"/>
+        <Section name="requirmentsSection" type="text">
+          <Field>
+            <Script>
+              <Source><![CDATA[
+/*
+                import java.lang.String;
+
+                import java.lang.StringBuilder;
+
+                StringBuilder sb = new StringBuilder();
+
+                // Add styled paragraph
+                sb.append("<p style='background-color: crimson; color: #f1f1f1; font-weight: bold; font-size: 24px;'> Bhavya Eddi </p>");
+
+                // Add responsive image
+                sb.append("<img src='https://pngimg.com/uploads/monkey/monkey_PNG18744.png' style='width:50%; height:50%;' alt='Monkey'/>");
+
+
+                return sb.toString();
+*/
+              ]]></Source>
+            </Script>
+          </Field>
+        </Section>
+        <Section name="userInstructions" type="text">
+          <Field value="NOTE: Employee must Fill Below Form"/>
+        </Section>
+        <Section name="Fill These Fields">
+          <Field displayName="Action" name="operation" postBack="true" required="true" type="String">
+            <AllowedValues>
+              <String>Add Access</String>
+              <String>Remove Access</String>
+            </AllowedValues>
+          </Field>
+          <Field displayName="Do you Want Select All?" hidden="true" name="all" postBack="true" type="boolean">
+            <Attributes>
+              <Map>
+                <entry key="hidden">
+                  <value>
+                    <Script>
+                      <Source><![CDATA[
+                        if ( form.getField("operation").getValue() != null && operation.equalsIgnoreCase("Remove Access") ) {
+                        form.getField("all").setHidden(false);
+                        }
+                      ]]></Source>
+                    </Script>
+                  </value>
+                </entry>
+              </Map>
+            </Attributes>
+          </Field>
+          <Field displayName="Select Entitlements" dynamic="true" hidden="true" multi="true" name="entitlement" type="String">
+            <AllowedValuesDefinition>
+              <Script>
+                <Source><![CDATA[
+                  import java.util.ArrayList;
+                  import sailpoint.api.*;
+                  import sailpoint.object.*;
+
+                  List ents = new ArrayList();
+
+                  for ( int i=1; i<=100 ; i++ )  {
+
+                  ents.add("Entitlement" + i);
+                  }
+
+                  return ents;
+                  //   return Arrays.asList("Ent1","Ent2","Ent3");
+
+                ]]></Source>
+              </Script>
+            </AllowedValuesDefinition>
+            <Attributes>
+              <Map>
+                <entry key="hidden">
+                  <value>
+                    <Script>
+                      <Source><![CDATA[
+
+                        if ( form.getField("operation").getValue() != null ) {
+                          if ( all != null && all ) {
+                            List ents = new ArrayList();
+                            for ( int i=1; i<=100 ; i++ )  {
+                              ents.add("Entitlement" + i);
+                            }
+                            form.getField("entitlement").setValue(ents);
+                            //  form.getField("entitlement").setValue(Arrays.asList("Ent1","Ent2","Ent3"));
+                          } else if ( all != null && !all ) {
+                            form.getField("entitlement").setValue(null);
+                          }
+                          form.getField("entitlement").setHidden(false);
+                        }
+
+                      ]]></Source>
+                    </Script>
+                  </value>
+                </entry>
+              </Map>
+            </Attributes>
+            <ValidationScript>
+              <Source><![CDATA[
+
+                import sailpoint.tools.Util;
+                import sailpoint.tools.Message;
+                import sailpoint.object.Identity;
+
+               
+                log.error("identity--------- " + identity);
+               
+                List messages = new ArrayList();
+
+                if ( identityName != null ) {
+
+                Identity identity = context.getObjectByName(Identity.class, identityName);
+
+                String access = identity.getAttribute("access");
+
+                if (value != null && identity != null && access != null ) {
+
+                List accessList = Util.stringToList(access);
+
+                int accessesSize = Util.nullSafeSize(accessList) + Util.nullSafeSize(value);
+
+                if( accessesSize > 50) {
+
+                Message msg = new Message();
+                msg.setKey("You cannot add more than 50 entitlements. Please review your current entitlements and remove any unnecessary ones.");
+                messages.add(msg);
+
+                }
+                }
+                }
+
+                return messages;
+
+              ]]></Source>
+            </ValidationScript>
+          </Field>
+        </Section>
+      </Form>
+    </Approval>
+    <Transition to="Stop"/>
+  </Step>
+  <Step icon="Stop" name="Stop" posX="1062" posY="279"/>
+</Workflow>

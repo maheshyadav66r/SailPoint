@@ -1,0 +1,200 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow explicitTransitions="true" name="SecondaryIdcreation-TestProvisioner">
+  <Variable initializer="true" name="trace"/>
+  <Variable input="true" name="launcher"/>
+  <Variable name="formModel"/>
+  <Variable name="plan"/>
+  <Variable name="account_plan"/>
+  <Variable name="identity_plan"/>
+  <Variable name="identity"/>
+  <Variable name="identityName"/>
+  <Variable name="applicationName"/>
+  <Variable name="secondaryIdType"/>
+  <RuleLibraries>
+    <Reference class="sailpoint.object.Rule" name="Identity_operation_RuleLibrary"/>
+  </RuleLibraries>
+  <Step icon="Start" name="Start" posX="20" posY="41">
+    <Script>
+      <Source><![CDATA[
+        log.error(" SecondaryIdcreation start step==");
+      ]]></Source>
+    </Script>
+    <Transition to="Initializer"/>
+  </Step>
+  <Step icon="Default" name="Initializer" posX="270" posY="31" resultVariable="formModel">
+    <Description>
+      Initialize the data in the model.
+    </Description>
+    <Script>
+      <Source><![CDATA[
+        import sailpoint.object.Identity;
+        import java.util.HashMap;
+        import sailpoint.transformer.IdentityTransformer;
+
+        HashMap model = new HashMap();
+        IdentityTransformer transformer = new IdentityTransformer(context);
+        model.put(IdentityTransformer.ATTR_TRANSFORMER_CLASS, transformer.getClass().getName());
+        model.put(IdentityTransformer.ATTR_TRANSFORMER_OPTIONS, "");
+        return model;
+      ]]></Source>
+    </Script>
+    <Transition to="ApprovalStep"/>
+  </Step>
+  <Step icon="Approval" name="ApprovalStep" posX="556" posY="37">
+    <Approval name="SecodaryIdRegistrationForm" owner="$(launcher)" return="formModel" send="launcher,formModel">
+      <Arg name="workItemType" value="Form"/>
+      <Arg name="workItemFormBasePath" value="formModel"/>
+      <Form name="SecodaryIdRegistrationForm">
+        <Attributes>
+          <Map>
+            <entry key="pageTitle" value="SecodaryIdRegistrationForm"/>
+          </Map>
+        </Attributes>
+        <Section name="userInstructions" type="text">
+          <Field value="This form is to create an Admin Account for AD and CloudAD"/>
+        </Section>
+        <Section name="IdType">
+          <Field displayName="SecondaryIdType" name="secondaryIdType" postBack="true" required="true" type="string">
+            <AllowedValuesDefinition>
+              <Value>
+                <List>
+                  <String>ADAdmin</String>
+                  <String>CloudAdmin</String>
+                  <String>WireLessAdmin</String>
+                </List>
+              </Value>
+            </AllowedValuesDefinition>
+          </Field>
+          <Field displayName="PrimaryAccount" dynamic="true" helpKey="Must be an active employee" name="primaryAccount" postBack="true" required="true" type="sailpoint.object.Identity">
+            <Attributes>
+              <Map>
+                <entry key="hidden">
+                  <value>
+                    <Script>
+                      <Source><![CDATA[
+                        //log.error("second field"+formModel);
+                        if((secondaryIdType!=null) @and (secondaryIdType.equalsIgnoreCase("ADAdmin") @or secondaryIdType.equalsIgnoreCase("CloudAdmin")))
+                        return false;
+                        return true;
+                      ]]></Source>
+                    </Script>
+                  </value>
+                </entry>
+              </Map>
+            </Attributes>
+            <ValidationScript>
+              <Source><![CDATA[
+                import sailpoint.object.Identity;
+                import sailpoint.api.IdentityService;
+                import sailpoint.object.Application;
+                import sailpoint.object.Link;
+                import sailpoint.tools.Message;
+
+                Message msg = new Message();
+                //log.error("---entered into validation script-----");
+
+                Identity identity=context.getObjectById(Identity.class,value);
+                IdentityService identityService = new IdentityService(context);
+
+                if(identity!=null){
+
+                if(secondaryIdType.equalsIgnoreCase("ADAdmin")){
+                Application adApp=context.getObjectByName(Application.class,"ActiveDirectory");
+
+                if(adApp!=null){
+                List adLinks=identityService.getLinks(identity,adApp);
+
+                if(adLinks!=null @and !adLinks.isEmpty()){
+                return null;
+                }else{
+                msg.setKey("Identity doesn't have Account in AD select existed identity");
+                }
+                }
+                }
+                else if(secondaryIdType.equalsIgnoreCase("CloudAdmin"))
+                {
+                Application ldapApp=context.getObjectByName(Application.class,"LDAPApplication");
+                if(ldapApp!=null){
+                List ldapLinks=identityService.getLinks(identity,ldapApp);
+
+                if(ldapLinks!=null @and !ldapLinks.isEmpty()){
+                return null;
+
+                }else{
+                msg.setKey("Identity doesn't have Account in LDAP select existed identity");
+                }
+                }
+                }
+                }
+                // log.error("formModel in second field in form==="+formModel);
+
+                return msg;
+              ]]></Source>
+            </ValidationScript>
+          </Field>
+        </Section>
+        <Button action="next" label="Submit"/>
+        <Button action="back" label="Cancel"/>
+      </Form>
+    </Approval>
+    <Transition to="Request CreateADAdminAccount" when="script:(formModel.get(&quot;secondaryIdType&quot;)).equalsIgnoreCase(&quot;ADAdmin&quot;)"/>
+    <Transition to="Request CreateLADPAdminAccount" when="script:(formModel.get(&quot;secondaryIdType&quot;)).equalsIgnoreCase(&quot;CloudAdmin&quot;)"/>
+  </Step>
+  <Step action="script:buildProvisioningPlan()" name="Request CreateADAdminAccount" posX="270" posY="31" resultVariable="account_plan">
+    <Arg name="identity">
+      <Script>
+        <Source><![CDATA[
+          import sailpoint.object.Identity;
+          import sailpoint.object.Filter;
+
+          Identity identity=null;
+          if(formModel!=null @and formModel.get("primaryAccount")!=null){
+          log.error("fetching identity in workflow Request CreateADAdminAccount step.....  :");
+          String identityId=formModel.get("primaryAccount");
+          Filter filter=Filter.and((Filter.or(Filter.eq("name",identityId),Filter.eq("id",identityId))),Filter.eq("type","employee"));
+          identity=context.getUniqueObject(Identity.class,filter);
+          }else{
+          throw new Exception("formModel primaryAccount value is null...");
+          }
+
+          return identity;
+        ]]></Source>
+      </Script>
+    </Arg>
+    <Arg name="secondaryIdType">
+      <Script>
+        <Source><![CDATA[
+          import sailpoint.object.Identity;
+          import sailpoint.object.Filter;
+
+          log.error("formModel in secondaryIdType arg in workflow Request CreateADAdminAccount step....."+formModel);
+          String secondaryIdType;
+          if(formModel!=null){
+          log.error("fetching secondaryIdType in workflow Request CreateADAdminAccount step.....  :");
+          secondaryIdType=formModel.get("secondaryIdType");
+          }else{
+          throw new Exception("formModel secondaryIdType value is null...");
+          }
+          return secondaryIdType;
+        ]]></Source>
+      </Script>
+    </Arg>
+    <Transition to="Provisioner"/>
+  </Step>
+  <Step name="Provisioner" posX="270" posY="31">
+    <Script>
+      <Source><![CDATA[
+        import sailpoint.api.Provisioner;
+
+        log.error("plan variable in provisioner execution---"+account_plan.toXml());
+        Provisioner provisioner=new Provisioner(context);
+        provisioner.setNoCreateTemplates(true);
+        return provisioner.execute(account_plan);
+
+      ]]></Source>
+    </Script>
+    <Transition to="Stop"/>
+  </Step>
+  <Step icon="Stop" name="Stop" posX="790" posY="40"/>
+</Workflow>

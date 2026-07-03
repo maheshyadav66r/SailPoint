@@ -1,0 +1,1176 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE WorkflowCase PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<WorkflowCase launcher="Scheduler" name="Refresh identity Amy Cox" targetClass="Identity" targetName="Amy Cox">
+  <Workflow currentStep="c13d06109c9d47b484345a2437c0ea82" libraries="Identity" name="Identity Refresh" resultExpiration="-1" type="IdentityRefresh">
+    <Variable input="true" name="identitizer" transient="true" type="object"/>
+    <Variable input="true" name="identity" transient="true" type="object"/>
+    <Variable input="true" name="refreshOptions" type="object"/>
+    <Variable input="true" name="identityName" type="string"/>
+    <Variable input="true" name="project"/>
+    <Variable input="true" name="changeEvents"/>
+    <Variable input="true" name="detectionDifference"/>
+    <Variable input="true" name="previousVersion" type="object"/>
+    <Variable editable="true" initializer="false" input="true" name="doManualActions"/>
+    <Variable input="true" name="enableManualAccountSelection"/>
+    <Step complete="true" icon="Start" name="start" posX="28" posY="10">
+      <Transition to="Evaluate Change Events"/>
+    </Step>
+    <Step complete="true" condition="changeEvents != null" name="Evaluate Change Events" posX="161" posY="10">
+      <Transition to="Do Provisioning Forms"/>
+    </Step>
+    <Step condition="project != null &amp;&amp; (project.hasQuestions() || (isTrue(enableManualAccountSelection) &amp;&amp; (project.hasUnansweredAccountSelections() ||  project.hasUnansweredProvisioningTargets())))" name="Do Provisioning Forms" posX="346" posY="10">
+      <Arg name="identityName" value="ref:identityName"/>
+      <Arg name="project" value="ref:project"/>
+      <Arg name="fallbackOwner" value="spadmin"/>
+      <Arg name="accountSelectionOwner" value="applicationOwner"/>
+      <Arg name="formTemplate" value="Identity Refresh"/>
+      <Arg name="disableManualAccountSelection" value="script:!isTrue(enableManualAccountSelection)"/>
+      <Return name="project" to="project"/>
+      <WorkflowRef>
+        <Reference class="sailpoint.object.Workflow" name="Do Provisioning Forms"/>
+      </WorkflowRef>
+      <Transition to="Manual Actions"/>
+      <WorkflowCase launcher="Scheduler" name="Do Provisioning Forms">
+        <Workflow currentStep="33e88ff164164b06b123ca7b6d8cb050" libraries="Identity" name="Do Provisioning Forms" type="Subprocess">
+          <Variable input="true" name="identityName" required="true"/>
+          <Variable initializer="script:(identityDisplayName != void) ? identityDisplayName : resolveDisplayName(identityName)" input="true" name="identityDisplayName"/>
+          <Variable input="true" name="project" output="true" required="true"/>
+          <Variable input="true" name="formTemplate" required="true"/>
+          <Variable input="true" name="preferredOwner"/>
+          <Variable input="true" name="workItemPriority"/>
+          <Variable input="true" name="requiredOwner"/>
+          <Variable input="true" name="fallbackOwner"/>
+          <Variable input="true" name="accountSelectionOwner"/>
+          <Variable input="true" name="disableManualAccountSelection"/>
+          <Variable name="workItemForm"/>
+          <Variable name="formOwnerError"/>
+          <Variable name="workItemComments"/>
+          <Variable name="accountSelectionForm"/>
+          <Variable name="calculatedAccountSelectionOwner"/>
+          <Step complete="true" icon="Start" name="start" posX="33" posY="16">
+            <Transition to="Get Account Selection Owner"/>
+          </Step>
+          <Step action="call:getAccountSelectionOwner" complete="true" condition="script:project != null &amp;&amp; !isTrue(disableManualAccountSelection) &amp;&amp; (project.hasUnansweredProvisioningTargets() || project.hasUnansweredAccountSelections())" name="Get Account Selection Owner" posX="372" posY="12" resultVariable="calculatedAccountSelectionOwner">
+            <Arg name="accountSelectionOwner" value="ref:accountSelectionOwner"/>
+            <Arg name="owner" value="ref:requiredOwner"/>
+            <Arg name="preferredOwner" value="ref:preferredOwner"/>
+            <Arg name="fallbackOwner" value="ref:fallbackOwner"/>
+            <Transition to="Build Account Selection Form"/>
+          </Step>
+          <Step action="call:buildAccountSelectionForm" complete="true" condition="script:project != null &amp;&amp; !isTrue(disableManualAccountSelection) &amp;&amp; project.hasUnansweredProvisioningTargets()" name="Build Account Selection Form" posX="561" posY="12" resultVariable="accountSelectionForm">
+            <Arg name="project" value="ref:project"/>
+            <Arg name="owner" value="ref:calculatedAccountSelectionOwner"/>
+            <Transition to="Present Account Selection Form"/>
+          </Step>
+          <Step complete="true" condition="script:!isNull(accountSelectionForm)" name="Present Account Selection Form" posX="561" posY="12">
+            <Approval owner="script:accountSelectionForm.getTargetUser()" send="identityName,identityDisplayName,launcher">
+              <AfterScript>
+                <Source><![CDATA[
+          import sailpoint.object.Form;
+          import sailpoint.object.ProvisioningTarget;
+          import sailpoint.object.AccountSelection;
+          import sailpoint.object.Field;
+
+          Form accountSelectionForm = item.getForm();
+          
+          Iterator fieldIterator = accountSelectionForm.iterateFields();
+
+          List targets = project.getProvisioningTargets();
+          
+          //apply selected value to matching AccountSelection
+          //if accountSelectionId, then apply to the first unanswered AccountSelection
+          while (fieldIterator.hasNext()) {
+              Field fld = (Field)fieldIterator.next();
+              if (fld == null) 
+                continue;
+
+              Integer targetIndex = (Integer)fld.getAttribute("targetIndex");
+              Integer selectionIndex = (Integer)fld.getAttribute("selectionIndex");
+              
+              if (targetIndex == null || selectionIndex == null) continue;
+                            
+              ProvisioningTarget target = (ProvisioningTarget) targets.get(targetIndex.intValue());
+              
+              List selections = target.getAccountSelections();
+              AccountSelection selection = (AccountSelection) selections.get(selectionIndex.intValue()); 
+                 
+              if (selection.isAnswered()) continue;
+              
+              if (fld.getValue().equals("doCreateOpt")) {
+                selection.setDoCreate(true);
+              }
+              else {
+                selection.setSelection(fld.getValue());
+              }
+          }
+          
+        ]]></Source>
+              </AfterScript>
+              <Arg name="workItemType" value="Form"/>
+              <Arg name="workItemDescription" value="Role Account Selection for $(identityDisplayName)"/>
+              <Arg name="workItemForm" value="ref:accountSelectionForm"/>
+              <Arg name="workItemDisableNotification">
+                <Script>
+                  <Source><![CDATA[
+           
+            // If this is interactive then don't bother sending email notifications.
+            return (null != sessionOwner) && !sessionOwner.equals("System") && !sessionOwner.equals("Scheduler");
+            
+          ]]></Source>
+                </Script>
+              </Arg>
+              <Arg name="workItemPriority" value="ref:workItemPriority"/>
+              <WorkItemConfig escalationStyle="none">
+                <NotificationEmailTemplateRef>
+                  <Reference class="sailpoint.object.EmailTemplate" name="Account Selection Notification"/>
+                </NotificationEmailTemplateRef>
+              </WorkItemConfig>
+            </Approval>
+            <Transition to="Handle Old Account Selections"/>
+          </Step>
+          <Step complete="true" condition="script:project != null &amp;&amp; !isTrue(disableManualAccountSelection) &amp;&amp; project.hasUnansweredAccountSelections()" name="Handle Old Account Selections" posX="561" posY="12">
+            <Approval owner="ref:calculatedAccountSelectionOwner" renderer="accountSelectionRenderer.xhtml">
+              <AfterScript>
+                <Source><![CDATA[
+          import sailpoint.object.Attributes;
+          import sailpoint.api.Provisioner;
+
+          // Set the account selections back on the project.  Later these will
+          // be consulted when the native identities are resolved.
+          List accountSelections = approval.get("accountSelectionsFromWorkItem");
+          project.setAccountSelections(accountSelections);
+
+          // Recompile project so that selected native identities get put into
+          // provisioning plans.
+          Provisioner p = new Provisioner(wfcontext.getSailPointContext());
+          Attributes args = wfcontext.getStepArguments();
+          p.recompile(project, args);
+        ]]></Source>
+              </AfterScript>
+              <Arg name="workItemRequester" value="$(launcher)"/>
+              <Arg name="workItemDescription" value="Account Selection for User: $(identityDisplayName)"/>
+              <Arg name="workItemDisableNotification">
+                <Script>
+                  <Source><![CDATA[
+           
+            // If this is interactive then don't bother sending email notifications.
+            return (null != sessionOwner) && !sessionOwner.equals("System") && !sessionOwner.equals("Scheduler");
+            
+          ]]></Source>
+                </Script>
+              </Arg>
+              <Arg name="workItemPriority" value="ref:workItemPriority"/>
+              <Arg name="accounts" value="script:project.getAccountSelections()"/>
+              <Arg name="expansionItems" value="script:project.getExpansionItems()"/>
+              <Arg name="identityDisplayName" value="$(identityDisplayName)"/>
+              <Arg name="identityName" value="$(identityName)"/>
+              <Return local="true" name="accounts" to="accountSelectionsFromWorkItem"/>
+              <ValidationScript>
+                <Source><![CDATA[
+          import sailpoint.object.AccountSelection;
+          import sailpoint.tools.Util;
+
+          // The return has not yet been processed since we're in the validator
+          // script.  Grab the account selections from the work item.
+          List accountSelections = item.getAttribute("accounts");
+
+          // Make sure that all account selections have decisions.
+          for (AccountSelection sel : accountSelections) {
+              if (Util.isEmpty(sel.getSelectedNativeIdentities())) {
+                  return "Please make a selection for each application.";
+              }
+          }
+          return null;
+        ]]></Source>
+              </ValidationScript>
+              <WorkItemConfig escalationStyle="none">
+                <NotificationEmailTemplateRef>
+                  <Reference class="sailpoint.object.EmailTemplate" name="Account Selection Notification"/>
+                </NotificationEmailTemplateRef>
+              </WorkItemConfig>
+            </Approval>
+            <Transition to="Recompile Provisioning Project"/>
+          </Step>
+          <Step action="call:recompileProject" complete="true" name="Recompile Provisioning Project" posX="99" posY="112" resultVariable="project">
+            <Arg name="project" value="ref:project"/>
+            <Transition to="Build Provisioning Form"/>
+          </Step>
+          <Step action="call:buildProvisioningForm" complete="true" name="Build Provisioning Form" posX="99" posY="112" resultVariable="workItemForm">
+            <Arg name="project" value="ref:project"/>
+            <Arg name="template" value="ref:formTemplate"/>
+            <Arg name="owner" value="ref:requiredOwner"/>
+            <Arg name="preferredOwner" value="ref:preferredOwner"/>
+            <Arg name="fallbackOwner" value="ref:fallbackOwner"/>
+            <Arg name="workItemComments" value="ref:workItemComments"/>
+            <Arg name="workItemPriority" value="ref:workItemPriority"/>
+            <Transition to="Present Provisioning Form"/>
+          </Step>
+          <Step condition="script:!isNull(workItemForm)" name="Present Provisioning Form" posX="99" posY="252">
+            <Approval originalOwner="script:workItemForm.getTargetUser()" owner="Maria White" return="workItemForm" send="identityName,identityDisplayName,workItemForm,launcher" startDate="1760979281977" started="true" workItemDescription="Complete provisioning form for Amy Cox" workItemId="c0a8d9c799e91d3e819a028b67b61755" workItemType="Form">
+              <Arg name="workItemType" value="Form"/>
+              <Arg name="workItemDescription" value="Complete provisioning form for $(identityDisplayName)"/>
+              <Arg name="workItemDisableNotification">
+                <Script>
+                  <Source><![CDATA[
+            
+            // 
+            // If this is interactive then don't bother sending email
+            // notifications.
+            // 
+            // There is some subtle logic here. Basically requiredOwner
+            // is null most of the time except in the case of pre-approval
+            // forms. In that case we want to return the forms for the
+            // required owner so they can fill it in during the request
+            // process instead of waiting on a workitem.  
+            //
+            boolean disableEmail = false;
+            String owner = ( requiredOwner != null ) ? requiredOwner : sessionOwner;
+            if ( Util.nullSafeEq(owner, workItemForm.getTargetUser()) ) { 
+                disableEmail = true;
+            }
+            return disableEmail;
+            
+          ]]></Source>
+                </Script>
+              </Arg>
+              <Arg name="workItemPriority" value="ref:workItemPriority"/>
+              <WorkItemConfig escalationStyle="none">
+                <NotificationEmailTemplateRef>
+                  <Reference class="sailpoint.object.EmailTemplate" name="Provisioning Form Notification"/>
+                </NotificationEmailTemplateRef>
+              </WorkItemConfig>
+            </Approval>
+            <Transition to="Assimilate Provisioning Form"/>
+          </Step>
+          <Step action="call:assimilateProvisioningForm" condition="script:!isNull(workItemForm)" name="Assimilate Provisioning Form" posX="314" posY="252" resultVariable="project">
+            <Arg name="project" value="ref:project"/>
+            <Arg name="form" value="ref:workItemForm"/>
+            <Transition to="Build Provisioning Form" when="(project != null &amp;&amp; project.hasQuestions()) &amp;&amp; !isNull(workItemForm)"/>
+            <Transition to="end"/>
+          </Step>
+          <Step icon="Stop" name="end" posX="853" posY="12"/>
+          <Attributes>
+            <Map>
+              <entry key="accountSelectionForm"/>
+              <entry key="accountSelectionOwner" value="applicationOwner"/>
+              <entry key="calculatedAccountSelectionOwner"/>
+              <entry key="disableManualAccountSelection">
+                <value>
+                  <Boolean>true</Boolean>
+                </value>
+              </entry>
+              <entry key="fallbackOwner" value="spadmin"/>
+              <entry key="formOwnerError"/>
+              <entry key="formTemplate" value="Identity Refresh"/>
+              <entry key="identityDisplayName" value="Amy Cox"/>
+              <entry key="identityName" value="Amy Cox"/>
+              <entry key="launcher" value="Scheduler"/>
+              <entry key="preferredOwner"/>
+              <entry key="project">
+                <value>
+                  <ProvisioningProject identity="Amy Cox">
+                    <Attributes>
+                      <Map>
+                        <entry key="noAttributeSyncExpansion">
+                          <value>
+                            <Boolean>true</Boolean>
+                          </value>
+                        </entry>
+                        <entry key="noLocking">
+                          <value>
+                            <Boolean>true</Boolean>
+                          </value>
+                        </entry>
+                        <entry key="noMaintenanceWindowRetry" value="false"/>
+                        <entry key="noRoleDeprovisioning" value="false"/>
+                        <entry key="source" value="Rule"/>
+                      </Map>
+                    </Attributes>
+                    <Filtered>
+                      <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                        <AttributeRequest name="memberOf" op="Add" value="CN=All_Users,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                          <Attributes>
+                            <Map>
+                              <entry key="assignment" value="true"/>
+                              <entry key="reason">
+                                <value>
+                                  <FilterReason>Exists</FilterReason>
+                                </value>
+                              </entry>
+                            </Map>
+                          </Attributes>
+                        </AttributeRequest>
+                        <AttributeRequest name="memberOf" op="Add" value="CN=AuditMgmt,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                          <Attributes>
+                            <Map>
+                              <entry key="assignment" value="true"/>
+                              <entry key="reason">
+                                <value>
+                                  <FilterReason>Exists</FilterReason>
+                                </value>
+                              </entry>
+                            </Map>
+                          </Attributes>
+                        </AttributeRequest>
+                        <AttributeRequest name="memberOf" op="Add" value="CN=campusAccess,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                          <Attributes>
+                            <Map>
+                              <entry key="assignment" value="true"/>
+                              <entry key="reason">
+                                <value>
+                                  <FilterReason>Exists</FilterReason>
+                                </value>
+                              </entry>
+                            </Map>
+                          </Attributes>
+                        </AttributeRequest>
+                        <AttributeRequest name="memberOf" op="Add" value="CN=Compensation,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                          <Attributes>
+                            <Map>
+                              <entry key="assignment" value="true"/>
+                              <entry key="reason">
+                                <value>
+                                  <FilterReason>Exists</FilterReason>
+                                </value>
+                              </entry>
+                            </Map>
+                          </Attributes>
+                        </AttributeRequest>
+                        <AttributeRequest name="memberOf" op="Add" value="CN=Contractors,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                          <Attributes>
+                            <Map>
+                              <entry key="assignment" value="true"/>
+                              <entry key="reason">
+                                <value>
+                                  <FilterReason>Exists</FilterReason>
+                                </value>
+                              </entry>
+                            </Map>
+                          </Attributes>
+                        </AttributeRequest>
+                        <AttributeRequest name="memberOf" op="Add" value="CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                          <Attributes>
+                            <Map>
+                              <entry key="assignment" value="true"/>
+                              <entry key="reason">
+                                <value>
+                                  <FilterReason>Exists</FilterReason>
+                                </value>
+                              </entry>
+                            </Map>
+                          </Attributes>
+                        </AttributeRequest>
+                        <AttributeRequest name="memberOf" op="Add" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                          <Attributes>
+                            <Map>
+                              <entry key="assignment" value="true"/>
+                              <entry key="reason">
+                                <value>
+                                  <FilterReason>Exists</FilterReason>
+                                </value>
+                              </entry>
+                            </Map>
+                          </Attributes>
+                        </AttributeRequest>
+                        <AttributeRequest name="memberOf" op="Add" value="CN=Admins,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                          <Attributes>
+                            <Map>
+                              <entry key="assignment" value="true"/>
+                              <entry key="reason">
+                                <value>
+                                  <FilterReason>Exists</FilterReason>
+                                </value>
+                              </entry>
+                            </Map>
+                          </Attributes>
+                        </AttributeRequest>
+                        <AttributeRequest name="memberOf" op="Add" value="CN=Buyer,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                          <Attributes>
+                            <Map>
+                              <entry key="assignment" value="true"/>
+                              <entry key="reason">
+                                <value>
+                                  <FilterReason>Exists</FilterReason>
+                                </value>
+                              </entry>
+                            </Map>
+                          </Attributes>
+                        </AttributeRequest>
+                        <AttributeRequest name="memberOf" op="Add">
+                          <Attributes>
+                            <Map>
+                              <entry key="reason">
+                                <value>
+                                  <FilterReason>Exists</FilterReason>
+                                </value>
+                              </entry>
+                            </Map>
+                          </Attributes>
+                          <Value>
+                            <List>
+                              <String>CN=AuditMgmt,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                            </List>
+                          </Value>
+                        </AttributeRequest>
+                      </AccountRequest>
+                    </Filtered>
+                    <MasterPlan>
+                      <ProvisioningPlan>
+                        <AccountRequest application="IIQ" op="Modify">
+                          <AttributeRequest name="assignedRoles" op="Add" value="ad_business_role"/>
+                        </AccountRequest>
+                        <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                          <AttributeRequest name="memberOf" op="Add" value="CN=All_Users,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                            <Attributes>
+                              <Map>
+                                <entry key="assignment">
+                                  <value>
+                                    <Boolean>true</Boolean>
+                                  </value>
+                                </entry>
+                              </Map>
+                            </Attributes>
+                          </AttributeRequest>
+                        </AccountRequest>
+                        <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                          <AttributeRequest name="memberOf" op="Add" value="CN=AuditMgmt,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                            <Attributes>
+                              <Map>
+                                <entry key="assignment">
+                                  <value>
+                                    <Boolean>true</Boolean>
+                                  </value>
+                                </entry>
+                              </Map>
+                            </Attributes>
+                          </AttributeRequest>
+                        </AccountRequest>
+                        <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                          <AttributeRequest name="memberOf" op="Add" value="CN=campusAccess,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                            <Attributes>
+                              <Map>
+                                <entry key="assignment">
+                                  <value>
+                                    <Boolean>true</Boolean>
+                                  </value>
+                                </entry>
+                              </Map>
+                            </Attributes>
+                          </AttributeRequest>
+                        </AccountRequest>
+                        <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                          <AttributeRequest name="memberOf" op="Add" value="CN=Compensation,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                            <Attributes>
+                              <Map>
+                                <entry key="assignment">
+                                  <value>
+                                    <Boolean>true</Boolean>
+                                  </value>
+                                </entry>
+                              </Map>
+                            </Attributes>
+                          </AttributeRequest>
+                        </AccountRequest>
+                        <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                          <AttributeRequest name="memberOf" op="Add" value="CN=Contractors,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                            <Attributes>
+                              <Map>
+                                <entry key="assignment">
+                                  <value>
+                                    <Boolean>true</Boolean>
+                                  </value>
+                                </entry>
+                              </Map>
+                            </Attributes>
+                          </AttributeRequest>
+                        </AccountRequest>
+                        <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                          <AttributeRequest name="memberOf" op="Add" value="CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                            <Attributes>
+                              <Map>
+                                <entry key="assignment">
+                                  <value>
+                                    <Boolean>true</Boolean>
+                                  </value>
+                                </entry>
+                              </Map>
+                            </Attributes>
+                          </AttributeRequest>
+                        </AccountRequest>
+                        <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                          <AttributeRequest name="memberOf" op="Add" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                            <Attributes>
+                              <Map>
+                                <entry key="assignment">
+                                  <value>
+                                    <Boolean>true</Boolean>
+                                  </value>
+                                </entry>
+                              </Map>
+                            </Attributes>
+                          </AttributeRequest>
+                        </AccountRequest>
+                        <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                          <AttributeRequest name="memberOf" op="Add" value="CN=Admins,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                            <Attributes>
+                              <Map>
+                                <entry key="assignment">
+                                  <value>
+                                    <Boolean>true</Boolean>
+                                  </value>
+                                </entry>
+                              </Map>
+                            </Attributes>
+                          </AttributeRequest>
+                        </AccountRequest>
+                        <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                          <AttributeRequest name="memberOf" op="Add" value="CN=All_Users,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                            <Attributes>
+                              <Map>
+                                <entry key="assignment">
+                                  <value>
+                                    <Boolean>true</Boolean>
+                                  </value>
+                                </entry>
+                              </Map>
+                            </Attributes>
+                          </AttributeRequest>
+                        </AccountRequest>
+                        <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                          <AttributeRequest name="memberOf" op="Add" value="CN=Buyer,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                            <Attributes>
+                              <Map>
+                                <entry key="assignment">
+                                  <value>
+                                    <Boolean>true</Boolean>
+                                  </value>
+                                </entry>
+                              </Map>
+                            </Attributes>
+                          </AttributeRequest>
+                        </AccountRequest>
+                        <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                          <AttributeRequest name="memberOf" op="Add" value="CN=Contractors,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                            <Attributes>
+                              <Map>
+                                <entry key="assignment">
+                                  <value>
+                                    <Boolean>true</Boolean>
+                                  </value>
+                                </entry>
+                              </Map>
+                            </Attributes>
+                          </AttributeRequest>
+                        </AccountRequest>
+                        <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                          <AttributeRequest name="memberOf" op="Add" value="CN=AuditMgmt,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                            <Attributes>
+                              <Map>
+                                <entry key="assignment">
+                                  <value>
+                                    <Boolean>true</Boolean>
+                                  </value>
+                                </entry>
+                              </Map>
+                            </Attributes>
+                          </AttributeRequest>
+                        </AccountRequest>
+                        <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                          <AttributeRequest name="memberOf" op="Add" value="CN=campusAccess,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                            <Attributes>
+                              <Map>
+                                <entry key="assignment">
+                                  <value>
+                                    <Boolean>true</Boolean>
+                                  </value>
+                                </entry>
+                              </Map>
+                            </Attributes>
+                          </AttributeRequest>
+                        </AccountRequest>
+                        <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                          <AttributeRequest name="memberOf" op="Add" value="CN=Compensation,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                            <Attributes>
+                              <Map>
+                                <entry key="assignment">
+                                  <value>
+                                    <Boolean>true</Boolean>
+                                  </value>
+                                </entry>
+                              </Map>
+                            </Attributes>
+                          </AttributeRequest>
+                        </AccountRequest>
+                        <Attributes>
+                          <Map>
+                            <entry key="source" value="IdentityRefresh"/>
+                          </Map>
+                        </Attributes>
+                      </ProvisioningPlan>
+                    </MasterPlan>
+                    <ProvisioningPlan targetIntegration="IIQ" trackingId="93e0217fde8a44a39d8294231430ea0e">
+                      <AccountRequest application="IIQ" op="Modify">
+                        <AttributeRequest name="assignedRoles" op="Add" value="ad_business_role"/>
+                      </AccountRequest>
+                      <Attributes>
+                        <Map>
+                          <entry key="source" value="IdentityRefresh"/>
+                        </Map>
+                      </Attributes>
+                    </ProvisioningPlan>
+                    <ProvisioningPlan targetIntegration="ActiveDirectory" trackingId="54fe827be6c9424c88ad70af367ba392">
+                      <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify"/>
+                      <Attributes>
+                        <Map>
+                          <entry key="source" value="IdentityRefresh"/>
+                        </Map>
+                      </Attributes>
+                    </ProvisioningPlan>
+                    <ProvisioningTarget role="ad_business_role">
+                      <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                        <AccountInfo displayName="Amy Cox" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+                      </AccountSelection>
+                    </ProvisioningTarget>
+                    <Questions>
+                      <Question attributeName="approveOrDecline" owner="Maria White" source="ad_business_role" type="Role">
+                        <Field application="ActiveDirectory" displayName="Approve Or Decline" displayOnly="true" name="Question:0:approveOrDecline" required="true" role="ad_business_role" template="Manager Approval Form" type="string">
+                          <Attributes>
+                            <Map>
+                              <entry key="readOnly" value="true"/>
+                            </Map>
+                          </Attributes>
+                        </Field>
+                      </Question>
+                    </Questions>
+                  </ProvisioningProject>
+                </value>
+              </entry>
+              <entry key="requiredOwner"/>
+              <entry key="sessionOwner" value="Scheduler"/>
+              <entry key="workItemComments"/>
+              <entry key="workItemForm">
+                <value>
+                  <Form name="Identity Refresh" targetUser="Maria White" type="Workflow">
+                    <Attributes>
+                      <Map>
+                        <entry key="pageTitle" value="provision_identity_refresh_title"/>
+                        <entry key="pageTitleParam" value="$(identityName)"/>
+                      </Map>
+                    </Attributes>
+                    <Section type="text">
+                      <Field displayName="provision_identity_refresh_description"/>
+                    </Section>
+                    <Section label="provision_target_identity" type="datatable">
+                      <Attributes>
+                        <Map>
+                          <entry key="hideNulls" value="true"/>
+                        </Map>
+                      </Attributes>
+                      <Field displayName="provision_account_id" value="script:identity.getName()"/>
+                      <Field displayName="provision_first_name" value="script:identity.getFirstname()"/>
+                      <Field displayName="provision_last_name" value="script:identity.getLastname()"/>
+                      <Field displayName="provision_assigned_roles">
+                        <Script>
+                          <Source><![CDATA[
+          import sailpoint.api.ObjectUtil;
+          import sailpoint.tools.Util;
+          List names = ObjectUtil.getObjectNames(identity.getAssignedRoles());
+          return Util.listToCsv(names);
+      ]]></Source>
+                        </Script>
+                      </Field>
+                    </Section>
+                    <Button action="next" label="button_ok"/>
+                    <Button action="cancel" label="button_cancel"/>
+                    <Button action="cancel" label="button_return" readOnly="true"/>
+                    <Section label="ActiveDirectory" name="ActiveDirectory">
+                      <Field application="ActiveDirectory" displayName="Approve Or Decline" displayOnly="true" name="Question:0:approveOrDecline" required="true" role="ad_business_role" template="Manager Approval Form" type="string">
+                        <Attributes>
+                          <Map>
+                            <entry key="readOnly" value="true"/>
+                          </Map>
+                        </Attributes>
+                      </Field>
+                    </Section>
+                  </Form>
+                </value>
+              </entry>
+              <entry key="workItemPriority"/>
+            </Map>
+          </Attributes>
+        </Workflow>
+      </WorkflowCase>
+    </Step>
+    <Step condition="isTrue(doManualActions) &amp;&amp; project.getUnmanagedPlan() != null" name="Manual Actions" posX="696" posY="10">
+      <Arg name="identityName" value="ref:identityName"/>
+      <Arg name="project" value="ref:project"/>
+      <WorkflowRef>
+        <Reference class="sailpoint.object.Workflow" name="Do Manual Actions"/>
+      </WorkflowRef>
+      <Transition to="Finish Refresh"/>
+    </Step>
+    <Step action="finishRefresh" name="Finish Refresh" posX="515" posY="10">
+      <Arg name="identitizer" value="ref:identitizer"/>
+      <Arg name="identity" value="ref:identity"/>
+      <Arg name="identityName" value="ref:identityName"/>
+      <Arg name="refreshOptions" value="ref:refreshOptions"/>
+      <Arg name="previousVersion" value="ref:previousVersion"/>
+      <Arg name="project" value="ref:project"/>
+      <Transition to="Save Identity"/>
+    </Step>
+    <Step action="script: if (identity != null ) { context.saveObject(identity); context.commitTransaction(); }" condition="isTrue(doManualActions) &amp;&amp; project.getUnmanagedPlan() != null" name="Save Identity" posX="587" posY="150">
+      <Arg name="identity" value="ref:identity"/>
+      <Transition to="end"/>
+    </Step>
+    <Step name="end" posX="859" posY="10"/>
+    <Attributes>
+      <Map>
+        <entry key="changeEvents"/>
+        <entry key="detectionDifference"/>
+        <entry key="doManualActions">
+          <value>
+            <Boolean/>
+          </value>
+        </entry>
+        <entry key="enableManualAccountSelection">
+          <value>
+            <Boolean/>
+          </value>
+        </entry>
+        <entry key="identityName" value="Amy Cox"/>
+        <entry key="launcher" value="Scheduler"/>
+        <entry key="previousVersion"/>
+        <entry key="project">
+          <value>
+            <ProvisioningProject identity="Amy Cox">
+              <Attributes>
+                <Map>
+                  <entry key="noAttributeSyncExpansion">
+                    <value>
+                      <Boolean>true</Boolean>
+                    </value>
+                  </entry>
+                  <entry key="noLocking">
+                    <value>
+                      <Boolean>true</Boolean>
+                    </value>
+                  </entry>
+                  <entry key="noMaintenanceWindowRetry" value="false"/>
+                  <entry key="noRoleDeprovisioning" value="false"/>
+                  <entry key="source" value="Rule"/>
+                </Map>
+              </Attributes>
+              <Filtered>
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                  <AttributeRequest name="memberOf" op="Add" value="CN=All_Users,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                    <Attributes>
+                      <Map>
+                        <entry key="assignment" value="true"/>
+                        <entry key="reason">
+                          <value>
+                            <FilterReason>Exists</FilterReason>
+                          </value>
+                        </entry>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                  <AttributeRequest name="memberOf" op="Add" value="CN=AuditMgmt,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                    <Attributes>
+                      <Map>
+                        <entry key="assignment" value="true"/>
+                        <entry key="reason">
+                          <value>
+                            <FilterReason>Exists</FilterReason>
+                          </value>
+                        </entry>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                  <AttributeRequest name="memberOf" op="Add" value="CN=campusAccess,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                    <Attributes>
+                      <Map>
+                        <entry key="assignment" value="true"/>
+                        <entry key="reason">
+                          <value>
+                            <FilterReason>Exists</FilterReason>
+                          </value>
+                        </entry>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                  <AttributeRequest name="memberOf" op="Add" value="CN=Compensation,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                    <Attributes>
+                      <Map>
+                        <entry key="assignment" value="true"/>
+                        <entry key="reason">
+                          <value>
+                            <FilterReason>Exists</FilterReason>
+                          </value>
+                        </entry>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                  <AttributeRequest name="memberOf" op="Add" value="CN=Contractors,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                    <Attributes>
+                      <Map>
+                        <entry key="assignment" value="true"/>
+                        <entry key="reason">
+                          <value>
+                            <FilterReason>Exists</FilterReason>
+                          </value>
+                        </entry>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                  <AttributeRequest name="memberOf" op="Add" value="CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                    <Attributes>
+                      <Map>
+                        <entry key="assignment" value="true"/>
+                        <entry key="reason">
+                          <value>
+                            <FilterReason>Exists</FilterReason>
+                          </value>
+                        </entry>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                  <AttributeRequest name="memberOf" op="Add" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                    <Attributes>
+                      <Map>
+                        <entry key="assignment" value="true"/>
+                        <entry key="reason">
+                          <value>
+                            <FilterReason>Exists</FilterReason>
+                          </value>
+                        </entry>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                  <AttributeRequest name="memberOf" op="Add" value="CN=Admins,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                    <Attributes>
+                      <Map>
+                        <entry key="assignment" value="true"/>
+                        <entry key="reason">
+                          <value>
+                            <FilterReason>Exists</FilterReason>
+                          </value>
+                        </entry>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                  <AttributeRequest name="memberOf" op="Add" value="CN=Buyer,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                    <Attributes>
+                      <Map>
+                        <entry key="assignment" value="true"/>
+                        <entry key="reason">
+                          <value>
+                            <FilterReason>Exists</FilterReason>
+                          </value>
+                        </entry>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                  <AttributeRequest name="memberOf" op="Add">
+                    <Attributes>
+                      <Map>
+                        <entry key="reason">
+                          <value>
+                            <FilterReason>Exists</FilterReason>
+                          </value>
+                        </entry>
+                      </Map>
+                    </Attributes>
+                    <Value>
+                      <List>
+                        <String>CN=AuditMgmt,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                      </List>
+                    </Value>
+                  </AttributeRequest>
+                </AccountRequest>
+              </Filtered>
+              <MasterPlan>
+                <ProvisioningPlan>
+                  <AccountRequest application="IIQ" op="Modify">
+                    <AttributeRequest name="assignedRoles" op="Add" value="ad_business_role"/>
+                  </AccountRequest>
+                  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                    <AttributeRequest name="memberOf" op="Add" value="CN=All_Users,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                      <Attributes>
+                        <Map>
+                          <entry key="assignment">
+                            <value>
+                              <Boolean>true</Boolean>
+                            </value>
+                          </entry>
+                        </Map>
+                      </Attributes>
+                    </AttributeRequest>
+                  </AccountRequest>
+                  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                    <AttributeRequest name="memberOf" op="Add" value="CN=AuditMgmt,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                      <Attributes>
+                        <Map>
+                          <entry key="assignment">
+                            <value>
+                              <Boolean>true</Boolean>
+                            </value>
+                          </entry>
+                        </Map>
+                      </Attributes>
+                    </AttributeRequest>
+                  </AccountRequest>
+                  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                    <AttributeRequest name="memberOf" op="Add" value="CN=campusAccess,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                      <Attributes>
+                        <Map>
+                          <entry key="assignment">
+                            <value>
+                              <Boolean>true</Boolean>
+                            </value>
+                          </entry>
+                        </Map>
+                      </Attributes>
+                    </AttributeRequest>
+                  </AccountRequest>
+                  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                    <AttributeRequest name="memberOf" op="Add" value="CN=Compensation,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                      <Attributes>
+                        <Map>
+                          <entry key="assignment">
+                            <value>
+                              <Boolean>true</Boolean>
+                            </value>
+                          </entry>
+                        </Map>
+                      </Attributes>
+                    </AttributeRequest>
+                  </AccountRequest>
+                  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                    <AttributeRequest name="memberOf" op="Add" value="CN=Contractors,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                      <Attributes>
+                        <Map>
+                          <entry key="assignment">
+                            <value>
+                              <Boolean>true</Boolean>
+                            </value>
+                          </entry>
+                        </Map>
+                      </Attributes>
+                    </AttributeRequest>
+                  </AccountRequest>
+                  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                    <AttributeRequest name="memberOf" op="Add" value="CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                      <Attributes>
+                        <Map>
+                          <entry key="assignment">
+                            <value>
+                              <Boolean>true</Boolean>
+                            </value>
+                          </entry>
+                        </Map>
+                      </Attributes>
+                    </AttributeRequest>
+                  </AccountRequest>
+                  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                    <AttributeRequest name="memberOf" op="Add" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                      <Attributes>
+                        <Map>
+                          <entry key="assignment">
+                            <value>
+                              <Boolean>true</Boolean>
+                            </value>
+                          </entry>
+                        </Map>
+                      </Attributes>
+                    </AttributeRequest>
+                  </AccountRequest>
+                  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                    <AttributeRequest name="memberOf" op="Add" value="CN=Admins,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                      <Attributes>
+                        <Map>
+                          <entry key="assignment">
+                            <value>
+                              <Boolean>true</Boolean>
+                            </value>
+                          </entry>
+                        </Map>
+                      </Attributes>
+                    </AttributeRequest>
+                  </AccountRequest>
+                  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                    <AttributeRequest name="memberOf" op="Add" value="CN=All_Users,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                      <Attributes>
+                        <Map>
+                          <entry key="assignment">
+                            <value>
+                              <Boolean>true</Boolean>
+                            </value>
+                          </entry>
+                        </Map>
+                      </Attributes>
+                    </AttributeRequest>
+                  </AccountRequest>
+                  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                    <AttributeRequest name="memberOf" op="Add" value="CN=Buyer,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                      <Attributes>
+                        <Map>
+                          <entry key="assignment">
+                            <value>
+                              <Boolean>true</Boolean>
+                            </value>
+                          </entry>
+                        </Map>
+                      </Attributes>
+                    </AttributeRequest>
+                  </AccountRequest>
+                  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                    <AttributeRequest name="memberOf" op="Add" value="CN=Contractors,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                      <Attributes>
+                        <Map>
+                          <entry key="assignment">
+                            <value>
+                              <Boolean>true</Boolean>
+                            </value>
+                          </entry>
+                        </Map>
+                      </Attributes>
+                    </AttributeRequest>
+                  </AccountRequest>
+                  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                    <AttributeRequest name="memberOf" op="Add" value="CN=AuditMgmt,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                      <Attributes>
+                        <Map>
+                          <entry key="assignment">
+                            <value>
+                              <Boolean>true</Boolean>
+                            </value>
+                          </entry>
+                        </Map>
+                      </Attributes>
+                    </AttributeRequest>
+                  </AccountRequest>
+                  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                    <AttributeRequest name="memberOf" op="Add" value="CN=campusAccess,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                      <Attributes>
+                        <Map>
+                          <entry key="assignment">
+                            <value>
+                              <Boolean>true</Boolean>
+                            </value>
+                          </entry>
+                        </Map>
+                      </Attributes>
+                    </AttributeRequest>
+                  </AccountRequest>
+                  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                    <AttributeRequest name="memberOf" op="Add" value="CN=Compensation,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                      <Attributes>
+                        <Map>
+                          <entry key="assignment">
+                            <value>
+                              <Boolean>true</Boolean>
+                            </value>
+                          </entry>
+                        </Map>
+                      </Attributes>
+                    </AttributeRequest>
+                  </AccountRequest>
+                  <Attributes>
+                    <Map>
+                      <entry key="source" value="IdentityRefresh"/>
+                    </Map>
+                  </Attributes>
+                </ProvisioningPlan>
+              </MasterPlan>
+              <ProvisioningPlan targetIntegration="IIQ" trackingId="93e0217fde8a44a39d8294231430ea0e">
+                <AccountRequest application="IIQ" op="Modify">
+                  <AttributeRequest name="assignedRoles" op="Add" value="ad_business_role"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="IdentityRefresh"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+              <ProvisioningPlan targetIntegration="ActiveDirectory" trackingId="54fe827be6c9424c88ad70af367ba392">
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify"/>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="IdentityRefresh"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+              <ProvisioningTarget role="ad_business_role">
+                <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                  <AccountInfo displayName="Amy Cox" nativeIdentity="CN=Amy Cox,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+                </AccountSelection>
+              </ProvisioningTarget>
+              <Questions>
+                <Question attributeName="approveOrDecline" owner="Maria White" source="ad_business_role" type="Role">
+                  <Field application="ActiveDirectory" displayName="Approve Or Decline" displayOnly="true" name="Question:0:approveOrDecline" required="true" role="ad_business_role" template="Manager Approval Form" type="string">
+                    <Attributes>
+                      <Map>
+                        <entry key="readOnly" value="true"/>
+                      </Map>
+                    </Attributes>
+                  </Field>
+                </Question>
+              </Questions>
+            </ProvisioningProject>
+          </value>
+        </entry>
+        <entry key="refreshOptions">
+          <value>
+            <Map>
+              <entry key="TaskDefinition.runLengthAverage" value="151"/>
+              <entry key="TaskDefinition.runLengthTotal" value="10118"/>
+              <entry key="TaskDefinition.runs" value="67"/>
+              <entry key="TaskSchedule.host"/>
+              <entry key="checkHistory" value="false"/>
+              <entry key="checkPolicies" value="false"/>
+              <entry key="correlateEntitlements" value="true"/>
+              <entry key="deleteDormantGroups" value="false"/>
+              <entry key="disableIdentityProcessingThreshold" value="false"/>
+              <entry key="disableManagerLookup" value="false"/>
+              <entry key="doManualActions" value="false"/>
+              <entry key="enableManualAccountSelection" value="false"/>
+              <entry key="enablePartitioning" value="false"/>
+              <entry key="excludeInactive" value="false"/>
+              <entry key="filter" value="name==&quot;Amy Cox&quot;"/>
+              <entry key="filterNeedsRefresh" value="false"/>
+              <entry key="forceWorkflow" value="false"/>
+              <entry key="includeWindowModified" value="false"/>
+              <entry key="keepInactiveViolations" value="false"/>
+              <entry key="launcher" value="spadmin"/>
+              <entry key="locale" value="en_US"/>
+              <entry key="markDormantScopes" value="false"/>
+              <entry key="noAutoCreateScopes" value="false"/>
+              <entry key="noMaintenanceWindowRetry" value="false"/>
+              <entry key="noResetNeedsRefresh" value="false"/>
+              <entry key="noRoleDeprovisioning" value="false"/>
+              <entry key="processTriggers" value="false"/>
+              <entry key="promoteAttributes" value="false"/>
+              <entry key="promoteManagedAttributes" value="false"/>
+              <entry key="provision" value="true"/>
+              <entry key="refreshCompositeApplications" value="false"/>
+              <entry key="refreshGroups" value="false"/>
+              <entry key="refreshIdentityEntitlements" value="false"/>
+              <entry key="refreshManagerStatus" value="false"/>
+              <entry key="refreshRoleMetadata" value="false"/>
+              <entry key="refreshScorecard" value="false"/>
+              <entry key="refreshSource" value="Task"/>
+              <entry key="refreshSourceWho" value="Refresh Identity Cube"/>
+              <entry key="synchronizeAttributes" value="false"/>
+              <entry key="taskCompletionEmailNotify" value="Disabled"/>
+              <entry key="taskCompletionEmailRecipients"/>
+              <entry key="taskCompletionEmailTemplate"/>
+              <entry key="timezone" value="Asia/Calcutta"/>
+            </Map>
+          </value>
+        </entry>
+        <entry key="sessionOwner" value="Scheduler"/>
+        <entry key="taskResultId" value="c0a8d9c799e91d3e819a028b66d01753"/>
+      </Map>
+    </Attributes>
+  </Workflow>
+</WorkflowCase>

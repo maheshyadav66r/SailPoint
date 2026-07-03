@@ -1,0 +1,148 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1748535128046" completionStatus="Error" launched="1748535115974" launcher="spadmin" name="Update Identity Abigail Vaughn AccessRequest" targetClass="Identity" targetName="Abigail Vaughn" type="LCM">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000673"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Abigail Vaughn">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000673"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="JDBCProvisioning" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a81d8994081c0a8194090a2ed70274"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="EntitlementAdd"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest displayValue="AccountsReceivable" name="GroupName" op="Add" value="8">
+                    <Attributes>
+                      <Map>
+                        <entry key="assignment" value="true"/>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000673"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <ProvisioningTargets>
+                  <ProvisioningTarget application="JDBCProvisioning" attribute="GroupName" value="8">
+                    <AccountSelection applicationId="c0a81d8994081c0a81940900fe78020c" applicationName="JDBCProvisioning" implicitCreate="true"/>
+                  </ProvisioningTarget>
+                </ProvisioningTargets>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Abigail Vaughn" targetIntegration="JDBCProvisioning" trackingId="837fdaf94ec64c43a4a688f19b4b38b2">
+              <AccountRequest application="JDBCProvisioning" nativeIdentity="Abigail Vaughn" op="Create">
+                <Attributes>
+                  <Map>
+                    <entry key="attachmentConfigList"/>
+                    <entry key="attachments"/>
+                    <entry key="flow" value="AccessRequest"/>
+                    <entry key="id" value="c0a81d8994081c0a8194090a2ed70274"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="operation" value="EntitlementAdd"/>
+                    <entry key="provisioningTransactionId" value="a9feffec971a1a0781971cd0ae380548"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest displayValue="AccountsReceivable" name="GroupName" op="Add" value="8">
+                  <Attributes>
+                    <Map>
+                      <entry key="assignment" value="true"/>
+                    </Map>
+                  </Attributes>
+                </AttributeRequest>
+                <AttributeRequest name="Name" op="Set" value="Abigail Vaughn"/>
+                <AttributeRequest name="FirstName" op="Set" value="Abigail"/>
+                <AttributeRequest name="LastName" op="Set" value="Vaughn"/>
+                <AttributeRequest name="Department" op="Set" value="Sales"/>
+                <AttributeRequest name="EmailAddress" op="Set" value="abigail.vaughn@example.com"/>
+                <AttributeRequest name="NetworkID" op="Set" value="Abigail.Vaughn"/>
+                <AttributeRequest name="managerID" op="Set" value="1045"/>
+                <ProvisioningResult status="failed">
+                  <Errors>
+                    <Message key="The application script threw an exception: java.sql.SQLIntegrityConstraintViolationException: Column 'EmployeeID' cannot be null BSF info: JDBC Account creation Modified Rule at line: 0 column: columnNo" type="Error"/>
+                  </Errors>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000673"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+              <ProvisioningResult status="failed">
+                <Errors>
+                  <Message key="The application script threw an exception: java.sql.SQLIntegrityConstraintViolationException: Column 'EmployeeID' cannot be null BSF info: JDBC Account creation Modified Rule at line: 0 column: columnNo" type="Error"/>
+                </Errors>
+              </ProvisioningResult>
+            </ProvisioningPlan>
+            <ProvisioningTarget application="JDBCProvisioning" attribute="GroupName" value="8">
+              <AccountSelection applicationId="c0a81d8994081c0a81940900fe78020c" applicationName="JDBCProvisioning" implicitCreate="true"/>
+            </ProvisioningTarget>
+            <QuestionHistory>
+              <Question attributeName="managerID" shown="true" source="JDBCProvisioning" type="Application">
+                <Field application="JDBCProvisioning" displayName="managerID" name="Question:0:managerID" priority="10" required="true" template="JDBC Create PPForm" type="string" value="1045"/>
+              </Question>
+            </QuestionHistory>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="a9feffec971a1a0781971cd081ff0528"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="end">
+            <Interactions>
+              <ApprovalSummary completer="The Administrator" endDate="1748535125845" owner="spadmin" request="Complete provisioning form for Abigail Vaughn" startDate="1748535116638" state="Finished" workItemId="a9feffec971a1a0781971cd0833f052b" workItemType="Form"/>
+            </Interactions>
+          </WorkflowSummary>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="The application script threw an exception: java.sql.SQLIntegrityConstraintViolationException: Column 'EmployeeID' cannot be null BSF info: JDBC Account creation Modified Rule at line: 0 column: columnNo" type="Error"/>
+  </Messages>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

@@ -1,0 +1,378 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Validation_ReportsData33" type="Validation">
+  <Source><![CDATA[
+
+  import java.time.LocalDateTime;
+  import java.time.format.DateTimeFormatter;
+  import sailpoint.object.Bundle;
+  import sailpoint.object.Identity;
+  import sailpoint.object.IdentityEntitlement;
+  import sailpoint.tools.GeneralException;
+  import java.io.File;
+  import java.io.FileWriter;
+  import java.io.BufferedWriter;
+  import java.text.SimpleDateFormat;
+  import sailpoint.api.ObjectUtil;
+  import sailpoint.object.Attributes;
+  import sailpoint.object.Filter;
+  import sailpoint.object.ManagedAttribute;
+  import sailpoint.object.Profile;
+  import sailpoint.object.QueryOptions;
+  import sailpoint.tools.Util;
+  import sailpoint.object.Application;
+  import sailpoint.object.Resolver;
+  import org.apache.commons.logging.Log;
+  import org.apache.commons.logging.LogFactory;
+  import java.io.IOException;
+
+
+  
+  return context.decrypt("1:ACP:9zCNWZGl7/LEnEachN/TkoqLwj5ozaNdy9IrdHARiWg=");
+
+  public void writeListToFile(File file, List listOfArrays) throws IOException {
+
+    BufferedWriter writer = null;
+
+    try {
+      writer = new BufferedWriter(new FileWriter(file));
+      writer.write("BusinessRoleName,BusinessRoleDescription,BusinessRoleOwner,BusinessRoleDepartment,BusinessRoleDivision,FunctionalRole,Permitted/Required,ApplicationName,Entitlement,EntitlementDisplayName,AccountType");
+      writer.newLine();
+
+      if (listOfArrays != null && !listOfArrays.isEmpty()) {
+        for (String[] row : listOfArrays) {
+
+          if (row == null || row.length != 11) {
+            continue; // skip invalid rows
+          }
+
+          StringBuilder sb = new StringBuilder();
+          for (int i = 0; i < row.length; i++) {
+
+            String value = row[i];
+
+            if (value == null) {
+              value = "";
+            }
+
+            
+            // Escape CSV special characters
+            if (value != null) {
+
+              // Remove line breaks
+              value = value.replace("\r", " ").replace("\n", " ");
+              // Escape quotes
+              value = value.replace("\"", "\"\"");
+              // Wrap with quotes if needed
+              if (value.contains(",") || value.contains("\"")) {
+                value = "\"" + value + "\"";
+              }
+            }
+            
+            
+            
+            sb.append(value);
+            if (i < row.length - 1) {
+              sb.append(",");
+            }
+          }
+          writer.write(sb.toString());
+          writer.newLine();
+        }
+      }
+      writer.flush();
+    } finally {
+      if (writer != null) {
+        writer.close();
+      }
+    }
+  }
+
+
+  String inputData = "Medium,High";
+  // String inputData = (String) config.get("roleCriticality");      //Replace roleCriticality with roleDivision
+  List roleTypeList  = null;
+  Iterator bRListItr = null;
+
+  try{
+
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+    String fileName = "ICAM - Role Composition Report_" + sdf.format(new Date()) +".csv";
+    File file = new File("D:\\tmp\\" + fileName);
+
+    QueryOptions qoForBundle = new QueryOptions();
+    qoForBundle.addFilter(Filter.eq("type", "business"));
+
+    // List bRList = context.getObjects(Bundle.class, qoForBundle);
+    roleTypeList  = new ArrayList();
+
+    /* if (!Util.isNullOrEmpty(inputData)) {
+      if (inputData.contains(",")) {
+        roleTypeList = Arrays.asList(inputData.split(","));
+      } else {
+        roleTypeList.add(inputData);
+      }
+    }*/
+
+
+    if (!Util.isNullOrEmpty(inputData)) {
+      String[] values = inputData.split(",");
+      for (String val : values) {
+        val = val.trim();
+        if (!val.isEmpty()) {  
+          roleTypeList.add(val);
+        }
+      }
+    }
+
+    //BusinessRole,BusinessRoleDesc,BusinessRoleOwner,BusinessRoleDepartment,BusinessRoleDivision,ITRole,ITRoletype,Application,Entitlement,EntitlementDisplayName,AcctType
+    String[] col;
+    List listOfArrays = new ArrayList();
+
+    //if (bRList != null) {
+    bRListItr = context.search(Bundle.class, qoForBundle);;
+
+    while (bRListItr.hasNext()) {
+
+      Bundle busRole = bRListItr.next();
+      log.debug("Business Role: " + busRole.getName());
+
+      // Logic to calculate list of Required roles that are not detected
+      List roleList = new ArrayList();
+      List permList = new ArrayList();
+      Map roleListMap = new HashMap();
+
+      if (roleTypeList != null  && !roleTypeList.isEmpty()) {
+
+        //if (busRole.getAttribute("RoleDivision") != null  &amp;amp; roleTypeList.contains(busRole.getAttribute("RoleDivision"))) 
+        if (busRole.getAttribute("roleCriticality") != null  && roleTypeList.contains(busRole.getAttribute("roleCriticality"))) {
+
+
+          List requiredITRole = busRole.getRequirements();
+          roleList.addAll(requiredITRole);
+
+          if (roleList != null  && !roleList.isEmpty()) {
+            roleListMap.put("REQUIRED", roleList);
+          }
+
+          List permittedITRole = busRole.getPermits();
+
+          if (permittedITRole != null  && !permittedITRole.isEmpty()) {
+            roleListMap.put("PERMITTED", permittedITRole);
+          }
+        }
+      } else if (busRole.getAttribute("roleCriticality") != null) {
+        //else if (busRole.getAttribute("RoleDivision") != null) 
+        List requiredITRole = busRole.getRequirements();
+        roleList.addAll(requiredITRole);
+
+        if (roleList != null  && !roleList.isEmpty()) {
+          roleListMap.put("REQUIRED", roleList);
+        }
+        List permittedITRole = busRole.getPermits();
+        if (permittedITRole != null  && !permittedITRole.isEmpty()) {
+          roleListMap.put("PERMITTED", permittedITRole);
+        }
+      }
+
+      log.error(" roleListMap  "+roleListMap);
+
+      //----------------------------
+
+      // Logic to calculate list of entitlements that are missing as part of above
+      // calculated non-detected roles
+      for (String type : roleListMap.keySet()) {
+        for (Bundle itRole : roleListMap.get(type)) {
+          log.debug("IT Role: " + itRole.getName());
+          Bundle workingItRole = (Bundle) itRole.deepCopy((Resolver) context);
+          List inheritedRoles = new ArrayList();
+          List furtherinheritedRoles = new ArrayList();
+          List profList = new ArrayList();
+          if (workingItRole.getProfiles() != null && !workingItRole.getProfiles().isEmpty()) {
+            profList = workingItRole.getProfiles();
+          }
+          // Logic to calculate IT role inheritance
+          if (workingItRole.getInheritance() != null) {
+            inheritedRoles = workingItRole.getInheritance();
+            for (Bundle inheritRole : inheritedRoles) {
+              if (inheritRole.getProfiles() != null && !inheritRole.getProfiles().isEmpty()) {
+                profList.addAll(inheritRole.getProfiles());
+              }
+              if (inheritRole.getInheritance() != null) {
+                furtherinheritedRoles = inheritRole.getInheritance();
+                for (Bundle furtherRole : furtherinheritedRoles) {
+                  if (furtherRole.getProfiles() != null && !furtherRole.getProfiles().isEmpty()) {
+                    profList.addAll(furtherRole.getProfiles());
+                  }
+                }
+              }
+            }
+          }
+          // Logic to extract entitlement info from the roles
+          if (null != profList && !profList.isEmpty()) {
+            log.debug("IT Role has profiles");
+            Map appValue = new HashMap();
+            List valueList = new ArrayList();
+            List filValueList;
+            for (Profile profile : profList) {
+              filValueList = new ArrayList();
+              String value;
+              List filter = profile.getConstraints();
+              for (Filter f1 : filter) {
+                String prop;
+                String entValue;
+                if (f1.getClass().equals(Filter.LeafFilter.class)) {
+                  Object obj = ((Filter.LeafFilter) f1).getValue();
+                  if (obj != null) {
+                    if (obj.getClass().equals(java.lang.String.class)) {
+                      prop = (String) ((Filter.LeafFilter) f1).getProperty();
+                      entValue = (String) ((Filter.LeafFilter) f1).getValue();
+                      value = prop + "," + entValue;
+                      filValueList.add(value);
+                    } else {
+                      List list = (List) obj;
+                      if (list != null && list.size() > 0) {
+                        for (Object v : list) {
+                          prop = (String) ((Filter.LeafFilter) f1).getProperty();
+                          entValue = (String) v;
+                          value = prop + "," + entValue;
+                          filValueList.add(value);
+                        }
+                      }
+                    }
+                  }
+                } else {
+                  List listofChild = ((Filter.CompositeFilter) f1).getChildren();
+                  if (listofChild != null && listofChild.size() > 0) {
+                    for (Filter fl : listofChild) {
+                      if (fl.getClass().equals(Filter.LeafFilter.class)) {
+                        Object obj = ((Filter.LeafFilter) fl).getValue();
+                        if (obj != null) {
+                          if (obj.getClass().equals(java.lang.String.class)) {
+                            prop = (String) ((Filter.LeafFilter) fl).getProperty();
+                            entValue = (String) ((Filter.LeafFilter) fl).getValue();
+                            value = prop + "," + entValue;
+                            filValueList.add(value);
+                          } else {
+                            List list = (List) obj;
+                            if (list != null && list.size() > 0) {
+                              for (Object v : list) {
+                                prop = (String) ((Filter.LeafFilter) fl).getProperty();
+                                entValue = (String) v;
+                                value = prop + "," + entValue;
+                                filValueList.add(value);
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+
+              if (null != appValue && !appValue.isEmpty()) {
+                if (appValue.containsKey(profile.getApplication())) {
+                  valueList = appValue.get(profile.getApplication());
+                  valueList.addAll(filValueList);
+                  appValue.put(profile.getApplication(), valueList);
+                } else {
+                  appValue.put(profile.getApplication(), filValueList);
+                }
+              } else {
+                appValue.put(profile.getApplication(), filValueList);
+              }
+            }
+            // Logic to validate extracted role entitlements against Identity entitlement to
+            // calculate missing ones
+            for (Application app : appValue.keySet()) {
+              for (String entL : appValue.get(app)) {
+                String[] arrOfStr = entL.split(",", 2);
+                col = new String[11];
+                col[0] = busRole.getName();
+                col[1] = busRole.getDescription("en_US");
+                if (busRole.getOwner() != null) {
+                  col[2] = busRole.getOwner().getName();
+                } else {
+                  col[2] = "";
+                }
+                if (busRole.getAttribute("roleLevel") != null) {   //Replace : if (busRole.getAttribute("Department") != null){
+
+                  col[3] = busRole.getAttribute("roleLevel").toString();   //Replace : busRole.getAttribute("Department") 
+                } else {
+                  col[3] = "";
+                }
+                if (busRole.getAttribute("roleCriticality") != null) {     //Replace : if (busRole.getAttribute("RoleDivision") != null) { 
+                  col[4] = busRole.getAttribute("roleCriticality").toString();  //Replace : busRole.getAttribute("RoleDivision").toString()
+                } else {
+                  col[4] = "";
+                }
+                col[5] = workingItRole.getName();
+                col[6] = type;
+                col[7] = app.getName();
+                col[8] = arrOfStr[1];
+                QueryOptions qoForEnt = new QueryOptions();
+                qoForEnt.addFilter(Filter.eq("attribute", arrOfStr[0]));
+                qoForEnt.addFilter(Filter.eq("application", app));
+                qoForEnt.addFilter(Filter.eq("value", arrOfStr[1]));
+                List enList = context.getObjects(ManagedAttribute.class, qoForEnt);
+                if (!enList.isEmpty() && enList != null) {
+                  col[9] = enList.get(0).getDisplayableName();
+                } else {
+                  col[9] = "";
+                }
+                col[10] = (String) workingItRole.getAttribute("apaccountType");
+                listOfArrays.add(col);
+              }
+            }
+          } else {
+            log.debug("IT Role has no profiles");
+            col = new String[11];
+            col[0] = busRole.getName();
+            col[1] = busRole.getDescription("en_US");
+            if (busRole.getOwner() != null) {
+              col[2] = busRole.getOwner().getName();
+            } else {
+              col[2] = "";
+            }
+            if (busRole.getAttribute("roleLevel") != null) {     //Replace : roleLevel --Department
+              col[3] = busRole.getAttribute("roleLevel").toString();   //Replace : roleLevel --Department
+            } else {
+              col[3] = "";
+            }
+            if (busRole.getAttribute("roleCriticality") != null) {       //Replace : roleLevel --RoleDivision
+              col[4] = busRole.getAttribute("roleCriticality").toString();  //Replace : roleLevel --RoleDivision
+            } else {
+              col[4] = "";
+            }
+            col[5] = workingItRole.getName();
+            col[6] = type;
+            col[7] = "No Applications Mapped";
+            col[8] = "No Entitlements Mapped";
+            col[9] = "";
+            col[10] = (String) workingItRole.getAttribute("roleLevel");  //Replace : roleLevel --apaccountType
+            listOfArrays.add(col);
+          }
+        }
+      }//for loop1
+      //----------------------
+
+    } 
+    // }
+    writeListToFile(file,listOfArrays);
+
+
+
+  }catch(Exception e) {
+
+    log.error("Exception in ReportsData1 : "+e.getMessage());
+  } finally {
+
+    Util.flushIterator(bRListItr);
+
+  }
+
+  return "Java Report";
+
+  ]]></Source>
+</Rule>

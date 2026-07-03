@@ -1,0 +1,273 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Validation DateConfig Rule For 15days Trigger" type="Validation">
+  <Source><![CDATA[
+  import sailpoint.object.Filter;
+  import sailpoint.object.Custom;
+  import sailpoint.object.Bundle;
+  import sailpoint.api.ObjectUtil;
+  import sailpoint.object.Identity;
+  import sailpoint.object.Attributes;
+  import sailpoint.object.Application;
+  import sailpoint.tools.GeneralException;
+  import sailpoint.tools.Util;
+  import sailpoint.object.ProvisioningTransaction;
+  import sailpoint.object.ProvisioningPlan.AccountRequest;
+  import sailpoint.object.BundleProfileRelation;
+  import sailpoint.object.ProvisioningPlan.AttributeRequest;
+  import sailpoint.object.QueryOptions;
+
+  import sailpoint.object.Filter;
+  import sailpoint.object.Custom;
+  import sailpoint.object.Bundle;
+  import sailpoint.api.ObjectUtil;
+  import sailpoint.object.Identity;
+  import sailpoint.object.Attributes;
+  import sailpoint.object.Application;
+  import sailpoint.tools.GeneralException;
+  import sailpoint.object.ProvisioningTransaction;
+  import sailpoint.object.ProvisioningPlan.AccountRequest;
+  import sailpoint.object.ProvisioningPlan.AttributeRequest;
+
+
+
+
+  import sailpoint.object.Custom;
+  import sailpoint.object.Filter;
+  import sailpoint.object.Identity;
+  import sailpoint.object.Application;
+  import sailpoint.object.Bundle;
+  import sailpoint.object.ProvisioningTransaction;
+  import sailpoint.object.ProvisioningPlan.AccountRequest;
+  import sailpoint.object.ProvisioningPlan.AttributeRequest;
+  import sailpoint.object.Attributes;
+  import sailpoint.api.ObjectUtil;
+  import sailpoint.tools.GeneralException;
+  import sailpoint.tools.Util;
+  import sailpoint.object.QueryOptions;
+  import sailpoint.object.BundleProfileRelation;
+
+  Custom custom = context.getObjectByName(Custom.class, "ProvisioningTransaction Get Add Operation Entitlement");
+
+  if (custom == null) {
+    throw new GeneralException("The Custom Object with 'ProvisioningTransaction Get Add Operation Entitlement' is not exist");
+  }
+
+  String provTransactionId = (String)custom.get("latestProvisioningTransactionID");
+
+  if (Util.isNullOrEmpty(provTransactionId)) {
+    throw new GeneralException("latestProvisioningTransactionID is null or empty");
+  }
+  String query = "sql:SELECT t.name,t.identity_name,t.application_name FROM identityiq.spt_provisioning_transaction t WHERE t.name > " + provTransactionId + " AND XMLExists('//AttributeRequest[@op=\"Add\"]' PASSING XMLTYPE(t.attributes)) AND t.status = 'Success' AND t.source = 'IdentityRefresh' AND t.operation = 'Create' AND t.application_name IN ('ActiveDirectory','LDAPApplication','ADX') ORDER BY t.name DESC";
+
+  int count = 1;
+
+  List finalList = new ArrayList();
+
+  Iterator it = context.search(query, null, null);
+
+  while (it.hasNext()) {
+
+    Object[]row = (Object[])it.next();
+
+    if (count == 1) {
+      custom.put("latestProvisioningTransactionID", row[0]);
+      count++;
+    }
+
+    String provTransName = (String)row[0];
+    String identityName = (String)row[1];
+    String applicationName = (String)row[2];
+
+    ProvisioningTransaction transaction = context.getObjectByName(ProvisioningTransaction.class, provTransName);
+    Identity identity = context.getObjectByName(Identity.class, identityName);
+    Application application = context.getObjectByName(Application.class, applicationName);
+
+    if (transaction == null || identity == null || application == null) {
+      continue;
+    }
+
+    if (application.getAccountSchema() == null) {
+      continue;
+    }
+
+    List groupAttributes = application.getAccountSchema().getGroupAttributes();
+    if (Util.isEmpty(groupAttributes)) {
+      continue;
+    }
+
+    Attributes txnAttrs = transaction.getAttributes();
+    if (txnAttrs == null) {
+      continue;
+    }
+
+    Object reqObj = txnAttrs.get("request");
+    if (!(reqObj instanceof AccountRequest)) {
+      continue;
+    }
+
+    AccountRequest acctReq = (AccountRequest)reqObj;
+    List attributeRequests = acctReq.getAttributeRequests();
+
+    if (Util.isEmpty(attributeRequests)) {
+      continue;
+    }
+
+    for (AttributeRequest ar: Util.safeIterable(attributeRequests)) {
+
+      if (!groupAttributes.contains(ar.getName())) {
+        continue;
+      }
+
+      List entitlements = new ArrayList();
+
+      if (ar.getValue()instanceof List) {
+        entitlements = (List)ar.getValue();
+      } else if (ar.getValue()instanceof String) {
+        entitlements.add(ar.getValue());
+      }
+
+      for (String entitlement: Util.safeIterable(entitlements)) {
+
+        QueryOptions qo = new QueryOptions();
+        Filter filter = Filter.subquery("id", BundleProfileRelation.class, "bundleId", Filter.and(Filter.eq("value", entitlement), Filter.notnull("sourceBundleId")));
+        qo.add(filter);
+
+        List bundleObjs = context.getObjects(Bundle.class, qo);
+        List bundleNames = ObjectUtil.getObjectNames(bundleObjs);
+
+        List assignedRoles = identity.getAssignedRoles();
+        List assignedRoleNames = ObjectUtil.getObjectNames(assignedRoles);
+
+        boolean found = false;
+
+        for (String brName: Util.safeIterable(bundleNames)) {
+          if (assignedRoleNames.contains(brName)) {
+            found = true;
+            break;
+          }
+        }
+
+        if (!found @and Util.nullSafeSize(bundleNames) > 0) {
+          finalList.add(identityName + ":" + applicationName + ":" + entitlement);
+        }
+      }
+    }
+  }
+
+  return finalList;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  Custom custom = context.getObjectByName(Custom.class, "ProvisioningTransaction Get Add Operation Entitlement");
+  if (custom == null) {
+    throw new GeneralException("The Custom Object with 'ProvisioningTransaction Get Add Operation Entitlement' is not exist");
+  }
+  String provTransactionId = custom.get("latestProvisioningTransactionID");
+  if (provTransactionId == null || provTransactionId.isEmpty()) {
+    throw new GeneralException("latestProvisoningTransactionID  key value is null or Empty");
+  }
+  String query = "sql:SELECT name,identity_name,application_name FROM identityiq.spt_provisioning_transaction where name > " + provTransactionId + " and attributes LIKE '%op=\"Add\"%' and status='Success' and source='IdentityRefresh' and operation='Create' and application_name in('ActiveDirectory') order by name DESC";
+  List finalList = new ArrayList();
+  int count = 1;
+  boolean found = false;
+  Iterator provTransacNames = context.search(query, null, null);
+  while (provTransacNames.hasNext()) {
+    log.error("========count=========="+count);
+    Object[] row = provTransacNames.next();
+    ProvisioningTransaction transaction = context.getObjectByName(ProvisioningTransaction.class, row[0]);
+    Identity identity = context.getObjectByName(Identity.class, row[1]);
+    Application application = context.getObjectByName(Application.class, row[2]);
+
+    List listOfGroupAttributes = application.getAccountSchema().getGroupAttributes();
+    Attributes attributes = transaction.getAttributes();
+    List listOfAttributeRequest = attributes.get("request").getAttributeRequests();
+
+    for (AttributeRequest attributeRequest: listOfAttributeRequest) {
+      if (listOfGroupAttributes.contains(attributeRequest.getName())) {
+        List listOfEntitlements = new ArrayList();
+        if (attributeRequest.getValue()instanceof List) {
+          listOfEntitlements = attributeRequest.getValue();
+        } else if (attributeRequest.getValue()instanceof String) {
+          listOfEntitlements.add(attributeRequest.getValue());
+        }
+        for (String entitlement: Util.safeIterable(listOfEntitlements)) {
+          log.error("entitlement :"+entitlement);
+          List listOfBR_entNames = new ArrayList();
+          List listOfBR_IdenNames = new ArrayList();
+
+          Filter filter = Filter.subquery("id", BundleProfileRelation.class, "bundleId", Filter.and(Filter.eq("value", entitlement), Filter.notnull("sourceBundleId")));
+          QueryOptions qo = new QueryOptions();
+          qo.add(filter);
+          List listOfBR_entName_obj = context.getObjects(Bundle.class, qo);
+          List listOfBundleObjOnIden = identity.getAssignedRoles();
+
+          log.error("listOfBR_entName_obj :"+listOfBR_entName_obj);
+          log.error("listOfBundleObjOnIden :"+listOfBundleObjOnIden);
+
+
+          if (Util.nullSafeSize(listOfBR_entName_obj) > 0 &&  Util.nullSafeSize(listOfBundleObjOnIden) > 0) {
+            listOfBR_entNames = ObjectUtil.getObjectNames(listOfBR_entName_obj);
+            listOfBR_IdenNames = ObjectUtil.getObjectNames(listOfBundleObjOnIden);
+          }
+
+          log.error("listOfBR_entNames :"+listOfBR_entNames);
+          log.error("listOfBR_IdenNames :"+listOfBR_IdenNames);
+
+
+
+          if (Util.nullSafeSize(listOfBR_entNames) > 0 &&  Util.nullSafeSize(listOfBR_IdenNames) > 0) {
+
+            for (String brName: listOfBR_entNames) {
+              if(listOfBR_IdenNames.contains(brName)){
+                found = true;
+              }
+            }
+            if(!found){
+              finalList.add(row[1]+":"+row[2]+":"+entitlement);
+            }
+          }
+        }
+      }
+    }
+    count++;
+  }
+  log.error("finalList :"+finalList);
+  return finalList;
+
+  ]]></Source>
+</Rule>

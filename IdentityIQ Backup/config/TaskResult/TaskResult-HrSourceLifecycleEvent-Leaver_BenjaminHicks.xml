@@ -1,0 +1,130 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1778248265906" completionStatus="Error" launched="1778157431729" launcher="Scheduler" name="HR Source Lifecycle Event - Leaver: Benjamin Hicks" type="Workflow">
+  <Attributes>
+    <Map>
+      <entry key="cart"/>
+      <entry key="identityRequestId" value="0000001089"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Benjamin Hicks">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000001089"/>
+                <entry key="noLocking">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="Scheduler"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="JDBC" nativeIdentity="1b2b3d4d" op="Modify"/>
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Benjamin Hicks,OU=Engineering,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                  <AttributeRequest name="memberOf" op="Remove">
+                    <Attributes>
+                      <Map>
+                        <entry key="assignment" value="true"/>
+                      </Map>
+                    </Attributes>
+                    <Value>
+                      <List>
+                        <String>CN=Contractors,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                        <String>CN=Buyer,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                        <String>CN=All_Users,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                        <String>CN=Admins,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                        <String>CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                        <String>CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                      </List>
+                    </Value>
+                  </AttributeRequest>
+                </AccountRequest>
+                <AccountRequest application="SCIMApp" nativeIdentity="Benjamin Hicks" op="Modify"/>
+                <AccountRequest application="LDAPApplication" nativeIdentity="cn=Benjamin.Hicks,ou=People,dc=my-domain,dc=com" op="Modify"/>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000001089"/>
+                    <entry key="requester" value="Scheduler"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Benjamin Hicks" targetIntegration="ActiveDirectory" trackingId="733161f7a28c4fca8785bb7dc888fb86">
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Benjamin Hicks,OU=Engineering,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify" targetIntegration="ActiveDirectory">
+                <Attributes>
+                  <Map>
+                    <entry key="provisioningTransactionId" value="c0a801289e001e87819e02713d7c04af"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="memberOf" op="Remove">
+                  <Attributes>
+                    <Map>
+                      <entry key="assignment" value="true"/>
+                    </Map>
+                  </Attributes>
+                  <Value>
+                    <List>
+                      <String>CN=Contractors,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                      <String>CN=Buyer,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                      <String>CN=All_Users,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                      <String>CN=Admins,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                      <String>CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                      <String>CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                    </List>
+                  </Value>
+                </AttributeRequest>
+                <ProvisioningResult>
+                  <Errors>
+                    <Message key="Connection refused: connect" type="Error"/>
+                  </Errors>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000001089"/>
+                  <entry key="inRetry">
+                    <value>
+                      <Boolean>true</Boolean>
+                    </value>
+                  </entry>
+                  <entry key="requester" value="Scheduler"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+            </ProvisioningPlan>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a801289e001e87819e027130f104a1"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="end"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="Connection refused: connect" type="Error"/>
+    <Message key="Connection timed out: connect" type="Error"/>
+    <Message key="Network is unreachable: connect" type="Error"/>
+  </Messages>
+</TaskResult>

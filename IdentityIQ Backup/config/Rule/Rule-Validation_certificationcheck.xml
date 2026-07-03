@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Validation_CertificationCheck" type="Validation">
+  <Source><![CDATA[
+  import sailpoint.api.SailPointContext;  
+  import sailpoint.object.Certification;
+  import sailpoint.object.CertificationItem;
+  import sailpoint.tools.Util;
+  import sailpoint.object.ProvisioningResult;
+
+  //public String ifBothSame(){
+ log.error(" values in loop  1ssd...");
+    String answer;
+    String certifier;
+    List certifiers;
+    Certification certification = context.getObjectById(Certification.class ,"c0a8000a961b152a81966244ec7f4f3d");
+
+  log.error(" values in loop  1...");
+    if(certification != null){
+
+      log.error(" values in loop  2...");
+      certifiers = certification.getCertifiers();
+      certifier = certifiers.get(0);
+
+      CertificationItem item = certification.getItem("c0a8000a961b152a81966244ed3d4f3e");
+
+      String itemName = item.getTargetName();
+
+      log.error(" values in loop  3...");
+      log.error(" values in loop ..."+certifier+"...."+itemName);
+
+      if(Util.nullSafeEq(certifier,itemName)){
+        log.error(" values in loop  4...");
+        answer = "Yes";
+      } else{
+        log.error(" values in loop  5...");
+        answer = "No";
+      }
+log.error(" values in loop  6...");
+    }
+
+  return answer;
+  //return ifBothSame();
+
+  ]]></Source>
+</Rule>

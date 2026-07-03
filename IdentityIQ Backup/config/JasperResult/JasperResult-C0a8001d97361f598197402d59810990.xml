@@ -1,0 +1,133 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE JasperResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<JasperResult handlerPageCount="-1" pageCount="-1" pagesPerBucket="-1">
+  <Attributes>
+    <Map>
+      <entry key="csvRowsPerBucket">
+        <value>
+          <Integer>1000</Integer>
+        </value>
+      </entry>
+      <entry key="header">
+        <value>
+          <LiveReportSummary>
+            <Values>
+              <LiveReportSummaryValue label="Creator" name="creator">
+                <Value>
+                  <String>spadmin</String>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="Creation Date" name="date">
+                <Value>
+                  <String>6/5/25, 6:30 PM</String>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="StartDate" name="startDate">
+                <Value>
+                  <String>6/5/22</String>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="EndDate" name="endDate">
+                <Value>
+                  <String>6/3/25</String>
+                </Value>
+              </LiveReportSummaryValue>
+            </Values>
+          </LiveReportSummary>
+        </value>
+      </entry>
+      <entry key="reportDefinition">
+        <value>
+          <LiveReport>
+            <DataSource objectType="sailpoint.object.CertificationItem" type="Filter">
+              <QueryParameters>
+                <Parameter argument="startDate" property="created">
+                  <QueryScript>
+                    <Source><![CDATA[
+                      import java.time.temporal.ChronoUnit;
+                      import java.util.Calendar;
+                      import sailpoint.object.Filter;
+
+                      log.error("entered into the QueryOptions");
+                      log.error("startDate :"+value);
+                      log.error("endDate :"+arguments.get("endDate"));
+
+                      Calendar startCal = Calendar.getInstance();
+                      Calendar endCal = Calendar.getInstance();
+
+                      startCal.setTime(value);
+                      endCal.setTime(arguments.get("endDate"));
+
+                      int yearDiff = endCal.get(Calendar.YEAR) - startCal.get(Calendar.YEAR);
+                      int monthDiff = endCal.get(Calendar.MONTH) - startCal.get(Calendar.MONTH);
+
+                      int noOfMonths =  yearDiff * 12 + monthDiff;
+                      log.error(" noOfMonths :"+noOfMonths);
+
+                      if(noOfMonths > 12){
+                      log.error("It is greater than 12 ");
+                      queryOptions.addFilter(Filter.ge("created", "abc"));
+                      }else{
+                      log.error("it is less than 12 ");
+                      queryOptions.addFilter(Filter.ge("created", value));
+                      queryOptions.addFilter(Filter.le("created", arguments.get("endDate")));
+                      log.error("queryOptions :"+queryOptions);
+                      }
+                      log.error("last one ");
+                      return queryOptions;
+                    ]]></Source>
+                  </QueryScript>
+                </Parameter>
+              </QueryParameters>
+            </DataSource>
+            <ReportForm>
+              <Reference class="sailpoint.object.Form" name="Report Form Skeleton"/>
+            </ReportForm>
+            <Columns>
+              <ReportColumnConfig field="targetname" header="TargetName" property="targetName" sortable="true" width="135"/>
+              <ReportColumnConfig field="targetdisplayname" header="TargetDisplayName" property="targetDisplayName" sortable="true" width="135"/>
+              <ReportColumnConfig field="exceptionapplication" header="ExcptnApp" property="exceptionApplication" sortable="true" width="135"/>
+              <ReportColumnConfig field="exceptionattributename" header="ExptnAttrName" property="exceptionAttributeName" sortable="true" width="135"/>
+              <ReportColumnConfig field="exceptionattributevalue" header="ExcptnAttrValue" property="exceptionAttributeValue" sortable="true" width="135"/>
+              <ReportColumnConfig field="type" header="Type" property="type" sortable="true" width="135"/>
+              <ReportColumnConfig field="subtype" header="SubType" property="subType" sortable="true" width="135"/>
+            </Columns>
+            <ReportHeader>
+              <Values>
+                <LiveReportSummaryValue label="Creator" name="creator">
+                  <Value>
+                    <String>spadmin</String>
+                  </Value>
+                </LiveReportSummaryValue>
+                <LiveReportSummaryValue label="Creation Date" name="date">
+                  <Value>
+                    <String>6/5/25, 6:30 PM</String>
+                  </Value>
+                </LiveReportSummaryValue>
+                <LiveReportSummaryValue label="StartDate" name="startDate">
+                  <Value>
+                    <String>6/5/22</String>
+                  </Value>
+                </LiveReportSummaryValue>
+                <LiveReportSummaryValue label="EndDate" name="endDate">
+                  <Value>
+                    <String>6/3/25</String>
+                  </Value>
+                </LiveReportSummaryValue>
+              </Values>
+            </ReportHeader>
+          </LiveReport>
+        </value>
+      </entry>
+      <entry key="reportRowCount">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Files>
+    <Reference class="sailpoint.object.PersistedFile" name="DateCheck1.pdf"/>
+    <Reference class="sailpoint.object.PersistedFile" name="DateCheck1.csv"/>
+  </Files>
+</JasperResult>

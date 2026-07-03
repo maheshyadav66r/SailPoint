@@ -1,0 +1,112 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1718771713584" completionStatus="Success" launched="1718362979371" launcher="spadmin" name="HR Source Joiner event - 32" type="Workflow">
+  <Attributes>
+    <Map>
+      <entry key="approvalSet"/>
+      <entry key="identityRequestId" value="0000000183"/>
+      <entry key="plan">
+        <value>
+          <ProvisioningPlan>
+            <AccountRequest application="ActiveDirectory" op="Create">
+              <AttributeRequest name="memberOf" op="Add" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+              <AttributeRequest name="memberOf" op="Add" value="CN=AccountsReceivable,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+            </AccountRequest>
+            <Attributes>
+              <Map>
+                <entry key="identityRequestId" value="0000000183"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <Requesters>
+              <Reference class="sailpoint.object.Identity" name="spadmin"/>
+            </Requesters>
+          </ProvisioningPlan>
+        </value>
+      </entry>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Aravindh Ramagani">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000183"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000183"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a81d8990161d128190166a40e70081"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="stop">
+            <Interactions>
+              <ApprovalSummary completer="Albert Woods" endDate="1718771712450" owner="Albert Woods" request="Owner Approval - Account Changes for User: Aravindh Ramagani" startDate="1718362981660" state="Rejected" workItemId="c0a81d8990161d128190166a436e0086" workItemType="Approval">
+                <ApprovalSet>
+                  <ApprovalItem application="ActiveDirectory" approver="Albert Woods" name="memberOf" nativeIdentity="CN=Aravindh Ramagani,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Add" state="Rejected" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                    <Attributes>
+                      <Map>
+                        <entry key="attachments"/>
+                        <entry key="nativeIdUpdated">
+                          <value>
+                            <Boolean>true</Boolean>
+                          </value>
+                        </entry>
+                      </Map>
+                    </Attributes>
+                  </ApprovalItem>
+                  <ApprovalItem application="ActiveDirectory" approver="Albert Woods" name="memberOf" nativeIdentity="CN=Aravindh Ramagani,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Add" state="Rejected" value="CN=AccountsReceivable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                    <Attributes>
+                      <Map>
+                        <entry key="attachments"/>
+                        <entry key="nativeIdUpdated">
+                          <value>
+                            <Boolean>true</Boolean>
+                          </value>
+                        </entry>
+                      </Map>
+                    </Attributes>
+                  </ApprovalItem>
+                </ApprovalSet>
+              </ApprovalSummary>
+            </Interactions>
+          </WorkflowSummary>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

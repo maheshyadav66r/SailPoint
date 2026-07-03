@@ -1,0 +1,98 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Pre-Iterator sample" type="PreIterate">
+  <Description>This rule is called before the connector processes the data in a file.</Description>
+  <Signature returnType="void">
+    <Inputs>
+      <Argument name="log" type="org.apache.commons.logging.Log">
+        <Description>
+          The log object associated with the SailPointContext.
+        </Description>
+      </Argument>
+      <Argument name="context" type="sailpoint.api.SailPointContext">
+        <Description>
+          A sailpoint.api.SailPointContext object that can be used to query the database if necessary.
+        </Description>
+      </Argument>
+      <Argument name="application">
+        <Description>
+          Application being iterated.
+        </Description>
+      </Argument>
+      <Argument name="schema">
+        <Description>
+          Schema representing the data being iterated.
+        </Description>
+      </Argument>
+      <Argument name="stats">
+        <Description>
+          A map passed by the connector of the stats for the file about to be iterated.
+          Contains keys:
+            fileName : (String) filename of the file about to be processed
+            absolutePath : (String) absolute filename
+            length : (Long) length in bytes
+            lastModified : (Long) last time the file was updated Java GMT
+        </Description>
+      </Argument>
+    </Inputs>
+  </Signature>
+  <Source><![CDATA[import sailpoint.api.SailPointFactory;
+  import sailpoint.api.SailPointContext;
+  import sailpoint.tools.GeneralException;
+  import sailpoint.tools.xml.XMLObjectFactory;
+  import sailpoint.object.Configuration;
+
+
+ // log.error(" stats object---"+stats);
+//  log.error("   OUTPUT_FILE_NAME_SP   --"+stats.get("fileName"));
+//  log.error("  OUTPUT_FILEPATH_LOCATION   --"+stats.get("absolutePath"));
+
+
+
+
+ String inputfileName = "Eshiam Accounts File";
+
+  if (true) {
+    throw new sailpoint.tools.GeneralException("The header in the TRE-TCR " + inputfileName + " file has been changed. Please upload the correct file.");
+  }
+
+
+ /* SailPointContext ctx = SailPointFactory.getCurrentContext();
+  if ( ctx == null ) {
+    throw new GeneralException("Unable to get sailpoint context.");
+  }
+  String name = application.getName() + "_aggregationStats";
+  Configuration config = ctx.getObject(Configuration.class,name);
+
+  if ( config != null ) {
+    if ( log.isDebugEnabled() ) {
+      log.debug("CurrentStats: \n" + XMLObjectFactory.getInstance().toXml(stats));
+      log.debug("Config : \n" + config.toXml());
+    }
+    String key = schema.getObjectType();
+    Map lastStats = (Map)config.get(key);
+    if ( lastStats != null ) {
+      Long lastMod = (Long)lastStats.get("lastModified");
+      Long currentMod = (Long)stats.get("lastModified");
+      if ( currentMod < lastMod ) {
+        throw new GeneralException("Last modification date is older than it was 
+                                   during the last aggregation!");
+                                   }
+                                   Long currentLength = (Long)stats.get("length");
+                                   Long lastLength = (Long)lastStats.get("length");
+                                   if ( currentLength < lastLength ) {
+                                     throw new GeneralException("The data file's length is less than it was during 
+                                                                the last aggregation!");
+                                                                }
+                                                                } else {
+                                                                  if ( log.isDebugEnabled() ) {
+                                                                    log.debug("Configuration for ["+key+"] was not found...Nothing checked.");
+                                                                  }
+                                                                }
+                                                                } else {
+                                                                  if ( log.isDebugEnabled() ) {
+                                                                    log.debug("Configuration ["+name+"] was not found...Nothing checked.");
+                                                                  }
+                                                                }*/
+log.error("----------CS Pre-iterator Rule--------");]]></Source>
+</Rule>

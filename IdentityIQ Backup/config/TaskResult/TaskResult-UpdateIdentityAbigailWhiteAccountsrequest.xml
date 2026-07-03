@@ -1,0 +1,118 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1750941424790" completionStatus="Error" launched="1750941423207" launcher="spadmin" name="Update Identity Abigail White AccountsRequest" targetClass="Identity" targetName="Abigail White" type="LCM">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000734"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Abigail White">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan trackingId="03e42312a4b64b8c8903d4a4d45ef622">
+                <AccountRequest application="WebServiceApplication-Eshiam" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="flow" value="AccountsRequest"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="nativeIdUpdated">
+                        <value>
+                          <Boolean>true</Boolean>
+                        </value>
+                      </entry>
+                      <entry key="operation" value="Create"/>
+                      <entry key="requester" value="spadmin"/>
+                    </Map>
+                  </Attributes>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000734"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Abigail White" targetIntegration="WebServiceApplication-Eshiam" trackingId="370d03a55e5349cbb634e5d326197a98">
+              <AccountRequest application="WebServiceApplication-Eshiam" nativeIdentity="EMP01455" op="Create">
+                <Attributes>
+                  <Map>
+                    <entry key="flow" value="AccountsRequest"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="nativeIdUpdated">
+                      <value>
+                        <Boolean>true</Boolean>
+                      </value>
+                    </entry>
+                    <entry key="operation" value="Create"/>
+                    <entry key="provisioningTransactionId" value="c0a8001697a21be78197ac3ddb611bad"/>
+                    <entry key="requester" value="spadmin"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="user_email" op="Add" value="abigail.white@example.com"/>
+                <AttributeRequest name="manager_id" op="Add" value="1045"/>
+                <AttributeRequest name="location" op="Set" value="India"/>
+                <AttributeRequest name="user_name" op="Add" value="Abigail White"/>
+                <AttributeRequest name="department" op="Set" value="HR"/>
+                <AttributeRequest name="user_status" op="Add" value="ACTIVE"/>
+                <AttributeRequest name="job_title" op="Add" value="Engineer"/>
+                <ProvisioningResult status="failed">
+                  <Errors>
+                    <Message key="Exception occurred while performing 'Create' operation on identity 'EMP01455': Url: http://localhost:8080/identityiq-8.4/plugin/rest/eshiamEmployeePortalPlugin/createUser, Message: 500 : {&quot;message&quot;:&quot;Exception While Creating the User Please check server logs for more info.. \nColumn \u0027USER_ID\u0027 cannot be null&quot;,&quot;quickKey&quot;:&quot;580767&quot;}, HTTP Error Code: 500" type="Error"/>
+                  </Errors>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000734"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+              <ProvisioningResult status="failed"/>
+            </ProvisioningPlan>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a8001697a21be78197ac3dd7671b9a"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="end"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="Exception occurred while performing 'Create' operation on identity 'EMP01455': Url: http://localhost:8080/identityiq-8.4/plugin/rest/eshiamEmployeePortalPlugin/createUser, Message: 500 : {&quot;message&quot;:&quot;Exception While Creating the User Please check server logs for more info.. \nColumn \u0027USER_ID\u0027 cannot be null&quot;,&quot;quickKey&quot;:&quot;580767&quot;}, HTTP Error Code: 500" type="Error"/>
+  </Messages>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

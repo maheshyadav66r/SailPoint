@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Validation CertificationCampaign Creation Rule" type="Validation">
+  <Source><![CDATA[
+
+  import sailpoint.object.Identity;
+  import sailpoint.api.CertificationScheduler;
+  import sailpoint.object.CertificationSchedule;
+  import sailpoint.object.CertificationDefinition;
+  import sailpoint.object.TaskSchedule;
+  import sailpoint.object.Certification;
+  import sailpoint.api.Correlator;
+  import sailpoint.task.CertificationExecutor.CertifierSelectionType;
+  import sailpoint.object.Filter;
+  import sailpoint.object.Duration.Scale;
+
+
+  CertificationDefinition definition=new CertificationDefinition();
+
+  Identity requestor = context.getObject(Identity.class, "spadmin"); 
+
+  Filter filter=Filter.eq("name","Albert Woods");
+  Identity identity=context.getUniqueObject(Identity.class,filter);
+
+  Filter filter1=Filter.eq("name","Aaron Nichols");
+  Identity certifier=context.getUniqueObject(Identity.class,filter1);
+
+  Filter entFilter=Filter.eq("application.name","ActiveDirectory");
+
+
+
+  if(identity!=null @and certifier!=null @and requestor!=null){
+
+    definition.setCertificationNameTemplate("CertificationNameTemplate: "+identity.getDisplayName());
+    definition.setNameTemplate("NameTemplate of: "+identity.getDisplayName()+" assigned to "+certifier.getDisplayName());
+    definition.setShortNameTemplate("shortName Template " + identity.getDisplayName());
+    definition.setName("Targetted Certification to "+identity.getDisplayName()+"  ["+new Date().toString()+"]  ");
+    definition.setEntitySelectionType("Filter");
+    definition.setEntityFilter(filter);
+    definition.setType(Certification.Type.Focused);
+    definition.setCertifierSelectionType(CertificationDefinition.CertifierSelectionType.Manual);
+    definition.setActivePeriodDurationAmount(5);
+    definition.setActivePeriodDurationScale(Scale.Hour);
+    definition.setBackupCertifierName("Mahesh Nattali");
+    definition.setCertificationOwner(requestor);
+    definition.setCertifierName(certifier.getName());
+    definition.setIncludeAdditionalEntitlements(true);
+    definition.setEntitlementFilter(entFilter);
+    definition.setProcessRevokesImmediately(true);
+    definition.setRemediationPeriodEnabled(false);
+
+  }
+
+
+  CertificationSchedule schedule=new CertificationSchedule();
+  schedule.setDefinition(definition);
+  schedule.setRunNow(true);
+  schedule.setFrequency("Once");
+
+  CertificationScheduler scheduler = new CertificationScheduler(context);
+
+  // Schedule task to run, passing in schedule (which has certficiaton defintion attached)
+ 
+   if(schedule!=null){
+  TaskSchedule taskSchedule=scheduler.saveSchedule(schedule,false);
+   }
+  
+  log.error("CertificationDefinition  : "+definition.toXml());
+
+  ]]></Source>
+</Rule>

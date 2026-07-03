@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Validation-BSDG_7" type="Validation">
+  <Source><![CDATA[
+  import sailpoint.object.Identity;
+  import sailpoint.object.QueryOptions;
+  import sailpoint.tools.Util;
+  import sailpoint.object.TaskResult;
+  import sailpoint.tools.Message;
+  import sailpoint.object.QueryOptions;
+
+  /* for(int i=0;i < this.variables.length;i++){
+    log.error("--"+this.variables[i]);
+  }*/
+
+  String finalDn="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com";
+  log.error(" finaldn initially----"+finalDn);
+
+
+
+  String cnPrefix=finalDn.substring(0,finalDn.indexOf(","));
+
+  String cnSuffix=finalDn.substring(finalDn.indexOf(","));
+  String modifiedDn=cnPrefix+"-ADM,"+cnSuffix;
+
+  String utilFinalDn = Util.replaceCharacter("CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com", modifiedDn, finalDn);
+  log.error("  utilFinalDn==="+utilFinalDn);
+  log.error("  modifiedDn==="+modifiedDn);
+
+
+  // String tempCn = finalDn.substring(0,finalDn.indexOf(","));
+
+/*  log.error(" tempCn---"+tempCn);
+  String cn = tempCn.replace("cn=", "");
+  log.error(" cn---"+cn);*/
+
+  return modifiedDn;
+
+
+
+  accountRequest.add(new AttributeRequest("cn", ProvisioningPlan.Operation.Set,cn));
+  String application = accountRequest.getApplication();
+  String groupSearchDN = null;
+
+
+
+
+
+  //Add the group to adm account for cyberark
+  if("AD Primary".equalsIgnoreCase(application)){
+    Filter filter = Filter.eq("displayName",customObject.get("AD_Cyberark_Onboarding_Group"));
+    ManagedAttribute ma = context.getUniqueObject(ManagedAttribute.class,filter);
+    if(null != ma @and null != ma.getValue()){
+      String groupDn = ma.getValue();
+      accountRequest.add(new AttributeRequest("memberOf",ProvisioningPlan.Operation.Add,groupDn));
+    }
+  }
+  accountRequest.setNativeIdentity(finalDn);
+  secIdLogs.info("Exiting fetchAdAccountReq....");
+  return accountRequest;
+
+
+
+
+
+
+
+
+  QueryOptions qo = new QueryOptions();
+  qo.addFilter(Filter.eq("workgroup", false));
+  int numIdentities = context.countObjects(Identity.class, qo);
+
+  QueryOptions qo = new QueryOptions();
+  qo.addFilter(Filter.eq("workgroup", true));
+  int numWorkgroups = context.countObjects(Identity.class, qo);
+
+  List idList = context.getObjects(Identity.class);
+  String trMsg = "numIdentities:" + numIdentities + " numWorkgroups:" + numWorkgroups+"   idList  "+idList.size();
+  log.error(trMsg);
+  if((taskResult==void) @and (taskResult==null)@and (!taskResult instanceof TaskResult)){
+    log.error("taskResult is void, null or not a handle to a sailpoint.object.TaskResult");
+    return;
+  }
+
+  taskResult.addMessage(new Message(trMsg,null));
+  taskResult.setProgress("Done with Execution"+trMsg);
+  taskResult.	setCompletionStatus(TaskResult.CompletionStatus.Success);
+
+  context.saveObject(taskResult);
+  context.commitTransaction();
+  log.error("  taskResult   "+taskResult.toXml());
+
+
+  return "nnn";
+  ]]></Source>
+</Rule>

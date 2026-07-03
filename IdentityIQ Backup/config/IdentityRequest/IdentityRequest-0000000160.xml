@@ -1,0 +1,168 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE IdentityRequest PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<IdentityRequest completionStatus="Success" endDate="1717478339023" executionStatus="Completed" name="0000000160" priority="Normal" requesterDisplayName="The Administrator" requesterId="c0a81d898f331ca3818f33fcf64800ff" source="LCM" state="End" targetClass="Identity" targetDisplayName="Amanda Ross" type="AccountsRequest" verified="1717496236415">
+  <Attributes>
+    <Map>
+      <entry key="provisionedProject">
+        <value>
+          <ProvisioningProject identity="Amanda Ross">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000160"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="LDAPApplication" nativeIdentity="cn=Amanda.Ross,ou=People,dc=my-domain,dc=com" op="Enable">
+                  <Attributes>
+                    <Map>
+                      <entry key="flow" value="AccountsRequest"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="Enable"/>
+                    </Map>
+                  </Attributes>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000160"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Amanda Ross" targetIntegration="LDAPApplication" trackingId="a9bbdaf47a3741d59cf5779979c4d3d9">
+              <AccountRequest application="LDAPApplication" nativeIdentity="cn=Amanda.Ross,ou=People,dc=my-domain,dc=com" op="Enable" targetIntegration="LDAPApplication">
+                <Attributes>
+                  <Map>
+                    <entry key="flow" value="AccountsRequest"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="operation" value="Enable"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="businessCategory" op="Set" value="Active"/>
+                <AttributeRequest name="businessCategory" op="Remove" value="Active"/>
+                <ProvisioningResult status="committed"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000160"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <ProvisioningResult status="committed"/>
+            </ProvisioningPlan>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="taskResultId" value="c0a81d898fc9197a818fe1afac7d0f2c"/>
+    </Map>
+  </Attributes>
+  <RequestItems>
+    <IdentityRequestItem application="LDAPApplication" approvalState="Finished" nativeIdentity="cn=Amanda.Ross,ou=People,dc=my-domain,dc=com" operation="Enable" ownerName="spadmin" provisioningState="Finished">
+      <Attributes>
+        <Map>
+          <entry key="flow" value="AccountsRequest"/>
+          <entry key="interface" value="LCM"/>
+          <entry key="operation" value="Enable"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="a6b481c0692c438bb2fd174e92e4955d">
+                <AccountRequest application="LDAPApplication" nativeIdentity="cn=Amanda.Ross,ou=People,dc=my-domain,dc=com" op="Enable">
+                  <Attributes>
+                    <Map>
+                      <entry key="flow" value="AccountsRequest"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="Enable"/>
+                    </Map>
+                  </Attributes>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+      <Owner>
+        <Reference class="sailpoint.object.Identity" name="spadmin"/>
+      </Owner>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="LDAPApplication" approvalState="Finished" compilationStatus="Expansion" expansionCause="ProvisioningPolicy" name="businessCategory" nativeIdentity="cn=Amanda.Ross,ou=People,dc=my-domain,dc=com" operation="Set" provisioningEngine="LDAPApplication" provisioningState="Finished" value="Active">
+      <Attributes>
+        <Map>
+          <entry key="expansionInfo" value="LDAPApplication"/>
+          <entry key="flow" value="AccountsRequest"/>
+          <entry key="interface" value="LCM"/>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="operation" value="Enable"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="00bcddec98a343f9893fa0db24568138">
+                <AccountRequest application="LDAPApplication" nativeIdentity="cn=Amanda.Ross,ou=People,dc=my-domain,dc=com" op="Enable" targetIntegration="LDAPApplication">
+                  <Attributes>
+                    <Map>
+                      <entry key="flow" value="AccountsRequest"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="Enable"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="businessCategory" op="Set" trackingId="00bcddec98a343f9893fa0db24568138" value="Active"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="LDAPApplication" approvalState="Finished" compilationStatus="Expansion" expansionCause="ProvisioningPolicy" name="businessCategory" nativeIdentity="cn=Amanda.Ross,ou=People,dc=my-domain,dc=com" operation="Remove" provisioningEngine="LDAPApplication" provisioningState="Finished" value="Active">
+      <Attributes>
+        <Map>
+          <entry key="expansionInfo" value="LDAPApplication"/>
+          <entry key="flow" value="AccountsRequest"/>
+          <entry key="interface" value="LCM"/>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="operation" value="Enable"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="629f162ee7f64aa3a57e2e71b10afd92">
+                <AccountRequest application="LDAPApplication" nativeIdentity="cn=Amanda.Ross,ou=People,dc=my-domain,dc=com" op="Enable" targetIntegration="LDAPApplication">
+                  <Attributes>
+                    <Map>
+                      <entry key="flow" value="AccountsRequest"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="Enable"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="businessCategory" op="Remove" trackingId="629f162ee7f64aa3a57e2e71b10afd92" value="Active"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+    </IdentityRequestItem>
+  </RequestItems>
+</IdentityRequest>

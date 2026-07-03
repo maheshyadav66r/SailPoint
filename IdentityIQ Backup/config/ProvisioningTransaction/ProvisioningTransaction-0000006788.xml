@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningTransaction PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningTransaction accountDisplayName="cn=Axar.Patel,ou=People,dc=my-domain,dc=com" applicationName="LDAPApplication" identityDisplayName="Axar Patel" identityName="Axar Patel" integration="LDAPApplication" name="0000006788" nativeIdentity="cn=Axar.Patel,ou=People,dc=my-domain,dc=com" operation="Create" source="IdentityRefresh" status="Failed" type="Auto">
+  <Attributes>
+    <Map>
+      <entry key="planResult">
+        <value>
+          <ProvisioningResult status="failed">
+            <Errors>
+              <Message key="[ InvalidConfigurationException ] &#10; [ Possible suggestions ] a) Furnish the correct host and port. b) Ensure the OpenLDAP host is up and running. &#10; [ Error details ] Failed to connect to server: localhost:389" type="Error"/>
+            </Errors>
+          </ProvisioningResult>
+        </value>
+      </entry>
+      <entry key="request">
+        <value>
+          <AccountRequest application="LDAPApplication" assignmentIds="bdd1e8801d434f2693dd4c2887e5fb0a" nativeIdentity="cn=Axar.Patel,ou=People,dc=my-domain,dc=com" op="Create" targetIntegration="LDAPApplication">
+            <Attributes>
+              <Map>
+                <entry key="provisioningTransactionId" value="c0a81d8995dc1a288195f635ca123cab"/>
+              </Map>
+            </Attributes>
+            <AttributeRequest name="groups" op="Add">
+              <Value>
+                <List>
+                  <String>cn=Managers,ou=Group,dc=my-domain,dc=com</String>
+                  <String>cn=Employees,ou=Group,dc=my-domain,dc=com</String>
+                </List>
+              </Value>
+            </AttributeRequest>
+            <AttributeRequest name="password" op="Set">
+              <Attributes>
+                <Map>
+                  <entry key="secret" value="true"/>
+                </Map>
+              </Attributes>
+            </AttributeRequest>
+            <AttributeRequest name="sn" op="Set" value="Patel"/>
+          </AccountRequest>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+</ProvisioningTransaction>

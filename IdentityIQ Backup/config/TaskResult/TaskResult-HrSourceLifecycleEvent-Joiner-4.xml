@@ -1,0 +1,111 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1718175001186" completionStatus="Error" launched="1718171138528" launcher="spadmin" name="HR Source Lifecycle Event - Joiner - 4" type="Workflow">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000178"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Mahesh Nattali">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000178"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Mahesh Nattali,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create">
+                  <AttributeRequest name="sAMAccountName" value="Mahesh Nattali"/>
+                  <AttributeRequest name="displayName" value="Mahesh Nattali"/>
+                  <AttributeRequest name="givenName" value="Mahesh"/>
+                  <AttributeRequest name="sn" value="Nattali"/>
+                  <AttributeRequest name="IIQDisabled">
+                    <Value>
+                      <Boolean>true</Boolean>
+                    </Value>
+                  </AttributeRequest>
+                  <AttributeRequest displayValue="AccountingGeneral" name="memberOf" op="Add" value="CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000178"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Mahesh Nattali" targetIntegration="ActiveDirectory" trackingId="bfc28d2041834be09326a1d3ff6be5e2">
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Mahesh Nattali,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create" targetIntegration="ActiveDirectory">
+                <AttributeRequest name="sAMAccountName" op="Set" value="Mahesh Nattali"/>
+                <AttributeRequest name="displayName" op="Set" value="Mahesh Nattali"/>
+                <AttributeRequest name="givenName" op="Set" value="Mahesh"/>
+                <AttributeRequest name="sn" op="Set" value="Nattali"/>
+                <AttributeRequest name="IIQDisabled" op="Set">
+                  <Value>
+                    <Boolean>true</Boolean>
+                  </Value>
+                </AttributeRequest>
+                <AttributeRequest name="memberOf" op="Add" value="CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                <AttributeRequest name="password" op="Set"/>
+                <ProvisioningResult>
+                  <Errors>
+                    <Message key="Connection timed out: connect" type="Error"/>
+                  </Errors>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000178"/>
+                  <entry key="inRetry">
+                    <value>
+                      <Boolean>true</Boolean>
+                    </value>
+                  </entry>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a81d89900a1b6081900afafc820085"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="Stop"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="Connection timed out: connect" type="Error"/>
+    <Message key="Exception occurred while executing the RPCRequest: Errors returned from IQService. &quot;The object already exists. The object already exists. 00000524: UpdErr: DSID-031A1261, problem 6005 (ENTRY_EXISTS), data 0 00000524: UpdErr: DSID-031A1261, problem 6005 (ENTRY_EXISTS), data 0 . HRESULT:[0x80071392] For identity: CN=Mahesh Nattali,OU=People,OU=Demo,DC=Eshiam,DC=com&quot;" type="Error"/>
+  </Messages>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

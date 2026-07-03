@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Policy PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Policy certificationActions="Remediated,Mitigated,Delegated" configPage="sodpolicy.xhtml" executor="sailpoint.policy.SODPolicyExecutor" name="Task-Conflicts_Between_Two_Roles" state="Active" type="SOD" typeKey="policy_type_sod" violationOwnerType="Identity">
+  <PolicyAlert disabled="true" escalationStyle="none"/>
+  <Attributes>
+    <Map>
+      <entry key="sysDescriptions">
+        <value>
+          <Map>
+            <entry key="en_US" value="&lt;b&gt;Policy Level:&lt;/b&gt;role_SOD Description"/>
+          </Map>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+  <ViolationOwner>
+    <Reference class="sailpoint.object.Identity" name="Mahesh Nattali"/>
+  </ViolationOwner>
+  <SODConstraints>
+    <SODConstraint disabled="true" name="role_SOD_rule_check_1" violationOwnerType="Identity">
+      <Attributes>
+        <Map>
+          <entry key="taskResultId" value="c0a81d8992ad16fe8192bde6656c1b25"/>
+        </Map>
+      </Attributes>
+      <Description>role_SOD_rule_check_1 Description</Description>
+      <LeftBundles>
+        <Reference class="sailpoint.object.Bundle" name="policy_check_1"/>
+      </LeftBundles>
+      <RightBundles>
+        <Reference class="sailpoint.object.Bundle" name="policy_check_2"/>
+      </RightBundles>
+      <ViolationOwner>
+        <Reference class="sailpoint.object.Identity" name="Aaron Nichols"/>
+      </ViolationOwner>
+    </SODConstraint>
+  </SODConstraints>
+</Policy>

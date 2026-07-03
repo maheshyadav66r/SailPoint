@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="List-Workflow-Subprocesses">
+  <Description> </Description>
+  <Source><![CDATA[
+
+import java.util.Iterator; 
+import java.util.ArrayList;
+import sailpoint.api.*;
+import sailpoint.object.*;
+
+
+
+public void handleWorkflow(Workflow workflow, int level) {
+
+
+if (level == 0) { System.out.print("\n\n==========================================================\nWorkflow:");  }
+for (int i = 0; i < level;i++) {
+System.out.print("        "); 
+}
+
+
+     System.out.println(workflow.getName()); 
+     ArrayList steps = workflow.getSteps(); 
+     Iterator iter = steps.iterator(); 
+     while (iter.hasNext()) { 
+           Workflow.Step step = (Workflow.Step)iter.next(); 
+           Workflow sub = step.getSubProcess(); 
+           if (sub != null) { 
+                  handleWorkflow(sub,level +1); 
+           } 
+    }
+
+
+	    }
+
+
+
+QueryOptions qo = new QueryOptions(); 
+Iterator  iter = context.search(Workflow.class, qo); 
+
+while(iter.hasNext())
+{
+    Workflow workflow = (Workflow)iter.next();
+    handleWorkflow(workflow,0);
+     
+}
+
+
+
+]]></Source>
+</Rule>

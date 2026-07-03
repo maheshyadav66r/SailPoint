@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE MitigationExpiration PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<MitigationExpiration action="NOTHING" expiration="1746768162545" lastActionDate="1746869698823">
+  <CertifiableDescriptor>
+    <PolicyViolation active="true" constraintId="c0a81d8992ad16fe8192bdf1fcb41b74" constraintName="new rule" policyName="Task-conflicts_btwn_two_entitlements" status="Mitigated">
+      <Attributes>
+        <Map>
+          <entry key="RelevantApplications">
+            <value>
+              <List>
+                <String>ActiveDirectory</String>
+              </List>
+            </value>
+          </entry>
+          <entry key="ViolatingEntitlements">
+            <value>
+              <List>
+                <MatchTerm name="memberOf" type="Entitlement" value="CN=campusAccess,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                  <ApplicationRef>
+                    <Reference class="sailpoint.object.Application" name="ADX"/>
+                  </ApplicationRef>
+                </MatchTerm>
+                <MatchTerm name="memberOf" type="Entitlement" value="CN=Compensation,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                  <ApplicationRef>
+                    <Reference class="sailpoint.object.Application" name="ADX"/>
+                  </ApplicationRef>
+                </MatchTerm>
+              </List>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+      <IdentityRef>
+        <Reference class="sailpoint.object.Identity" name="Amy Cox"/>
+      </IdentityRef>
+      <Owner>
+        <Reference class="sailpoint.object.Identity" name="Aaron Nichols"/>
+      </Owner>
+    </PolicyViolation>
+  </CertifiableDescriptor>
+  <CertificationLink completed="1744176162786" identitySnapshotId="c0a81d8995dc1a288195f627e73939ff" type="Focused">
+    <Certifiers>
+      <String>Admins</String>
+    </Certifiers>
+  </CertificationLink>
+  <IdentityRef>
+    <Reference class="sailpoint.object.Identity" name="Amy Cox"/>
+  </IdentityRef>
+  <Mitigator>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Mitigator>
+</MitigationExpiration>

@@ -1,0 +1,101 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Rule_VSNT_GetOrgSegmentID" type="Workflow">
+  <Signature>
+    <Inputs>
+      <Argument name="SSO"/>
+    </Inputs>
+    <Returns>
+      <Argument name="OrgSegmentID"/>
+    </Returns>
+  </Signature>
+  <Source><![CDATA[
+  
+  /*
+  import sailpoint.object.Application;
+  import sailpoint.object.Identity;
+  import sailpoint.object.Link;
+  import java.util.HashMap;
+  import java.util.Map;
+  import sailpoint.object.Custom;
+  import java.util.ArrayList;
+  import sailpoint.object.Attributes;	
+  import javax.naming.Context;
+  import javax.naming.NamingEnumeration;
+  import javax.naming.NamingException;
+  import javax.naming.directory.SearchControls;
+  import javax.naming.directory.SearchResult;
+  import javax.naming.ldap.InitialLdapContext;
+  import javax.naming.ldap.LdapContext;
+  import javax.naming.directory.DirContext;
+  import javax.naming.directory.Attribute;
+  import javax.naming.directory.Attributes; 
+  import javax.naming.directory.BasicAttributes; 
+  import org.apache.commons.logging.Log;
+  import org.apache.commons.logging.LogFactory;
+
+  Log log = LogFactory.getLog("Rule_VSNT_GetOrgSegmentID");
+
+  Identity identityObject = context.getObjectByName(Identity.class, SSO);
+  Link links = identityObject.getLink(context.getObjectByName(Application.class, "Application_VSNT_HR")); 
+
+  String mngrorgid = null;
+  String OrgSegmentID = null;
+
+  if (links != null ) {
+    Map attributes= new HashMap();
+    attributes = links.getAttributes();
+    if(attributes != null)   {
+      String orgid = attributes.get("C001_ORGID");
+      log.error("Rule_VSNT_GetOrgSegmentID orgid "+orgid);
+
+      if (orgid!= null){
+        mngrorgid = orgid.toString();
+        log.error("Rule_VSNT_GetOrgSegmentID mngrorgid "+mngrorgid);
+      }
+
+      InitialLdapContext ctx = null;
+      try {
+        Hashtable env = new Hashtable();
+
+        env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+        env.put(Context.SECURITY_AUTHENTICATION, "Simple");
+        env.put(Context.SECURITY_PRINCIPAL, "uid=sailpointidmuser,ou=Directory Administrators,dc=tfayd,dc=com");
+        env.put(Context.SECURITY_CREDENTIALS, context.decrypt("1:ACP:LzD462fs3QJEUXHJjnlWbmagW7bYKlZTGMTIsANYNuE="));
+        env.put(Context.PROVIDER_URL, "ldap://prodndi.tfayd.com:1389");
+
+        ctx = new InitialLdapContext(env, null);
+        log.error("Rule_VSNT_GetOrgSegmentID Connection Successful.");
+      } catch(NamingException nex){
+        log.error("LDAP Connection: FAILED "+nex);
+      } catch(Exception ex){
+        log.error("Rule_VSNT_GetOrgSegmentID "+ex);
+      }
+      Map hmAttributes = new HashMap();
+      try {
+        SearchControls constraints = new SearchControls();
+        constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
+        NamingEnumeration answer = ctx.search("ou=org,dc=tfayd,dc=com", "cn="+ mngrorgid, constraints);
+        if (answer.hasMore()){
+          javax.naming.directory.Attributes attrs = ((SearchResult) answer.next()).getAttributes();
+          Attribute AttrOrgsegmentid = attrs.get("orgsegmentid");
+          log.error("Rule_VSNT_GetOrgSegmentID  :: " + AttrOrgsegmentid);
+          hmAttributes.put("orgsegmentid", AttrOrgsegmentid.get());
+        }
+      } catch (Exception ex) {
+        log.error("Rule_VSNT_GetOrgSegmentID "+ex);
+      } finally {
+        if (ctx != null){
+          ctx.close();
+        }
+      }
+      OrgSegmentID = hmAttributes.get("orgsegmentid");
+    }
+  }
+  return OrgSegmentID;
+  */
+  
+  return "60000000";
+  
+  ]]></Source>
+</Rule>

@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Buildmap rule" type="BuildMap">
+  <Description>This rule is used by the delimited file connector to build a map representation of the delimited data.</Description>
+  <Signature returnType="Map"/>
+  <Source><![CDATA[import sailpoint.connector.DelimitedFileConnector;
+
+  Map map = DelimitedFileConnector.defaultBuildMap(cols, record);
+
+ System.out.println("Build Map Rule"+"         "+"cols"+cols+"         "+"record"+record);
+ 
+
+  String status1 = (String) map.get("status");
+
+  if(status1 != null && status1.equalsIgnoreCase("inactive")){
+    for (int i=0 ; i<cols.size();i++){
+      map.remove(cols.get(i));
+    }
+  }
+  return map;]]></Source>
+</Rule>

@@ -1,0 +1,134 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1735291906786" completionStatus="Error" launched="1735291904681" launcher="spadmin" name="Update Identity James Smith AccessRequest" targetClass="Identity" targetName="James Smith" type="LCM">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000400"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="James Smith">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan trackingId="e43d8ed06d2349b48cc6821bbe95b608">
+                <AccountRequest application="JDBCProvisioning" op="Modify" trackingId="41c630cebe634d5c8a7f7251a24334f2">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a8001593f414a0819406e7932c10e4"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="EntitlementAdd"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="GroupName" op="Add" trackingId="41c630cebe634d5c8a7f7251a24334f2" value="AccountsPayable">
+                    <Attributes>
+                      <Map>
+                        <entry key="assignment" value="true"/>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000400"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <ProvisioningTargets>
+                  <ProvisioningTarget application="JDBCProvisioning" attribute="GroupName" value="AccountsPayable">
+                    <AccountSelection applicationId="c0a81d8993dd1e3e8193dd7d33a8005e" applicationName="JDBCProvisioning" implicitCreate="true"/>
+                  </ProvisioningTarget>
+                </ProvisioningTargets>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <Messages>
+              <Message key="No account creation template for application: JDBCProvisioning" type="Info"/>
+            </Messages>
+            <ProvisioningPlan nativeIdentity="James Smith" targetIntegration="JDBCProvisioning" trackingId="b4d7d1a7cbfb4a6aad71a830b00af5fa">
+              <AccountRequest application="JDBCProvisioning" op="Create" trackingId="41c630cebe634d5c8a7f7251a24334f2">
+                <Attributes>
+                  <Map>
+                    <entry key="attachmentConfigList"/>
+                    <entry key="attachments"/>
+                    <entry key="flow" value="AccessRequest"/>
+                    <entry key="id" value="c0a8001593f414a0819406e7932c10e4"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="operation" value="EntitlementAdd"/>
+                    <entry key="provisioningTransactionId" value="c0a8001593f414a08194077528d31623"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="GroupName" op="Add" trackingId="41c630cebe634d5c8a7f7251a24334f2" value="AccountsPayable">
+                  <Attributes>
+                    <Map>
+                      <entry key="assignment" value="true"/>
+                    </Map>
+                  </Attributes>
+                </AttributeRequest>
+                <ProvisioningResult status="failed">
+                  <Errors>
+                    <Message key="The application script threw an exception: java.lang.NullPointerException: Attempt to invoke method getAttribute on null value BSF info: JDBC Account creation Modified Rule at line: 0 column: columnNo" type="Error"/>
+                  </Errors>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000400"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+              <ProvisioningResult status="failed">
+                <Errors>
+                  <Message key="The application script threw an exception: java.lang.NullPointerException: Attempt to invoke method getAttribute on null value BSF info: JDBC Account creation Modified Rule at line: 0 column: columnNo" type="Error"/>
+                </Errors>
+              </ProvisioningResult>
+            </ProvisioningPlan>
+            <ProvisioningTarget application="JDBCProvisioning" attribute="GroupName" value="AccountsPayable">
+              <AccountSelection applicationId="c0a81d8993dd1e3e8193dd7d33a8005e" applicationName="JDBCProvisioning" implicitCreate="true"/>
+            </ProvisioningTarget>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a8001593f414a08194077524701618"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="end"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="The application script threw an exception: java.lang.NullPointerException: Attempt to invoke method getAttribute on null value BSF info: JDBC Account creation Modified Rule at line: 0 column: columnNo" type="Error"/>
+  </Messages>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

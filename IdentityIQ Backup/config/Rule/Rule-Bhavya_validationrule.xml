@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Bhavya_ValidationRule" type="Validation">
+  <Source><![CDATA[
+  import sailpoint.object.*;
+  import sailpoint.object.ManagedAttribute;
+  import sailpoint.object.Filter;
+
+
+    ManagedAttribute ma = context.getUniqueObject(ManagedAttribute.class, Filter.and(Filter.eq("application.name","ActiveDirectory"),Filter.eq("value","CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com")));
+  //return ma;
+  log.error(" validation ma  ::::::  "+ma.getRoleAssignments());
+  return ma.getRoleAssignments();
+  
+
+
+
+
+ /* String query = "sql:select id,application_name,identity_name,attributes from identityiq.spt_provisioning_transaction where operation = 'Create' and source='IdentityRefresh' and application_name in ('ActiveDirectory','JDBCProvisioning','IntConApplication','LDAPApplication') and status='Success'";
+
+  Iterator iterator = context.search(query, null, null);
+  while(iterator.hasNext()){
+    Object[] obj = iterator.next();
+    log.error("obj[1] :"+obj[1]);
+    log.error("obj[1] :"+obj[3]);
+    return obj[3];
+    Application application = context.getObjectByName(Application.class,obj[1]);
+    List listoOfGroupAttributes = application.getAccountSchema().getGroupAttributes();
+
+  }*/
+
+  ]]></Source>
+</Rule>

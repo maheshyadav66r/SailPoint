@@ -1,0 +1,110 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="ExclusionRule-EntownerCertification" type="CertificationExclusion">
+  <Description>This rule is an example Certification Exclusion rule that removes all of the certifiable items from a certification if the identity being certified is marked as inactive.</Description>
+  <Signature returnType="String">
+    <Inputs>
+      <Argument name="log" type="org.apache.commons.logging.Log">
+        <Description>
+          The log object associated with the SailPointContext.
+        </Description>
+      </Argument>
+      <Argument name="context" type="sailpoint.api.SailPointContext">
+        <Description>
+          A sailpoint.api.SailPointContext object that can be used to query the database if necessary.
+        </Description>
+      </Argument>
+      <Argument name="entity" type="AbstractCertifiableEntity">
+        <Description>
+          The AbstractCertifiableEntity that is part of the certification.
+          Currently, this is either an Identity, ManagedAttribute, or Bundle.
+        </Description>
+      </Argument>
+      <Argument name="certification" type="Certification">
+        <Description>
+          The certification that this identity is part of.
+        </Description>
+      </Argument>
+      <Argument name="certContext" type="CertificationContext">
+        <Description>
+          The CertificationContext that is being used to generate the
+          certification.
+        </Description>
+      </Argument>
+      <Argument name="items" type="List">
+        <Description>
+          List of Certifiable items that are currently part of the
+          certification for this identity.  Any items that should be excluded
+          from the certification should be deleted from this list and added
+          to the itemsToExclude list.
+        </Description>
+      </Argument>
+      <Argument name="itemsToExclude" type="List">
+        <Description>
+          A List of Certifiable items that should not be included in the
+          certification.  This list will be empty when the rule is executed
+          and any items that should not be part of the certification should
+          be moved from the items list to the itemsToExclude list.
+        </Description>
+      </Argument>
+      <Argument name="state">
+        <Description>
+          A Map containing state information.
+        </Description>
+      </Argument>
+    </Inputs>
+    <Returns>
+      <Argument name="explanation" type="String">
+        <Description>
+          An optional explanation describing why the items were excluded.
+        </Description>
+      </Argument>
+    </Returns>
+  </Signature>
+  <Source><![CDATA[
+  import sailpoint.api.*;
+  import sailpoint.object.*;
+
+  log.error("items in exclusion rule  :"+items);
+  log.error("itemsToExclude in exclusion rule  :"+itemsToExclude);
+  log.error("entity in exclusion rule  :"+entity );
+
+  Iterator it=items.iterator();
+
+
+  while(it!=null @and it.hasNext()){
+
+    sailpoint.api.certification.DataOwnerCertificationBuilder.DataOwnerCertifiable certifiable=(sailpoint.api.certification.DataOwnerCertificationBuilder.DataOwnerCertifiable)it.next();
+    Map map=new HashMap();
+    log.error("certifiable object--"+certifiable);
+
+    Entitlements ent=(Entitlements)certifiable.getEntitlements();
+
+    log.error("entitlement object --"+ent);
+
+    map=ent.getAttributes();
+    
+    log.error("attributes map --"+map);
+
+    for(String key:map.keySet()){
+      Filter filter=Filter.and(Filter.eq("value",map.get(key)),Filter.ne("owner",null));
+      ManagedAttribute ma=context.getUniqueObject(ManagedAttribute.class,filter);
+
+      log.error("managedAttribute ma --"+ma);
+      if(ma==null){
+
+        itemsToExclude.add(certifiable);
+        //items.remove(certifiable);
+
+      }
+    }
+  }
+  
+  items.removeAll(itemsToExclude);
+
+
+
+
+  return "mahesh";
+  ]]></Source>
+</Rule>

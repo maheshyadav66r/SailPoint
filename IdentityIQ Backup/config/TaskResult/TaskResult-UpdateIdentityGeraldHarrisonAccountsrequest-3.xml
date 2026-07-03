@@ -1,0 +1,98 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1781261357603" completionStatus="Error" launched="1781261356774" launcher="spadmin" name="Update Identity Gerald Harrison AccountsRequest - 3" targetClass="Identity" targetName="Gerald Harrison" type="LCM">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000001112"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Gerald Harrison">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000001112"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Gerald Harrison,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Disable">
+                  <Attributes>
+                    <Map>
+                      <entry key="flow" value="AccountsRequest"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="Disable"/>
+                    </Map>
+                  </Attributes>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000001112"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Gerald Harrison" targetIntegration="ActiveDirectory" trackingId="21182066f4d845a990c06293e9a8d960">
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Gerald Harrison,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Disable">
+                <Attributes>
+                  <Map>
+                    <entry key="flow" value="AccountsRequest"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="operation" value="Disable"/>
+                  </Map>
+                </Attributes>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000001112"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+              <ProvisioningResult status="failed">
+                <Errors>
+                  <Message key="sailpoint.tools.GeneralException: BeanShell script error: bsh.ParseException: Parse error at line 57, column 13.  Encountered: ! BSF info: OU Change on Disable Op BeforeProvisioningRule at line: 0 column: columnNo" type="Error"/>
+                </Errors>
+              </ProvisioningResult>
+            </ProvisioningPlan>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a801289eb41fde819ebb734f920742"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="end"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="sailpoint.tools.GeneralException: BeanShell script error: bsh.ParseException: Parse error at line 57, column 13.  Encountered: ! BSF info: OU Change on Disable Op BeforeProvisioningRule at line: 0 column: columnNo" type="Error"/>
+  </Messages>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

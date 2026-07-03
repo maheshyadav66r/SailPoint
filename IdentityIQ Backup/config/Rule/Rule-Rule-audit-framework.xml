@@ -1,0 +1,98 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Rule-Audit-Framework" type="AfterProvisioning">
+  <Description>An IdentityIQ server-side rule that can be set as an After Provisioning Rule on
+    an Application.
+  </Description>
+  <Signature>
+    <Inputs>
+      <Argument name="log">
+        <Description>
+          The log object associated with the SailPointContext.
+        </Description>
+      </Argument>
+      <Argument name="context">
+        <Description>
+          A sailpoint.api.SailPointContext object that can be used to query
+          the database if necessary.
+        </Description>
+      </Argument>
+      <Argument name="plan">
+        <Description>
+          The ProvisioningPlan object on its way to the Connector.
+        </Description>
+      </Argument>
+      <Argument name="application">
+        <Description>
+          The application object that references this before/after script.
+        </Description>
+      </Argument>
+      <Argument name="result">
+        <Description>
+          The ProvisioningResult object returned by the connectors provision method. This can be null and in many cases the connector will  not return a result and instead will annotate the plan's ProvisioningResult either at the plan or account level.        
+        </Description>
+      </Argument>
+    </Inputs>
+  </Signature>
+  <Source><![CDATA[
+
+  import sailpoint.rapidapponboarding.rule.AuditRuleLibrary;
+  import sailpoint.rapidapponboarding.rule.AggregationRuleLibrary;
+  import sailpoint.tools.GeneralException; 
+  import org.apache.log4j.Logger;
+  
+  Logger ruLog = Logger.getLogger("rule.Rule-Audit-Framework");  
+  ruLog.trace("AF001:***********Entering Rule-Audit-Framework *******");
+  
+  HashMap params = new HashMap();
+  params.put("context", context);
+  params.put("plan", plan);
+  if(ruLog.isTraceEnabled() && plan != null) {
+    ruLog.trace("AF002:Plan:"+plan.toXml());
+  }
+  params.put("application", application);
+  if(ruLog.isTraceEnabled() && application != null) {
+    ruLog.trace("AF003:application:"+application.toXml());
+  }  
+  if(result !=void && result!=null)
+  {
+    if(ruLog.isTraceEnabled()) {
+      ruLog.trace("AF004:Provisioning Result:"+result.toXml());
+    }
+    params.put("result", result);
+  }
+  try
+  {
+    if(result !=void && result!=null)
+    {
+      ruLog.trace("AF005:logRoadAuditEvents starts with provisioning result:");
+      AuditRuleLibrary.logRoadAuditEvents( context,  plan, result,  application,null,null,null,null,true,null);
+      ruLog.trace("AF006:logRoadAuditEvents ends with provisioning result:");
+      ruLog.trace("AF007:runAfterProvisioningRule starts with provisioning result:");
+      AggregationRuleLibrary.runAfterProvisioningRule(context,plan,application,result,params);
+      ruLog.trace("AF008:runAfterProvisioningRule ends with provisioning result:");
+    }
+    else
+    {
+      
+      ruLog.trace("AF009:logRoadAuditEvents starts without provisioning result:");
+      AuditRuleLibrary.logRoadAuditEvents( context,  plan, null,  application,null,null,null,null,true,null);
+      ruLog.trace("AF010:logRoadAuditEvents starts without provisioning result:");
+      ruLog.trace("AF011:runAfterProvisioningRule starts without provisioning result:");
+      AggregationRuleLibrary.runAfterProvisioningRule(context,plan,application,null,params);
+      ruLog.trace("AF012:runAfterProvisioningRule ends without provisioning result:");
+    }
+  }
+  catch(Exception ex)
+  {
+    if(plan != null) {
+      toyotaLogger( context, "AF013:ERROR :: The after provisioning process has been failed for the user:" + plan.getNativeIdentity() + "for the application "+ plan.getApplicationNames().toString());
+      toyotaLogger( context, "AF014:ERROR :: The provisioning error is:"+plan.getResult().getErrors());
+    }
+   
+   
+    throw new GeneralException("ERROR:An exception was thrown while attempting to process preiterate rule", ex);
+  }
+
+  ]]></Source>
+</Rule>

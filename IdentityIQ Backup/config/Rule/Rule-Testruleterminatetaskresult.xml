@@ -1,0 +1,150 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="testRuleTerminateTaskResult" type="Validation">
+  <Source><![CDATA[
+  /* import sailpoint.object.QueryOptions;
+  import sailpoint.object.Filter;
+  import sailpoint.object.Identity;
+  import sailpoint.object.TaskResult;
+  import sailpoint.object.TaskDefinition;
+  import sailpoint.tools.Util;
+  import sailpoint.api.Terminator;
+
+  import sailpoint.object.QueryOptions;
+  import sailpoint.object.Filter;
+  import sailpoint.object.Link;
+  import sailpoint.tools.Util;*/
+
+  import sailpoint.object.QueryOptions;
+  import sailpoint.object.Filter;
+  import sailpoint.object.Identity;
+
+
+
+
+  QueryOptions options = new QueryOptions();
+  QueryOptions woptions = new QueryOptions();
+  Filter filter = Filter.and(Filter.eq("workgroup",false),Filter.isempty("links"));
+  options.addFilter(filter);
+  woptions.addFilter(Filter.eq("workgroup",true));
+
+  List identities = context.getObjects(Identity.class,options);
+  List workGroups = context.getObjects(Identity.class,woptions);
+
+  try{
+    if(identities!=null && workGroups!=null){
+      for (Identity identityObj : identities){
+        log.error("Iterating Identity : "+identityObj.getName());
+        for(Identity workGroup : workGroups){
+
+          boolean isMember=identityObj.isInWorkGroup(workGroup);
+          if(isMember){
+            identityObj.remove(workGroup);
+            log.error("Removed Identity : "+identityObj.getName()+" from workGroup : "+workGroup.getName());
+          }
+        }
+      }
+    }
+  }catch(Exception e){
+    log.error("An exception occurred while removing the No Links identity from the WorkGroup rule: "+e.getMessage());
+  }finally{
+    context.commitTransaction();
+  }
+  return identities.size()+" NoLinks Identities have been removed from "+workGroups.size()+ " Workgroups";
+
+
+
+
+
+
+
+
+
+
+  /* import sailpoint.object.Identity;
+  import sailpoint.object.Filter;
+
+  try {
+
+    String identityName = "Beta Service01";
+    Identity identity = context.getUniqueObject(Identity.class,Filter.eq("name", identityName));
+
+
+    if (identity != null) {
+      return "Identity already exists.";
+    }
+
+    identity = new Identity();
+    identity.setName(identityName);
+    identity.setFirstname("Beta");
+    identity.setLastname("Service01");
+    identity.setDisplayName(identityName);
+    identity.setEmail("Beta.Service01@email.com");
+    identity.setAttribute("employeeId", "EMPS10002");
+    identity.setAttribute("department", "NetWorking");
+    identity.setType("ServiceAccount");
+    identity.setAttribute("networkId", "Beta.Service01");
+    identity.setManager(context.getObjectByName(Identity.class,"Mahesh Nattali"));
+
+    context.saveObject(identity);
+    context.commitTransaction();
+    return "Identity created successfully.";
+
+  } catch (Exception e) {
+
+    context.rollbackTransaction();
+    log.error("Error creating Identity", e);
+
+    return e.getMessage();
+  }*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  Calendar cal = Calendar.getInstance();
+  cal.add(Calendar.DATE, -10);
+  Date createdDate = cal.getTime();
+  String msg;
+  int count = 5;
+  ArrayList resultMsgList = new ArrayList();
+
+  Filter filter = Filter.and(Filter.ignoreCase(Filter.like("name","Update Identity", Filter.MatchMode.START)),
+                             Filter.le("created",createdDate),
+                             Filter.eq("targetClass","Identity"),Filter.isnull("completionStatus"));
+
+  QueryOptions qo = new QueryOptions();
+  qo.add(filter);
+  qo.setResultLimit(count);
+  Terminator terminator = new Terminator(context);
+  msg=context.countObjects(TaskResult.class, qo) + " taskResult found";
+  resultMsgList.add(msg);
+
+  try {
+    terminator.deleteObjects(TaskResult.class, qo);
+    msg+=count+" Objects are deleted ";
+  } catch (Exception e) {
+    log.error("Exception in managedAttribute attribute Logical Business attribute Criteria assignment Rule : "+e.getMessage());
+  }finally{
+    context.commitTransaction();
+  }
+
+  return "RESULT: \n" + String.join("\n", resultMsgList);
+
+
+
+  ]]></Source>
+</Rule>

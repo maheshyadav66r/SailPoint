@@ -1,0 +1,206 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE WorkItemArchive PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<WorkItemArchive archived="1735886839785" completer="The Administrator" handler="sailpoint.api.Workflower" level="Normal" name="0000000420" ownerName="spadmin" renderer="workflow.xhtml" requester="spadmin" state="Finished" type="Form" workItemId="c0a8000e94221b1181942ae92d223b95">
+  <Attributes>
+    <Map>
+      <entry key="Question:0:user_name" value="Aaron Nichols"/>
+      <entry key="Question:10:calendar_integration"/>
+      <entry key="Question:11:time_zone" value="GMT"/>
+      <entry key="Question:12:email" value="Aaron.Nichols.eshiam.com"/>
+      <entry key="Question:13:mobile_phone" value="541240154152"/>
+      <entry key="Question:14:phone" value="225554125425"/>
+      <entry key="Question:1:first_name" value="Aaron"/>
+      <entry key="Question:2:last_name" value="Nichols"/>
+      <entry key="Question:3:department" value="Engineering"/>
+      <entry key="Question:4:title"/>
+      <entry key="Question:5:password"/>
+      <entry key="Question:6:password_needs_reset"/>
+      <entry key="Question:7:locked_out"/>
+      <entry key="Question:8:active"/>
+      <entry key="Question:9:notification"/>
+      <entry key="active"/>
+      <entry key="calendar_integration"/>
+      <entry key="department" value="Engineering"/>
+      <entry key="email" value="Aaron.Nichols.eshiam.com"/>
+      <entry key="first_name" value="Aaron"/>
+      <entry key="identityDisplayName" value="Aaron Nichols"/>
+      <entry key="identityName" value="Aaron Nichols"/>
+      <entry key="last_name" value="Nichols"/>
+      <entry key="launcher" value="spadmin"/>
+      <entry key="locked_out"/>
+      <entry key="mobile_phone" value="541240154152"/>
+      <entry key="notification"/>
+      <entry key="password"/>
+      <entry key="password_needs_reset"/>
+      <entry key="phone" value="225554125425"/>
+      <entry key="time_zone" value="GMT"/>
+      <entry key="title"/>
+      <entry key="user_name" value="Aaron Nichols"/>
+      <entry key="workItemDisableNotification">
+        <value>
+          <Boolean>true</Boolean>
+        </value>
+      </entry>
+      <entry key="workItemForm">
+        <value>
+          <Form name="Identity Update" targetUser="spadmin" type="Workflow">
+            <Attributes>
+              <Map>
+                <entry key="pageTitle" value="provision_identity_update_title"/>
+                <entry key="pageTitleParam" value="$(identityName)"/>
+              </Map>
+            </Attributes>
+            <Section type="text">
+              <Field displayName="provision_identity_update_description"/>
+            </Section>
+            <Section label="provision_request_information" type="datatable">
+              <Attributes>
+                <Map>
+                  <entry key="hideNulls" value="true"/>
+                </Map>
+              </Attributes>
+              <Field displayName="provision_requester">
+                <Script>
+                  <Source><![CDATA[
+          import sailpoint.object.Identity;
+
+          Identity launchIdentity = context.getObject(Identity.class, launcher);
+
+          return launchIdentity == null ? launcher : launchIdentity.getDisplayableName();
+        ]]></Source>
+                </Script>
+              </Field>
+              <Field displayName="provision_requested_roles">
+                <Script>
+                  <Source><![CDATA[return newRoles;]]></Source>
+                </Script>
+              </Field>
+            </Section>
+            <Section columns="3" label="provision_target_identity" type="datatable">
+              <Attributes>
+                <Map>
+                  <entry key="hideNulls" value="true"/>
+                </Map>
+              </Attributes>
+              <Field columnSpan="1" displayName="provision_first_name">
+                <Script>
+                  <Source><![CDATA[(identity != null) ? identity.getFirstname() : null]]></Source>
+                </Script>
+              </Field>
+              <Field columnSpan="1" displayName="provision_last_name">
+                <Script>
+                  <Source><![CDATA[(identity != null) ? identity.getLastname() : null]]></Source>
+                </Script>
+              </Field>
+              <Field columnSpan="1" displayName="provision_account_id">
+                <Script>
+                  <Source><![CDATA[(identity != null) ? identity.getDisplayableName() : null]]></Source>
+                </Script>
+              </Field>
+              <Field columnSpan="3" displayName="provision_assigned_roles">
+                <Script>
+                  <Source><![CDATA[
+          import java.util.ArrayList;
+          import java.util.List;
+          import sailpoint.object.Bundle;
+          import sailpoint.tools.Util;
+
+          String names = null;
+
+          if (identity != null) {
+              List<String> roleNames = new ArrayList<String>();
+
+              for (Bundle bundle : Util.iterate(identity.getAssignedRoles())) {
+                  roleNames.add(bundle.getDisplayableName());
+              }
+
+              names = Util.listToCsv(roleNames);
+          }
+
+          return names;
+      ]]></Source>
+                </Script>
+              </Field>
+            </Section>
+            <Section label="ServiceNow-Application" name="ServiceNow-Application">
+              <Field application="ServiceNow-Application" displayName="con_prov_policy_servicenow_userID" name="Question:0:user_name" priority="10" reviewRequired="true" template="account" type="string" value="Aaron Nichols"/>
+              <Field application="ServiceNow-Application" displayName="con_prov_policy_servicenow_first_name" name="Question:1:first_name" priority="10" reviewRequired="true" template="account" type="string" value="Aaron"/>
+              <Field application="ServiceNow-Application" displayName="con_prov_policy_servicenow_last_name" name="Question:2:last_name" priority="10" reviewRequired="true" template="account" type="string" value="Nichols"/>
+              <Field application="ServiceNow-Application" displayName="con_prov_policy_servicenow_department" name="Question:3:department" priority="10" reviewRequired="true" template="account" type="string" value="Engineering"/>
+              <Field application="ServiceNow-Application" displayName="con_prov_policy_servicenow_title" name="Question:4:title" priority="10" reviewRequired="true" template="account" type="string"/>
+              <Field application="ServiceNow-Application" displayName="con_prov_policy_servicenow_password" name="Question:5:password" priority="10" reviewRequired="true" template="account" type="secret"/>
+              <Field application="ServiceNow-Application" displayName="con_prov_policy_servicenow_password_need_reset" name="Question:6:password_needs_reset" priority="10" reviewRequired="true" template="account" type="boolean"/>
+              <Field application="ServiceNow-Application" displayName="con_prov_policy_servicenow_locked_out" name="Question:7:locked_out" priority="10" reviewRequired="true" template="account" type="boolean"/>
+              <Field application="ServiceNow-Application" displayName="con_prov_policy_servicenow_active" name="Question:8:active" priority="10" reviewRequired="true" template="account" type="boolean"/>
+              <Field application="ServiceNow-Application" displayName="con_prov_policy_servicenow_notifications" name="Question:9:notification" priority="10" reviewRequired="true" template="account" type="string">
+                <AllowedValuesDefinition>
+                  <Value>
+                    <List>
+                      <String>Disable</String>
+                      <String>Enable</String>
+                    </List>
+                  </Value>
+                </AllowedValuesDefinition>
+              </Field>
+              <Field application="ServiceNow-Application" displayName="con_prov_policy_servicenow_calender_integration" name="Question:10:calendar_integration" priority="10" reviewRequired="true" template="account" type="string">
+                <AllowedValuesDefinition>
+                  <Value>
+                    <List>
+                      <String>-- None --</String>
+                      <String>Outlook</String>
+                    </List>
+                  </Value>
+                </AllowedValuesDefinition>
+              </Field>
+              <Field application="ServiceNow-Application" displayName="con_prov_policy_servicenow_time_zone" name="Question:11:time_zone" priority="10" reviewRequired="true" template="account" type="string" value="GMT">
+                <AllowedValuesDefinition>
+                  <Value>
+                    <List>
+                      <String>System (Americas/Los Angeles)</String>
+                      <String>Canada/Atlantic</String>
+                      <String>Canada/Central</String>
+                      <String>Canada/Eastern</String>
+                      <String>Canada/Mountain</String>
+                      <String>Canada/Pacific</String>
+                      <String>Europe/Amsterdam</String>
+                      <String>Europe/Berlin</String>
+                      <String>Europe/Brussels</String>
+                      <String>Europe/Copenhagen</String>
+                      <String>Europe/Dublin</String>
+                      <String>Europe/London</String>
+                      <String>Europe/Madrid</String>
+                      <String>Europe/Paris</String>
+                      <String>Europe/Rome</String>
+                      <String>Europe/Stockhome</String>
+                      <String>Europe/Zuric</String>
+                      <String>GMT</String>
+                      <String>HongKong</String>
+                      <String>US/Arizona</String>
+                      <String>US/Eastern</String>
+                      <String>US/Central</String>
+                      <String>US/Hawaii</String>
+                      <String>US/Mountain</String>
+                      <String>US/Pacific</String>
+                    </List>
+                  </Value>
+                </AllowedValuesDefinition>
+              </Field>
+              <Field application="ServiceNow-Application" displayName="con_prov_policy_servicenow_email" name="Question:12:email" priority="10" reviewRequired="true" template="account" type="string" value="Aaron.Nichols.eshiam.com"/>
+              <Field application="ServiceNow-Application" displayName="con_prov_policy_servicenow_mobile_phone" name="Question:13:mobile_phone" priority="10" reviewRequired="true" template="account" type="string" value="541240154152"/>
+              <Field application="ServiceNow-Application" displayName="con_prov_policy_servicenow_business_phone" name="Question:14:phone" priority="10" reviewRequired="true" template="account" type="string" value="225554125425"/>
+            </Section>
+            <Button action="next" label="button_ok"/>
+            <Button action="cancel" label="button_cancel"/>
+            <Button action="cancel" label="button_return" readOnly="true"/>
+          </Form>
+        </value>
+      </entry>
+      <entry key="workItemPriority">
+        <value>
+          <WorkItemLevel>Normal</WorkItemLevel>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Description>Complete provisioning form for Aaron Nichols</Description>
+</WorkItemArchive>

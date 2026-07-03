@@ -1,0 +1,136 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1747918198577" completionStatus="Success" launched="1747918183683" launcher="spadmin" name="Update Identity Alicia Petty AccessRequest" targetClass="Identity" targetName="Alicia Petty" type="LCM">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000648"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Alicia Petty">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan trackingId="00442ed52291423eb5485e913b732914">
+                <AccountRequest application="ActiveDirectory" op="Modify" trackingId="e079e30f31914210b4d06fee0bcc434b">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800fc94cb1e358194ccac8aaf2829"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="nativeIdUpdated">
+                        <value>
+                          <Boolean>true</Boolean>
+                        </value>
+                      </entry>
+                      <entry key="operation" value="Add"/>
+                      <entry key="requester" value="spadmin"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest displayValue="AccountsPayable" name="memberOf" op="Add" trackingId="e079e30f31914210b4d06fee0bcc434b" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                    <Attributes>
+                      <Map>
+                        <entry key="assignment" value="true"/>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000648"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <ProvisioningTargets>
+                  <ProvisioningTarget application="ActiveDirectory" attribute="memberOf" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                    <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" implicitCreate="true"/>
+                  </ProvisioningTarget>
+                </ProvisioningTargets>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Alicia Petty" targetIntegration="ActiveDirectory" trackingId="2e5820dbcfef4ccba75704b88166c98e">
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Alicia Petty,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create" targetIntegration="ActiveDirectory" trackingId="e079e30f31914210b4d06fee0bcc434b">
+                <Attributes>
+                  <Map>
+                    <entry key="attachmentConfigList"/>
+                    <entry key="attachments"/>
+                    <entry key="flow" value="AccessRequest"/>
+                    <entry key="id" value="c0a800fc94cb1e358194ccac8aaf2829"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="nativeIdUpdated">
+                      <value>
+                        <Boolean>true</Boolean>
+                      </value>
+                    </entry>
+                    <entry key="operation" value="Add"/>
+                    <entry key="provisioningTransactionId" value="a9feffec96f31fd98196f80b121e08f1"/>
+                    <entry key="requester" value="spadmin"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest displayValue="AccountsPayable" name="memberOf" op="Add" trackingId="e079e30f31914210b4d06fee0bcc434b" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                  <Attributes>
+                    <Map>
+                      <entry key="assignment" value="true"/>
+                    </Map>
+                  </Attributes>
+                </AttributeRequest>
+                <AttributeRequest name="sAMAccountName" op="Set" value="Alicia Petty"/>
+                <AttributeRequest name="givenName" op="Set" value="Alicia"/>
+                <AttributeRequest name="sn" op="Set" value="Petty"/>
+                <AttributeRequest name="mail" op="Set" value="alicia.petty@eshiam.com"/>
+                <AttributeRequest name="password" op="Set"/>
+                <ProvisioningResult status="committed"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000648"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+            <ProvisioningTarget application="ActiveDirectory" attribute="memberOf" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+              <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" implicitCreate="true"/>
+            </ProvisioningTarget>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="a9feffec96f31fd98196f80adec808d8"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="end"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

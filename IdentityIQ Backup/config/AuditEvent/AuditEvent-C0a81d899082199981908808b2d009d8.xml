@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE AuditEvent PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<AuditEvent action="HR Source Joiner event" application="ActiveDirectory" attributeName="memberOf" source="Scheduler" target="Lois Lane">
+  <Attributes>
+    <Map>
+      <entry key="ADAccntReq">
+        <value>
+          <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Lois Lane,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+            <AttributeRequest name="memberOf" op="Add" value="CN=ENG_All,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+            <AttributeRequest name="memberOf" op="Add" value="CN=ENG_EastCoast,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+            <AttributeRequest name="userAccountControl" op="Add" value="514"/>
+          </AccountRequest>
+        </value>
+      </entry>
+      <entry key="LDAPccntReq">
+        <value>
+          <AccountRequest application="LDAPApplication" nativeIdentity="cn=Lois.Lane,ou=People,dc=my-domain,dc=com" op="Modify">
+            <AttributeRequest name="groups" op="Add" value="cn=Employees,ou=Group,dc=my-domain,dc=com"/>
+            <AttributeRequest name="groups" op="Add" value="cn=Managers,ou=Group,dc=my-domain,dc=com"/>
+            <AttributeRequest name="businessCategory" op="Add" value="Inactive"/>
+          </AccountRequest>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+</AuditEvent>

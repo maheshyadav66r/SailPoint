@@ -1,0 +1,93 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskDefinition PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskDefinition executor="sailpoint.reporting.LiveReportExecutor" name="Report-Demo EventTriggersForIdentities" progressMode="Percentage" resultAction="Rename" subType="Audit Report" template="true" type="LiveReport">
+  <Attributes>
+    <Map>
+      <entry key="report">
+        <value>
+          <LiveReport title="Demo EventTriggersForIdentities">
+            <DataSource objectType="sailpoint.object.AuditEvent" type="Filter">
+              <QueryParameters>
+                <Parameter argument="auditEvent">
+                  <QueryScript>
+                    <Source><![CDATA[
+                      import sailpoint.object.*;
+
+                      //log.error("event value--"+value);
+
+                      queryOptions.addFilter(Filter.eq("action",context.getObjectById(IdentityTrigger.class,value).getName()));
+                      queryOptions.addFilter(Filter.ge("created",arguments.get("fromDate")));
+                      queryOptions.addFilter(Filter.le("created",arguments.get("toDate")));
+
+                      if(arguments.get("department")!=null)
+                      {
+
+                      Filter filter1 = Filter.eq("department",arguments.get("department"));
+                      QueryOptions qo = new QueryOptions();
+                      qo.add(filter1);
+                      Iterator itr = context.search(Identity.class,qo,"name");
+                      List idList = new ArrayList();
+                      while(itr.hasNext())
+                      {
+
+                      idList.add(itr.next()[0]);
+
+                      }
+                      queryOptions.addFilter(Filter.in("target",idList));
+
+                      log.error("idList==="+idList);
+                      }
+
+                      // log.error(" queryOptions==="+queryOptions);
+                      return queryOptions;
+                    ]]></Source>
+                  </QueryScript>
+                </Parameter>
+              </QueryParameters>
+            </DataSource>
+            <Columns>
+              <ReportColumnConfig field="identity" header="IdentityName" property="target" width="110"/>
+              <ReportColumnConfig field="application" header="Application" property="application" width="110"/>
+              <ReportColumnConfig field="department" header="Department" property="target" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.*;
+                    import sailpoint.api.*;
+
+                    Identity identity=context.getObjectByName(Identity.class,value);
+                    
+                    
+                    //auditEvent,fromDate,toDate,department,launcher
+
+                    if(identity!=null)
+
+                    log.error("--department in identity--"+identity.getAttribute("department"));
+                    return identity.getAttribute("department");
+                    return "";
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="attribute" header="GroupAttribute" property="attributeName" width="110"/>
+            </Columns>
+          </LiveReport>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Signature>
+    <Inputs>
+      <Argument name="auditEvent" required="true" type="IdentityTrigger">
+        <Description> select Event-1(Create DIsabled Accounts) and Event-2(Enable Accounts)</Description>
+      </Argument>
+      <Argument name="fromDate" required="true" type="date">
+        <Description>select dates (from) on which selected event triggered </Description>
+      </Argument>
+      <Argument name="toDate" required="true" type="date">
+        <Description>select dates (to) on which selected event triggered </Description>
+      </Argument>
+      <Argument defaultValue="[Engineering, Finence, Human Resources, Information Technology]" name="department" required="true" type="String">
+        <Description>to filter identities only from specific department</Description>
+      </Argument>
+    </Inputs>
+  </Signature>
+</TaskDefinition>

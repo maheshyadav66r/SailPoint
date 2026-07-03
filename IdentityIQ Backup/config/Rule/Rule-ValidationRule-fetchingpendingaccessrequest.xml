@@ -1,0 +1,97 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Validation Rule-FetchingPendingAccessRequest" type="Validation">
+  <Source><![CDATA[
+
+  import sailpoint.object.*;
+  import sailpoint.api.*;
+  import java.sql.Connection;
+  import java.sql.DriverManager;
+  import java.sql.PreparedStatement;
+  import java.sql.ResultSet;
+  import java.sql.SQLException;
+  import sailpoint.object.*;
+  import java.sql.*;
+  import java.sql.SQLException;
+  import sailpoint.tools.Message;
+
+  //String name1="ir";
+
+  Connection connection = null;
+  PreparedStatement preparedStatement = null;
+  ResultSet resultSet = null;
+
+  String dbUrl = "jdbc:mysql://localhost:3306/test"; 
+  String dbUsername = "root"; 
+  String dbPassword = "root"; 
+  String table ="account_disable_checking";
+  String fn = "FirstName";
+  String empNo = "EmployeeNo";
+
+  try{
+
+    Class.forName("com.mysql.cj.jdbc.Driver");
+    connection = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
+
+
+    String updateQuery="update %s set %s= ? where %s=?";
+
+    updateQuery = String.format(updateQuery, table,fn,empNo); 
+
+    preparedStatement = connection.prepareStatement(updateQuery);
+    preparedStatement.setString(1, "Ragada");
+    preparedStatement.setString(2, "1");
+
+    int count = preparedStatement.executeUpdate();
+
+    log.error(" update count  :  "+count);
+  }catch (SQLException e) {
+    e.printStackTrace();
+  }finally {
+    /* if (resultSet != null) {
+      try {
+        resultSet.close();
+      } catch (SQLException e) {
+        e.printStackTrace();
+      }
+    }*/
+    if (preparedStatement != null) {
+      try {
+        preparedStatement.close();
+      } catch (SQLException e) {
+        e.printStackTrace();
+      }
+    }
+    if (connection != null) {
+      try {
+        connection.close();
+      } catch (SQLException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+  return "Mahesh Nattali";
+
+  Map args = new HashMap();
+  args.put("FirstName","Ragada");
+
+  int count = context.update("from Link where application.name = 'JDBC OPChecking'", args);
+  //context.update("from Link where application.name = 'HRMS'", args);
+
+  //context.update("identity.EmployeeNo =='1'",args);
+  return count;
+
+  String name2="@";
+  String name3="Girirdhar";
+
+  String finalName=Util.replaceCharacter(name1,name2,name3);
+
+  log.error("name1==="+name1);
+  log.error("name2==="+name2);
+  log.error("name3==="+name3+null);
+  log.error("finalName==="+finalName);
+  return finalName;
+
+  ]]></Source>
+</Rule>

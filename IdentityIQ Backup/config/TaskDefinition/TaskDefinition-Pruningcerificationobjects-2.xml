@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskDefinition PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskDefinition formPath="/monitor/CustomValuesInTask.txt" name="PruningCerificationObjects-2" resultAction="Delete" subType="task_item_type_generic" type="Generic">
+  <Attributes>
+    <Map>
+      <entry key="TaskDefinition.runLengthAverage" value="0"/>
+      <entry key="TaskDefinition.runLengthTotal" value="15"/>
+      <entry key="TaskDefinition.runs" value="22"/>
+      <entry key="TaskSchedule.host"/>
+      <entry key="certificationObject" value="CertificationEntity"/>
+      <entry key="limit" value="2"/>
+      <entry key="ruleName" value="Rule-Validation-PruningCertificationObjects2"/>
+      <entry key="taskCompletionEmailNotify" value="Disabled"/>
+      <entry key="taskCompletionEmailRecipients"/>
+      <entry key="taskCompletionEmailTemplate"/>
+    </Map>
+  </Attributes>
+  <Description>A task that can be used to run Pruning orphan Cerification Objects.</Description>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+  <Parent>
+    <Reference class="sailpoint.object.TaskDefinition" name="Run Rule"/>
+  </Parent>
+  <Signature>
+    <Inputs>
+      <Argument name="ruleName" required="true" type="Rule">
+        <Prompt> Rule </Prompt>
+      </Argument>
+      <Argument helpKey="help_task_select_certificationObject" multi="true" name="certificationObject" required="true" type="string">
+        <Prompt>Select certificationObject</Prompt>
+      </Argument>
+      <Argument helpKey="help_task_no_of_to_be_deleted" name="limit" required="true" type="int">
+        <Prompt>No Of Objects</Prompt>
+      </Argument>
+    </Inputs>
+    <Returns>
+      <Argument name="objectType" type="string"/>
+      <Argument name="countBeforePrune" type="int">
+        <Prompt>countBeforePrune</Prompt>
+      </Argument>
+      <Argument name="countAfterPrune" type="int">
+        <Prompt>countAfterPrune</Prompt>
+      </Argument>
+      <Argument name="errorMessage" type="string">
+        <Prompt>ErrorMessage</Prompt>
+      </Argument>
+    </Returns>
+  </Signature>
+</TaskDefinition>

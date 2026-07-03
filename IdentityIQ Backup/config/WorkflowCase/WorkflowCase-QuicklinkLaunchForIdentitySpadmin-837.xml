@@ -1,0 +1,211 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE WorkflowCase PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<WorkflowCase launcher="spadmin" name="QuickLink Launch for identity spadmin - 837">
+  <Workflow currentStep="601d5a05fdaf48619b4d63f8836d5f7f" explicitTransitions="true" name="Identity Access Items validation">
+    <Variable input="true" name="quickLinkIdentityId"/>
+    <Variable input="true" name="launcher"/>
+    <Step complete="true" icon="Start" name="Start" posX="21" posY="114">
+      <Transition to="Select Item Type"/>
+    </Step>
+    <Step name="Select Item Type" posX="215" posY="115">
+      <Approval name="Get Access Items" originalOwner="$(launcher)" owner="spadmin" return="" send="quickLinkIdentityId" startDate="1773376971920" started="true" workItemDescription="Get Access Items" workItemId="c0a801289ce51341819ce581247300fe" workItemType="Form">
+        <Form name="Get Access Items">
+          <Attributes>
+            <Map>
+              <entry key="pageTitle" value="Get Access Items"/>
+            </Map>
+          </Attributes>
+          <Section label="Select Items" name="selectItems">
+            <Field name="accessType" postBack="true" type="string">
+              <AllowedValues>
+                <String>Entitlements</String>
+                <String>Roles</String>
+              </AllowedValues>
+            </Field>
+            <Field dynamic="true" name="searchItem" postBack="true" type="text">
+              <Attributes>
+                <Map>
+                  <entry key="hidden">
+                    <value>
+                      <Script>
+                        <Source><![CDATA[
+                        import sailpoint.tools.Util;
+
+                        if(!Util.isNullOrEmpty(accessType))
+                        return false;
+                        return true;
+                      ]]></Source>
+                      </Script>
+                    </value>
+                  </entry>
+                </Map>
+              </Attributes>
+            </Field>
+          </Section>
+          <Section label="Searched Items" name="searchedItems" type="text">
+            <Attributes>
+              <Map>
+                <entry key="hidden">
+                  <value>
+                    <Script>
+                      <Source><![CDATA[
+                      import sailpoint.tools.Util;
+
+                      if(!Util.isNullOrEmpty(selectItems) &&!Util.isNullOrEmpty(searchItem))
+                      return false;
+                      return true;
+                    ]]></Source>
+                    </Script>
+                  </value>
+                </entry>
+              </Map>
+            </Attributes>
+            <Field dynamic="true" name="searchedItems" type="text">
+              <Attributes>
+                <Map>
+                  <entry key="contentIsEscape" value="true"/>
+                </Map>
+              </Attributes>
+              <Script>
+                <Source><![CDATA[
+                import sailpoint.object.Filter;
+                import sailpoint.object.IdentityEntitlement;
+                import sailpoint.object.Application;
+                import sailpoint.object.QueryOptions;
+                import sailpoint.tools.Util;
+
+                import java.util.Iterator;
+                import java.util.Arrays;
+
+                Filter filter = null;
+                Filter idFilter = Filter.eq("identity.id", quickLinkIdentityId);
+                Filter nameFilter3 = Filter.like("value", searchItem, Filter.MatchMode.ANYWHERE);
+
+                if(Util.nullSafeEq(accessType, "Entitlements")) {
+
+                log.error("  2  ");
+                Filter nameFilter = Filter.ne("name", "assignedRoles");
+                Filter nameFilter2 = Filter.ne("name", "detectedRoles");
+                filter = Filter.and(idFilter, nameFilter, nameFilter2, nameFilter3);
+                log.error("  3  ");
+                } else {
+                log.error("  4  ");
+                Filter nameFilter = Filter.eq("name", "assignedRoles");
+                Filter nameFilter2 = Filter.eq("name", "detectedRoles");
+                filter = Filter.and(idFilter, Filter.or(nameFilter, nameFilter2) , nameFilter3);
+                log.error("  5  ");
+                }
+
+                QueryOptions qo = new QueryOptions();
+                qo.addFilter(filter);
+
+                log.error("  6  ");
+
+                StringBuilder html = new StringBuilder();
+
+                log.error("   7   ");
+                html.append("<div style='padding:10px; font-family:Arial, sans-serif;'>");
+                html.append("<div style='border:1px solid #ccc;'>");
+                html.append("<table border='1' cellspacing='0' style='border-collapse:collapse; width:100%; font-size:13px; table-layout:fixed;'>");
+
+                html.append("<colgroup>")
+                .append("<col style='width:5%;'>")
+                .append("<col style='width:12%;'>")
+                .append("<col style='width:12%;'>")
+                .append("<col style='width:15%;'>")
+                .append("</colgroup>");
+
+                html.append("<tr style='background-color:#011E69; color:white;'>")
+                .append("<th style='padding:8px; text-align:center;'>SNo</th>")
+                .append("<th style='padding:8px; text-align:center;'>ItemName</th>")
+                .append("<th style='padding:8px; text-align:center;'>ItemValue</th>")
+                .append("<th style='padding:8px; text-align:center;'>Application</th>")
+                .append("</tr>");
+
+                int serialNo = 1;
+                int count = 0;
+                log.error("  8  ");
+                Iterator it = context.search(
+                IdentityEntitlement.class,qo,"name,value,application,type");
+
+                while (it.hasNext()) {
+
+                Object[] row = (Object[]) it.next();
+                log.error("  9  ");
+
+                String name = (String) row[0];
+                log.error("  name  " +name);
+                String value = (String) row[1];
+                log.error("  value  " +value);
+                String appId = (String) row[2];
+                log.error("  appId  " +appId);
+                String type = row[3]!=null?row[3].toString():"Role";
+
+                String appName = "";
+                if (appId != null) {
+                Application app = context.getObjectById(Application.class, appId);
+
+                if (app != null) {
+                appName = app.getName();
+                }else{
+                appName = "IIQ";
+                }
+                }
+
+                log.error("  2mmm  "+name+"  "+value+"   "+appId+" :: "+appName+"   "+type);
+                String rowColor = (serialNo % 2 == 0) ? "#ffffff" : "#f9f9f9";
+
+                html.append("<tr style='background-color:" + rowColor + "; text-align:center;'>")
+                .append("<td style='padding:5px;'>").append(serialNo).append("</td>")
+                .append("<td style='padding:8px;'>").append(name).append("</td>")
+                .append("<td style='padding:8px;'>").append(value).append("</td>")
+                .append("<td style='padding:8px;'>").append(appName).append("</td>")
+                .append("</tr>");
+
+                serialNo++;
+                count++;
+                }
+
+                html.append("</table>");
+                html.append("</div>");
+                html.append("</div>");
+
+
+                log.error("   html :::::  "+html.toString() +" ......  "+count);
+
+                return html.toString();
+              ]]></Source>
+              </Script>
+            </Field>
+          </Section>
+          <Button action="next" label="Submit"/>
+          <Button action="back" label="Cancel"/>
+        </Form>
+      </Approval>
+      <Transition to="Generic Step (1)"/>
+    </Step>
+    <Step icon="Default" name="Generic Step (1)" posX="517" posY="111">
+      <Transition to="Stop"/>
+    </Step>
+    <Step icon="Stop" name="Stop" posX="688" posY="116"/>
+    <Attributes>
+      <Map>
+        <entry key="currentUserName" value="spadmin"/>
+        <entry key="launcher" value="spadmin"/>
+        <entry key="quickLink" value="IdCreation"/>
+        <entry key="quickLinkIdentityId" value="Aaron Dickerson"/>
+        <entry key="quickLinkIdentityIds">
+          <value>
+            <List>
+              <String>Aaron Dickerson</String>
+            </List>
+          </value>
+        </entry>
+        <entry key="sessionOwner" value="spadmin"/>
+        <entry key="taskResultId" value="c0a801289ce51341819ce581240f00fc"/>
+        <entry key="workflowName" value="Identity Access Items validation"/>
+        <entry key="workflowSuccess" value="DBOrderCheckWF workflow Executed Successfully"/>
+      </Map>
+    </Attributes>
+  </Workflow>
+</WorkflowCase>

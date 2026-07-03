@@ -1,0 +1,301 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="BeforeProvisioningRule" type="BeforeProvisioning">
+  <Description>An IdentityIQ server-side rule that is executed before the connector's provisioning method is called. This gives the customer the ability to customize or react to anything in the ProvisioningPlan BEFORE it is sent to the underlying connectors used in provisioning. 
+
+This rule will be called for any application found in a plan that also has a configured 'beforeProvisioningRule' configured.  
+
+The plan can be updated directly in the rule by reference and does not need to return the plan.</Description>
+  <Signature>
+    <Inputs>
+      <Argument name="log" type="org.apache.commons.logging.Log">
+        <Description>
+          The log object associated with the SailPointContext.
+        </Description>
+      </Argument>
+      <Argument name="context" type="sailpoint.api.SailPointContext">
+        <Description>
+          A sailpoint.api.SailPointContext object that can be used to query the database if necessary.
+        </Description>
+      </Argument>
+      <Argument name="plan">
+        <Description>
+          The ProvisioningPlan object on its way to the Connector.
+        </Description>
+      </Argument>
+      <Argument name="application">
+        <Description>
+          The application object that references this before/after script.
+        </Description>
+      </Argument>
+    </Inputs>
+  </Signature>
+  <Source><![CDATA[
+  import sailpoint.object.AuditEvent;
+  import sailpoint.object.Attributes;
+  import sailpoint.object.AuditConfig;
+  import sailpoint.object.Link;
+  import sailpoint.object.ProvisioningPlan.AccountRequest;
+  import sailpoint.object.ProvisioningPlan.AttributeRequest;
+  import sailpoint.object.ProvisioningPlan.Operation;
+  import sailpoint.server.Auditor;
+  import sailpoint.tools.Util;
+  import sailpoint.object.EmailTemplate;
+  import sailpoint.object.EmailOptions;
+  import java.util.Date;
+  import java.text.SimpleDateFormat;
+  import org.apache.commons.logging.LogFactory;
+  import org.apache.commons.logging.Log;
+  import sailpoint.object.IdentityRequestItem;
+  import sailpoint.object.ApprovalItem.ProvisioningState;
+  import sailpoint.object.IdentityRequest;
+  import sailpoint.object.ProvisioningPlan.AccountRequest;
+  import sailpoint.object.ProvisioningPlan.AttributeRequest;
+  import sailpoint.tools.Util;
+  import sailpoint.object.ProvisioningPlan.AttributeRequest;
+  import sailpoint.object.ProvisioningPlan.AbstractRequest;
+  import sailpoint.api.IdentityService;
+  import sailpoint.object.Application;
+  import sailpoint.object.Link;
+  import sailpoint.api.Provisioner;
+  import org.apache.commons.logging.Log;
+  import org.apache.commons.logging.LogFactory;
+  import org.apache.log4j.Logger;
+  import sailpoint.rapidapponboarding.logger.LogEnablement;
+  import sailpoint.tools.GeneralException;
+  
+  import sailpoint.tools.Util;
+  import sailpoint.object.ProvisioningPlan.AttributeRequest;
+  import sailpoint.object.ProvisioningPlan.AbstractRequest;
+  import sailpoint.api.IdentityService;
+  import sailpoint.object.Application;
+  import sailpoint.object.ProvisioningPlan;
+  import sailpoint.object.ProvisioningPlan.AccountRequest;
+  import sailpoint.object.Link;
+  import sailpoint.api.Provisioner;
+  import org.apache.commons.logging.Log;
+  import org.apache.commons.logging.LogFactory;
+  import org.apache.log4j.Logger;
+  import sailpoint.rapidapponboarding.logger.LogEnablement;
+  import sailpoint.tools.GeneralException;
+  import sailpoint.object.Identity;
+
+
+
+
+  log.error("---------------BeforeProvisioning Rule----------------------------"+plan.toXml());
+
+
+/*
+
+  Link workerDbLink = null;
+  Application workerDbAppObj = null;
+  List workerDbLinks = null;
+  Identity identity = null;
+  Link orgLdapLink = null;
+
+  try{
+    IdentityService idService = new IdentityService(context);
+    if(null != plan){
+      identity = plan.getIdentity();
+      log.error("======Identity====="+identity);
+      List accountRequests = plan.getAccountRequests();
+      if(Util.nullSafeSize(accountRequests) > 0){
+        for(AccountRequest accReq:accountRequests){
+          if("Modify".equals(accReq.getOperation().toString())){
+            log.error("===Enter Modify request====");
+            AttributeRequest attrReq = accReq.getAttributeRequest("atldapUser");
+            if(null != attrReq && "Add".equals(attrReq.getOperation().toString()) && "Y".equalsIgnoreCase(attrReq.getValue())){ 
+              log.error("===Enter Add request====");
+              workerDbAppObj = context.getObjectByName(Application.class,"ActiveDirectory");
+              if(workerDbAppObj != null){
+                workerDbLinks = idService.getLinks(identity,workerDbAppObj);
+                List orgLdapLinks = idService.getLinks(identity,application);
+                orgLdapLink = orgLdapLinks.get(0);
+                if(Util.nullSafeSize(workerDbLinks) > 0){
+                  workerDbLink = workerDbLinks.get(0);
+                  if(!workerDbLink.isDisabled()){
+                    String atldapValue = identity.getStringAttribute("Department") != null?identity.getStringAttribute("Department") : orgLdapLink.getAttribute("Department");
+                    if(!atldapValue.equals(workerDbLink.getAttribute("mail"))){
+                      ProvisioningPlan workerDbPlan = new ProvisioningPlan();
+                      workerDbPlan.setIdentity(identity);
+                      AccountRequest workerDbAccReq = new AccountRequest(ProvisioningPlan.AccountRequest.Operation.Modify,workerDbAppObj.getName(),null, null);
+                      workerDbAccReq.setNativeIdentity(workerDbLink.getNativeIdentity());
+                      workerDbAccReq.add(new AttributeRequest("mail",ProvisioningPlan.Operation.Set,atldapValue));
+                      workerDbPlan.add(workerDbAccReq);
+                      Provisioner provisioner = new Provisioner(context);
+                      provisioner.execute(workerDbPlan);
+                    }
+                  }
+                }
+              }
+            }
+            else if(null != attrReq && "Remove".equals(attrReq.getOperation().toString()) && "Y".equalsIgnoreCase(attrReq.getValue())){
+              log.error("===Entered into remove condition===");
+              accReq.add(new AttributeRequest("atldapUser",ProvisioningPlan.Operation.Set,"N"));
+              plan.add(accReq);
+              log.error("====Added to plan succesfully exiting===");
+            }
+          }
+        }
+      }
+    }
+  }
+  catch(Exception ex){
+    log.error("error in rule"+ex.toString());
+    //nablement.isLogTraceEnabled(tlog, "TMNA-TAT-003-ERROR for User: " +identity.getName()+ "Error Message: An exception was thrown while attempting to Exiting Toyota Org Ldap Before Provisioning Rule: " + ex.toString()); 
+  }
+  log.error("=====end of file=====");*/
+
+
+
+/*List accReqs=plan.getAccountRequests();
+if(accReqs!=null &amp;&amp; accReqs.size()>0){
+List attrReqs=accReqs.get(0).getAttributeRequests();
+if(attrReqs!=null)
+for(AttributeRequest  attreq:attrReqs){
+
+if(attreq.getName().equalsIgnoreCase("mail")){
+
+attreq.setValue("");
+}
+}
+}*/
+
+ /* log.error("START------------BeforeProvisioning Rule----------------------------"+plan.toXml());
+
+  List accReq=plan.getAccountRequests();
+  if(accReq!=null){
+    for(int i=0;i&lt;accReq.size();i++){
+      AccountRequest ar=accReq.get(i);
+      if(ar!=null &amp;&amp; (ar.getOperation()).equals(ProvisioningPlan.AccountRequest.Operation.Modify)){
+
+        ar.setOperation(ProvisioningPlan.AccountRequest.Operation.Create);
+        ar.add(new AttributeRequest("sAMAccountName",ProvisioningPlan.Operation.Add,plan.getNativeIdentity()));
+        ar.add(new AttributeRequest("password",ProvisioningPlan.Operation.Add,"Eshiam@12345"));
+        ar.add(new AttributeRequest("distinguishedName",ProvisioningPlan.Operation.Add,ar.getNativeIdentity()));
+
+      }
+    }
+  }
+  log.error("END------------BeforeProvisioning Rule----------------------------"+plan.toXml());*/
+
+
+
+
+
+
+ /* 
+  //launch workflow in future from request definition
+  public void launchWorkflowinFuture(String identity, ProvisioningPlan plan){
+    ProvisioningPlan plan = (ProvisioningPlan) plan;
+    log.error("method trigger");
+    //Workflow Launch
+    String workflowName = "LCMProvisioning";
+    String caseName     = "Request Definition launched for '" + workflowName + "' for: " + identity;
+    String requesterId  = "spadmin";
+
+    Workflow eventWorkflow = context.getObject(Workflow.class, workflowName);
+    if (null == eventWorkflow) {
+
+     
+    }
+
+    // Simulate the request being submitted by a user. Default: spadmin.
+    Identity id = context.getObjectByName(Identity.class,"Aaron Stanley");
+    if (null == id) {
+     
+      
+    }
+
+    // Ask the Request Processor to start the workflow 5 seconds from now.
+    // Append the time stamp to the workflow case name to ensure it's unique. 
+    long launchTime = System.currentTimeMillis() + 5000;
+    caseName = caseName + "(" + launchTime + ")";
+
+    // Build out a map of arguments to pass to the Request Scheduler.
+    Attributes reqArgs = new Attributes();
+    reqArgs.put( "requestName", caseName ); 
+
+    Attributes launchArgsMap = new Attributes();
+    //Add needed Workflow Launch Variables to map of name/value pairs
+    launchArgsMap.put("allowRequestsWithViolations","true");
+    launchArgsMap.put("approvalScheme","none");
+    launchArgsMap.put("approvalSchemeNone","false");
+    launchArgsMap.put("enableRetryRequest","false");
+    launchArgsMap.put("flow","AccessRequest");
+    launchArgsMap.put("foregroundProvisioning","true");
+    launchArgsMap.put("identityName",id.getName());
+    launchArgsMap.put("launcher","spadmin");
+    launchArgsMap.put("optimisticProvisioning","false");
+    launchArgsMap.put("plan",plan);
+    launchArgsMap.put("sessionOwner","spadmin");
+    launchArgsMap.put("source","LCM");
+    launchArgsMap.put("trace","true");
+
+    reqArgs.putAll(launchArgsMap);
+
+    // Use the Request Launcher to schedule the workflow reqeust.  This requires
+    // a Request object to store the properties of the request item.
+    Request req = new Request();
+    RequestDefinition reqdef = context.getObject(RequestDefinition.class, "Workflow Request");
+    req.setDefinition(reqdef);
+    req.setEventDate( new Date( launchTime ) );
+    req.setOwner(id);
+    req.setName(caseName);
+    req.setAttributes( reqdef, reqArgs );
+
+    // Schedule the work flow via the request manager.
+
+    RequestManager.addRequest(context, req);
+
+    log.error("plan-----==="+plan.toXml());    
+    context.decache(id);
+    context.decache(eventWorkflow);
+    context.decache(plan);
+
+  }
+
+  if(null != plan){
+    Identity identity = plan.getIdentity();
+
+    List accountRequests = plan.getAccountRequests();
+    for(AccountRequest accReq : accountRequests){
+
+      if(accReq.getOperation().equals(AccountRequest.Operation.Modify)){
+
+        if(true){
+
+          //Fetch list of entitlement values requested to add
+          List addEntReqList = new ArrayList();
+          addEntReqList.add("saiRam");
+          if(addEntReqList.size() > 0){
+            for(String addEnt : addEntReqList){
+              ManagedAttribute removeMa = context.getObjectById(ManagedAttribute.class,"c0a8002394fb1f308194ff6478ff0a83");
+              if(removeMa != null){
+                //preparing plan to launch workflow
+                ProvisioningPlan plan1 = new ProvisioningPlan();
+                plan1.setNativeIdentity(plan.getIdentity().getName());
+
+                //set Requester
+                plan1.setRequesters(plan.getRequesters());
+
+                // Create an account request to remove all entitlements
+                List assignedEntAttrValues = new ArrayList();
+                assignedEntAttrValues.add(removeMa.getValue());
+                AccountRequest removeAcctReq = new AccountRequest();
+                removeAcctReq.setNativeIdentity("CN=Aaron Stanley,OU=People,OU=Demo,DC=Eshiam,DC=com");
+                removeAcctReq.setOperation(ProvisioningPlan.AccountRequest.Operation.Modify);
+                removeAcctReq.setApplication("ActiveDirectory");
+                removeAcctReq.add(new AttributeRequest("memberOf",ProvisioningPlan.Operation.Remove,"CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com"));
+                plan1.add(removeAcctReq);
+                log.error("==============Calling the method rey=======");
+                launchWorkflowinFuture(identity.getName(),plan1);
+              }
+            }
+          }
+        }
+      }
+    }
+  }*/]]></Source>
+</Rule>

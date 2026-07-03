@@ -1,0 +1,187 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="ADDisplayName-Transformation" type="IdentityAttributeTarget">
+  <Description>Identity attribute target rules are used to transform identity attribute values that are being pushed to targets.</Description>
+  <Signature returnType="Object">
+    <Inputs>
+      <Argument name="log" type="org.apache.commons.logging.Log">
+        <Description>
+          The log object associated with the SailPointContext.
+        </Description>
+      </Argument>
+      <Argument name="context" type="sailpoint.api.SailPointContext">
+        <Description>
+          A sailpoint.api.SailPointContext object that can be used to query the database if necessary.
+        </Description>
+      </Argument>
+      <Argument name="value" type="Object">
+        <Description>
+          The value of the identity attribute.  Note that this could be single value or a list of values.
+        </Description>
+      </Argument>
+      <Argument name="sourceIdentityAttribute">
+        <Description>
+          The sailpoint.object.ObjectAttribute for this target.
+        </Description>
+      </Argument>
+      <Argument name="sourceIdentityAttributeName">
+        <Description>
+          The name of the identity attribute for this target.
+        </Description>
+      </Argument>
+      <Argument name="sourceAttributeRequest">
+        <Description>
+          The sailpoint.object.ProvisioningPlan.AttributeRequest that is
+          setting the attribute on the identity.
+        </Description>
+      </Argument>
+      <Argument name="target">
+        <Description>
+          The sailpoint.object.AttributeTarget that is being processed.
+        </Description>
+      </Argument>
+      <Argument name="link">
+        <Description>
+          The sailpoint.object.Link that is being processed.
+        </Description>
+      </Argument>
+      <Argument name="identity">
+        <Description>
+          The sailpoint.object.Identity that is being processed.
+        </Description>
+      </Argument>
+      <Argument name="project">
+        <Description>
+          The sailpoint.object.ProvisioningProject that has the changes that
+          are being requested.
+        </Description>
+      </Argument>
+    </Inputs>
+    <Returns>
+      <Argument name="attributeValue">
+        <Description>
+          The transformed value that will be pushed to the target.
+        </Description>
+      </Argument>
+    </Returns>
+  </Signature>
+  <Source><![CDATA[
+  import org.apache.commons.logging.Log;
+  import org.apache.commons.logging.LogFactory;
+  import sailpoint.api.IdentityService;  
+  import sailpoint.object.Application;
+  import sailpoint.tools.Util;
+  import java.lang.Exception;
+  import java.lang.Throwable;
+
+ 
+  {
+    Log tlog =LogFactory.getLog("rule.sp.rule.ToyotaAtldapIdTransformation");
+    if (tlog.isTraceEnabled()) {
+      tlog.trace("TATLDAPT::001-Entering Toyota AtldapId Transformation");
+      tlog.trace( "TATLDAPT::002-with atldapid value = "+value );
+    }
+
+    String returnValue = link.getAttribute("mail");
+    Application orgLDAP = null;
+    IdentityService idService = new IdentityService(context);
+
+    try {
+      orgLDAP = context.getObjectByName(Application.class , "IntConApplication");
+      if (orgLDAP != null) {
+        List orgLDAPLinks = idService.getLinks(identity,orgLDAP);
+        if (Util.nullSafeSize(orgLDAPLinks)>0) {
+          Link orgLDAPLink = orgLDAPLinks.get(0);
+          if (orgLDAPLink != null && !orgLDAPLink.isDisabled()) { 
+            String atldapUserValue = orgLDAPLink.getAttribute("atldapUser");
+            if (atldapUserValue.equalsIgnoreCase("Y")){
+              returnValue = value;
+            }
+          }
+        }
+      }
+    } catch (Exception e) { 
+      throw new GeneralException("TAAR::003-ERROR for User: " + identity.getName() + " Error Message: An exception was thrown while attempting to process AD After Provisioning rule: " + e.getMessage());          
+    } finally {
+        if (tlog.isTraceEnabled()) {
+          tlog.trace("TATLDAPT::004-Entering Toyota AtldapId Transformation");
+          tlog.trace( "TATLDAPT::005-with atldapid value = "+value );
+        }
+      context.decache(orgLDAP);
+    } 
+    
+    if (tlog.isTraceEnabled()) {
+      tlog.trace("TATLDAPT::006-Exiting Toyota AtldapId Transformation");
+      tlog.trace( "TATLDAPT::007-with atldapid returnValue = "+returnValue );
+    }
+    return returnValue;
+  }  
+
+
+
+
+
+
+
+
+
+
+  /* {
+    log.error(" Entered into transformation rule  : ");
+
+    // IntConApplication = org LDAP , LDAP= WorkerDB ,sn = ATLDAP , employeeId=uniqueUid
+    // Log prlogger = LogFactory.getLog("rule.sailpoint.attrSyncTransformation");
+
+   String returnValue;
+   Application orgLDAP = null;
+   IdentityService identityService = new IdentityService(context);
+
+    try {
+
+      orgLDAP = context.getObjectByName(Application.class , "IntConApplication");
+
+      if ( orgLDAP != null ){
+        List orgLDAPLinks = identityService.getLinks(identity,orgLDAP);
+        if ( Util.nullSafeSize(orgLDAPLinks)>0) 
+        {
+          Link orgLDAPLink = orgLDAPLinks.get(0);
+
+          if ( orgLDAPLink != null && !orgLDAPLink.isDisabled() ) { 
+
+            String atldapUserValue = orgLDAPLink.getAttribute("atldapUser");
+
+            if ( atldapUserValue.equals("Y") )
+            {
+              returnValue = value;
+            }
+          }
+        }
+      }
+    }catch(Exception e){
+
+       log.error(" Transformation error : "+e.toString());
+    }finally{
+      return ;
+    } 
+     log.error(" Exited from transformation rule  : ");
+    return returnValue;
+  }*/
+
+
+
+
+  /*
+  log.error("workerdb ATLDAP Attribute  value:  "+link.getAttribute("sn")+"  .. "+value);
+   log.error(" atldapUser   :  "+atldapUser);
+      log.error(" orgLDAP app  :  "+orgLDAP);
+      log.error(" orgLDAP orgLDAPLink  :  "+orgLDAPLink.toXml());
+
+log.error("    value arg in transformation rule  :  "+value);
+log.error("    link arg in transformation rule  :  "+link.toXml());
+log.error("    identity arg in transformation rule  :  "+identity.toXml());
+log.error("    sourceIdentityAttribute arg in transformation rule  :  "+sourceIdentityAttribute);
+log.error("    sourceIdentityAttributeName arg in transformation rule  :  "+sourceIdentityAttributeName);
+log.error("    sourceAttributeRequest arg in transformation rule  :  "+sourceAttributeRequest.toXml());
+*/
+  ]]></Source>
+</Rule>

@@ -1,0 +1,188 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1717562206855" completionStatus="Error" launched="1717562204929" launcher="spadmin" name="Update Identity Allen Burton AccessRequest - 8" targetClass="Identity" targetName="Allen Burton" type="LCM">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000165"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Allen Burton">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000165"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="JDBCProvisioning" nativeIdentity="Allen Burton" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a81d898fc9197a818fca74582101c8"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="EntitlementRemove"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="GroupName" op="Remove" value="AccountsReceivable">
+                    <Attributes>
+                      <Map>
+                        <entry key="assignment" value="true"/>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                </AccountRequest>
+                <AccountRequest application="JDBCProvisioning" nativeIdentity="Allen Burton" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a81d898fc9197a818fca74582101c7"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="EntitlementRemove"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="GroupName" op="Remove" value="AccountsPayable">
+                    <Attributes>
+                      <Map>
+                        <entry key="assignment" value="true"/>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                </AccountRequest>
+                <AccountRequest application="JDBCProvisioning" nativeIdentity="Allen Burton" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a81d898fc9197a818fca7483ff01d4"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="EntitlementAdd"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest displayValue="Benefits" name="GroupName" op="Add" value="Benefits">
+                    <Attributes>
+                      <Map>
+                        <entry key="assignment" value="true"/>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000165"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <ProvisioningTargets>
+                  <ProvisioningTarget application="JDBCProvisioning" attribute="GroupName" value="Benefits">
+                    <AccountSelection applicationId="c0a800a78f5c1470818f624e85ff05c2" applicationName="JDBCProvisioning" selection="Allen Burton">
+                      <AccountInfo displayName="Allen Burton" nativeIdentity="Allen Burton"/>
+                    </AccountSelection>
+                  </ProvisioningTarget>
+                </ProvisioningTargets>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Allen Burton" targetIntegration="JDBCProvisioning" trackingId="dcceb9bba2d14d70a4cd6c45e02ef9fc">
+              <AccountRequest application="JDBCProvisioning" nativeIdentity="Allen Burton" op="Modify">
+                <Attributes>
+                  <Map>
+                    <entry key="attachmentConfigList"/>
+                    <entry key="attachments"/>
+                    <entry key="flow" value="AccessRequest"/>
+                    <entry key="id" value="c0a81d898fc9197a818fca7483ff01d4"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="operation" value="EntitlementAdd"/>
+                    <entry key="provisioningTransactionId" value="c0a81d898fc9197a818fe6af6882146c"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="GroupName" op="Remove" value="AccountsReceivable">
+                  <Attributes>
+                    <Map>
+                      <entry key="assignment" value="true"/>
+                    </Map>
+                  </Attributes>
+                </AttributeRequest>
+                <AttributeRequest name="GroupName" op="Remove" value="AccountsPayable">
+                  <Attributes>
+                    <Map>
+                      <entry key="assignment" value="true"/>
+                    </Map>
+                  </Attributes>
+                </AttributeRequest>
+                <AttributeRequest displayValue="Benefits" name="GroupName" op="Add" value="Benefits">
+                  <Attributes>
+                    <Map>
+                      <entry key="assignment" value="true"/>
+                    </Map>
+                  </Attributes>
+                </AttributeRequest>
+                <ProvisioningResult status="failed">
+                  <Errors>
+                    <Message key="The application script threw an exception: java.sql.SQLSyntaxErrorException: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '44'' at line 1 BSF info: JDBC Modify Rule at line: 0 column: columnNo" type="Error"/>
+                  </Errors>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000165"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+              <ProvisioningResult status="failed">
+                <Errors>
+                  <Message key="The application script threw an exception: java.sql.SQLSyntaxErrorException: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '44'' at line 1 BSF info: JDBC Modify Rule at line: 0 column: columnNo" type="Error"/>
+                </Errors>
+              </ProvisioningResult>
+            </ProvisioningPlan>
+            <ProvisioningTarget application="JDBCProvisioning" attribute="GroupName" value="Benefits">
+              <AccountSelection applicationId="c0a800a78f5c1470818f624e85ff05c2" applicationName="JDBCProvisioning" selection="Allen Burton">
+                <AccountInfo displayName="Allen Burton" nativeIdentity="Allen Burton"/>
+              </AccountSelection>
+            </ProvisioningTarget>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a81d898fc9197a818fe6af64c3145b"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="end"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="The application script threw an exception: java.sql.SQLSyntaxErrorException: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '44'' at line 1 BSF info: JDBC Modify Rule at line: 0 column: columnNo" type="Error"/>
+  </Messages>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

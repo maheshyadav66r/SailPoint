@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE IdentityHistoryItem PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<IdentityHistoryItem account="Andrea Hudson" actor="The Administrator" application="ActiveDirectory" attribute="memberOf" certificationType="Exception" entryDate="1767628514573" nativeIdentity="CN=Andrea Hudson,OU=People,OU=Demo,DC=Eshiam,DC=com" status="Remediated" type="Decision" value="CN=Contractors,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+  <CertificationAction actorDisplayName="The Administrator" actorName="spadmin" decisionCertificationId="c0a801199b8c1257819b8edc6681064b" decisionDate="1767628514573" readyForRemediation="true" remediationAction="SendProvisionRequest" reviewed="true" status="Remediated">
+    <Description>Remove the 'ActiveDirectory' entitlement on  'Andrea Hudson'</Description>
+    <RemediationPlan>
+      <ProvisioningPlan trackingId="c0a801199b8c1257819b8edc713e06ed">
+        <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Andrea Hudson,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+          <AttributeRequest name="memberOf" op="Remove" trackingId="c0a801199b8c1257819b8edc713e06ed" value="CN=Contractors,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+        </AccountRequest>
+        <Attributes>
+          <Map>
+            <entry key="source" value="Certification"/>
+            <entry key="sourceId" value="c0a801199b8c1257819b8edc6681064b"/>
+            <entry key="sourceName" value="Identity Access Review for Andrea Hudson"/>
+          </Map>
+        </Attributes>
+      </ProvisioningPlan>
+    </RemediationPlan>
+  </CertificationAction>
+  <CertifiableDescriptor>
+    <EntitlementSnapshot application="ActiveDirectory" displayName="Andrea Hudson" nativeIdentity="CN=Andrea Hudson,OU=People,OU=Demo,DC=Eshiam,DC=com">
+      <Attributes>
+        <Map>
+          <entry key="memberOf" value="CN=Contractors,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+        </Map>
+      </Attributes>
+    </EntitlementSnapshot>
+  </CertifiableDescriptor>
+  <CertificationLink completed="1767628644902" identitySnapshotId="c0a801199b8c1257819b8edc67ad064c" type="Identity">
+    <Certifiers>
+      <String>spadmin</String>
+    </Certifiers>
+  </CertificationLink>
+  <HistoryIdentity>
+    <Reference class="sailpoint.object.Identity" name="Andrea Hudson"/>
+  </HistoryIdentity>
+</IdentityHistoryItem>

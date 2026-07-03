@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow explicitTransitions="true" name="Terminator dummyWorkflow" type="IdentityLifecycle">
+  <Variable input="true" name="trigger">
+    <Description>The IdentityTrigger</Description>
+  </Variable>
+  <Variable input="true" name="event" transient="true">
+    <Description>
+      The IdentityChangeEvent.  It can be used to build
+      the provisioning plan, but does not need to be
+      persisted with the case, so marked as transient.
+    </Description>
+  </Variable>
+  <Variable input="true" name="identityName">
+    <Description>The name of the identity.</Description>
+  </Variable>
+  <Variable name="plan"/>
+  <Variable initializer="true" name="trace">
+    <Description>Used for debugging this workflow and when set to true trace
+      will be sent to stdout.</Description>
+  </Variable>
+  <Step icon="Start" name="Start" posX="28" posY="10">
+    <Transition to="create provisioning plan"/>
+  </Step>
+  <Step icon="Task" name="create provisioning plan" posX="213" posY="11" resultVariable="plan">
+    <Script>
+      <Source><![CDATA[
+        import sailpoint.object.*;
+        import sailpoint.tools.Util;
+        import sailpoint.object.ProvisioningPlan;
+        import sailpoint.object.ProvisioningProject;
+        import sailpoint.object.ProvisioningPlan.Operation;
+        import sailpoint.object.ProvisioningPlan.AccountRequest;
+        import sailpoint.object.ProvisioningPlan.AttributeRequest;
+        import sailpoint.object.ProvisioningPlan.AccountRequest.Operation;
+
+        Identity identity=context.getObjectByName(Identity.class, identityName);
+        ProvisioningPlan plan = new ProvisioningPlan();
+        AccountRequest accntReq = new AccountRequest();
+
+        plan.setIdentity(identity);
+        accntReq.setApplication("ActiveDirectory");
+        accntReq.setOperation(ProvisioningPlan.AccountRequest.Operation.Modify);
+        accntReq.add(new AttributeRequest("memberOf",ProvisioningPlan.Operation.Remove,"CN=Disable,OU=Groups,OU=Demo,DC=Eshiam,DC=com"));
+        plan.add(accntReq);
+
+        return plan;
+      ]]></Source>
+    </Script>
+    <Transition to="Calling LCM Provisioning"/>
+  </Step>
+  <Step name="Calling LCM Provisioning" posX="381" posY="6">
+    <Arg name="plan" value="ref:plan"/>
+    <Arg name="identityName" value="ref:identityName"/>
+    <Arg name="trace" value="ref:trace"/>
+    <WorkflowRef>
+      <Reference class="sailpoint.object.Workflow" name="LCM Provisioning"/>
+    </WorkflowRef>
+    <Transition to="Stop"/>
+  </Step>
+  <Step icon="Stop" name="Stop" posX="367" posY="6"/>
+</Workflow>

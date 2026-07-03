@@ -1,0 +1,95 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskDefinition PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskDefinition name="TaskManagerSyslog_Demo Report" resultAction="Rename" subType="Search" type="GridReport">
+  <Attributes>
+    <Map>
+      <entry key="IdentitySearchTaskItem">
+        <value>
+          <SearchItem operation="AND" type="Syslog">
+            <InputDefinitions>
+              <SearchInputDefinition description="srch_input_def_syslog_end_date" headerKey="syslogEndDate" inputType="None" name="syslogEndDate" propertyName="created" propertyType="Date" searchType="Syslog">
+                <Value>
+                  <Date>1728930600000</Date>
+                </Value>
+              </SearchInputDefinition>
+              <SearchInputDefinition description="srch_input_def_syslog_start_date" headerKey="syslogStartDate" inputType="None" name="syslogStartDate" propertyName="created" propertyType="Date" searchType="Syslog">
+                <Value>
+                  <Date>1728930600000</Date>
+                </Value>
+              </SearchInputDefinition>
+              <SearchInputDefinition description="srch_input_def_syslog_event_level" headerKey="srch_input_def_syslog_event_level" ignoreCase="true" inputType="Equal" name="eventLevel" propertyName="eventLevel" propertyType="String" reportColumnWidth="40" searchType="Syslog">
+                <Value>
+                  <String>ERROR</String>
+                </Value>
+              </SearchInputDefinition>
+              <SearchInputDefinition description="srch_input_def_syslog_classname" headerKey="srch_input_def_syslog_classname" ignoreCase="true" inputType="Equal" name="classname" propertyName="classname" propertyType="String" searchType="Syslog">
+                <Value>
+                  <String>sailpoint.api.TaskManager</String>
+                </Value>
+              </SearchInputDefinition>
+            </InputDefinitions>
+            <SearchFilters>
+              <SearchItemFilter booleanOperation="AND" property="srch_input_def_syslog_event_level">
+                <SearchFilter>
+                  <Filter ignoreCase="true" operation="EQ" property="eventLevel" value="ERROR"/>
+                </SearchFilter>
+                <Value>
+                  <String>ERROR</String>
+                </Value>
+              </SearchItemFilter>
+              <SearchItemFilter booleanOperation="AND" property="srch_input_def_syslog_classname">
+                <SearchFilter>
+                  <Filter ignoreCase="true" operation="EQ" property="classname" value="sailpoint.api.TaskManager"/>
+                </SearchFilter>
+                <Value>
+                  <String>sailpoint.api.TaskManager</String>
+                </Value>
+              </SearchItemFilter>
+            </SearchFilters>
+            <SyslogFields>
+              <String>created</String>
+              <String>quickKey</String>
+              <String>eventLevel</String>
+              <String>message</String>
+            </SyslogFields>
+          </SearchItem>
+        </value>
+      </entry>
+      <entry key="SearchReportFilters">
+        <value>
+          <CompositeFilter operation="AND">
+            <Filter ignoreCase="true" operation="EQ" property="eventLevel" value="ERROR"/>
+            <Filter ignoreCase="true" operation="EQ" property="classname" value="sailpoint.api.TaskManager"/>
+          </CompositeFilter>
+        </value>
+      </entry>
+      <entry key="SearchReportInputDefinitions">
+        <value>
+          <List>
+            <SearchInputDefinition description="srch_input_def_syslog_date" headerKey="srch_input_def_syslog_date" ignoreCase="true" inputType="Equal" name="created" propertyName="created" propertyType="Date" reportColumnWidth="75" searchType="Syslog"/>
+            <SearchInputDefinition description="srch_input_def_syslog_quick_key" headerKey="srch_input_def_syslog_quick_key" ignoreCase="true" inputType="Equal" name="quickKey" propertyName="quickKey" propertyType="String" reportColumnWidth="75" searchType="Syslog"/>
+            <SearchInputDefinition description="srch_input_def_syslog_event_level" headerKey="srch_input_def_syslog_event_level" ignoreCase="true" inputType="Equal" name="eventLevel" propertyName="eventLevel" propertyType="String" reportColumnWidth="40" searchType="Syslog">
+              <Value>
+                <String>ERROR</String>
+              </Value>
+            </SearchInputDefinition>
+            <SearchInputDefinition description="srch_input_def_syslog_message" headerKey="srch_input_def_syslog_message" ignoreCase="true" inputType="Like" matchMode="ANYWHERE" name="message" propertyName="message" propertyType="String" reportColumnWidth="200" searchType="Syslog"/>
+          </List>
+        </value>
+      </entry>
+      <entry key="SearchReportOwner">
+        <value>
+          <Reference class="sailpoint.object.Identity" name="spadmin"/>
+        </value>
+      </entry>
+      <entry key="SearchReportType" value="Syslog"/>
+    </Map>
+  </Attributes>
+  <Description>TaskManagerSyslog_Demo Report Description</Description>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+  <Parent>
+    <Reference class="sailpoint.object.TaskDefinition" name="Search Report"/>
+  </Parent>
+</TaskDefinition>

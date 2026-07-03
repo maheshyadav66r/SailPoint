@@ -1,0 +1,58 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningTransaction PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningTransaction accountDisplayName="Aaron Nunez" applicationName="ActiveDirectory" identityDisplayName="Aaron Nunez" identityName="Aaron Nunez" integration="Filtered" name="0000007826" nativeIdentity="CN=Aaron Nunez,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Modify" source="Rule" status="Success" type="Auto">
+  <Attributes>
+    <Map>
+      <entry key="filtered">
+        <value>
+          <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Aaron Nunez,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify" sourceRole="roleForACCSelectionADM">
+            <Attributes>
+              <Map>
+                <entry key="selectorRuleSource" value="roleForACCSelectionADM"/>
+              </Map>
+            </Attributes>
+            <AttributeRequest name="memberOf" op="Add">
+              <Attributes>
+                <Map>
+                  <entry key="reason">
+                    <value>
+                      <FilterReason>Exists</FilterReason>
+                    </value>
+                  </entry>
+                </Map>
+              </Attributes>
+              <Value>
+                <List>
+                  <String>CN=Benefits,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                </List>
+              </Value>
+            </AttributeRequest>
+            <AttributeRequest name="givenName" op="Set" value="Aaron">
+              <Attributes>
+                <Map>
+                  <entry key="reason">
+                    <value>
+                      <FilterReason>Exists</FilterReason>
+                    </value>
+                  </entry>
+                </Map>
+              </Attributes>
+            </AttributeRequest>
+          </AccountRequest>
+        </value>
+      </entry>
+      <entry key="request">
+        <value>
+          <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Aaron Nunez,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify" sourceRole="roleForACCSelectionADM">
+            <Attributes>
+              <Map>
+                <entry key="provisioningTransactionId" value="c0a81d8998c11a508198c26781860bde"/>
+              </Map>
+            </Attributes>
+            <ProvisioningResult status="committed"/>
+          </AccountRequest>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+</ProvisioningTransaction>

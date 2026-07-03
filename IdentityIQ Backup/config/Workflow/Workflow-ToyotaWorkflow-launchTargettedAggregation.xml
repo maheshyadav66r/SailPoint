@@ -1,0 +1,231 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow explicitTransitions="true" name="Toyota Workflow-Launch Targetted Aggregation">
+  <Variable input="true" name="accountName"/>
+  <Variable initializer="false" name="trace">
+    <Description>Used for debugging this workflow and when set to true trace will be sent to stdout.</Description>
+  </Variable>
+  <Variable name="launcher"/>
+  <Variable input="true" name="applicationName"/>
+  <Variable input="true" name="resourceObject"/>
+  <Variable name="errorMessage"/>
+  <Variable input="true" name="launcher"/>
+  <Step icon="Start" name="Start" posX="20" posY="20">
+    <Transition to="Target Aggregation Form"/>
+  </Step>
+  <Step icon="Default" name="Target Aggregation Form" posX="219" posY="20">
+    <Approval name="Target Aggregation Form" owner="ref:launcher" return="nativeidentity,selectedApp" send="">
+      <Form name="Target Aggregation Form">
+        <Attributes>
+          <Map>
+            <entry key="hideIncompleteFields">
+              <value>
+                <Boolean/>
+              </value>
+            </entry>
+            <entry key="includeHiddenFields">
+              <value>
+                <Boolean/>
+              </value>
+            </entry>
+            <entry key="pageTitle" value="Target Aggregation Form"/>
+          </Map>
+        </Attributes>
+        <Description>Target Aggregation Form </Description>
+        <Section label="Select an Identity" name="Identity to be aggregated">
+          <Field displayName="Identity" name="selectedIdentity" postBack="true" required="true" type="Identity"/>
+          <Field displayName="Firstname" dynamic="true" name="firstname" type="string">
+            <Attributes>
+              <Map>
+                <entry key="readOnly" value="true"/>
+              </Map>
+            </Attributes>
+          </Field>
+          <Field displayName="Lastname" dynamic="true" name="lastname" type="string">
+            <Attributes>
+              <Map>
+                <entry key="readOnly" value="true"/>
+              </Map>
+            </Attributes>
+          </Field>
+          <Field displayName="Email" dynamic="true" name="email" type="string">
+            <Attributes>
+              <Map>
+                <entry key="readOnly" value="true"/>
+              </Map>
+            </Attributes>
+          </Field>
+          <Field displayName="UPN" dynamic="true" name="userPrincipalName" type="string">
+            <Attributes>
+              <Map>
+                <entry key="readOnly" value="true"/>
+              </Map>
+            </Attributes>
+          </Field>
+          <Field displayName="GUID" dynamic="true" name="guid" type="string">
+            <Attributes>
+              <Map>
+                <entry key="readOnly" value="true"/>
+              </Map>
+            </Attributes>
+          </Field>
+          <Field displayName="Applications" name="selectedApp" postBack="true" type="string">
+            <AllowedValuesDefinition>
+              <Script>
+                <Source><![CDATA[
+                  import sailpoint.object.Identity;
+                  import sailpoint.object.Link;
+                  import sailpoint.object.Application;
+                  import java.util.List;
+
+                  List appNames = new ArrayList();
+                  if(selectedIdentity!=null)
+                  {
+                  	Identity id = context.getObject(Identity.class,selectedIdentity);
+                  	List links = id.getLinks();
+                  	if(links != null)
+                  	{
+                  	  for (Link link : links )
+                  	  {
+                  	     appNames.add(link.getApplicationName());
+                  	  }
+                  	return appNames;
+                  	}
+                  }
+                ]]></Source>
+              </Script>
+            </AllowedValuesDefinition>
+          </Field>
+          <Field dependencies="selectedApp" displayName="Display Name" dynamic="true" name="displayName" type="string">
+            <Script>
+              <Source><![CDATA[
+                import sailpoint.object.Identity;
+                import sailpoint.object.Application;
+                import sailpoint.object.Link;
+                import java.util.List;
+                import sailpoint.api.IdentityService;
+                import sailpoint.api.SailpointContext;
+
+
+                String displayName = "";
+                if( selectedIdentity != null && selectedApp != null )
+                {
+				  Identity identityObj = context.getObject(Identity.class,selectedIdentity);
+                  Application appObj = context.getObjectByName(Application.class,selectedApp);
+	  			  IdentityService service = new IdentityService(context);
+				  if ( identityObj != null && appObj != null )
+                  {
+                    List links = service.getLinks(identityObj,appObj);
+                    if( links != null && links.size()>0 )
+                    {
+                      Link link = links.get(0);
+                      displayName = link.getDisplayName();
+                    }
+                  }
+                  return displayName;
+                }
+              ]]></Source>
+            </Script>
+          </Field>
+          <Field dependencies="selectedApp" displayName="Native Identity" dynamic="true" hidden="true" name="nativeidentity" type="string">
+            <Script>
+              <Source><![CDATA[
+                import sailpoint.object.Identity;
+                import sailpoint.object.Application;
+                import sailpoint.object.Link;
+                import java.util.List;
+                import sailpoint.api.IdentityService;
+                import sailpoint.api.SailpointContext;
+
+
+                String nativeId = "";
+                if( selectedIdentity != null && selectedApp != null )
+                {
+				  Identity identityObj = context.getObject(Identity.class,selectedIdentity);
+                  Application appObj = context.getObjectByName(Application.class,selectedApp);
+				  IdentityService service = new IdentityService(context);
+
+                  if ( identityObj != null && appObj != null )
+                  {
+                    List links = service.getLinks(identityObj,appObj);
+                    if( links != null && links.size()>0 )
+                    {
+                      Link link = links.get(0);
+                      nativeId = link.getNativeIdentity();
+                    }
+                   }
+                   return nativeId;
+                 }
+              ]]></Source>
+            </Script>
+          </Field>
+        </Section>
+        <Button action="cancel" label="Cancel"/>
+        <Button action="next" label="Submit"/>
+      </Form>
+    </Approval>
+    <Transition to="Launch Aggregation"/>
+  </Step>
+  <Step name="Launch Aggregation" posX="429" posY="31">
+    <Script>
+      <Source><![CDATA[
+        import java.lang.Object;
+        import sailpoint.object.Application;
+        import sailpoint.object.Attributes;
+        import sailpoint.object.Custom;
+        import sailpoint.object.Identity;
+        import sailpoint.object.Link;
+        import sailpoint.object.ResourceObject;
+        import sailpoint.object.TaskResult;
+        import sailpoint.object.Rule;
+        import sailpoint.api.Aggregator;
+        import sailpoint.connector.Connector;
+        import sailpoint.tools.Message;
+        import sailpoint.connector.ConnectorFactory;
+
+        import org.apache.log4j.Logger; 
+        import org.apache.log4j.Level;
+
+        Logger log = Logger.getLogger("workflow.Custom-Targetted-Aggregation");
+        String msgSeparator = "*";
+
+        Connector appConnector = null;
+        ResourceObject rObj= null;
+        public ResourceObject getResourceObject(Application appObject ,String nativeIdentity) {
+        ResourceObject rObj= null;
+        appConnector = sailpoint.connector.ConnectorFactory.getConnector(appObject, null);
+        rObj = appConnector.getObject("account",nativeIdentity, null);
+        return rObj;
+        }  
+
+        String nativeIdentity =nativeidentity;
+        String appName=selectedApp;
+
+        Application appObject = context.getObjectByName(Application.class,appName);
+
+        ResourceObject rObj = getResourceObject(appObject,nativeIdentity);
+		Attributes argMap = new Attributes();
+
+        argMap.put("aggregationType", "account");
+        argMap.put("applications" ,appName);
+        argMap.put("descriptionAttribute","description");
+        argMap.put("descriptionLocale", "en_US");
+        argMap.put("promoteAttributes",   "true");
+        argMap.put("correlateEntitlements",   "true");
+        argMap.put("checkDeleted",   "true");
+        argMap.put("promoteManagedAttributes",   "true");
+
+        Aggregator agg = new Aggregator(context, argMap);
+        TaskResult result = agg.aggregate(appObject,rObj);
+
+        if ( log.isTraceEnabled() ) {
+        log.trace( msgSeparator );
+        log.trace( "Task Result "+result.toXml());
+        }
+        return result;
+      ]]></Source>
+    </Script>
+    <Transition to="Stop"/>
+  </Step>
+  <Step icon="Stop" name="Stop" posX="614" posY="19"/>
+</Workflow>

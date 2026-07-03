@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Bundle PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Bundle disabled="true" displayName="BusinessTestRoleForMutliTypeRoles" name="BusinessTestRoleForMutliTypeRoles" type="business">
+  <Attributes>
+    <Map>
+      <entry key="accountSelectorRules"/>
+      <entry key="allowDuplicateAccounts" value="false"/>
+      <entry key="allowMultipleAssignments" value="false"/>
+      <entry key="mergeTemplates" value="false"/>
+      <entry key="roleCriticality"/>
+      <entry key="roleLevel"/>
+      <entry key="sysDescriptions">
+        <value>
+          <Map>
+            <entry key="en_US"/>
+          </Map>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Inheritance>
+    <Reference class="sailpoint.object.Bundle" name="ad_business_role"/>
+    <Reference class="sailpoint.object.Bundle" name="activeDirectoryITRole"/>
+  </Inheritance>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+  <Permits>
+    <Reference class="sailpoint.object.Bundle" name="IT2LDAP-Finance"/>
+    <Reference class="sailpoint.object.Bundle" name="IT2AD-Finance"/>
+  </Permits>
+  <Requirements>
+    <Reference class="sailpoint.object.Bundle" name="IT2AD-DefaltAllUsers"/>
+    <Reference class="sailpoint.object.Bundle" name="IT2LDAP-DefaltAllUsers"/>
+  </Requirements>
+  <Selector>
+    <IdentitySelector>
+      <MatchExpression and="true">
+        <MatchTerm name="department" type="IdentityAttribute" value="Finance"/>
+      </MatchExpression>
+    </IdentitySelector>
+  </Selector>
+</Bundle>

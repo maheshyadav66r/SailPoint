@@ -1,0 +1,212 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1716181218421" completionStatus="Error" launched="1716180869290" launcher="spadmin" name="Update Identity Aiden markram AccessRequest - 1" targetClass="Identity" targetName="Aiden markram" type="LCM">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000042"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Aiden markram">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000042"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="IIQ" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800fb8f7b1606818f868b2f060bd0"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="RoleAdd"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="assignedRoles" op="Add" value="IT InheritedRoles"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000042"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <ProvisioningTargets>
+                  <ProvisioningTarget role="IT InheritedRoles">
+                    <AccountSelection applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" doCreate="true"/>
+                    <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ActiveDirectory" selection="CN=Aiden markram,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                      <AccountInfo displayName="Aiden markram" nativeIdentity="CN=Aiden markram,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+                    </AccountSelection>
+                  </ProvisioningTarget>
+                </ProvisioningTargets>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan targetIntegration="IIQ" trackingId="be324b0ebc6843ae90908fd3bcd8c1ee">
+              <AccountRequest application="IIQ" op="Modify" targetIntegration="IIQ">
+                <Attributes>
+                  <Map>
+                    <entry key="attachmentConfigList"/>
+                    <entry key="attachments"/>
+                    <entry key="flow" value="AccessRequest"/>
+                    <entry key="id" value="c0a800fb8f7b1606818f868b2f060bd0"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="operation" value="RoleAdd"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="assignedRoles" op="Add" value="IT InheritedRoles"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000042"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+            <ProvisioningPlan nativeIdentity="Aiden markram" targetIntegration="ActiveDirectory" trackingId="1ac2cec00bc242dd80813530fee4eb3e">
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Aiden markram,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify" targetIntegration="ActiveDirectory">
+                <AttributeRequest name="memberOf" op="Add">
+                  <Value>
+                    <List>
+                      <String>CN=DEV_All,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                      <String>CN=DEV_EastCoast,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                      <String>CN=Compensation,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                      <String>CN=Corporate-VPN,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                    </List>
+                  </Value>
+                </AttributeRequest>
+                <ProvisioningResult status="committed"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000042"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+            <ProvisioningPlan nativeIdentity="Aiden markram" targetIntegration="LDAPApplication" trackingId="51f61debe0144d68806ed129d40bb679">
+              <AccountRequest application="LDAPApplication" assignmentIds="87ea15095f664b49b16d8b3fe01b43c6" nativeIdentity="cn=Albert.Woods,ou=People,dc=my-domain,dc=com" op="Create">
+                <Attributes>
+                  <Map>
+                    <entry key="provisioningTransactionId" value="c0a81d898f9414e7818f945f31dc0050"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="groups" op="Add">
+                  <Value>
+                    <List>
+                      <String>cn=WebApplicationAccess,ou=Group,dc=my-domain,dc=com</String>
+                      <String>cn=Contractors,ou=Group,dc=my-domain,dc=com</String>
+                      <String>cn=Managers,ou=Group,dc=my-domain,dc=com</String>
+                    </List>
+                  </Value>
+                </AttributeRequest>
+                <AttributeRequest name="password" op="Set">
+                  <Attributes>
+                    <Map>
+                      <entry key="secret" value="true"/>
+                    </Map>
+                  </Attributes>
+                </AttributeRequest>
+                <AttributeRequest name="cn" op="Set" value="Aiden markram"/>
+                <AttributeRequest name="sn" op="Set" value="markram"/>
+                <ProvisioningResult status="failed">
+                  <Errors>
+                    <Message key="sailpoint.connector.ObjectAlreadyExistsException: [ ObjectAlreadyExistsException ] &#10; [ Possible suggestions ] Ensure that account or group does not exist. &#10; [ Error details ] [LDAP: error code 68 - Entry Already Exists]" type="Error"/>
+                  </Errors>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000042"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+              <ProvisioningResult status="failed">
+                <Errors>
+                  <Message key="sailpoint.connector.ObjectAlreadyExistsException: [ ObjectAlreadyExistsException ] &#10; [ Possible suggestions ] Ensure that account or group does not exist. &#10; [ Error details ] [LDAP: error code 68 - Entry Already Exists]" type="Error"/>
+                </Errors>
+              </ProvisioningResult>
+            </ProvisioningPlan>
+            <ProvisioningTarget role="IT InheritedRoles">
+              <AccountSelection applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" doCreate="true"/>
+              <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ActiveDirectory" selection="CN=Aiden markram,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="Aiden markram" nativeIdentity="CN=Aiden markram,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+            </ProvisioningTarget>
+            <QuestionHistory>
+              <Question attributeName="dn" futureTarget="cn=Albert.Woods,ou=People,dc=my-domain,dc=com" shown="true" source="LDAPApplication" type="Application">
+                <Field application="LDAPApplication" displayName="con_prov_policy_ldap_user_DN" helpKey="help_con_prov_policy_ldap_user_DN" name="Question:0:dn" priority="10" required="true" template="account" type="string" value="cn=Albert.Woods,ou=People,dc=my-domain,dc=com"/>
+              </Question>
+              <Question attributeName="password" shown="true" source="LDAPApplication" type="Application">
+                <Field application="LDAPApplication" displayName="con_prov_policy_ldap_password" helpKey="help_con_prov_policy_ldap_password" name="Question:1:password" priority="10" required="true" template="account" type="secret">
+                  <ValidationRule>
+                    <Reference class="sailpoint.object.Rule" name="Check Password Policy"/>
+                  </ValidationRule>
+                </Field>
+              </Question>
+              <Question attributeName="cn" shown="true" source="LDAPApplication" type="Application">
+                <Field application="LDAPApplication" displayName="con_prov_policy_ldap_full_name" helpKey="help_con_prov_policy_ldap_full_name" name="Question:2:cn" priority="10" required="true" template="account" type="string" value="Aiden markram"/>
+              </Question>
+              <Question attributeName="givenName" shown="true" source="LDAPApplication" type="Application">
+                <Field application="LDAPApplication" displayName="con_prov_policy_ldap_first_name" helpKey="help_con_prov_policy_ldap_first_name" name="Question:3:givenName" priority="10" reviewRequired="true" template="account" type="string"/>
+              </Question>
+              <Question attributeName="sn" shown="true" source="LDAPApplication" type="Application">
+                <Field application="LDAPApplication" displayName="con_prov_policy_ldap_last_name" helpKey="help_con_prov_policy_ldap_last_name" name="Question:4:sn" priority="10" required="true" template="account" type="string" value="markram"/>
+              </Question>
+            </QuestionHistory>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a81d898f9414e7818f9459e2050030"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="end">
+            <Interactions>
+              <ApprovalSummary completer="The Administrator" endDate="1716181216715" owner="spadmin" request="Complete provisioning form for Aiden markram" startDate="1716180870279" state="Finished" workItemId="c0a81d898f9414e7818f9459e45d0033" workItemType="Form"/>
+            </Interactions>
+          </WorkflowSummary>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="sailpoint.connector.ObjectAlreadyExistsException: [ ObjectAlreadyExistsException ] &#10; [ Possible suggestions ] Ensure that account or group does not exist. &#10; [ Error details ] [LDAP: error code 68 - Entry Already Exists]" type="Error"/>
+  </Messages>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

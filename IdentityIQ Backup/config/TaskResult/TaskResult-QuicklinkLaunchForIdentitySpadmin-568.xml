@@ -1,0 +1,99 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1749553895905" completionStatus="Error" launched="1749553867112" launcher="spadmin" name="QuickLink Launch for identity spadmin - 568" type="Workflow">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000706"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Monica Berry">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan trackingId="2dc9199254ee4938a75a2d54f6d05580">
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Monica Berry,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create">
+                  <AttributeRequest name="memberOf" op="Add" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000706"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Monica Berry" targetIntegration="ActiveDirectory" trackingId="0bc61ea2741044b28f21b0fc19e1cccf">
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Monica Berry,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create" targetIntegration="ActiveDirectory">
+                <Attributes>
+                  <Map>
+                    <entry key="provisioningTransactionId" value="c0a8a40197481f2d81975989d3931389"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="memberOf" op="Add" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                <AttributeRequest name="sAMAccountName" op="Set" value="Monica Berry"/>
+                <AttributeRequest name="givenName" op="Set" value="Monica"/>
+                <AttributeRequest name="sn" op="Set" value="Berry"/>
+                <AttributeRequest name="mail" op="Set" value="monica.berry@eshiam.com"/>
+                <AttributeRequest name="password" op="Set"/>
+                <ProvisioningResult status="committed"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000706"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a8a40197481f2d8197598969a11364"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="createAd_AuditEvent">
+            <Interactions>
+              <ApprovalSummary completer="The Administrator" endDate="1749553881327" owner="spadmin" request="IdentitySelectionForm" startDate="1749553867350" state="Finished" workItemId="c0a8a40197481f2d819759896a0e1365" workItemType="Form"/>
+            </Interactions>
+          </WorkflowSummary>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="err_exception" type="Error">
+      <Parameters>
+        <Message key="Error in method invocation: Method setFrom(null) not found in class'sailpoint.object.EmailOptions' : at Line: 68 " type="Error"/>
+      </Parameters>
+    </Message>
+  </Messages>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

@@ -1,0 +1,105 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningTransaction PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningTransaction accountDisplayName="Nancy Lee" applicationName="ActiveDirectory" identityDisplayName="Nancy Lee" identityName="Nancy Lee" integration="ActiveDirectory" name="0000000282" nativeIdentity="CN=Nancy Lee,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Modify" source="IdentityRefresh" status="Failed" type="Auto">
+  <Attributes>
+    <Map>
+      <entry key="request">
+        <value>
+          <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Nancy Lee,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+            <Attributes>
+              <Map>
+                <entry key="provisioningTransactionId" value="c0a81d8991031fec8191036f11d0007f"/>
+              </Map>
+            </Attributes>
+            <AttributeRequest name="department" op="Set" value="Management"/>
+            <AttributeRequest name="streetAddress" op="Set">
+              <Value>
+                <ObjectAttribute displayName="Location" editMode="ReadOnly" name="location" namedColumn="true" type="string">
+                  <AttributeSource name="location">
+                    <ApplicationRef>
+                      <Reference class="sailpoint.object.Application" name="ABMB"/>
+                    </ApplicationRef>
+                  </AttributeSource>
+                  <AttributeTargets>
+                    <AttributeTarget name="streetAddress" provisionAllAccounts="true">
+                      <ApplicationRef>
+                        <Reference class="sailpoint.object.Application" name="ADX"/>
+                      </ApplicationRef>
+                      <RuleRef>
+                        <Reference class="sailpoint.object.Rule" name="StreetAddressTransformationRule"/>
+                      </RuleRef>
+                    </AttributeTarget>
+                    <AttributeTarget name="l" provisionAllAccounts="true">
+                      <ApplicationRef>
+                        <Reference class="sailpoint.object.Application" name="ADX"/>
+                      </ApplicationRef>
+                      <RuleRef>
+                        <Reference class="sailpoint.object.Rule" name="StreetAddressTransformationRule"/>
+                      </RuleRef>
+                    </AttributeTarget>
+                    <AttributeTarget name="postalCode" provisionAllAccounts="true">
+                      <ApplicationRef>
+                        <Reference class="sailpoint.object.Application" name="ADX"/>
+                      </ApplicationRef>
+                    </AttributeTarget>
+                    <AttributeTarget name="st" provisionAllAccounts="true">
+                      <ApplicationRef>
+                        <Reference class="sailpoint.object.Application" name="ADX"/>
+                      </ApplicationRef>
+                    </AttributeTarget>
+                  </AttributeTargets>
+                </ObjectAttribute>
+              </Value>
+            </AttributeRequest>
+            <AttributeRequest name="l" op="Set">
+              <Value>
+                <ObjectAttribute displayName="Location" editMode="ReadOnly" name="location" namedColumn="true" type="string">
+                  <AttributeSource name="location">
+                    <ApplicationRef>
+                      <Reference class="sailpoint.object.Application" name="ABMB"/>
+                    </ApplicationRef>
+                  </AttributeSource>
+                  <AttributeTargets>
+                    <AttributeTarget name="streetAddress" provisionAllAccounts="true">
+                      <ApplicationRef>
+                        <Reference class="sailpoint.object.Application" name="ADX"/>
+                      </ApplicationRef>
+                      <RuleRef>
+                        <Reference class="sailpoint.object.Rule" name="StreetAddressTransformationRule"/>
+                      </RuleRef>
+                    </AttributeTarget>
+                    <AttributeTarget name="l" provisionAllAccounts="true">
+                      <ApplicationRef>
+                        <Reference class="sailpoint.object.Application" name="ADX"/>
+                      </ApplicationRef>
+                      <RuleRef>
+                        <Reference class="sailpoint.object.Rule" name="StreetAddressTransformationRule"/>
+                      </RuleRef>
+                    </AttributeTarget>
+                    <AttributeTarget name="postalCode" provisionAllAccounts="true">
+                      <ApplicationRef>
+                        <Reference class="sailpoint.object.Application" name="ADX"/>
+                      </ApplicationRef>
+                    </AttributeTarget>
+                    <AttributeTarget name="st" provisionAllAccounts="true">
+                      <ApplicationRef>
+                        <Reference class="sailpoint.object.Application" name="ADX"/>
+                      </ApplicationRef>
+                    </AttributeTarget>
+                  </AttributeTargets>
+                </ObjectAttribute>
+              </Value>
+            </AttributeRequest>
+            <AttributeRequest name="postalCode" op="Set" value="Siri Towers-Addagutta-Hyderabad-500083-Telangana"/>
+            <AttributeRequest name="st" op="Set" value="Siri Towers-Addagutta-Hyderabad-500083-Telangana"/>
+            <ProvisioningResult status="failed">
+              <Errors>
+                <Message key="Error(s) reported back from the IQService - Failed to update attributes for identity CN=Nancy Lee,OU=People,OU=Demo,DC=Eshiam,DC=com. A constraint violation occurred.&#10;" type="Error"/>
+              </Errors>
+            </ProvisioningResult>
+          </AccountRequest>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+</ProvisioningTransaction>

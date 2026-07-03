@@ -1,0 +1,169 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow configForm="Provisioning Workflow Config Form" explicitTransitions="true" handler="sailpoint.api.StandardWorkflowHandler" libraries="Identity,BatchRequest" monitored="true" name="Toyota AffiliateInbound User Workflow" taskType="LCM" type="LCMIdentity">
+  <Variable name="identityName">
+    <Description>The name of the identity</Description>
+  </Variable>
+  <Variable name="identityDisplayName">
+    <Description>The Display name of the identity</Description>
+  </Variable>
+  <Variable initializer="false" name="transient"/>
+  <Variable initializer="false" name="trace">
+    <Description>Used for debugging this workflow and when set to true
+      trace
+      will be sent to stdout.</Description>
+  </Variable>
+  <Variable name="launcher"/>
+  <Variable initializer="IdentityEditRequest" input="true" name="flow">
+    <Description>
+      The name of the LCM flow that launched this workflow.
+      This is one of these two values:
+
+      IdentityCreateRequest
+      IdentityEditRequest
+    </Description>
+  </Variable>
+  <Variable name="plan"/>
+  <Variable input="true" name="AffiliateJson"/>
+  <Variable initializer="false" input="true" name="optimisticProvisioning">
+    <Description>
+      Set to true to enable optimistic provisioning.  This will cause
+      changes to the entitlements compiled from role assignments to be
+      applied immediately to the identity cube rather than waiting
+      for the next refresh/reaggregation after the provisioning system
+      completes the request.
+    </Description>
+  </Variable>
+  <Variable initializer="true" input="true" name="foregroundProvisioning">
+    <Description>
+      Normally provisioning is done in a step that uses the "background"
+      option to force the workflow to be suspend and be resumed in a
+      background task thread.  This prevents the browser session from
+      hanging since provision can sometimes take a long time.  For demos
+      and testing it can be better to do this in the foreground so that
+      provisioning will have been performed when control is returned to the
+      user.  This prevents having to run the Perform Maintenance task to
+      see the results of the request.
+    </Description>
+  </Variable>
+  <Variable initializer="spadmin" input="true" name="fallbackApprover">
+    <Description>A String that specifies the name of the Identity that
+      will
+      be assigned any approvals where the owner of the approver
+      can&amp;#39;t be resolved. Example if the scheme is &amp;quot;owner&amp;quot; and
+      the
+      application doesn&amp;#39;t specify and owner.</Description>
+  </Variable>
+  <Variable name="identityRequestId" output="true">
+    <Description>The sequence id of the Identity request object which is
+      stored in
+      the name field of the identity request.</Description>
+  </Variable>
+  <Step icon="Start" name="Start" posX="28" posY="10">
+    <Transition to="Build Plan"/>
+  </Step>
+  <Step icon="Start" name="Build Plan" posX="28" posY="10" resultVariable="plan">
+    <Arg name="AffiliateJson" value="ref:AffiliateJson"/>
+    <Script>
+      <Source><![CDATA[
+        
+        import sailpoint.object.ProvisioningPlan;
+        import sailpoint.object.ProvisioningProject;
+        import sailpoint.object.Identity;
+        import org.apache.log4j.Logger;
+        import org.apache.log4j.Level;
+        import sailpoint.object.Filter;
+        import sailpoint.object.QueryOptions;
+        import sailpoint.api.Provisioner;
+        import org.apache.commons.logging.LogFactory;
+
+        Logger alog = Logger.getLogger("workflow.AffiliateInbound-User-Workflow");
+        if (AffiliateJson != null) {
+          Map map = generateMapFromJson(AffiliateJson);
+          String operation = "Update";
+          String identityName = map.get("identityName").toString();
+          String type = map.get("type").toString();
+          Identity identity = null;
+          QueryOptions options = new QueryOptions();
+          options.addFilter(Filter.and(Filter.like("name", identityName),Filter.eq("type",type)));
+          int countObjects = context.countObjects(Identity.class, options);
+          if (countObjects < 1) {
+            identity = new Identity();
+            identity.setName(identityName);
+            flow = "IdentityCreateRequest";
+            operation = "Create"; 
+          }
+          else {
+            identity = context.getObjectByName(Identity.class, identityName);
+          }
+          plan = buildPlan(map, operation, identity);     
+          wfcontext.setVariable("flow", flow);
+          wfcontext.setVariable("plan", plan);
+          wfcontext.setVariable("identityName", identityName);
+          wfcontext.setVariable("identityDisplayName", identityName);
+          Provisioner provisioner = new Provisioner(context);
+          provisioner.setNoLocking(true);
+          provisioner.setOptimisticProvisioning(true);
+          ProvisioningProject project=provisioner.compile(plan);
+          if(project!=null) {
+            provisioner.execute(project);
+          }
+        }
+        
+      ]]></Source>
+    </Script>
+    <Transition to="Custom Post Refresh"/>
+  </Step>
+  <Step icon="Default" name="Custom Post Refresh">
+    <Arg name="identityName" value="ref:identityName"/>
+    <Script>
+      <Source><![CDATA[
+      
+        import sailpoint.object.Workflow;
+        import sailpoint.object.Identity;
+        import sailpoint.object.Attributes;
+        import sailpoint.workflow.StandardWorkflowHandler;
+        import sailpoint.request.WorkflowRequestExecutor;
+        import sailpoint.object.Request;
+        import sailpoint.object.RequestDefinition;
+        import sailpoint.api.RequestManager;
+        import java.util.Calendar;
+
+        if (identityName != null)
+        {
+          String workflowName = "Affiliate Refresh";
+          String requestName = workflowName + "' for: " + identityName;
+          String requesterId = "spadmin";
+
+          Workflow eventWorkflow = context.getObject(Workflow.class, workflowName);
+          Identity id = context.getObjectByName(Identity.class, requesterId);
+          
+          Attributes reqArgs = new Attributes();
+          reqArgs.put(StandardWorkflowHandler.ARG_REQUEST_DEFINITION, WorkflowRequestExecutor.DEFINITION_NAME);
+          reqArgs.put(StandardWorkflowHandler.ARG_WORKFLOW, workflowName);
+          reqArgs.put(StandardWorkflowHandler.ARG_REQUEST_NAME, requestName);
+          
+          Attributes wfArgs = new Attributes();
+          wfArgs.put("identityName", identityName);
+          wfArgs.put("workflow", eventWorkflow.getName());
+          reqArgs.putAll(wfArgs);
+
+          Calendar calendar = Calendar.getInstance();
+          calendar.add(Calendar.MINUTE, 1);
+
+          Request req = new Request();
+          RequestDefinition reqdef = context.getObject(RequestDefinition.class, "Workflow Request");
+          req.setDefinition(reqdef);
+          req.setOwner(id);
+          req.setName(requestName);
+          req.setEventDate(calendar.getTime());
+          req.setAttributes( reqdef, reqArgs );
+          RequestManager.addRequest(context, req);
+        }
+         
+      ]]></Source>
+    </Script>
+    <Transition to="end"/>
+  </Step>
+  <Step icon="Stop" name="end" posX="858" posY="10"/>
+</Workflow>

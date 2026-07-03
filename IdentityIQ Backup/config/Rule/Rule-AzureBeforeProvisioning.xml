@@ -1,0 +1,405 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Azure Before Provisioning" type="BeforeProvisioning">
+  <AssignedScope>
+    <Reference class="sailpoint.object.Scope" name="TMNA"/>
+  </AssignedScope>
+  <Description>This Rule executes before Azure Provisioning occurs.</Description>
+  <ReferencedRules>
+    <Reference class="sailpoint.object.Rule" name="Attribute Rule Library"/>
+    <Reference class="sailpoint.object.Rule" name="AzureAD-RuleLibrary"/>
+    <Reference class="sailpoint.object.Rule" name="Toyota Database Logger"/>
+  </ReferencedRules>
+  <Signature>
+    <Inputs>
+      <Argument name="log">
+        <Description>
+          The log object associated with the SailPointContext.
+        </Description>
+      </Argument>
+      <Argument name="context">
+        <Description>
+          A sailpoint.api.SailPointContext object that can be used to query the database if necessary.
+        </Description>
+      </Argument>
+      <Argument name="plan">
+        <Description>
+          The ProvisioningPlan object on its way to the Connector.
+        </Description>
+      </Argument>
+      <Argument name="application">
+        <Description>
+          The application object that references this before/after script.
+        </Description>
+      </Argument>
+    </Inputs>
+  </Signature>
+  <Source><![CDATA[  
+
+  import sailpoint.api.SailPointContext;
+  import sailpoint.api.IdentityService;
+  import sailpoint.object.Application;
+  import sailpoint.object.Identity;
+  import sailpoint.object.Link;
+  import sailpoint.object.ProvisioningPlan;
+  import sailpoint.object.ProvisioningPlan.AccountRequest;
+  import sailpoint.object.ProvisioningPlan.AttributeRequest;
+  import sailpoint.object.ProvisioningPlan.Operation;
+  import sailpoint.object.ProvisioningProject; 
+  import sailpoint.object.Attributes;
+  import sailpoint.object.EntitlementGroup; 
+  import sailpoint.object.Bundle;
+  import sailpoint.object.Form;
+  import sailpoint.object.Form.Section;
+  import sailpoint.object.Field;
+  import sailpoint.object.Custom;
+  import java.util.ArrayList;
+  import org.apache.commons.logging.LogFactory;
+  import sailpoint.object.ManagedAttribute;
+  import sailpoint.object.AttributeAssignment;
+  import sailpoint.api.ManagedAttributer;
+  import connector.common.JsonUtil;
+  import org.apache.log4j.Logger; 
+  import org.apache.log4j.Level;
+  import org.apache.commons.logging.LogFactory;
+  import sailpoint.object.Filter;
+  import sailpoint.tools.Util;
+
+    {
+      Logger ruplog = Logger.getLogger("rule.Azure-Before-Provisioning");
+      if (ruplog.isTraceEnabled()) {
+        ruplog.trace("AZBP-001::Executing Rule Azure Before Provisioning");
+        ruplog.trace("AZBP-002::Plan:\n" + plan.toXml());
+      }
+
+      Identity identity = plan.getIdentity();
+      identity = (null != identity ? identity : context.getObjectByName(Identity.class, plan.getNativeIdentity()));
+      Boolean linkedExistingAccount = false;
+      ArrayList accountRequestsToRemove = new ArrayList();
+      String attributeName = "";
+      String attributeValue = "";
+      String accType = "";
+      String userType = "";
+
+      if (identity != null && application != null && plan != null) {
+        String identityType = identity.getType() != null ? identity.getType() : "";
+        String name = identity.getName();
+        if (ruplog.isTraceEnabled()) {
+          ruplog.trace("AZBP-003::Type: " + identityType);
+        }
+        attributeName = application.getAttributeValue("azureADGUIDExtAttr");
+        attributeValue = identity.getStringAttribute("guid");
+        // Get Account Requests from plan
+        List accountRequests = plan.getAccountRequests("Azure AD");
+
+        if (accountRequests != null && accountRequests.size() > 0) {
+          if (ruplog.isTraceEnabled()) {
+            ruplog.trace("AZBP-004::Got account Requests");
+            ruplog.trace("AZBP-005::Account Request List: " + accountRequests.toString());
+            ruplog.trace("AZBP-006::Account Request Size: " + accountRequests.size());
+          }
+
+          // Loop through each Account Request
+          for (AccountRequest accountRequest : accountRequests) {
+            if(accountRequest.getOperation() != null){
+              String operation = accountRequest.getOperation().toString();
+              if (ruplog.isTraceEnabled()) {
+                ruplog.trace("AZBP-007::Operation: " + operation);
+              }
+              AttributeRequest attrRequestUserType = accountRequest.getAttributeRequest("userType");
+              if (attrRequestUserType != null) {
+                if(Util.isNotNullOrEmpty(attrRequestUserType.getValue())){
+                  userType = attrRequestUserType.getValue().toString();
+                }
+              }
+              AttributeRequest attrRequestAccountType = accountRequest.getAttributeRequest("accountType");
+              if (attrRequestAccountType != null) {
+                if(Util.isNotNullOrEmpty(attrRequestAccountType.getValue())){
+                  accType = attrRequestAccountType.getValue().toString();
+                }
+              }
+
+              // Only work on Create Operations. Put additional check for Inactive users so
+              // that if user has any Sticky entitlements, IDM will not try to provision
+              // another account
+              if (operation.equals("Create")) {
+                if (identity.isInactive()) {
+                  accountRequestsToRemove.add(accountRequest);
+                  toyotaLogger(context, "AZBP-008::Attempeted to create an account for Terminated user" + identity.getName() + " is Failed");
+                }else if (!(Util.nullSafeCaseInsensitiveEq(identityType, "supplier") || Util.nullSafeCaseInsensitiveEq(identityType, "marketing")) && ((Util.nullSafeCaseInsensitiveEq(userType, "Member")) || !(Util.nullSafeCaseInsensitiveEq(accType, "Guest User B2B")))){
+                  accountRequestsToRemove.add(accountRequest);
+                  toyotaLogger(context, "AZBP-009::Attempeted to create an account for a NON supplier user for Member type account" + identity.getName() + " is Failed");
+                }else {
+                  // check if user exists in recycle bin
+                  String recycleBinURL = getURLRecycleBin(identity, application, attributeName, attributeValue);
+                  String userCheck = checkUserInRecycleBin(identity, application, recycleBinURL);
+                  String userEmail = identity.getAttribute("PersonalEmail");
+
+                  String guestUserObjectId = null;
+                  if(Util.isNotNullOrEmpty(userEmail) && Util.nullSafeCaseInsensitiveEq(identityType, "employee")){
+                    guestUserObjectId = getAzureObjectIdUsingMail( context, application, identity, userEmail );
+                  }
+                  if(!Util.nullSafeCaseInsensitiveEq(userCheck, "failed")){
+                    linkedExistingAccount = createAzureGuestUser(context, accountRequest, application, identity);
+                    if (linkedExistingAccount) {
+                      accountRequestsToRemove.add(accountRequest);
+                    } else if(Util.isNotNullOrEmpty(userCheck)){
+                      String objectId = userCheck;
+                      // restore the user if present in recycle bin and discard the create request
+                      String userRestore = restoreUser(objectId, application);
+                      if(Util.nullSafeCaseInsensitiveEq(userRestore, "success")){
+                        accountRequest.setOperation(ProvisioningPlan.AccountRequest.Operation.Modify);
+                        accountRequest.setNativeIdentity(objectId);
+                        List attributeRequests = accountRequest.getAttributeRequests();
+                        List attRequestsToRemove = new ArrayList();
+                        if (Util.nullSafeSize(attributeRequests) > 0) {
+                          for ( ProvisioningPlan.AttributeRequest attreq : attributeRequests ) {
+                            if(!(Util.nullSafeCaseInsensitiveEq(attreq.getName(), "groups") || Util.nullSafeCaseInsensitiveEq(attreq.getName(), "accountType"))){
+                              attRequestsToRemove.add( attreq );
+                            }
+                          }
+                        }
+                        if ( Util.nullSafeSize(attRequestsToRemove) > 0 ) {
+                          // removing all the attributes for prehire users, except groups and accountType from the accountRequest during modify.
+                          for ( ProvisioningPlan.AttributeRequest attributeRemoval : attRequestsToRemove ) {
+                            accountRequest.remove( attributeRemoval );
+                          }
+                        }
+                        toyotaLogger(context, "AZBP-010::Attempeted to restore an account for user " + identity.getName());
+                        if (ruplog.isTraceEnabled()) {
+                          ruplog.trace("AZBP-011::User account was existant in Recycle bin and has now been restored. Omit the create request and updated the plan::: " + plan.toXml());
+                        }
+                      }
+                      else {
+                        if (ruplog.isTraceEnabled()) {
+                          ruplog.trace("AZBP-012::Error encountered when attempting to restore the deleted user account from recycle bin for user ::" + name);
+                        }
+                      }
+                    }
+                  }
+                  else if(Util.isNotNullOrEmpty(guestUserObjectId)){
+                    accountRequest.setOperation(ProvisioningPlan.AccountRequest.Operation.Modify);
+                    accountRequest.setNativeIdentity(guestUserObjectId);
+                    List attributeRequests = accountRequest.getAttributeRequests();
+                    List attRequestsToRemove = new ArrayList();
+                    if (attributeRequests !=null && !attributeRequests.isEmpty()) {
+                      for ( ProvisioningPlan.AttributeRequest attreq : attributeRequests ) {
+                        if(!(Util.nullSafeCaseInsensitiveEq(attreq.getName(), "groups") || Util.nullSafeCaseInsensitiveEq(attreq.getName(), "accountType"))){
+                          attRequestsToRemove.add( attreq );
+                        }
+                      }
+                    }
+
+                    if ( attRequestsToRemove != null && attRequestsToRemove.size() > 0 ) {
+                      // removing all the attributes for prehire users, except groups and accountType from the accountRequest during modify.
+                      for ( ProvisioningPlan.AttributeRequest attributeRemoval : attRequestsToRemove ) {
+                        ruplog.trace( " AZBP-013::Removing Attribute: " + attributeRemoval.getName());
+                        accountRequest.remove( attributeRemoval );
+                      }
+                      if (ruplog.isTraceEnabled()) {
+                        ruplog.trace( "AZBP-014::  Printing Account request: " + accountRequest.toXml() );
+                      }
+                    }
+                    toyotaLogger(context, "AZBP-015::Attempeted to restore an account for user " +identity.getName());
+                    if (ruplog.isTraceEnabled()) {
+                      ruplog.trace( "AZBP-015.1::User account was existant in Azure AD with same email address and has now been updated with GUID. Omit the create request and updated the plan::: "+plan.toXml() );
+                    }
+                  }
+                  // proceed as usual if user is not present in recycle bin
+                  else {
+                    // Updates the Guest account attributes for prehire -- Moved to before
+                    // createAzureGuestUser
+                    updateGuestPrehireAccountAttribute(context, accountRequest, application, identity);
+
+                    linkedExistingAccount = createAzureGuestUser(context, accountRequest, application, identity);
+                    if (linkedExistingAccount) {
+                      accountRequestsToRemove.add(accountRequest);
+                    }
+                    if (ruplog.isTraceEnabled()) {
+                      ruplog.trace("AZBP-016::Inside Create end::: " + plan.toXml());
+                    }
+
+                    // Remove Temporary objectId for Birthright Role
+                    removeTemporaryObjectId(context, accountRequest, application, identity);
+                  }
+                  /**** Adding logic to avoid missing UPN during Azure Account creation ****/
+                  if (Util.isNotNullOrEmpty(identity.getFirstname()) && Util.isNotNullOrEmpty(identity.getLastname())) {
+                    List ProvAttributeList = new ArrayList();
+                    List tempAttrList = accountRequest.getAttributeRequests();
+                    if (tempAttrList !=null && !tempAttrList.isEmpty()) {
+                      for (AttributeRequest getProvattrs : tempAttrList) {
+                        ProvAttributeList.add(getProvattrs.getName());
+                      }
+                    }
+                    AttributeRequest acctTypeStr = accountRequest.getAttributeRequest("accountType");
+                    String attrValue = null;
+                    if (acctTypeStr !=null) {
+                      attrValue = acctTypeStr.getValue();
+                    }
+                    if (ruplog.isTraceEnabled()) {
+                      ruplog.trace("AZBP-017 : Printinting Attribute Request Object : " + ProvAttributeList);
+                    }
+                    /** Only set UPN and mailNickName if accountType is not equal to Guest B2B **/
+                    if (!Util.nullSafeEq(attrValue, "Guest User B2B")) {
+                      String tempMailNickName = "";
+                      if (ProvAttributeList !=null && !ProvAttributeList.isEmpty()) {
+                        if (!(ProvAttributeList.contains("userPrincipalName") || ProvAttributeList.contains("mailNickname"))) {
+                          tempMailNickName = uniqueMailNickname(context, application, identity.getFirstname(), identity.getLastname(), identity.getAttribute("middleName"), identity);
+                          if (!ProvAttributeList.contains("userPrincipalName")) {
+                            ruplog.trace("AZBP-018: Printing Attribute Request Object NULL or Empty: UPN");
+                            String primaryDomain = getDomainSuffix(context, application);
+                            if (Util.nullSafeEq(identity.getType(), "contractor") || Util.nullSafeEq(identity.getType(), "employee")) {
+                              String upnTempValue = tempMailNickName + "@" + primaryDomain;
+                              accountRequest.add(new AttributeRequest("userPrincipalName", ProvisioningPlan.Operation.Add, upnTempValue));
+                            } else {
+                              String getUPNValue = getAzureADUPN(context, application, identity);
+                              if (Util.isNotNullOrEmpty(getUPNValue)) {
+                                accountRequest.add(new AttributeRequest("userPrincipalName", ProvisioningPlan.Operation.Add, getUPNValue));
+                              }
+                            }
+                          }
+                          if (!ProvAttributeList.contains("mailNickname")) {
+                            accountRequest.add(new AttributeRequest("mailNickname", ProvisioningPlan.Operation.Add, tempMailNickName));
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              // Work on Modify Operations
+              else if (operation.equals("Modify")) {
+                if(Util.nullSafeCaseInsensitiveEq(identityType, "supplier") || Util.nullSafeCaseInsensitiveEq(identityType, "marketing") || Util.nullSafeCaseInsensitiveEq(identityType,"external")){
+                  linkedExistingAccount = updateAzureUser(context, plan, accountRequest, application, identity);
+                  if (linkedExistingAccount) {
+                    accountRequestsToRemove.add(accountRequest);
+                  }
+                  if (ruplog.isTraceEnabled()) {
+                    ruplog.trace("AZBP-019::Inside Modify end:::" + plan.toXml());
+                  }
+                } else {
+                  // Remove attributes which are updated via attribute sync
+                  String nativeIdentity = accountRequest.getNativeIdentity();
+                  if(nativeIdentity != null && (Util.nullSafeCaseInsensitiveEq(identityType, "employee") || Util.nullSafeCaseInsensitiveEq(identityType, "contractor"))){
+                    ruplog.trace("AZBP-019.1::Checking for attributes to be removed:" + name);
+                    ruplog.trace("AZBP-019.2::Native Identity detected:" + nativeIdentity);
+                    IdentityService idServ = new IdentityService(context);
+                    Link planLink = idServ.getLink(identity,application,null,nativeIdentity);
+                    if (planLink != null && Util.nullSafeCaseInsensitiveEq(planLink.getAttribute("userType"), "Member")) {
+                      Map azureSyncAttributeMap = application != null ? application.getAttributeValue( "onPremSyncAttributes" ) : null;
+                      ruplog.trace("AZBP-019.3::Azure onPremSyncAttributes map :" + azureSyncAttributeMap);
+                      if ( azureSyncAttributeMap != null ) {
+                        List attributeLists = accountRequest.getAttributeRequests();
+                        if (attributeLists != null)
+                        {
+                          ArrayList attributeRequestToRemoves = new ArrayList();
+                          for (AttributeRequest attributeList : attributeLists) {
+                            String azureAttributeName = attributeList.getName();
+                            ruplog.trace("AZBP-019.4::Attribute being evaluated for removal:::" + azureAttributeName + ":: for user ::" + name);
+                            if(azureSyncAttributeMap.containsKey(azureAttributeName)) {
+                              if (attributeLists.size() == 1) {
+                                // If this is the only attribute to be removed then the entire accountRequest needs to be removed
+                                accountRequestsToRemove.add(accountRequest);
+                                ruplog.trace("AZBP-019.5::AccountRequest to be removed for user ::" + name);
+                              } else {
+                                 attributeRequestToRemoves.add(azureAttributeName);
+                                 ruplog.trace("AZBP-019.6::Attribute being removed:::" + azureAttributeName + ":: for user ::" + name);
+                              }
+                            }
+                          }
+                          if (attributeRequestToRemoves != null && attributeRequestToRemoves.size() > 0)
+                          {
+                            for (String attributeRequestToRemove : attributeRequestToRemoves) 
+                            {
+                              accountRequest.remove(accountRequest.getAttributeRequest(attributeRequestToRemove));
+                            }
+                            if (ruplog.isTraceEnabled()) 
+                            {
+                              ruplog.trace("AZBP-019.7::Plan after AD Sync attributes are removed:::" + plan.toXml());
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                  AttributeRequest acctTypeStr = accountRequest.getAttributeRequest("accountType");
+                  if(acctTypeStr != null){
+                    if (!Util.nullSafeEq(acctTypeStr.getValue(), "Guest User B2B")) {
+                      boolean userUpdated = updateAzureUserEmailAttributes(context, application, accountRequest, identity);
+                    }
+                  }
+                  if (ruplog.isTraceEnabled()) {
+                    ruplog.trace("AZBP-020::updated Email Address on Identity:::" + identity.getName() + "  email:: " + identity.getAttribute("email"));
+                  }
+                }
+                // This is to delete the guest account which was created as part of prehire.
+                // This delete when his hiredate is past.
+                ruplog.trace("AZBP-020.2: Beginning the check for Prehire Delete:"+accountRequest.getAttributeRequest("groups"));
+                AttributeRequest EntAttrReq = accountRequest.getAttributeRequest("groups");
+                if (EntAttrReq != null && Util.nullSafeCaseInsensitiveEq(EntAttrReq.getOperation().toString(),"Remove")) {
+                  ruplog.trace("AZBP-020.4: Inside the loop for Prehire Guest Loop");
+                  Custom extensionAttributesCustomObject = context.getObjectByName(Custom.class, "Azure AD Guest Account");
+                  if (extensionAttributesCustomObject != null) {
+                    String preHireGroupValue = extensionAttributesCustomObject.getString("preHireGroupNameForAzureADTMNA");
+                    Object entValueObject = EntAttrReq.getValue();
+                    if(entValueObject != null && Util.isNotNullOrEmpty(preHireGroupValue)){
+                      if (entValueObject instanceof String) {
+                        if (Util.nullSafeCaseInsensitiveEq(preHireGroupValue, entValueObject)){
+                          accountRequest.setOperation(ProvisioningPlan.AccountRequest.Operation.Delete);
+                        }
+                      } else if (entValueObject instanceof List) {
+                        if (entValueObject.size() > 0 && entValueObject.contains(preHireGroupValue)) {
+                          accountRequest.setOperation(ProvisioningPlan.AccountRequest.Operation.Delete);
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+          if (ruplog.isTraceEnabled()) {
+            ruplog.trace("AZBP-021::Plan After Cleanup:\n" + plan.toXml());
+          }
+        }
+        boolean isRetired = false;
+        IdentityService idService = new IdentityService(context);
+        Application appObject = context.getObjectByName(Application.class,"Workday TMNA");
+        if(identity != null && appObject != null ) {
+          List linkList = idService.getLinks(identity,appObject);
+          if ( Util.nullSafeSize(linkList) > 0 ){
+            Link link = linkList.get(0);
+            String linkAttr = link.getAttribute("IS_RETIRED");
+            if(Util.nullSafeEq(linkAttr, "1")) {
+              isRetired = true;
+            }
+            context.decache(appObject);
+          }
+        }
+
+        if (accountRequestsToRemove != null && accountRequestsToRemove.size() > 0) {
+          for (AccountRequest accountRequest : accountRequestsToRemove) {
+            if (ProvisioningPlan.AccountRequest.Operation.Create.equals(accountRequest.getOperation()) && isRetired && accountRequest.getAttributeRequest("accountType") != null && accountRequest.getAttributeRequest("accountType").getValue() != null) {
+              if(accountRequest.getAttributeRequest("accountType").getValue() instanceof List && accountRequest.getAttributeRequest("accountType").getValue().contains("Guest User B2B")){
+                accountRequest.remove(accountRequest.getAttributeRequest("accountType"));
+                accountRequest.add(new AttributeRequest("accountType", ProvisioningPlan.Operation.Set, "Guest User B2B"));
+              }
+              createAzureGuestUser(context, accountRequest, application, identity);
+              if (ruplog.isTraceEnabled()) {
+                ruplog.trace("AZBP-022 ::skipping Account Request For Retired Guest Account Creation: " + accountRequest.toXml());
+              }
+              continue;
+            }
+            if (ruplog.isTraceEnabled()) {
+              ruplog.trace("AZBP-023::Removing Account Request: " + accountRequest.toXml());
+            }
+            plan.remove(accountRequest);
+          }
+          if (ruplog.isTraceEnabled()) {
+            ruplog.trace("AZBP-024::Plan After Deletion:\n" + plan.toXml());
+          }
+        }
+      }
+    }
+]]></Source>
+</Rule>

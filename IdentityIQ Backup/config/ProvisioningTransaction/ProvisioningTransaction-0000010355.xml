@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningTransaction PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningTransaction accountDisplayName="Alice Ford-ADM" applicationName="ActiveDirectory" identityDisplayName="Alice Ford" identityName="Alice Ford" integration="Filtered" name="0000010355" nativeIdentity="CN=Alice Ford-ADM,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Modify" source="Rule" status="Success" type="Auto">
+  <Attributes>
+    <Map>
+      <entry key="filtered">
+        <value>
+          <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Alice Ford-ADM,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify" sourceRole="roleForACCSelectionADM">
+            <Attributes>
+              <Map>
+                <entry key="selectorRuleSource" value="roleForACCSelectionADM"/>
+              </Map>
+            </Attributes>
+            <AttributeRequest name="memberOf" op="Add">
+              <Attributes>
+                <Map>
+                  <entry key="reason">
+                    <value>
+                      <FilterReason>Exists</FilterReason>
+                    </value>
+                  </entry>
+                </Map>
+              </Attributes>
+              <Value>
+                <List>
+                  <String>CN=Benefits,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                </List>
+              </Value>
+            </AttributeRequest>
+          </AccountRequest>
+        </value>
+      </entry>
+      <entry key="request">
+        <value>
+          <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Alice Ford-ADM,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify" sourceRole="roleForACCSelectionADM">
+            <Attributes>
+              <Map>
+                <entry key="provisioningTransactionId" value="c0a801289c401bab819c414115ca02b6"/>
+              </Map>
+            </Attributes>
+            <ProvisioningResult status="committed"/>
+          </AccountRequest>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+</ProvisioningTransaction>

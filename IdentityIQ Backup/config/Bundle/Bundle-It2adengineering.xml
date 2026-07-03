@@ -1,0 +1,61 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Bundle PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Bundle name="IT2ADEngineering" type="it">
+  <Attributes>
+    <Map>
+      <entry key="accountSelectorRules"/>
+      <entry key="allowDuplicateAccounts" value="false"/>
+      <entry key="allowMultipleAssignments" value="false"/>
+      <entry key="mergeTemplates" value="false"/>
+      <entry key="sysDescriptions">
+        <value>
+          <Map>
+            <entry key="en_US"/>
+          </Map>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="Adam Kennedy"/>
+  </Owner>
+  <ProvisioningPlan>
+    <AccountRequest application="IIQ" targetIntegration="IIQ">
+      <AttributeRequest name="Capabilities" op="Add">
+        <Value>
+          <List>
+            <String>SyslogAdministrator</String>
+          </List>
+        </Value>
+      </AttributeRequest>
+    </AccountRequest>
+    <AccountRequest application="ActiveDirectory" targetIntegration="ActiveDirectory">
+      <AttributeRequest name="memberOf" op="Add">
+        <Value>
+          <List>
+            <String>CN=ENG_All,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+            <String>CN=ENG_EastCoast,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+          </List>
+        </Value>
+      </AttributeRequest>
+    </AccountRequest>
+  </ProvisioningPlan>
+  <Profiles>
+    <Profile>
+      <ApplicationRef>
+        <Reference class="sailpoint.object.Application" name="ADX"/>
+      </ApplicationRef>
+      <Constraints>
+        <Filter operation="CONTAINS_ALL" property="memberOf">
+          <Value>
+            <List>
+              <String>CN=ENG_All,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+              <String>CN=ENG_EastCoast,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+            </List>
+          </Value>
+        </Filter>
+      </Constraints>
+    </Profile>
+  </Profiles>
+  <RoleIndex assignedCount="6" entitlementCount="1" entitlementCountInheritance="1" lastAssigned="1717583003991"/>
+</Bundle>

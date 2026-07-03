@@ -1,0 +1,161 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1756467196418" completionStatus="Success" launched="1756467182814" launcher="spadmin" name="Update Identity Aaron Wade AccessRequest - 6" targetClass="Identity" targetName="Aaron Wade" type="LCM">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000915"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Aaron Wade">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000915"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="IIQ" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a81d89912c1c5a819144f9ffd21525"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="RoleAdd"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="assignedRoles" op="Add" value="BusinessRoleHTask"/>
+                </AccountRequest>
+                <AccountRequest application="IIQ" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a81d89912c1c5a8191451c465a1717"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="RoleAdd"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="assignedRoles" op="Add" value="BusinessRoleAccountingHtask"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000915"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <ProvisioningTargets>
+                  <ProvisioningTarget role="BusinessRoleHTask">
+                    <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ADX" doCreate="true"/>
+                  </ProvisioningTarget>
+                  <ProvisioningTarget role="BusinessRoleAccountingHtask">
+                    <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ADX" doCreate="true"/>
+                  </ProvisioningTarget>
+                </ProvisioningTargets>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan targetIntegration="IIQ" trackingId="0865c559a2c34ad39d90c81964a17b69">
+              <AccountRequest application="IIQ" op="Modify" targetIntegration="IIQ">
+                <Attributes>
+                  <Map>
+                    <entry key="attachmentConfigList"/>
+                    <entry key="attachments"/>
+                    <entry key="flow" value="AccessRequest"/>
+                    <entry key="id" value="c0a81d89912c1c5a8191451c465a1717"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="operation" value="RoleAdd"/>
+                    <entry key="provisioningTransactionId" value="c0a8008598f111308198f59a6f690555"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="assignedRoles" op="Add" value="BusinessRoleHTask"/>
+                <AttributeRequest name="assignedRoles" op="Add" value="BusinessRoleAccountingHtask"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000915"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+            <ProvisioningPlan nativeIdentity="Aaron Wade" targetIntegration="ADX" trackingId="05cf88fcaa284c4cbc5f0683ca93f1a7">
+              <AccountRequest application="ADX" assignmentIds="80de8c8f55ff485b87b0d0c6f3c44672,4ba0c60c329c47ff89961ccf04a4a2ec" nativeIdentity="CN=Aaron Wade,OU=XPeople,OU=Demo,DC=Eshiam,DC=com" op="Create" targetIntegration="ADX">
+                <Attributes>
+                  <Map>
+                    <entry key="provisioningTransactionId" value="c0a8008598f111308198f59a6f480554"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="memberOf" op="Add">
+                  <Value>
+                    <List>
+                      <String>CN=DataArchive,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                      <String>CN=Compensation,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                      <String>CN=DBAs,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                    </List>
+                  </Value>
+                </AttributeRequest>
+                <AttributeRequest name="sAMAccountName" op="Set" value="XAaron Wade"/>
+                <AttributeRequest name="givenName" op="Set" value="Aaron"/>
+                <AttributeRequest name="sn" op="Set" value="Wade"/>
+                <AttributeRequest name="mail" op="Set" value="aaron.wade@eshiam.com"/>
+                <AttributeRequest name="password" op="Set"/>
+                <ProvisioningResult status="committed"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000915"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+            <ProvisioningTarget role="BusinessRoleHTask">
+              <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ADX" doCreate="true"/>
+            </ProvisioningTarget>
+            <ProvisioningTarget role="BusinessRoleAccountingHtask">
+              <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ADX" doCreate="true"/>
+            </ProvisioningTarget>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a8008598f111308198f59a3e95053a"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="end"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

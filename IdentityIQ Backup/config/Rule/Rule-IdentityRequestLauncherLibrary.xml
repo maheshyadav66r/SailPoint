@@ -1,0 +1,169 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Identity Request Launcher Library">
+  <ReferencedRules>
+    <Reference class="sailpoint.object.Rule" name="Attribute Rule Library"/>
+    <Reference class="sailpoint.object.Rule" name="Toyota Database Logger"/>
+  </ReferencedRules>
+  <Source><![CDATA[
+    import java.util.Calendar;
+    import java.util.HashMap;
+    import java.util.List;
+    import java.util.Map;
+    
+    import org.apache.commons.logging.Log;
+    import org.apache.commons.logging.LogFactory;
+    
+    import sailpoint.api.RequestManager;
+    import sailpoint.api.SailPointContext;
+    import sailpoint.object.Application;
+    import sailpoint.object.Attributes;
+    import sailpoint.object.Field;
+    import sailpoint.object.Form;
+    import sailpoint.object.Identity;
+    import sailpoint.object.Link;
+    import sailpoint.object.ProvisioningPlan;
+    import sailpoint.object.Request;
+    import sailpoint.object.RequestDefinition;
+    import sailpoint.object.Rule;
+    import sailpoint.object.Script;
+    import sailpoint.rapidapponboarding.logger.LogEnablement;
+    import sailpoint.tools.GeneralException;
+    import sailpoint.workflow.StandardWorkflowHandler;
+
+    {
+      Log xlogFactory = LogFactory.getLog( "rule.IdentityRequestLauncherLibrary" );
+      LogEnablement.isLogTraceEnabled(xlogFactory, "IR-LAUNCH-ENT: Entering Identity Request Launcher Library");
+  
+      /*
+      * The method computes the expected attribute value for the given Application Account schema attribute if it is available in the Create provisioning Form
+      * @param context SailPointContext
+      * @param attributeName String name of the account attribute name
+      * @param Link of the account that needs to be updated
+      */
+      Object getAttributeValueUsingPolicy(SailPointContext context,String attributeName,Link link)
+      {
+        LogEnablement.isLogTraceEnabled(xlogFactory, "IR-LAUNCH-01: Entering method getAttributeValueUsingPolicy for the account - "+link.getNativeIdentity());        
+        Object returnObj = null;
+        try
+        {
+          Application app = link.getApplication();
+          List forms = app.getProvisioningForms("account");
+          for(Form form:forms)
+          {
+            if(form.getType().equals(Form.Type.Create))
+            {
+              LogEnablement.isLogTraceEnabled(xlogFactory, "IR-LAUNCH-02: the create provisioning policy for the application is retrieved");
+              Field field = form.getField(attributeName);
+              if(field==null)
+              {
+                LogEnablement.isLogTraceEnabled(xlogFactory, "IR-LAUNCH-03: The field isnt available in the application object.Retrieving Form ref");
+                String formRefName = form.getFormRef().getName();
+                Form createForm = context.getObjectByName(Form.class, formRefName);
+                field = createForm.getField(attributeName);
+                LogEnablement.isLogTraceEnabled(xlogFactory, "IR-LAUNCH-04: Field retrieved from the referencd form");
+              }
+              // Create the parameters for calling the rule
+              Map ruleParams = new HashMap();
+              ruleParams.put("context",context);
+              ruleParams.put("identity", link.getIdentity());
+              ruleParams.put("link", link);
+              ruleParams.put("application", app);
+              LogEnablement.isLogTraceEnabled(xlogFactory, "Rule params is ready "+ruleParams.toString());
+              if(null!=field)
+              {
+                Script script = field.getScript();
+                if(null!=script)
+                {
+                  LogEnablement.isLogTraceEnabled(xlogFactory, "IR-LAUNCH-05: The script for the field is available. Attempting to run it with the rule params");
+                  returnObj = context.runScript(script, ruleParams);
+                  LogEnablement.isLogTraceEnabled(xlogFactory, "IR-LAUNCH-06: Script ran successfully and returned the value as :"+returnObj.toString());
+                }else if(field.getRule()!=null)
+                {
+                  Rule rule = field.getRule();
+                  LogEnablement.isLogTraceEnabled(xlogFactory, "IR-LAUNCH-07: The rule for the field is retrieved. Attempting to run it with the rule params");
+                  returnObj = context.runRule(rule, ruleParams);
+                  LogEnablement.isLogTraceEnabled(xlogFactory, "IR-LAUNCH-08: Rule ran successfully and returned the value as :"+returnObj.toString());
+                }else if(field.getValue()!=null){ 
+                  returnObj = field.getValue();
+                  LogEnablement.isLogTraceEnabled(xlogFactory, "IR-LAUNCH-08.1: Default value for field is listed as :"+returnObj.toString());
+                }
+                 
+              }else
+              {
+                LogEnablement.isLogErrorEnabled(xlogFactory, "The field is not found in the provisioning form of the application");
+              }
+            }
+          }
+        } catch (GeneralException e) {
+          LogEnablement.isLogErrorEnabled(xlogFactory, "IR-LAUNCH-E1: Error encountered when processing attribute value from the prov policy. Error Message: "+e.getMessage());
+        }
+        LogEnablement.isLogTraceEnabled(xlogFactory, "IR-LAUNCH-09: Exiting the method getAttributeValueUsingPolicy");
+        return returnObj;
+      }
+
+      /*
+      * The method launches the "LCM Provisioning" and thus creates an identity request
+      * @param context SailPointContext
+      * @param plan ProvisioningPlan that is fed into the LCM workflow
+      * @param foreground boolean that denotes if the launched workflow is run in the foreground(does not wait for perform maintenance) or background(waits for PM to pick it up)
+      * @param approvalScheme - accepts - none, owner, manager,securityOfficer, identity - look up LCM Provisioning workflow for what each does.
+      */
+      void createIdentityRequest(SailPointContext context,ProvisioningPlan plan,boolean foreground,String approvalScheme) 
+      {
+        LogEnablement.isLogTraceEnabled(xlogFactory, "IR-LAUNCH-10: Entering createIdentityRequest method within Identity Reqeust Launcher Library");
+        String identityName = plan.getIdentity().getName();
+        String workflowName = "LCM Provisioning";
+        String requestName = "Run " + workflowName + " for: " + identityName;
+        Identity launcherObj = null;
+        try
+        {
+          launcherObj = context.getObjectByName(Identity.class, "spadmin");
+        } catch (GeneralException e) {
+          LogEnablement.isLogErrorEnabled(xlogFactory, "IR-LAUNCH-E2: Error encountered getting the launcher object. Error Message: "+e.getMessage());
+        }
+      
+        Attributes reqArgs = new Attributes();
+        reqArgs.put(StandardWorkflowHandler.ARG_REQUEST_DEFINITION, sailpoint.request.WorkflowRequestExecutor.DEFINITION_NAME);
+        reqArgs.put(StandardWorkflowHandler.ARG_WORKFLOW, workflowName);
+        reqArgs.put(StandardWorkflowHandler.ARG_REQUEST_NAME, requestName);
+        LogEnablement.isLogTraceEnabled(xlogFactory, "IR-LAUNCH-11: Request Arguments ready for LCM Provisioning");
+      
+        Attributes wfArgs = new Attributes();
+        wfArgs.put("identityName", identityName);
+        wfArgs.put("trace", "false");
+        wfArgs.put("flow","AccountsRequest");
+        wfArgs.put("plan",plan);
+        wfArgs.put("source","Rule");
+        wfArgs.put("workItemPriority","Normal");
+        wfArgs.put("foregroundProvisioning",foreground);
+        wfArgs.put("launcher","spadmin");
+        wfArgs.put("approvalScheme",approvalScheme);
+        reqArgs.putAll(wfArgs);
+        LogEnablement.isLogTraceEnabled(xlogFactory, "IR-LAUNCH-12: Workflow Arguments ready for LCM PRovisioning for ::"+identityName);
+      
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.MINUTE, 1);
+      
+        Request req = new Request();
+        RequestDefinition reqdef;
+        try
+        {
+          reqdef = context.getObject(RequestDefinition.class, "Workflow Request");
+          req.setDefinition(reqdef);
+          req.setOwner(launcherObj);
+          req.setName(requestName);
+          req.setEventDate(calendar.getTime());
+          req.setAttributes( reqdef, reqArgs );
+          LogEnablement.isLogTraceEnabled(xlogFactory, "IR-LAUNCH-13: Request Manager will be called to add the request to queue");
+          RequestManager.addRequest(context, req);
+        } catch (GeneralException e) {
+          LogEnablement.isLogErrorEnabled(xlogFactory, "IR-LAUNCH-E3: Error encountered when setting up the request object for provisioning. "+e.getMessage());
+        }
+      
+        LogEnablement.isLogTraceEnabled(xlogFactory, "IR-LAUNCH-14: Exiting method createIdentityRequest");
+      
+      } 
+    }
+  ]]></Source>
+</Rule>

@@ -1,0 +1,564 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Application PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Application connector="sailpoint.connector.OpenConnectorAdapter" featuresString="DISCOVER_SCHEMA, PROVISIONING, SYNC_PROVISIONING, ENABLE, PASSWORD" icon="internetIcon" name="SCIMApp" profileClass="" type="SCIM 2.0">
+  <AccountCorrelationConfig>
+    <Reference class="sailpoint.object.CorrelationConfig" name="SCIMCorrelation"/>
+  </AccountCorrelationConfig>
+  <Attributes>
+    <Map>
+      <entry key="ServerTimeZone"/>
+      <entry key="accept"/>
+      <entry key="acctAggregationEnd">
+        <value>
+          <Date>1767083266490</Date>
+        </value>
+      </entry>
+      <entry key="acctAggregationStart">
+        <value>
+          <Date>1767083053549</Date>
+        </value>
+      </entry>
+      <entry key="additional_payload_to_update"/>
+      <entry key="afterProvisioningRule" value="AfterProvisioningRule"/>
+      <entry key="aggregationPartitioned">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="aggregationType" value="account"/>
+      <entry key="aud"/>
+      <entry key="authType" value="basic"/>
+      <entry key="beforeProvisioningRule" value="BeforeProvisioningRule"/>
+      <entry key="compositeDefinition"/>
+      <entry key="connectorClass" value="openconnector.connector.scim2.SCIM2Connector"/>
+      <entry key="contentType"/>
+      <entry key="customTimeout"/>
+      <entry key="encrypted" value="client_secret,oauthBearerToken,oauthTokenInfo,refresh_token,private_key,private_key_password,additional_payload,oauth2password"/>
+      <entry key="entitlementFilter" value="type eq &quot;Entitlement&quot;"/>
+      <entry key="explicitAttributesRequest">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="groupFilter"/>
+      <entry key="host" value="http://localhost:8080/identityiq-8.4/scim/v2"/>
+      <entry key="iss"/>
+      <entry key="lastAggregationDate_account" value="2025-12-30T08:24:13Z"/>
+      <entry key="load-by-sysclassloader">
+        <value>
+          <List>
+            <String>json.jar</String>
+          </List>
+        </value>
+      </entry>
+      <entry key="nativeChangeDetectionAttributeScope" value="entitlements"/>
+      <entry key="nativeChangeDetectionAttributes"/>
+      <entry key="nativeChangeDetectionEnabled">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="nativeChangeDetectionOperations"/>
+      <entry key="oAuthJwtHeader"/>
+      <entry key="oauth2password" value="1:ACP:5Ros0iSHyvL0Rke9vFgGHrsES8aW9x2eG2J7bV9+4Qw="/>
+      <entry key="oauth2username"/>
+      <entry key="password" value="1:ACP:vVhgqrXe3lXTbx+OR4YBMG9HH+8l1iiGrDG9OJR3od4="/>
+      <entry key="private_key_to_update"/>
+      <entry key="relaxConfiguration">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="roleFilter" value="active eq &quot;true&quot;"/>
+      <entry key="schemaPropertyMappings">
+        <value>
+          <List>
+            <SchemaPropertyMapping urn="urn:ietf:params:scim:schemas:core:2.0:User">
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="id" property="id" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="externalId" property="externalId" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="userName" property="userName" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+              <AttributePropertyMapping name="name">
+                <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="formatted" property="name.formatted" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+                <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="familyName" property="name.familyName" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+                <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="givenName" property="name.givenName" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+              </AttributePropertyMapping>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="displayName" property="displayName" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="userType" property="userType" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="active" property="active" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="password" property="password" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2MultiValuedPropertyGetter" name="emails" setter="openconnector.connector.scim2.SCIM2MultiValuedPropertySetter">
+                <AttributePropertyMapping name="value" property="value"/>
+                <AttributePropertyMapping name="type" property="type"/>
+                <AttributePropertyMapping name="primary" property="primary"/>
+              </AttributePropertyMapping>
+            </SchemaPropertyMapping>
+            <SchemaPropertyMapping urn="urn:ietf:params:scim:schemas:extension:enterprise:2.0:User">
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2ExtendedComplexPropertyGetter" name="manager" property="manager" setter="openconnector.connector.scim2.SCIM2ExtendedPropertySetter">
+                <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="value" property="manager.value" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+                <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="$ref" property="manager.$ref" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+                <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="displayName" property="manager.displayName" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+              </AttributePropertyMapping>
+            </SchemaPropertyMapping>
+            <SchemaPropertyMapping urn="urn:ietf:params:scim:schemas:sailpoint:1.0:User">
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2ExtendedPropertyGetter" name="accounts" property="accounts" setter="openconnector.connector.scim2.SCIM2ExtendedPropertySetter">
+                <AttributePropertyMapping name="value" property="value"/>
+                <AttributePropertyMapping name="$ref" property="$ref"/>
+                <AttributePropertyMapping name="displayName" property="displayName"/>
+              </AttributePropertyMapping>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2ExtendedPropertyGetter" name="entitlements" property="entitlements" setter="openconnector.connector.scim2.SCIM2ExtendedPropertySetter">
+                <AttributePropertyMapping name="value" property="value"/>
+                <AttributePropertyMapping name="display" property="display"/>
+                <AttributePropertyMapping name="type" property="type"/>
+                <AttributePropertyMapping name="application" property="application"/>
+                <AttributePropertyMapping name="$ref" property="$ref"/>
+                <AttributePropertyMapping name="accountName" property="accountName"/>
+              </AttributePropertyMapping>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2ExtendedPropertyGetter" name="roles" property="roles" setter="openconnector.connector.scim2.SCIM2ExtendedPropertySetter">
+                <AttributePropertyMapping name="value" property="value"/>
+                <AttributePropertyMapping name="display" property="display"/>
+                <AttributePropertyMapping name="type" property="type"/>
+                <AttributePropertyMapping name="acquired" property="acquired"/>
+                <AttributePropertyMapping name="application" property="application"/>
+                <AttributePropertyMapping name="accountName" property="accountName"/>
+                <AttributePropertyMapping name="$ref" property="$ref"/>
+              </AttributePropertyMapping>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2ExtendedPropertyGetter" name="capabilities" property="capabilities" setter="openconnector.connector.scim2.SCIM2ExtendedPropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="riskScore" property="riskScore" setter="openconnector.connector.scim2.SCIM2ExtendedPropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="isManager" property="isManager" setter="openconnector.connector.scim2.SCIM2ExtendedPropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="lastRefresh" property="lastRefresh" setter="openconnector.connector.scim2.SCIM2ExtendedPropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2ExtendedComplexPropertyGetter" name="administrator" property="administrator" setter="openconnector.connector.scim2.SCIM2ExtendedPropertySetter">
+                <AttributePropertyMapping name="value" property="value"/>
+                <AttributePropertyMapping name="$ref" property="$ref"/>
+                <AttributePropertyMapping name="displayName" property="displayName"/>
+              </AttributePropertyMapping>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="softwareVersion" property="softwareVersion" setter="openconnector.connector.scim2.SCIM2ExtendedPropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="businessUnit" property="businessUnit" setter="openconnector.connector.scim2.SCIM2ExtendedPropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="endDate" property="endDate" setter="openconnector.connector.scim2.SCIM2ExtendedPropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="jobTitle" property="jobTitle" setter="openconnector.connector.scim2.SCIM2ExtendedPropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="joiningDate" property="joiningDate" setter="openconnector.connector.scim2.SCIM2ExtendedPropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="division" property="division" setter="openconnector.connector.scim2.SCIM2ExtendedPropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2ExtendedPropertyGetter" name="backLogs" property="backLogs" setter="openconnector.connector.scim2.SCIM2ExtendedPropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="action" property="action" setter="openconnector.connector.scim2.SCIM2ExtendedPropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="networkId" property="networkId" setter="openconnector.connector.scim2.SCIM2ExtendedPropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="roleLevel" property="roleLevel" setter="openconnector.connector.scim2.SCIM2ExtendedPropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="department" property="department" setter="openconnector.connector.scim2.SCIM2ExtendedPropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2ExtendedPropertyGetter" name="costCenter" property="costCenter" setter="openconnector.connector.scim2.SCIM2ExtendedPropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2ExtendedPropertyGetter" name="roleId" property="roleId" setter="openconnector.connector.scim2.SCIM2ExtendedPropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="employeeId" property="employeeId" setter="openconnector.connector.scim2.SCIM2ExtendedPropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="hrStatus" property="hrStatus" setter="openconnector.connector.scim2.SCIM2ExtendedPropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2ExtendedPropertyGetter" name="qualification" property="qualification" setter="openconnector.connector.scim2.SCIM2ExtendedPropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2ExtendedPropertyGetter" name="roleName" property="roleName" setter="openconnector.connector.scim2.SCIM2ExtendedPropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="location" property="location" setter="openconnector.connector.scim2.SCIM2ExtendedPropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="region" property="region" setter="openconnector.connector.scim2.SCIM2ExtendedPropertySetter"/>
+            </SchemaPropertyMapping>
+            <SchemaPropertyMapping urn="urn:ietf:params:scim:schemas:sailpoint:1.0:Entitlement">
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="id" property="id" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2MultiValuedPropertyGetter" name="descriptions" setter="openconnector.connector.scim2.SCIM2MultiValuedPropertySetter">
+                <AttributePropertyMapping name="locale" property="locale"/>
+                <AttributePropertyMapping name="value" property="value"/>
+              </AttributePropertyMapping>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="displayableName" property="displayableName" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="type" property="type" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+              <AttributePropertyMapping name="application">
+                <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="value" property="application.value" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+                <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="$ref" property="application.$ref" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+                <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="displayName" property="application.displayName" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+              </AttributePropertyMapping>
+              <AttributePropertyMapping name="owner">
+                <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="value" property="owner.value" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+                <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="$ref" property="owner.$ref" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+                <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="displayName" property="owner.displayName" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+              </AttributePropertyMapping>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="requestable" property="requestable" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="aggregated" property="aggregated" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="attribute" property="attribute" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="value" property="value" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="lastRefresh" property="lastRefresh" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="lastTargetAggregation" property="lastTargetAggregation" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2MultiValuedPropertyGetter" name="classifications" setter="openconnector.connector.scim2.SCIM2MultiValuedPropertySetter">
+                <AttributePropertyMapping name="source" property="source"/>
+                <AttributePropertyMapping name="effective" property="effective"/>
+                <AttributePropertyMapping name="classification" property="classification"/>
+              </AttributePropertyMapping>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="bundleLevel" property="bundleLevel" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="externalId" property="externalId" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+            </SchemaPropertyMapping>
+            <SchemaPropertyMapping urn="urn:ietf:params:scim:schemas:sailpoint:1.0:Role">
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="id" property="id" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="name" property="name" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="displayableName" property="displayableName" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+              <AttributePropertyMapping name="type">
+                <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="name" property="type.name" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+                <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="displayName" property="type.displayName" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+                <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="assignmentSelector" property="type.assignmentSelector" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+                <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="autoAssignment" property="type.autoAssignment" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+                <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="iiq" property="type.iiq" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+                <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="manualAssignment" property="type.manualAssignment" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+                <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="permits" property="type.permits" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+                <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="requirements" property="type.requirements" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+              </AttributePropertyMapping>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2MultiValuedPropertyGetter" name="descriptions" setter="openconnector.connector.scim2.SCIM2MultiValuedPropertySetter">
+                <AttributePropertyMapping name="locale" property="locale"/>
+                <AttributePropertyMapping name="value" property="value"/>
+              </AttributePropertyMapping>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="active" property="active" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="activationDate" property="activationDate" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="deactivationDate" property="deactivationDate" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+              <AttributePropertyMapping name="owner">
+                <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="value" property="owner.value" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+                <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="$ref" property="owner.$ref" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+                <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="displayName" property="owner.displayName" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+              </AttributePropertyMapping>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2MultiValuedPropertyGetter" name="inheritance" setter="openconnector.connector.scim2.SCIM2MultiValuedPropertySetter">
+                <AttributePropertyMapping name="value" property="value"/>
+                <AttributePropertyMapping name="$ref" property="$ref"/>
+                <AttributePropertyMapping name="displayName" property="displayName"/>
+              </AttributePropertyMapping>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2MultiValuedPropertyGetter" name="requirements" setter="openconnector.connector.scim2.SCIM2MultiValuedPropertySetter">
+                <AttributePropertyMapping name="value" property="value"/>
+                <AttributePropertyMapping name="$ref" property="$ref"/>
+                <AttributePropertyMapping name="displayName" property="displayName"/>
+              </AttributePropertyMapping>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2MultiValuedPropertyGetter" name="permits" setter="openconnector.connector.scim2.SCIM2MultiValuedPropertySetter">
+                <AttributePropertyMapping name="value" property="value"/>
+                <AttributePropertyMapping name="$ref" property="$ref"/>
+                <AttributePropertyMapping name="displayName" property="displayName"/>
+              </AttributePropertyMapping>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2MultiValuedPropertyGetter" name="classifications" setter="openconnector.connector.scim2.SCIM2MultiValuedPropertySetter">
+                <AttributePropertyMapping name="source" property="source"/>
+                <AttributePropertyMapping name="effective" property="effective"/>
+                <AttributePropertyMapping name="classification" property="classification"/>
+              </AttributePropertyMapping>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="roleLevel" property="roleLevel" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+              <AttributePropertyMapping getter="openconnector.connector.scim2.SCIM2PropertyGetter" name="externalId" property="externalId" setter="openconnector.connector.scim2.SCIM2PropertySetter"/>
+            </SchemaPropertyMapping>
+          </List>
+        </value>
+      </entry>
+      <entry key="skipGrpUpdate" value="false"/>
+      <entry key="sub"/>
+      <entry key="sysDescriptions">
+        <value>
+          <Map>
+            <entry key="en_US"/>
+          </Map>
+        </value>
+      </entry>
+      <entry key="templateApplication" value="SCIM 2.0"/>
+      <entry key="usePatch">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="user" value="spadmin"/>
+      <entry key="userFilter" value="active eq &quot;true&quot;"/>
+    </Map>
+  </Attributes>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="Mahesh Nattali"/>
+  </Owner>
+  <Schemas>
+    <Schema displayAttribute="userName" identityAttribute="id" instanceAttribute="" nativeObjectType="User" objectType="account">
+      <AttributeDefinition name="id" type="string">
+        <Description>Unique identifier for the User typically used by the user to directly authenticate to the service provider. Each User MUST include a non-empty id value.  This identifier MUST be unique across the Service Consumer's entire set of Users.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="externalId" type="string">
+        <Description>An identifier for the resource as defined by the provisioning client.  OPTIONAL</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="userName" type="string">
+        <Description>Unique identifier for the User typically used by the user to directly authenticate to the service provider. Each User MUST include a non-empty userName value.  This identifier MUST be unique across the Service Consumer's entire set of Users.  REQUIRED</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="name.formatted" type="string">
+        <Description>The full name, including all middle names, titles, and suffixes as appropriate, formatted for display (e.g., Ms. Barbara J Jensen, III.).</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="name.familyName" type="string">
+        <Description>The family name of the User, or Last Name in most Western languages (e.g. Jensen given the full name Ms. Barbara J Jensen, III.).</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="name.givenName" type="string">
+        <Description>The given name of the User, or First Name in most Western languages (e.g. Barbara given the full name Ms. Barbara J Jensen, III.).</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="displayName" type="string">
+        <Description>The name of the User, suitable for display to end-users. The name SHOULD be the full name of the User being described if known</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="userType" type="string">
+        <Description>The type of the User, identify the relationship between the organization and the user.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="active" type="boolean">
+        <Description>A Boolean value indicating the User's administrative status.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="emails.work.primary.value" type="string">
+        <Description>E-mail addresses for the user. The value SHOULD be canonicalized by the Service Provider, e.g. bjensen@example.com instead of bjensen@EXAMPLE.COM. Canonical Type values of work, home, and other.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="emails.work.secondary.value" type="string">
+        <Description>E-mail addresses for the user. The value SHOULD be canonicalized by the Service Provider, e.g. bjensen@example.com instead of bjensen@EXAMPLE.COM. Canonical Type values of work, home, and other.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="emails.home.primary.value" type="string">
+        <Description>E-mail addresses for the user. The value SHOULD be canonicalized by the Service Provider, e.g. bjensen@example.com instead of bjensen@EXAMPLE.COM. Canonical Type values of work, home, and other.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="emails.home.secondary.value" type="string">
+        <Description>E-mail addresses for the user. The value SHOULD be canonicalized by the Service Provider, e.g. bjensen@example.com instead of bjensen@EXAMPLE.COM. Canonical Type values of work, home, and other.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="emails.other.primary.value" type="string">
+        <Description>E-mail addresses for the user. The value SHOULD be canonicalized by the Service Provider, e.g. bjensen@example.com instead of bjensen@EXAMPLE.COM. Canonical Type values of work, home, and other.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="emails.other.secondary.value" type="string">
+        <Description>E-mail addresses for the user. The value SHOULD be canonicalized by the Service Provider, e.g. bjensen@example.com instead of bjensen@EXAMPLE.COM. Canonical Type values of work, home, and other.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="manager" type="string">
+        <Description>The User's manager. A complex type that optionally allows Service Providers to represent organizational hierarchy by referencing the 'id' attribute of another User.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition multi="true" name="accounts" type="string">
+        <Description>Simple representation of the Account (or Link) ResourceType</Description>
+      </AttributeDefinition>
+      <AttributeDefinition entitlement="true" managed="true" multi="true" name="entitlements" schemaObjectType="entitlements" type="string">
+        <Description>extended attribute description</Description>
+      </AttributeDefinition>
+      <AttributeDefinition entitlement="true" managed="true" multi="true" name="roles" schemaObjectType="roles" type="string">
+        <Description>roles description</Description>
+      </AttributeDefinition>
+      <AttributeDefinition multi="true" name="capabilities" type="string">
+        <Description>capabilities of this user</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="riskScore" type="int">
+        <Description>composite risk score of this user</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="isManager" type="boolean">
+        <Description>is this user a manager?</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="lastRefresh" type="string">
+        <Description>when was the last time this user was refreshed?</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="administrator" type="string">
+        <Description>The Administrator of the RPA or Service account. This attribute is only applicable if the User type is RPA/Bots or Service.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="softwareVersion" type="string">
+        <Description>The Software Version of the RPA/Bots.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="businessUnit" type="string">
+        <Description/>
+      </AttributeDefinition>
+      <AttributeDefinition name="endDate" type="string">
+        <Description/>
+      </AttributeDefinition>
+      <AttributeDefinition name="jobTitle" type="string">
+        <Description/>
+      </AttributeDefinition>
+      <AttributeDefinition name="joiningDate" type="string">
+        <Description/>
+      </AttributeDefinition>
+      <AttributeDefinition name="division" type="string">
+        <Description/>
+      </AttributeDefinition>
+      <AttributeDefinition multi="true" name="backLogs" type="string">
+        <Description/>
+      </AttributeDefinition>
+      <AttributeDefinition name="action" type="string">
+        <Description/>
+      </AttributeDefinition>
+      <AttributeDefinition name="networkId" type="string">
+        <Description/>
+      </AttributeDefinition>
+      <AttributeDefinition name="roleLevel" type="string">
+        <Description/>
+      </AttributeDefinition>
+      <AttributeDefinition name="department" type="string">
+        <Description/>
+      </AttributeDefinition>
+      <AttributeDefinition multi="true" name="costCenter" type="string">
+        <Description/>
+      </AttributeDefinition>
+      <AttributeDefinition multi="true" name="roleId" type="string">
+        <Description/>
+      </AttributeDefinition>
+      <AttributeDefinition name="employeeId" type="string">
+        <Description/>
+      </AttributeDefinition>
+      <AttributeDefinition name="hrStatus" type="string">
+        <Description/>
+      </AttributeDefinition>
+      <AttributeDefinition multi="true" name="qualification" type="string">
+        <Description/>
+      </AttributeDefinition>
+      <AttributeDefinition multi="true" name="roleName" type="string">
+        <Description/>
+      </AttributeDefinition>
+      <AttributeDefinition name="location" type="string">
+        <Description/>
+      </AttributeDefinition>
+      <AttributeDefinition name="region" type="string">
+        <Description/>
+      </AttributeDefinition>
+    </Schema>
+    <Schema aggregationType="group" descriptionAttribute="" displayAttribute="" identityAttribute="id" instanceAttribute="" nativeObjectType="Entitlement" objectType="entitlements">
+      <AttributeDefinition name="id" type="string">
+        <Description/>
+      </AttributeDefinition>
+      <AttributeDefinition name="descriptions.locale" type="string">
+        <Description>The locale associated with this Entitlement description.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="descriptions.value" type="string">
+        <Description>The description in localized form.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="displayableName" type="string">
+        <Description>Displayable Name of the Entitlement</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="type" type="string">
+        <Description>Type of the Entitlement</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="application.value" type="string">
+        <Description>The Application associated with the Entitlement.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="application.$ref" type="string">
+        <Description>The URI of the SCIM resource representing the Entitlement Application.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="application.displayName" type="string">
+        <Description>The name of the Entitlement Application. OPTIONAL and READ-ONLY.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="owner.value" type="string">
+        <Description>The id of the SCIM resource representing the Entitlement Owner.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="owner.$ref" type="string">
+        <Description>The URI of the SCIM resource representing the Entitlement Owner.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="owner.displayName" type="string">
+        <Description>The displayName of the Entitlement Owner. OPTIONAL and READ-ONLY.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="requestable" type="boolean">
+        <Description>Flag to indicate this entitlement is requestable.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="aggregated" type="boolean">
+        <Description>Flag to indicate this entitlement has been aggregated.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="attribute" type="string">
+        <Description>Attribute of the Entitlement</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="value" type="string">
+        <Description>Attribute value of the Entitlement</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="lastRefresh" type="string">
+        <Description>The last refresh date of the Entitlement.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="lastTargetAggregation" type="string">
+        <Description>The date aggregation was last targeted of the Entitlement.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="classifications.source" type="string">
+        <Description>The source of the ObjectClassification.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="classifications.effective" type="string">
+        <Description>Flag indicating this is an effective Classification.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="classifications.classification" type="string">
+        <Description>Classification of this Object.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="bundleLevel" type="string">
+        <Description/>
+      </AttributeDefinition>
+      <AttributeDefinition name="externalId" type="string">
+        <Description/>
+      </AttributeDefinition>
+    </Schema>
+    <Schema aggregationType="group" descriptionAttribute="" displayAttribute="name" identityAttribute="id" instanceAttribute="" nativeObjectType="Role" objectType="roles">
+      <AttributeDefinition name="id" type="string">
+        <Description/>
+      </AttributeDefinition>
+      <AttributeDefinition name="name" type="string">
+        <Description>Name of the Role.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="displayableName" type="string">
+        <Description>Displayable Name of the Role.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="type.name" type="string">
+        <Description>The name associated with the Role Type.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="type.displayName" type="string">
+        <Description>The display name associated with the Role Type.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="type.assignmentSelector" type="boolean">
+        <Description>Flag indicating that roles of this type should have an assignment selector. This is normally false for IT roles and container roles and true for business roles.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="type.autoAssignment" type="boolean">
+        <Description>Flag indicating that roles of this type can be automatically assigned. This is normally false for IT roles and container roles and true for business roles.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="type.iiq" type="boolean">
+        <Description>Flag to indicate that a role should be allowed to contain IdentityIQ properties like capabilities and rights.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="type.manualAssignment" type="boolean">
+        <Description>Flag indicating that roles of this type may be manually assigned. This is normally true for business roles and false for IT and container roles.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="type.permits" type="boolean">
+        <Description>Flag to indicate that roles should have a permits list. Normally this is false for business roles and true for IT roles.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="type.requirements" type="boolean">
+        <Description>Flag to indicate that roles should have a requirements list. Normally this is false for business roles and true for IT roles.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="descriptions.locale" type="string">
+        <Description>The locale associated with this Role description.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="descriptions.value" type="string">
+        <Description>The description in localized form.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="active" type="boolean">
+        <Description>Flag to indicate this Role is enabled or active.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="activationDate" type="string">
+        <Description>The date the Role will turn from inactive/disabled to active/enabled.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="deactivationDate" type="string">
+        <Description>The date the Role will turn from active/enabled to inactive/disabled.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="owner.value" type="string">
+        <Description>The id of the SCIM resource representing the Role Owner.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="owner.$ref" type="string">
+        <Description>The URI of the SCIM resource representing the Role Owner.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="owner.displayName" type="string">
+        <Description>The displayName of the Role Owner. OPTIONAL and READ-ONLY.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="inheritance.value" type="string">
+        <Description>The id of the SCIM resource representing the Role.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="inheritance.$ref" type="string">
+        <Description>The URI of the SCIM resource representing the Role.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="inheritance.displayName" type="string">
+        <Description>The displayName of the Role. OPTIONAL and READ-ONLY.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="requirements.value" type="string">
+        <Description>The id of the SCIM resource representing the Role.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="requirements.$ref" type="string">
+        <Description>The URI of the SCIM resource representing the Role.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="requirements.displayName" type="string">
+        <Description>The displayName of the Role. OPTIONAL and READ-ONLY.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="permits.value" type="string">
+        <Description>The id of the SCIM resource representing the Role.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="permits.$ref" type="string">
+        <Description>The URI of the SCIM resource representing the Role.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="permits.displayName" type="string">
+        <Description>The displayName of the Role. OPTIONAL and READ-ONLY.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="classifications.source" type="string">
+        <Description>The source of the ObjectClassification.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="classifications.effective" type="string">
+        <Description>Flag indicating this is an effective Classification.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="classifications.classification" type="string">
+        <Description>Classification of this Object.</Description>
+      </AttributeDefinition>
+      <AttributeDefinition name="roleLevel" type="string">
+        <Description/>
+      </AttributeDefinition>
+      <AttributeDefinition name="externalId" type="string">
+        <Description/>
+      </AttributeDefinition>
+    </Schema>
+    <Schema descriptionAttribute="" displayAttribute="" identityAttribute="id" instanceAttribute="" nativeObjectType="Group" objectType="group"/>
+  </Schemas>
+  <ApplicationScorecard/>
+</Application>

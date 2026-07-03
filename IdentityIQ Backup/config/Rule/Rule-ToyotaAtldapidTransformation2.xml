@@ -1,0 +1,116 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Toyota Atldapid Transformation2" type="IdentityAttributeTarget">
+  <Description>Identity attribute target rule used to transform identity attribute AtldapId to update Workerdb Application Atldap attribute only if atldapuser value is Y.</Description>
+  <Signature returnType="Object">
+    <Inputs>
+      <Argument name="log" type="org.apache.commons.logging.Log">
+        <Description>
+          The log object associated with the SailPointContext.
+        </Description>
+      </Argument>
+      <Argument name="context" type="sailpoint.api.SailPointContext">
+        <Description>
+          A sailpoint.api.SailPointContext object that can be used to query the database if necessary.
+        </Description>
+      </Argument>
+      <Argument name="value" type="Object">
+        <Description>
+          The value of the identity attribute.  Note that this could be single value or a list of values.
+        </Description>
+      </Argument>
+      <Argument name="sourceIdentityAttribute">
+        <Description>
+          The sailpoint.object.ObjectAttribute for this target.
+        </Description>
+      </Argument>
+      <Argument name="sourceIdentityAttributeName">
+        <Description>
+          The name of the identity attribute for this target.
+        </Description>
+      </Argument>
+      <Argument name="sourceAttributeRequest">
+        <Description>
+          The sailpoint.object.ProvisioningPlan.AttributeRequest that is
+          setting the attribute on the identity.
+        </Description>
+      </Argument>
+      <Argument name="target">
+        <Description>
+          The sailpoint.object.AttributeTarget that is being processed.
+        </Description>
+      </Argument>
+      <Argument name="link">
+        <Description>
+          The sailpoint.object.Link that is being processed.
+        </Description>
+      </Argument>
+      <Argument name="identity">
+        <Description>
+          The sailpoint.object.Identity that is being processed.
+        </Description>
+      </Argument>
+      <Argument name="project">
+        <Description>
+          The sailpoint.object.ProvisioningProject that has the changes that
+          are being requested.
+        </Description>
+      </Argument>
+    </Inputs>
+    <Returns>
+      <Argument name="attributeValue">
+        <Description>
+          The transformed value that will be pushed to the target.
+        </Description>
+      </Argument>
+    </Returns>
+  </Signature>
+  <Source><![CDATA[
+  import org.apache.commons.logging.Log;
+  import org.apache.commons.logging.LogFactory;
+  import sailpoint.api.IdentityService;  
+  import sailpoint.object.Application;
+  import sailpoint.object.Link;  
+  import sailpoint.rapidapponboarding.logger.LogEnablement;
+  import sailpoint.tools.GeneralException;  
+  import sailpoint.tools.Util;
+ 
+  {
+    Log tlog = LogFactory.getLog("rule.ToyotaAtldapidTransformation");    
+    LogEnablement.isLogTraceEnabled(tlog, "TMNA-TAT-001-Entering Toyota AtldapId Transformation Rule.");
+    LogEnablement.isLogTraceEnabled(tlog, "TMNA-TAT-002-with identity "+identity.getName()+" atldapid value = "+value);    
+        
+    String returnValue = link.getAttribute("ATLDAP");
+    Application orgLdap = null;
+    IdentityService idService = new IdentityService(context);
+    
+    try {
+      //Get the Org Ldap application object from SailPoint
+      orgLdap = context.getObjectByName(Application.class , "Org LDAP");
+      if ( orgLdap != null ) {
+        //Get the Org Ldap link object for the user from SailPoint  
+        List orgLdapLinks = idService.getLinks(identity,orgLdap);
+        if ( Util.nullSafeSize(orgLdapLinks)>0 ) {
+          Link orgLdapLink = orgLdapLinks.get(0);
+          //Validate the Org Ldap link status for the user from SailPoint
+          if ( orgLdapLink != null && !orgLdapLink.isDisabled() ) { 
+            //Fetching atldapuser attribute request from the Org Ldap link 
+            String atldapUserValue = orgLdapLink.getAttribute("atldapUser");
+            if ( Util.nullSafeCaseInsensitiveEq(atldapUserValue,"Y") ) {
+              //Synchronize identity attribute AtldapId to update Workerdb Application Atldap attribute only if atldapuser value is Y
+              returnValue = value;
+            }else{
+              returnValue = "";
+            }
+          }
+        }
+      }
+    } catch (Exception ex) {
+      LogEnablement.isLogTraceEnabled(tlog, "TMNA-TAT-003-ERROR for User: " +identity.getName()+ "Error Message: An exception was thrown while attempting to process Toyota AtldapId Transformation: " + ex.toString());      
+    }
+
+    LogEnablement.isLogTraceEnabled(tlog,"TMNA-TAT-004-with identity "+identity.getName()+" return value = "+value);          
+    return returnValue;
+  }  
+  ]]></Source>
+</Rule>

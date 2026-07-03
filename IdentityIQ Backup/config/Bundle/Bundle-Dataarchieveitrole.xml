@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Bundle PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Bundle displayName="DataArchieveITRole" name="dataArchieveITRole" type="it">
+  <Attributes>
+    <Map>
+      <entry key="accountSelectorRules"/>
+      <entry key="allowDuplicateAccounts" value="false"/>
+      <entry key="allowMultipleAssignments" value="false"/>
+      <entry key="mergeTemplates" value="false"/>
+      <entry key="roleCriticality" value="Medium"/>
+      <entry key="roleLevel" value="ADM"/>
+      <entry key="sysDescriptions">
+        <value>
+          <Map>
+            <entry key="en_US"/>
+          </Map>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Classifications>
+    <ObjectClassification ownerId="c0a81d8997c5179b8197de855b491490" ownerType="ManagedAttribute" source="UI">
+      <ReferencedClassification>
+        <Reference class="sailpoint.object.Classification" name="Accounts"/>
+      </ReferencedClassification>
+    </ObjectClassification>
+    <ObjectClassification ownerId="c0a81d8997c5179b8197de855b491490" ownerType="ManagedAttribute" source="UI">
+      <ReferencedClassification>
+        <Reference class="sailpoint.object.Classification" name="IT"/>
+      </ReferencedClassification>
+    </ObjectClassification>
+  </Classifications>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+  <Profiles>
+    <Profile>
+      <ApplicationRef>
+        <Reference class="sailpoint.object.Application" name="ActiveDirectory"/>
+      </ApplicationRef>
+      <Constraints>
+        <Filter operation="CONTAINS_ALL" property="memberOf">
+          <Value>
+            <List>
+              <String>CN=DataArchive,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+            </List>
+          </Value>
+        </Filter>
+      </Constraints>
+    </Profile>
+  </Profiles>
+  <RoleIndex detectedCount="1" entitlementCount="1" entitlementCountInheritance="1"/>
+</Bundle>

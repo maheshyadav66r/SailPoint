@@ -1,0 +1,108 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1748788677459" completionStatus="Error" launched="1748788654554" launcher="spadmin" name="QuickLink Launch for identity spadmin - 515" type="Workflow">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000680"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Aaron Nunez">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000680"/>
+                <entry key="noApplicationTemplates">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="noCreateTemplates" value="true"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Aaron Nunez-ADM,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create">
+                  <AttributeRequest name="sAMAccountName" op="Set" value="Aaron Nunez-ADM"/>
+                  <AttributeRequest name="givenName" op="Set" value="Aaron"/>
+                  <AttributeRequest name="sn" op="Set"/>
+                  <AttributeRequest name="mail" op="Set" value="aaron.nunez@eshiam.com"/>
+                  <AttributeRequest name="password" op="Set"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000680"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Aaron Nunez" targetIntegration="ActiveDirectory" trackingId="8d5f5873e9b7409eb477372076d98a43">
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Aaron Nunez-ADM,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create">
+                <Attributes>
+                  <Map>
+                    <entry key="provisioningTransactionId" value="a9feffec971a1a0781972bed897f114e"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="sAMAccountName" op="Set" value="Aaron Nunez-ADM"/>
+                <AttributeRequest name="givenName" op="Set" value="Aaron"/>
+                <AttributeRequest name="mail" op="Set" value="aaron.nunez@eshiam.com"/>
+                <AttributeRequest name="password" op="Set"/>
+                <ProvisioningResult status="failed">
+                  <Errors>
+                    <Message key="Exception occurred while executing the RPCRequest: Errors returned from IQService. &quot;The object already exists. The object already exists. 00000524: UpdErr: DSID-031A1261, problem 6005 (ENTRY_EXISTS), data 0 00000524: UpdErr: DSID-031A1261, problem 6005 (ENTRY_EXISTS), data 0 . HRESULT:[0x80071392] For identity: CN=Aaron Nunez-ADM,OU=People,OU=Demo,DC=Eshiam,DC=com&quot;" type="Error"/>
+                  </Errors>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000680"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="a9feffec971a1a0781972bed32411110"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="Stop">
+            <Interactions>
+              <ApprovalSummary completer="The Administrator" endDate="1748788674257" owner="spadmin" request="SecodaryIdRegistrationForm" startDate="1748788654806" state="Finished" workItemId="a9feffec971a1a0781972bed32a01111" workItemType="Form"/>
+            </Interactions>
+          </WorkflowSummary>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="Exception occurred while executing the RPCRequest: Errors returned from IQService. &quot;The object already exists. The object already exists. 00000524: UpdErr: DSID-031A1261, problem 6005 (ENTRY_EXISTS), data 0 00000524: UpdErr: DSID-031A1261, problem 6005 (ENTRY_EXISTS), data 0 . HRESULT:[0x80071392] For identity: CN=Aaron Nunez-ADM,OU=People,OU=Demo,DC=Eshiam,DC=com&quot;" type="Error"/>
+  </Messages>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

@@ -1,0 +1,189 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1756446682045" completionStatus="Success" launched="1756446679743" launcher="spadmin" name="Update Identity Adam Martin AccessRequest" targetClass="Identity" targetName="Adam Martin" type="LCM">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000911"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Adam Martin">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000911"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="WebServicesTestApplication3" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a81d8998df1f3e8198e4ceb70c03e7"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="nativeIdUpdated">
+                        <value>
+                          <Boolean>true</Boolean>
+                        </value>
+                      </entry>
+                      <entry key="operation" value="EntitlementAdd"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest displayValue="WS_GROUP_100" name="groups" op="Add" value="WS_GROUP_100">
+                    <Attributes>
+                      <Map>
+                        <entry key="assignment" value="true"/>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                </AccountRequest>
+                <AccountRequest application="WebServicesTestApplication3" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a81d8998df1f3e8198e4ceb73c03e8"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="nativeIdUpdated">
+                        <value>
+                          <Boolean>true</Boolean>
+                        </value>
+                      </entry>
+                      <entry key="operation" value="EntitlementAdd"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest displayValue="WS_GROUP_101" name="groups" op="Add" value="WS_GROUP_101">
+                    <Attributes>
+                      <Map>
+                        <entry key="assignment" value="true"/>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000911"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <ProvisioningTargets>
+                  <ProvisioningTarget application="WebServicesTestApplication3" attribute="groups" value="WS_GROUP_100">
+                    <AccountSelection applicationId="c0a8002691fb102b81920b47da880f63" applicationName="WebServicesTestApplication3" implicitCreate="true"/>
+                  </ProvisioningTarget>
+                  <ProvisioningTarget application="WebServicesTestApplication3" attribute="groups" value="WS_GROUP_101">
+                    <AccountSelection applicationId="c0a8002691fb102b81920b47da880f63" applicationName="WebServicesTestApplication3" implicitCreate="true"/>
+                  </ProvisioningTarget>
+                  <ProvisioningTarget retain="true" role="ad_business_role">
+                    <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=Adam Martin,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                      <AccountInfo displayName="Adam Martin" nativeIdentity="CN=Adam Martin,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+                    </AccountSelection>
+                    <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ADX" doCreate="true" selection="CN=Adam Martin,OU=XPeople,OU=Demo,DC=Eshiam,DC=com"/>
+                  </ProvisioningTarget>
+                </ProvisioningTargets>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Adam Martin" targetIntegration="WebServicesTestApplication3" trackingId="33b818060088491eb10197391a1579f5">
+              <AccountRequest application="WebServicesTestApplication3" nativeIdentity="EMP00424" op="Create" targetIntegration="WebServicesTestApplication3">
+                <Attributes>
+                  <Map>
+                    <entry key="attachmentConfigList"/>
+                    <entry key="attachments"/>
+                    <entry key="flow" value="AccessRequest"/>
+                    <entry key="id" value="c0a81d8998df1f3e8198e4ceb73c03e8"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="nativeIdUpdated">
+                      <value>
+                        <Boolean>true</Boolean>
+                      </value>
+                    </entry>
+                    <entry key="operation" value="EntitlementAdd"/>
+                    <entry key="provisioningTransactionId" value="c0a8008598f111308198f46169fe0200"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest displayValue="WS_GROUP_100" name="groups" op="Add" value="WS_GROUP_100">
+                  <Attributes>
+                    <Map>
+                      <entry key="assignment" value="true"/>
+                    </Map>
+                  </Attributes>
+                  <ProvisioningResult status="committed"/>
+                </AttributeRequest>
+                <AttributeRequest displayValue="WS_GROUP_101" name="groups" op="Add" value="WS_GROUP_101">
+                  <Attributes>
+                    <Map>
+                      <entry key="assignment" value="true"/>
+                    </Map>
+                  </Attributes>
+                  <ProvisioningResult status="committed"/>
+                </AttributeRequest>
+                <AttributeRequest name="user_email" op="Set" value="adam.martin@example.com"/>
+                <AttributeRequest name="manager_id" op="Set" value="1045"/>
+                <AttributeRequest name="location" op="Set" value="India"/>
+                <AttributeRequest name="user_name" op="Set" value="Adam Martin"/>
+                <AttributeRequest name="department" op="Set" value="Admin"/>
+                <AttributeRequest name="user_status" op="Set" value="ACTIVE"/>
+                <AttributeRequest name="job_title" op="Set" value="Engineer"/>
+                <ProvisioningResult status="committed"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000911"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+              <ProvisioningResult status="committed"/>
+            </ProvisioningPlan>
+            <ProvisioningTarget application="WebServicesTestApplication3" attribute="groups" value="WS_GROUP_100">
+              <AccountSelection applicationId="c0a8002691fb102b81920b47da880f63" applicationName="WebServicesTestApplication3" implicitCreate="true"/>
+            </ProvisioningTarget>
+            <ProvisioningTarget application="WebServicesTestApplication3" attribute="groups" value="WS_GROUP_101">
+              <AccountSelection applicationId="c0a8002691fb102b81920b47da880f63" applicationName="WebServicesTestApplication3" implicitCreate="true"/>
+            </ProvisioningTarget>
+            <ProvisioningTarget retain="true" role="ad_business_role">
+              <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=Adam Martin,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="Adam Martin" nativeIdentity="CN=Adam Martin,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+              <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ADX" doCreate="true" selection="CN=Adam Martin,OU=XPeople,OU=Demo,DC=Eshiam,DC=com"/>
+            </ProvisioningTarget>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a8008598f111308198f46164bd01ee"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="end"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

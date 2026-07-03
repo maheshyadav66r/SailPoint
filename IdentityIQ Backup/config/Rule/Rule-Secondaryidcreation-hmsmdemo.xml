@@ -1,0 +1,379 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="SecondaryIdCreation-HMSMDemo">
+  <Source><![CDATA[
+  import sailpoint.object.Identity;
+  import sailpoint.object.ProvisioningPlan;
+  import sailpoint.object.Application;
+  import sailpoint.object.AccountRequest;
+  import sailpoint.object.AttributeRequest;
+  import sailpoint.object.ProvisioningPlan.ObjectOperation;
+  import sailpoint.object.ProvisioningPlan.Operation;
+  import sailpoint.object.Filter;
+  import sailpoint.object.ProvisioningPlan.AccountRequest;
+  import sailpoint.api.*;
+  import org.json.JSONObject;
+  import sailpoint.object.ProvisioningProject;
+  import sailpoint.api.Provisioner;
+
+
+
+  public String getAccNativeIdentity(String applicationName, String identifier){
+    String nativeIdentity = null;
+
+    Filter filter = Filter.and(Filter.ignoreCase(Filter.eq("displayName", identifier)),Filter.eq("application.name",applicationName));
+    QueryOptions qo = new QueryOptions();
+    qo.add(filter);
+
+    Link link = context.getUniqueObject(Link.class, filter); 
+
+    if(null != link){
+      Identity identity = link.getIdentity();
+      if(null != identity){
+        String workerStatus = identity.getAttribute("workerStatus");
+        if("Active".equalsIgnoreCase(workerStatus)){
+          nativeIdentity = link.getNativeIdentity();
+        } 
+      }
+    }
+    return nativeIdentity;
+  }
+
+
+
+  public AccountRequest fetchAdAccountReq(AccountRequest accountRequest, Map customAttributeMap){
+    secIdLogs.info("Starting fetchAdAccountReq....");
+    Map mapOfADAttr = customObject.get("AD_Update_Atrributes");
+    Set setOfADattr =  mapOfADAttr.keySet();
+    String nativeIdentity = accountRequest.getNativeIdentity();
+    String finalDn = Util.replaceCharacter(customAttributeMap.get("currentLastName"), customAttributeMap.get("modifiedLastName"), nativeIdentity);
+
+    for(String customAttributeName: setOfADattr){
+
+      AttributeRequest attrReq = accountRequest.getAttributeRequest(customAttributeName);
+      if(null != attrReq){
+        String currentValue = attrReq.getValue();
+        if ("modifyLastName".equals(mapOfADAttr.get(customAttributeName))) {
+          String modifiedValue = Util.replaceCharacter(customAttributeMap.get("currentLastName"), customAttributeMap.get("modifiedLastName"), currentValue);
+          attrReq.setValue(modifiedValue);
+        } else if ("modifyEmployeeID".equals(mapOfADAttr.get(customAttributeName))) {
+          String modifiedValue = Util.replaceCharacter(customAttributeMap.get("currentEmpID"), customAttributeMap.get("modifiedEmpID"), currentValue);
+          attrReq.setValue(modifiedValue);
+        } else if ("modifyLID".equals(mapOfADAttr.get(customAttributeName))) {
+          String modifiedValue = Util.replaceCharacter(customAttributeMap.get("currentLID"), customAttributeMap.get("modifiedLID"), currentValue);
+          if(null != modifiedValue @and !modifiedValue.contains("ADM")){
+            modifiedValue = Util.replaceCharacter(customAttributeMap.get("currentLID").toLowerCase(), customAttributeMap.get("modifiedLID").toLowerCase(), currentValue);
+          }
+          attrReq.setValue(modifiedValue);
+        } else if ("modifyLIDLower".equals(mapOfADAttr.get(customAttributeName))) {
+          String modifiedValue = Util.replaceCharacter(customAttributeMap.get("currentLIDLower"), customAttributeMap.get("modifiedLIDLower"), currentValue);
+          attrReq.setValue(modifiedValue);
+        }
+      }   
+    }
+    String tempCn = finalDn.substring(0,finalDn.indexOf(","));
+    String cn = tempCn.replace("cn=", "");
+    accountRequest.add(new AttributeRequest("cn", ProvisioningPlan.Operation.Set,cn));
+    String application = accountRequest.getApplication();
+    String groupSearchDN = null;
+    //Add the group to adm account for cyberark
+    if("AD Primary".equalsIgnoreCase(application)){
+      Filter filter = Filter.eq("displayName",customObject.get("AD_Cyberark_Onboarding_Group"));
+      ManagedAttribute ma = context.getUniqueObject(ManagedAttribute.class,filter);
+      if(null != ma @and null != ma.getValue()){
+        String groupDn = ma.getValue();
+        accountRequest.add(new AttributeRequest("memberOf",ProvisioningPlan.Operation.Add,groupDn));
+      }
+    }
+    accountRequest.setNativeIdentity(finalDn);
+    secIdLogs.info("Exiting fetchAdAccountReq....");
+    return accountRequest;
+  }
+
+  //Return list of all account request for the Cloud Admin ID
+  public List getCloudIdUpdatedPlan(List planList, String identityName){
+    secIdLogs.info("Starting getCloudIdUpdatedPlan....");
+    List listOfAccountReq = new ArrayList();
+
+    Identity identity = fetchIdentity(identityName);
+
+    String currentLastName = identity.getLastname();
+    String currentLID = identity.getAttribute("lid");
+    String currentLIDLower = identity.getAttribute("lid").toLowerCase();
+    String currentEmpID = identity.getName();
+
+    Map customAttributeMap = new HashMap();
+
+    customAttributeMap.put("currentLastName", currentLastName);
+    customAttributeMap.put("modifiedLastName", currentLastName+" (CADM)");
+    customAttributeMap.put("currentLID", currentLID);
+    customAttributeMap.put("modifiedLID", "CADM"+currentLID.substring(3));
+    customAttributeMap.put("currentLIDLower", currentLIDLower);
+    customAttributeMap.put("modifiedLIDLower", "cadm"+currentLID.substring(3).toLowerCase());
+    customAttributeMap.put("currentEmpID", currentEmpID);
+    customAttributeMap.put("modifiedEmpID", "C-"+currentEmpID);
+
+    for(ProvisioningPlan plan : planList){
+      List listOfAccountRequests = plan.getAccountRequests();
+      for (AccountRequest accntReq: listOfAccountRequests){
+        String appName = accntReq.getApplicationName();
+        if("AD Primary".equalsIgnoreCase(appName) || "AD Secondary".equalsIgnoreCase(appName)){
+          finalAccountReq = fetchAdAccountReq(accntReq, customAttributeMap);
+
+          List listOfAttrsToBeRemoved = customObject.get("AD_Remove_Atrributes");
+          for(String attrName: listOfAttrsToBeRemoved){
+            AttributeRequest attrReqToBeRemoved = finalAccountReq.getAttributeRequest(attrName);
+            if(null != attrReqToBeRemoved){
+              finalAccountReq.remove(attrReqToBeRemoved);
+            }
+          }
+
+          listOfAccountReq.add(finalAccountReq);
+          String nativeIdentity = getAccNativeIdentity(appName, currentLID);
+          if(null != nativeIdentity @and "AD Primary".equalsIgnoreCase(appName)){
+            AccountRequest modifyAcctRequest = modifyAccountRequestForAdAddGroup(nativeIdentity, appName);
+            listOfAccountReq.add(modifyAcctRequest);
+          }
+        }
+      } 
+    }
+    secIdLogs.info("Exiting getCloudIdUpdatedPlan....");
+    return listOfAccountReq; 
+  }
+
+
+  //Return list of all account request for the ADMIN ID
+  public List getAdminIdUpdatedPlan(List planList, String identityName){
+    secIdLogs.info("Starting getAdminIdUpdatedPlan....");
+
+    List listOfAccountReq = new ArrayList();
+    Identity identity = fetchIdentity(identityName);
+    String currentLastName = identity.getLastname();
+    String currentLID = identity.getAttribute("lid");
+    String currentLIDLower = identity.getAttribute("lid").toLowerCase();
+    String currentEmpID = identity.getName();
+
+    Map customAttributeMap = new HashMap();
+    customAttributeMap.put("currentLastName", currentLastName);
+    customAttributeMap.put("modifiedLastName", currentLastName+" Admin ID");
+    customAttributeMap.put("currentLID", currentLID);
+    customAttributeMap.put("modifiedLID", "ADM"+currentLID.substring(3));
+    customAttributeMap.put("currentLIDLower", currentLIDLower);
+    customAttributeMap.put("modifiedLIDLower", "adm"+currentLID.substring(3).toLowerCase());
+    customAttributeMap.put("currentEmpID", currentEmpID);
+    customAttributeMap.put("modifiedEmpID", "A-"+currentEmpID);
+
+    for(ProvisioningPlan plan : planList){
+      List listOfAccountRequests = plan.getAccountRequests();
+      for (AccountRequest accntReq: listOfAccountRequests){
+        String appName = accntReq.getApplicationName();
+        if("AD Primary".equalsIgnoreCase(appName) || "AD Secondary".equalsIgnoreCase(appName)){
+
+          finalAccountReq = fetchAdAccountReq(accntReq, customAttributeMap);
+          //remove attribute request
+          List listOfAttrsToBeRemoved = customObject.get("AD_Remove_Atrributes");
+          for(String attrName: listOfAttrsToBeRemoved){
+            AttributeRequest attrReqToBeRemoved = accntReq.getAttributeRequest(attrName);
+            if(null != attrReqToBeRemoved){
+              accntReq.remove(attrReqToBeRemoved);
+            }
+          }
+          listOfAccountReq.add(finalAccountReq);
+          String nativeIdentity = getAccNativeIdentity(appName, currentLID);
+          if(null != nativeIdentity  @and "AD Primary".equalsIgnoreCase(appName)){
+            AccountRequest modifyAcctRequest = modifyAccountRequestForAdAddGroup(nativeIdentity, appName);
+            listOfAccountReq.add(modifyAcctRequest);
+          }
+
+        }else if("LDAP Primary".equalsIgnoreCase(appName) || "LDAP Secondary".equalsIgnoreCase(appName)){
+          finalAccountReq = fetchLDAPAccountReq(accntReq, customAttributeMap);
+          listOfAccountReq.add(finalAccountReq);
+        }else if("RACF Primary".equalsIgnoreCase(appName) || "RACF Secondary".equalsIgnoreCase(appName)){
+          finalAccountReq = fetchRACFAccountReq(accntReq, customAttributeMap);
+          listOfAccountReq.add(finalAccountReq);
+        }
+
+      } 
+    }
+    secIdLogs.info("Exiting getAdminIdUpdatedPlan....");
+    return listOfAccountReq; 
+  }
+
+
+
+  //Build primary provisioning plan to gather data from provisioning form of the respective application
+  public List createCompiledPlanList(List appNameList, String identityName){
+    secIdLogs.info("Starting createCompiledPlanList....");
+    Identity identity = fetchIdentity(identityName);
+    String lid = identity.getAttribute("lid");
+
+    ProvisioningPlan finalPlan = new ProvisioningPlan();
+    String hhsProdAppName = customObject.get("applicationMapping").get("hhsProd");
+    if(!appNameList.contains("AD Primary")  @and !appNameList.contains(hhsProdAppName)){
+      String admId = lid.toUpperCase().replace("LID","ADM");
+      String nativeIdentity = getAccNativeIdentity("AD Primary", admId);
+      if(null == nativeIdentity){
+        appNameList.add("AD Primary");
+      }
+    }
+    for(String appName: appNameList){
+      if(validateAccounts(appName, lid)){
+        AccountRequest accountRequest = new AccountRequest();
+        accountRequest.setApplication(appName);
+        accountRequest.setOp(ProvisioningPlan.ObjectOperation.Create);
+        finalPlan.add(accountRequest);
+      }
+    }
+
+    finalPlan.setIdentity(identity);
+    Provisioner prov = new Provisioner(context);
+    ProvisioningProject provProject = prov.compile(finalPlan);
+    List planList = provProject.getPlans();
+
+    if(null == planList){
+      throw new Exception("No Valid application accounts to be provisioned ");
+    }else if(planList.isEmpty()){
+      throw new Exception("No Valid application accounts to be provisioned ");
+    }
+    secIdLogs.info("Exiting createCompiledPlanList....");
+    return planList;
+  }
+
+  public List getApplicationList(){
+    secIdLogs.info("Starting getAPplicationList....");
+    List applications = new ArrayList();
+    JSONObject json = new JSONObject(attributes);
+    Iterator it = json.keys();
+    while(it.hasNext()){
+      String key = it.next();
+      if(json.get(key).equalsIgnoreCase("Cloud Admin")){
+        Object values = customObject.get("applicationMapping").get("primaryAD");
+        applications.add(values);
+      } else {
+        if(!(json.get(key).equals("None"))  @and json.get(key).equalsIgnoreCase("True")){
+          Object object = customObject.get("applicationMapping").get(key);
+          if(object instanceof Map){
+            for(Map.Entry entry : object.entrySet()){
+              Object values = entry.getValue();
+              if(entry.getValue() instanceof List){
+                for(String value :values){
+                  applications.add(value);
+                }
+              } else {
+                applications.add(values);
+              }
+            }
+          } else {
+            applications.add(object);
+          }
+        }
+      }
+    }
+    secIdLogs.info("Exiting getAPplicationList....");
+
+    if(null != applications) return applications;
+  }
+
+  public Identity fetchIdentity(String identityName){
+    secIdLogs.info("Starting fetchIdentity....");
+    Filter filter = Filter.and(Filter.eq("lid",identityName),Filter.eq("workerStatus","Active"));
+    QueryOptions qo = new QueryOptions();
+    qo.add(filter);
+    List identities = context.getObjects(Identity.class,qo);
+    if(identities.size() >0){
+      return identities.get(0);
+    }
+  }
+
+
+  public AccountRequest createAccountRequestForWirelessId(ProvisioningPlan plan, Identity identity, JSONObject json){
+    secIdLogs.info("Starting modifyAccountRequestForAdAddGroup....");
+    String ritm = json.get("ritmNumber");
+    String firstname = json.get("firstName");
+    String lastname = json.get("lastName");
+    String desc = "SNOW "+ritm+" requested by "+json.get("requestor");
+    identity = fetchIdentity(workflow.get("lid"));
+    Identity manager = identity.getManager();
+    String nativeIdentity = getAccNativeIdentity("AD Primary", manager.getAttribute("lid"));
+    String ou = getOU("AD Primary");
+    String dn = "cn="+identity.getFirstname()+" "+identity.getLastname() + "," + ou;
+    AccountRequest acr = new AccountRequest();
+    acr.setApplication("AD Primary");
+    acr.setOp(ProvisioningPlan.ObjectOperation.Create);
+    acr.setNativeIdentity(dn);
+    String newPassword = getPassword();
+    workflow.put("password",newPassword);
+    acr.add(new AttributeRequest("cn", ProvisioningPlan.Operation.Set,identity.getFirstname()+" "+identity.getLastname()));
+    acr.add(new AttributeRequest("givenName", ProvisioningPlan.Operation.Set,identity.getFirstname()));
+    acr.add(new AttributeRequest("sn", ProvisioningPlan.Operation.Set,identity.getLastname()));
+    acr.add(new AttributeRequest("displayName", ProvisioningPlan.Operation.Set,identity.getDisplayName()));
+    acr.add(new AttributeRequest("sAMAccountName", ProvisioningPlan.Operation.Set,identity.getName()));
+    acr.add(new AttributeRequest("description", ProvisioningPlan.Operation.Set,desc));
+    acr.add(new AttributeRequest("distinguishedName", ProvisioningPlan.Operation.Set,dn));
+    acr.add(new AttributeRequest("password", ProvisioningPlan.Operation.Set,newPassword));
+    acr.add(new AttributeRequest("manager", ProvisioningPlan.Operation.Set,nativeIdentity));
+
+    List groupList = customObject.get("AD_Wireless_Groups");
+    List finalGrouplist = new ArrayList();
+    for(String group : groupList){
+      Filter filter = Filter.and(Filter.eq("displayName",group), Filter.eq("application.name","AD Primary"));
+      ma = context.getUniqueObject(ManagedAttribute.class,filter);
+      finalGrouplist.add(ma.getValue());
+    }
+    acr.add(new AttributeRequest("memberOf",ProvisioningPlan.Operation.Add,finalGrouplist));
+    String str = getAccountExpiresValue();
+    acr.add(new AttributeRequest("accountExpires", ProvisioningPlan.Operation.Set,str));
+    secIdLogs.info("Starting createAccountRequestForWirelessId....");
+    return acr;
+  }
+
+
+
+
+  public ProvisioningPlan buildProvisioningPlan(){
+    secIdLogs.info("Starting buildProvisioningPlan....");
+    JSONObject json = new JSONObject(attributes);
+
+    ProvisioningPlan finalPlan = new ProvisioningPlan();
+    String secIdType = json.get("secondaryIdType");
+    Identity identity = null;
+
+    if("Wireless ID".equalsIgnoreCase(secIdType)){
+
+      AccountRequest acr = createAccountRequestForWirelessId(finalPlan, identity, json);
+      finalPlan.setIdentity(fetchIdentity(workflow.get("lid")));
+      finalPlan.add(acr);
+    }else{
+      String identityName = json.get("primaryIdentity");
+      identity = fetchIdentity(identityName);
+
+      List applicationList = getApplicationList();
+      List planList = createCompiledPlanList(applicationList, identityName);
+      List listOfAccountRequest = new ArrayList();
+
+      if("Admin".equalsIgnoreCase(secIdType)){
+
+        listOfAccountRequest = getAdminIdUpdatedPlan(planList, identityName);
+        for(AccountRequest accountRequest : listOfAccountRequest){
+
+          finalPlan.add(accountRequest);
+        }
+
+      }else if("Cloud Admin".equalsIgnoreCase(secIdType)){
+        listOfAccountRequest = getCloudIdUpdatedPlan(planList, identityName);
+        for(AccountRequest accountRequest : listOfAccountRequest){
+          finalPlan.add(accountRequest);
+        }
+      }
+      finalPlan.setIdentity(identity);
+
+    }
+    secIdLogs.info("Exiting buildProvisioningPlan....");
+    return finalPlan;
+  }
+
+
+
+
+  ]]></Source>
+</Rule>

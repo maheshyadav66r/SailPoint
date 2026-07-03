@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Validation_ReadAndWrite" type="Validation">
+  <Source><![CDATA[
+  import sailpoint.object.*;
+  import sailpoint.api.*;
+  import sailpoint.tools.Util;
+
+
+  String fileLocation = "D:\\csv files\\IIQ Application Names.txt";
+  String filepath = "D:\\csv files\\IIQ ApplicationDetails.txt";
+  String line;
+  String result;
+  String lineToBeWritten;
+
+  private  writeLine( String filepath,  String line) throws Exception {
+
+    try{
+
+      if (filepath == null || line == null) {
+        return;
+      }
+      BufferedWriter  bufferedWriter  = new BufferedWriter(new FileWriter(new File(filepath), true));
+      // bufferedWriter.newLine();
+      bufferedWriter.write(line);
+      bufferedWriter.close();
+    }
+    catch(Exception e){
+      log.error(" error in  writeline method "+e.toString());
+    }
+  }
+
+
+  try{
+
+    BufferedReader br=new BufferedReader(new FileReader(new File(fileLocation)));
+    writeLine(filepath , "ApplicationName , Type ");
+    // writeLine(filepath , "ApplicationName , Type , Connector ");
+    // String header=br.readLine();
+    while((line=br.readLine())!=null){
+
+      if(!line.contains(",")){
+        String appName = line;
+        Application appObject = context.getObjectByName(Application.class , appName);
+
+        if (appObject == null) {
+          return;   // skip this line safely
+        }
+
+        String connector = appObject.getConnector();
+        String type  = appObject.getType();
+
+       // lineToBeWritten ="\n"+ line +" , "+ type+" , " +connector.substring(connector.indexOf('.', connector.indexOf('.') + 1) + 1)+"\n";
+        lineToBeWritten = "\n"+line +" , "+ type;
+
+        writeLine(filepath , lineToBeWritten);
+        log.error(" data written in new file  "+lineToBeWritten);
+      }
+    }
+  }catch(Exception e){
+    log.error(e.toString());
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  /* 
+  return context.getProperty("value");
+   return context.getConnection();
+   return context.getConfiguration();
+  return context.decrypt("1:ACP:4o/pLIrH9m58xCIAZCoywJtl8YnMGChWs56gFWIxEak=");*/
+
+
+
+  /*for(int i=0;i < this.variables.length;i++){
+    log.error("---variables-----"+this.variables[i]);
+  }*/
+
+
+  return "nnn";
+  ]]></Source>
+</Rule>

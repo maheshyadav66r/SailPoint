@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE IdentityTrigger PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<IdentityTrigger attributeName="department" disabled="true" handler="sailpoint.api.WorkflowTriggerHandler" name="CertificationEmail Trigger for Attribute Change" newValueFilter="" oldValueFilter="" type="AttributeChange">
+  <Description>CertificationEmail Trigger for Attribute Change Event  is triggered Statr Certification Campaign for User for Attribute Change and Sending a email to the User's Manager</Description>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+  <HandlerParameters>
+    <Attributes>
+      <Map>
+        <entry key="businessProcess"/>
+        <entry key="identityProcessingThreshold"/>
+        <entry key="identityProcessingThresholdType"/>
+        <entry key="workflow" value="Certification Trigger for Attribute Change"/>
+      </Map>
+    </Attributes>
+  </HandlerParameters>
+  <Selector>
+    <IdentitySelector>
+      <RuleRef>
+        <Reference class="sailpoint.object.Rule" name="TRE Logical Business attribute Criteria assignment"/>
+      </RuleRef>
+    </IdentitySelector>
+  </Selector>
+</IdentityTrigger>

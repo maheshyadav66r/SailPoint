@@ -1,0 +1,58 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningTransaction PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningTransaction accountDisplayName="CN=Naveen" applicationName="ActiveDirectory" identityDisplayName="Naveen Rasali" identityName="Naveen Rasali" integration="ActiveDirectory" name="0000000881" nativeIdentity="CN=Naveen" operation="Create" source="IdentityRefresh" status="Failed" type="Auto">
+  <Attributes>
+    <Map>
+      <entry key="request">
+        <value>
+          <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Naveen" op="Create">
+            <Attributes>
+              <Map>
+                <entry key="provisioningTransactionId" value="c0a8001891ad1f048191c18c421011b4"/>
+              </Map>
+            </Attributes>
+            <AttributeRequest name="memberOf" op="Add" value="CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+              <Attributes>
+                <Map>
+                  <entry key="assignment">
+                    <value>
+                      <Boolean>true</Boolean>
+                    </value>
+                  </entry>
+                </Map>
+              </Attributes>
+            </AttributeRequest>
+            <AttributeRequest name="objectType" op="Set" value="User"/>
+            <AttributeRequest name="sAMAccountName" op="Set" value="Naveen Rasali"/>
+            <AttributeRequest name="password" op="Set">
+              <Attributes>
+                <Map>
+                  <entry key="secret" value="true"/>
+                </Map>
+              </Attributes>
+            </AttributeRequest>
+            <AttributeRequest name="IIQDisabled" op="Set">
+              <Value>
+                <Boolean>true</Boolean>
+              </Value>
+            </AttributeRequest>
+            <AttributeRequest name="Email" op="Add" value="Naveen.Rasali@eshiam.com"/>
+            <AttributeRequest name="givenName" op="Set" value="Naveen"/>
+            <AttributeRequest name="sn" op="Set" value="Rasali"/>
+            <AttributeRequest name="msNPAllowDialin" op="Set" value="Not Set"/>
+            <AttributeRequest name="msExchHideFromAddressLists" op="Set">
+              <Value>
+                <Boolean/>
+              </Value>
+            </AttributeRequest>
+            <ProvisioningResult status="failed">
+              <Errors>
+                <Message key="Invalid name: CN=Naveen, provided nativeIdentity is not a valid distinguishedName" type="Error"/>
+              </Errors>
+            </ProvisioningResult>
+          </AccountRequest>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+</ProvisioningTransaction>

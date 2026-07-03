@@ -1,0 +1,217 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE IdentityRequest PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<IdentityRequest completionStatus="Success" endDate="1770120312112" executionStatus="Completed" name="0000001057" priority="Normal" requesterDisplayName="The Administrator" requesterId="c0a81d898f331ca3818f33fcf64800ff" source="LCM" state="End" targetClass="Identity" targetDisplayName="Abdul samad" type="AccessRequest" verified="1770698842943">
+  <Attributes>
+    <Map>
+      <entry key="approvalSummaries">
+        <value>
+          <List>
+            <ApprovalSummary completer="The Administrator" endDate="1770120309929" owner="spadmin" request="Owner Approval - Account Changes for User: Abdul samad" startDate="1770102007431" state="Finished" workItemId="c0a801199c2119c6819c224d25af0231" workItemType="Approval">
+              <ApprovalSet>
+                <ApprovalItem application="ActiveDirectory" approver="spadmin" displayValue="DataComm" name="memberOf" nativeIdentity="CN=Abdul samad,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Add" state="Finished" value="CN=DataComm,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800fc94cb1e358194ccac8c6d2838"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="EntitlementAdd"/>
+                    </Map>
+                  </Attributes>
+                </ApprovalItem>
+              </ApprovalSet>
+            </ApprovalSummary>
+          </List>
+        </value>
+      </entry>
+      <entry key="provisionedProject">
+        <value>
+          <ProvisioningProject identity="Abdul samad">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000001057"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Abdul samad,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800fc94cb1e358194ccac8c6d2838"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="EntitlementAdd"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest displayValue="DataComm" name="memberOf" op="Add" value="CN=DataComm,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                    <Attributes>
+                      <Map>
+                        <entry key="assignment" value="true"/>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000001057"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <ProvisioningTargets>
+                  <ProvisioningTarget application="ActiveDirectory" attribute="memberOf" value="CN=DataComm,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                    <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=Abdul samad,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                      <AccountInfo displayName="abdul samad" nativeIdentity="CN=Abdul samad,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+                    </AccountSelection>
+                  </ProvisioningTarget>
+                  <ProvisioningTarget retain="true" role="ad_business_role">
+                    <AccountSelection applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" selection="cn=abdul.samad,ou=People,dc=my-domain,dc=com">
+                      <AccountInfo displayName="sr19" nativeIdentity="cn=abdul.samad,ou=People,dc=my-domain,dc=com"/>
+                    </AccountSelection>
+                    <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" doCreate="true" selection="CN=abdul samad,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+                    <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ADX" doCreate="true" selection="CN=abdul samad,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+                  </ProvisioningTarget>
+                  <ProvisioningTarget retain="true" role="BusinessRoleHTask">
+                    <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ADX" selection="CN=abdul samad,OU=XPeople,OU=Demo,DC=Eshiam,DC=com">
+                      <AccountInfo displayName="ESHIAM\Xabdul samad" nativeIdentity="CN=abdul samad,OU=XPeople,OU=Demo,DC=Eshiam,DC=com"/>
+                    </AccountSelection>
+                  </ProvisioningTarget>
+                  <ProvisioningTarget retain="true" role="BusinessRoleAccountingHtask">
+                    <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ADX" selection="CN=abdul samad,OU=XPeople,OU=Demo,DC=Eshiam,DC=com">
+                      <AccountInfo displayName="ESHIAM\Xabdul samad" nativeIdentity="CN=abdul samad,OU=XPeople,OU=Demo,DC=Eshiam,DC=com"/>
+                    </AccountSelection>
+                  </ProvisioningTarget>
+                  <ProvisioningTarget retain="true" role="IT-B-AD-Testcase1">
+                    <AccountSelection applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" selection="cn=abdul.samad,ou=People,dc=my-domain,dc=com">
+                      <AccountInfo displayName="sr19" nativeIdentity="cn=abdul.samad,ou=People,dc=my-domain,dc=com"/>
+                    </AccountSelection>
+                  </ProvisioningTarget>
+                </ProvisioningTargets>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Abdul samad" targetIntegration="ActiveDirectory" trackingId="927973ff82f14c69af91d02d288c01b5">
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Abdul samad,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify" targetIntegration="ActiveDirectory">
+                <Attributes>
+                  <Map>
+                    <entry key="attachmentConfigList"/>
+                    <entry key="attachments"/>
+                    <entry key="flow" value="AccessRequest"/>
+                    <entry key="id" value="c0a800fc94cb1e358194ccac8c6d2838"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="operation" value="EntitlementAdd"/>
+                    <entry key="provisioningTransactionId" value="c0a801199c2119c6819c2364730604ee"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest displayValue="DataComm" name="memberOf" op="Add" value="CN=DataComm,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                  <Attributes>
+                    <Map>
+                      <entry key="assignment" value="true"/>
+                    </Map>
+                  </Attributes>
+                </AttributeRequest>
+                <ProvisioningResult status="committed"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000001057"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+            </ProvisioningPlan>
+            <ProvisioningTarget application="ActiveDirectory" attribute="memberOf" value="CN=DataComm,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+              <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=Abdul samad,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="abdul samad" nativeIdentity="CN=Abdul samad,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+            </ProvisioningTarget>
+            <ProvisioningTarget retain="true" role="ad_business_role">
+              <AccountSelection applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" selection="cn=abdul.samad,ou=People,dc=my-domain,dc=com">
+                <AccountInfo displayName="sr19" nativeIdentity="cn=abdul.samad,ou=People,dc=my-domain,dc=com"/>
+              </AccountSelection>
+              <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" doCreate="true" selection="CN=abdul samad,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+              <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ADX" doCreate="true" selection="CN=abdul samad,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+            </ProvisioningTarget>
+            <ProvisioningTarget retain="true" role="BusinessRoleHTask">
+              <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ADX" selection="CN=abdul samad,OU=XPeople,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="ESHIAM\Xabdul samad" nativeIdentity="CN=abdul samad,OU=XPeople,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+            </ProvisioningTarget>
+            <ProvisioningTarget retain="true" role="BusinessRoleAccountingHtask">
+              <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ADX" selection="CN=abdul samad,OU=XPeople,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="ESHIAM\Xabdul samad" nativeIdentity="CN=abdul samad,OU=XPeople,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+            </ProvisioningTarget>
+            <ProvisioningTarget retain="true" role="IT-B-AD-Testcase1">
+              <AccountSelection applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" selection="cn=abdul.samad,ou=People,dc=my-domain,dc=com">
+                <AccountInfo displayName="sr19" nativeIdentity="cn=abdul.samad,ou=People,dc=my-domain,dc=com"/>
+              </AccountSelection>
+            </ProvisioningTarget>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="taskResultId" value="c0a801199c2119c6819c224d1e35022a"/>
+    </Map>
+  </Attributes>
+  <RequestItems>
+    <IdentityRequestItem application="ActiveDirectory" approvalState="Finished" approverName="spadmin" name="memberOf" nativeIdentity="CN=Abdul samad,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Add" ownerName="spadmin" provisioningEngine="ActiveDirectory" provisioningState="Finished" value="CN=DataComm,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <Attributes>
+        <Map>
+          <entry key="assignmentId" value="9fb38f126ebc4ffc81d3ebbfbf12e8d5"/>
+          <entry key="attachmentConfigList"/>
+          <entry key="attachments"/>
+          <entry key="flow" value="AccessRequest"/>
+          <entry key="id" value="c0a800fc94cb1e358194ccac8c6d2838"/>
+          <entry key="identityEntitlementId" value="c0a801199c2119c6819c2364702304eb"/>
+          <entry key="interface" value="LCM"/>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="operation" value="EntitlementAdd"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="bd2d1b7562784410acd0d53e35b45d20">
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Abdul samad,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify" targetIntegration="ActiveDirectory">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800fc94cb1e358194ccac8c6d2838"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="EntitlementAdd"/>
+                      <entry key="provisioningTransactionId" value="c0a801199c2119c6819c2364730604ee"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest displayValue="DataComm" name="memberOf" op="Add" trackingId="bd2d1b7562784410acd0d53e35b45d20" value="CN=DataComm,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                    <Attributes>
+                      <Map>
+                        <entry key="assignment" value="true"/>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+      <Owner>
+        <Reference class="sailpoint.object.Identity" name="spadmin"/>
+      </Owner>
+    </IdentityRequestItem>
+  </RequestItems>
+</IdentityRequest>

@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow explicitTransitions="true" handler="sailpoint.api.StandardWorkflowHandler" libraries="Identity" name="RunTaskDefinition" type="Workflow">
+  <Variable name="formModel"/>
+  <Variable input="true" name="launcher"/>
+  <Variable initializer="true" input="true" name="transient"/>
+  <Variable initializer="string:false" name="trace"/>
+  <Step icon="Start" name="Start" posX="4" posY="131">
+    <Transition to="Request Form"/>
+  </Step>
+  <Step action="script:return formModel;" icon="Approval" name="Request Form" posX="295" posY="131" resultVariable="formModel">
+    <Approval mode="string:serial" name="TaskDefValue" owner="script:return launcher;" return="taskDefinition2,formModel" send="launcher,formModel">
+      <Arg name="workItemType" value="Form"/>
+      <Form name="TakeTaskDefinitionValue">
+        <Attributes>
+          <Map>
+            <entry key="pageTitle" value="TakeTaskDefintionValue"/>
+          </Map>
+        </Attributes>
+        <Description>Test account request form</Description>
+        <Section columns="2" name="selectTask">
+          <Field displayName="AggregationType" displayType="radio" name="aggregationType" postBack="true" required="true">
+            <AllowedValues>
+              <String>AccountAggregation</String>
+              <String>AccountGroupAggregation</String>
+            </AllowedValues>
+          </Field>
+          <Field displayName="TaskDefinition" dynamic="true" name="taskDefinition2" required="true" type="String">
+            <AllowedValuesDefinition>
+              <Script>
+                <Source><![CDATA[
+                  import sailpoint.object.*;
+                  import sailpoint.api.*;
+
+                  List l = new ArrayList();
+
+                  QueryOptions qo=new QueryOptions();
+                  qo.addFilter(Filter.eq("type",aggregationType));
+                  
+                  Iterator it=context.search(TaskDefinition.class,qo,"name");
+                  while(it.hasNext()){
+                  l.add(it.next()[0]);
+                  }
+
+                  return l;
+                ]]></Source>
+              </Script>
+            </AllowedValuesDefinition>
+          </Field>
+        </Section>
+        <Button action="cancel" label="Cancel"/>
+        <Button action="next" label="Submit"/>
+      </Form>
+    </Approval>
+    <Transition to="runTaskDefinition"/>
+  </Step>
+  <Step icon="RunTaskDefinition" name="runTaskDefinition">
+    <Script>
+      <Source><![CDATA[
+        import sailpoint.object.*;
+        import sailpoint.api.*;
+
+        log.error("===taskdefidfromform   "+taskDefinition2);
+
+        TaskManager taskManager=new TaskManager(context);
+        TaskDefinition taskDefinition=context.getObjectByName(TaskDefinition.class,taskDefinition2);
+        taskManager.run(taskDefinition.getName(),null);
+
+        log.error("===Done==");
+      ]]></Source>
+    </Script>
+    <Transition to="end"/>
+  </Step>
+  <Step icon="Stop" name="end" posX="1128" posY="119"/>
+</Workflow>

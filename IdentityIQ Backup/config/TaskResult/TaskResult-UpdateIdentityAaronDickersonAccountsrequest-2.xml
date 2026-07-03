@@ -1,0 +1,109 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1750929329914" completionStatus="Error" launched="1750929327365" launcher="spadmin" name="Update Identity Aaron Dickerson AccountsRequest - 2" targetClass="Identity" targetName="Aaron Dickerson" type="LCM">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000716"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Aaron Dickerson">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan trackingId="626f9761cc39493386660095d7d4bc4c">
+                <AccountRequest application="WebServiceApplication-Eshiam" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="flow" value="AccountsRequest"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="Create"/>
+                      <entry key="requester" value="spadmin"/>
+                    </Map>
+                  </Attributes>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000716"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Aaron Dickerson" targetIntegration="WebServiceApplication-Eshiam" trackingId="8bd4237d33034d96a488a97767a023d0">
+              <AccountRequest application="WebServiceApplication-Eshiam" op="Create">
+                <Attributes>
+                  <Map>
+                    <entry key="flow" value="AccountsRequest"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="operation" value="Create"/>
+                    <entry key="provisioningTransactionId" value="c0a8001697a21be78197ab854cab1643"/>
+                    <entry key="requester" value="spadmin"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="user_id" op="Add" value="EMP01053"/>
+                <AttributeRequest name="user_email" op="Add" value="aaron.dickerson@example.com"/>
+                <AttributeRequest name="manager_id" op="Add" value="1045"/>
+                <AttributeRequest name="location" op="Set" value="India"/>
+                <AttributeRequest name="user_name" op="Add" value="Aaron Dickerson"/>
+                <AttributeRequest name="department" op="Set" value="Sales Officer"/>
+                <AttributeRequest name="user_status" op="Add" value="ACTIVE"/>
+                <AttributeRequest name="job_title" op="Add" value="Engineer"/>
+                <ProvisioningResult status="failed">
+                  <Errors>
+                    <Message key="Exception occurred while performing 'Create' operation on identity 'null':  Error: Error executing before operation rule for endpoint 'Account Creation': BeanShell script error: bsh.EvalError: Sourced file: inline evaluation of: ``log.error(&quot;   provisioningPlan in WebServiceBeforeOperationRule....&quot;+provisionin . . . '' : Typed variable declaration : Constructor error: Can't find constructor: java.util.HashMap(sailpoint.connector.webservices.EndPoint) in class: java.util.HashMap : at Line: 7 : in file: inline evaluation of: ``log.error(&quot;   provisioningPlan in WebServiceBeforeOperationRule....&quot;+provisionin . . . '' : new HashMap ( requestEndPoint ) &#10; BSF info: WebServiceBeforeOperationRule1045 at line: 0 column: columnNo" type="Error"/>
+                  </Errors>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000716"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+              <ProvisioningResult status="failed"/>
+            </ProvisioningPlan>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a8001697a21be78197ab85474b1630"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="end"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="Exception occurred while performing 'Create' operation on identity 'null':  Error: Error executing before operation rule for endpoint 'Account Creation': BeanShell script error: bsh.EvalError: Sourced file: inline evaluation of: ``log.error(&quot;   provisioningPlan in WebServiceBeforeOperationRule....&quot;+provisionin . . . '' : Typed variable declaration : Constructor error: Can't find constructor: java.util.HashMap(sailpoint.connector.webservices.EndPoint) in class: java.util.HashMap : at Line: 7 : in file: inline evaluation of: ``log.error(&quot;   provisioningPlan in WebServiceBeforeOperationRule....&quot;+provisionin . . . '' : new HashMap ( requestEndPoint ) &#10; BSF info: WebServiceBeforeOperationRule1045 at line: 0 column: columnNo" type="Error"/>
+  </Messages>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

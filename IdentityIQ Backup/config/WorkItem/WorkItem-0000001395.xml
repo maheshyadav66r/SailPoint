@@ -1,0 +1,153 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE WorkItem PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<WorkItem handler="sailpoint.api.Workflower" identityRequestId="0000000853" level="Normal" name="0000001395" renderer="lcmManualActionsRenderer.xhtml" targetClass="sailpoint.object.Identity" targetName="Aaron Stanley" type="ManualAction">
+  <Attributes>
+    <Map>
+      <entry key="approvalSet">
+        <value>
+          <ApprovalSet>
+            <ApprovalItem application="HR2" nativeIdentity="EMP00741" operation="Enable"/>
+          </ApprovalSet>
+        </value>
+      </entry>
+      <entry key="identityDisplayName" value="Aaron Stanley"/>
+      <entry key="identityName" value="Aaron Stanley"/>
+      <entry key="policyViolations"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Aaron Stanley">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000853"/>
+                <entry key="noLocking">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="Scheduler"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="WebServiceApplication-Eshiam" nativeIdentity="???" op="Enable"/>
+                <AccountRequest application="WebServiceApplication-Eshiam" nativeIdentity="EMP00741" op="Enable"/>
+                <AccountRequest application="WebServicesTestApplication3" nativeIdentity="EMP00741" op="Enable"/>
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Aaron Stanley,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Enable"/>
+                <AccountRequest application="HR2" nativeIdentity="EMP00741" op="Enable"/>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000853"/>
+                    <entry key="requester" value="Scheduler"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Aaron Stanley" targetIntegration="ActiveDirectory" trackingId="31a377f227bd4a7197bed05181a02fc1">
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Aaron Stanley,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Enable" targetIntegration="ActiveDirectory">
+                <Attributes>
+                  <Map>
+                    <entry key="provisioningTransactionId" value="c0a81d8998c11a508198c26c18bd0def"/>
+                  </Map>
+                </Attributes>
+                <ProvisioningResult status="committed"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000853"/>
+                  <entry key="requester" value="Scheduler"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+            </ProvisioningPlan>
+            <ProvisioningPlan nativeIdentity="Aaron Stanley" targetIntegration="WebServiceApplication-Eshiam" trackingId="25efbcfc37cd44388a2bec2888edb6c8">
+              <AccountRequest application="WebServiceApplication-Eshiam" nativeIdentity="???" op="Enable">
+                <Attributes>
+                  <Map>
+                    <entry key="provisioningTransactionId" value="c0a81d8998c11a508198c26c1a3e0df6"/>
+                  </Map>
+                </Attributes>
+                <ProvisioningResult status="failed">
+                  <Errors>
+                    <Message key="Exception occurred while performing 'Enable' operation on identity '???':  Error: No configuration found for'Enable Account'. Please add at least one operation and try again." type="Error"/>
+                  </Errors>
+                </ProvisioningResult>
+              </AccountRequest>
+              <AccountRequest application="WebServiceApplication-Eshiam" nativeIdentity="EMP00741" op="Enable">
+                <Attributes>
+                  <Map>
+                    <entry key="provisioningTransactionId" value="c0a81d8998c11a508198c26c1a7f0df7"/>
+                  </Map>
+                </Attributes>
+                <ProvisioningResult status="failed">
+                  <Errors>
+                    <Message key="Exception occurred while performing 'Enable' operation on identity 'EMP00741':  Error: No configuration found for'Enable Account'. Please add at least one operation and try again." type="Error"/>
+                  </Errors>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000853"/>
+                  <entry key="requester" value="Scheduler"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <ProvisioningResult status="failed"/>
+            </ProvisioningPlan>
+            <ProvisioningPlan nativeIdentity="Aaron Stanley" targetIntegration="WebServicesTestApplication3" trackingId="36cf45d4675b43e297b93a8d486c5c1f">
+              <AccountRequest application="WebServicesTestApplication3" nativeIdentity="EMP00741" op="Enable" targetIntegration="WebServicesTestApplication3">
+                <Attributes>
+                  <Map>
+                    <entry key="provisioningTransactionId" value="c0a81d8998c11a508198c26c1b570df8"/>
+                  </Map>
+                </Attributes>
+                <ProvisioningResult status="committed"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000853"/>
+                  <entry key="requester" value="Scheduler"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <ProvisioningResult status="committed"/>
+            </ProvisioningPlan>
+            <ProvisioningPlan trackingId="0d42b23a22074638a19a0505aeb5d5dc">
+              <AccountRequest application="HR2" nativeIdentity="EMP00741" op="Enable"/>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000853"/>
+                  <entry key="requester" value="Scheduler"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+            </ProvisioningPlan>
+            <ProvisioningTarget retain="true" role="ad_business_role">
+              <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=Aaron Stanley,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="Aaron Stanley" nativeIdentity="CN=Aaron Stanley,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+              <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ADX" doCreate="true" selection="CN=Aaron Stanley,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+            </ProvisioningTarget>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="saveUnmanagedPlan_WithProjectArgument" value="false"/>
+      <entry key="workItemPriority" value="Normal"/>
+      <entry key="workItemRequester" value="Scheduler"/>
+    </Map>
+  </Attributes>
+  <Description>Manual Changes requested for User: Aaron Stanley</Description>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+  <WorkflowCaseRef>
+    <Reference class="sailpoint.object.WorkflowCase" name="NativeChangeEvent: Aaron Stanley - 20"/>
+  </WorkflowCaseRef>
+</WorkItem>

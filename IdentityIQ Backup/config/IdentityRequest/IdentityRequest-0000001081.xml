@@ -1,0 +1,74 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE IdentityRequest PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<IdentityRequest executionStatus="Executing" name="0000001081" priority="Normal" requesterDisplayName="The Administrator" requesterId="c0a81d898f331ca3818f33fcf64800ff" source="LCM" state="Approve and Provision" targetClass="Identity" targetDisplayName="Aaron Nichols" type="AccessRequest">
+  <Attributes>
+    <Map>
+      <entry key="taskResultId" value="c0a801289d7015ac819d716dac08028e"/>
+    </Map>
+  </Attributes>
+  <RequestItems>
+    <IdentityRequestItem application="IIQ" name="detectedRoles" operation="Remove" provisioningEngine="IIQ" provisioningState="Pending" value="buyerITRole">
+      <Attributes>
+        <Map>
+          <entry key="attachmentConfigList"/>
+          <entry key="attachments"/>
+          <entry key="displayableValue" value="BuyerITRoleClassification"/>
+          <entry key="flow" value="AccessRequest"/>
+          <entry key="id" value="c0a81d8997c5179b8197e019b620178d"/>
+          <entry key="interface" value="LCM"/>
+          <entry key="operation" value="RoleRemove"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="7a8cdec120464ff68570d494ffbb4d16">
+                <AccountRequest application="IIQ" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a81d8997c5179b8197e019b620178d"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="RoleRemove"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="detectedRoles" op="Remove" trackingId="7a8cdec120464ff68570d494ffbb4d16" value="buyerITRole">
+                    <Attributes>
+                      <Map>
+                        <entry key="deassignEntitlements">
+                          <value>
+                            <Boolean>true</Boolean>
+                          </value>
+                        </entry>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                </AccountRequest>
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="selectorRuleSource" value="roleForACCSelection"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="memberOf" op="Remove" trackingId="7a8cdec120464ff68570d494ffbb4d16" value="CN=Buyer,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                    <Attributes>
+                      <Map>
+                        <entry key="allowSimplification" value="true"/>
+                        <entry key="assignment" value="true"/>
+                        <entry key="preferRemoveOverRetain" value="true"/>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+    </IdentityRequestItem>
+  </RequestItems>
+</IdentityRequest>

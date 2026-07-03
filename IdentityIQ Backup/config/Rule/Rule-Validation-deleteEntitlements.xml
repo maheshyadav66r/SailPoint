@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Validation-Delete entitlements" type="Validation">
+  <Source><![CDATA[
+  import sailpoint.object.*;
+  import sailpoint.api.*;
+  import sailpoint.object.QueryOptions;
+  import sailpoint.tools.Util;
+  import sailpoint.object.TaskResult;
+  import sailpoint.tools.Message;
+
+
+  String email="Mahesh.Nattali@eshiam.com";
+  
+  
+ return email.toLowerCase();
+  
+  return context.decrypt("1:ACP:eEroFayUJAk8sLpUQnvBqsIaV5GPzUlrKVwRK5YmVks=");
+  
+  
+  
+  
+  
+  
+  QueryOptions qo = new QueryOptions();
+  qo.addFilter(Filter.eq("application.name", "ServiceNow-Application"));
+
+  List mas=context.getObjects(ManagedAttribute.class,qo);
+
+  for(ManagedAttribute ma:mas){
+
+    Terminator terminator=new Terminator(context);
+    terminator.deleteObject(ma);
+  }
+
+
+  return mas.size();
+
+
+
+  List idList = context.getObjects(Identity.class);
+  String trMsg = "numIdentities:" + numIdentities + " numWorkgroups:" + numWorkgroups+"   idList  "+idList.size();
+  log.error(trMsg);
+  if((taskResult==void) @and (taskResult==null)@and (!taskResult instanceof TaskResult)){
+    log.error("taskResult is void, null or not a handle to a sailpoint.object.TaskResult");
+    return;
+  }
+
+  taskResult.addMessage(new Message(trMsg,null));
+  taskResult.setProgress("Done with Execution"+trMsg);
+  taskResult.	setCompletionStatus(TaskResult.CompletionStatus.Success);
+
+  context.saveObject(taskResult);
+  context.commitTransaction();
+  log.error("  taskResult   "+taskResult.toXml());
+
+
+  return "nnn";
+  ]]></Source>
+</Rule>

@@ -1,0 +1,372 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Identity PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Identity assignedRoleSummary="RemidiateBusinessRole, EshiamWebservices IT Role, BusinessRoleHTask" bundleSummary="ActiveDirectoryITRole, IT-B-AD-Testcase1, DataArchieveITRole, IT2LDAP-Finance" correlated="true" lastRefresh="1779186281021" name="Abigail Frey">
+  <Attributes>
+    <Map>
+      <entry key="department" value="Finance"/>
+      <entry key="displayName" value="Abigail Frey"/>
+      <entry key="email" value="abigail.frey@example.com"/>
+      <entry key="employeeId" value="EMP01663"/>
+      <entry key="firstname" value="Abigail"/>
+      <entry key="lastname" value="Frey"/>
+      <entry key="networkId" value="afrey338"/>
+      <entry key="pendingRefreshWorkflow" value="Refresh identity Abigail Frey"/>
+    </Map>
+  </Attributes>
+  <AssignedRoles>
+    <Reference class="sailpoint.object.Bundle" name="remidiateBusinessRole"/>
+    <Reference class="sailpoint.object.Bundle" name="EshiamWebservices IT Role"/>
+    <Reference class="sailpoint.object.Bundle" name="BusinessRoleHTask"/>
+  </AssignedRoles>
+  <AttributeMetaDatas>
+    <AttributeMetaData attribute="department" source="HR2:Department"/>
+    <AttributeMetaData attribute="displayName" source="HR2:Name"/>
+    <AttributeMetaData attribute="employeeId" source="HR2:EmployeeNo"/>
+    <AttributeMetaData attribute="networkId" source="HR2:NetworkID"/>
+    <AttributeMetaData attribute="email" source="HR2:Email"/>
+    <AttributeMetaData attribute="lastname" source="HR2:LastName"/>
+    <AttributeMetaData attribute="firstname" source="HR2:FirstName"/>
+    <AttributeMetaData attribute="inactive" source="SRH application:inactive"/>
+  </AttributeMetaDatas>
+  <Bundles>
+    <Reference class="sailpoint.object.Bundle" name="activeDirectoryITRole"/>
+    <Reference class="sailpoint.object.Bundle" name="IT-B-AD-Testcase1"/>
+    <Reference class="sailpoint.object.Bundle" name="dataArchieveITRole"/>
+    <Reference class="sailpoint.object.Bundle" name="IT2LDAP-Finance"/>
+  </Bundles>
+  <Capabilities>
+    <Reference class="sailpoint.object.Capability" name="Auditor"/>
+  </Capabilities>
+  <CertificationLinks>
+    <CertificationLink completed="1755967551070" identitySnapshotId="c0a81d8998c11a508198c64665951b99" type="Identity">
+      <Certifiers>
+        <String>Mahesh Nattali</String>
+      </Certifiers>
+    </CertificationLink>
+    <CertificationLink completed="1770023035654" identitySnapshotId="c0a801199c1c1940819c1d96fdd5034f" type="Focused">
+      <Certifiers>
+        <String>spadmin</String>
+      </Certifiers>
+    </CertificationLink>
+  </CertificationLinks>
+  <Exceptions>
+    <EntitlementGroup displayName="Abigail Frey" nativeIdentity="CN=Abigail Frey,OU=People,OU=Demo,DC=Eshiam,DC=com">
+      <ApplicationRef>
+        <Reference class="sailpoint.object.Application" name="ActiveDirectory"/>
+      </ApplicationRef>
+      <Attributes>
+        <Map>
+          <entry key="memberOf">
+            <value>
+              <List>
+                <String>CN=DataComm,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                <String>CN=AccountsReceivable,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                <String>CN=R&amp;D,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+              </List>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+    </EntitlementGroup>
+  </Exceptions>
+  <MitigationExpirations>
+    <MitigationExpiration action="NOTHING" comments="saf" expiration="1756113960838" lastActionDate="1756180069837">
+      <CertifiableDescriptor>
+        <PolicyViolation active="true" constraintId="c0a81d8992c311298192d6a1c3e60ea5" constraintName="Multiple Application Accounts" policyName="Task_conflicting_two_accounts" renderer="policyAccountDetails.xhtml" status="Open">
+          <Attributes>
+            <Map>
+              <entry key="AccountPolicyViolationAccounts">
+                <value>
+                  <List>
+                    <String>Abigail Frey</String>
+                  </List>
+                </value>
+              </entry>
+              <entry key="AccountPolicyViolationAppName" value="WebServiceApplication-Eshiam"/>
+              <entry key="RelevantApplications">
+                <value>
+                  <List>
+                    <String>WebServiceApplication-Eshiam</String>
+                  </List>
+                </value>
+              </entry>
+            </Map>
+          </Attributes>
+          <IdentityRef>
+            <Reference class="sailpoint.object.Identity" name="Abigail Frey"/>
+          </IdentityRef>
+          <Owner>
+            <Reference class="sailpoint.object.Identity" name="Mahesh Nattali"/>
+          </Owner>
+        </PolicyViolation>
+      </CertifiableDescriptor>
+      <IdentityRef>
+        <Reference class="sailpoint.object.Identity" name="Abigail Frey"/>
+      </IdentityRef>
+      <Mitigator>
+        <Reference class="sailpoint.object.Identity" name="Mahesh Nattali"/>
+      </Mitigator>
+    </MitigationExpiration>
+  </MitigationExpirations>
+  <Preferences>
+    <Map>
+      <entry key="attributeAssignments">
+        <value>
+          <List>
+            <AttributeAssignment applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" assigner="spadmin" name="memberOf" nativeIdentity="CN=Abigail Frey,OU=People,OU=Demo,DC=Eshiam,DC=com" source="LCM" type="Entitlement" value="CN=R&amp;D,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+          </List>
+        </value>
+      </entry>
+      <entry key="roleAssignments">
+        <value>
+          <List>
+            <RoleAssignment assigner="spadmin" date="1750998895631" roleName="remidiateBusinessRole" source="LCM">
+              <RoleTarget applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" displayName="Abigail Frey" nativeIdentity="CN=Abigail Frey,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+              <RoleTarget applicationId="c0a800fb954110f0819541ab1dfd00b1" applicationName="IntConApplication" nativeIdentity="EMP01663"/>
+            </RoleAssignment>
+            <RoleAssignment assigner="spadmin" date="1769594847424" roleName="EshiamWebservices IT Role" source="LCM">
+              <RoleTarget applicationId="c0a8002691fb102b81920b47da880f63" applicationName="WebServicesApplicationEshiam" displayName="Abigail Frey" nativeIdentity="EMP01663"/>
+            </RoleAssignment>
+            <RoleAssignment date="1775815860147" roleName="BusinessRoleHTask" source="Unknown"/>
+          </List>
+        </value>
+      </entry>
+      <entry key="roleDetections">
+        <value>
+          <List>
+            <RoleDetection assignmentIds="e2fde684b45041f78b92c23a345e0364" date="1775816310517" roleName="activeDirectoryITRole">
+              <RoleTarget applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" displayName="Abigail Frey" nativeIdentity="CN=Abigail Frey,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                <AccountItem name="memberOf" value="CN=AuditMgmt,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+              </RoleTarget>
+            </RoleDetection>
+            <RoleDetection date="1779186280816" roleName="IT-B-AD-Testcase1">
+              <RoleTarget applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" displayName="Abigail Frey" nativeIdentity="CN=Abigail Frey,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                <AccountItem name="memberOf" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+              </RoleTarget>
+            </RoleDetection>
+            <RoleDetection date="1765444217137" roleName="dataArchieveITRole">
+              <RoleTarget applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" displayName="Abigail Frey" nativeIdentity="CN=Abigail Frey,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                <AccountItem name="memberOf" value="CN=DataArchive,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+              </RoleTarget>
+            </RoleDetection>
+            <RoleDetection date="1775816310517" roleName="IT2LDAP-Finance">
+              <RoleTarget applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" displayName="Abigail.Frey" nativeIdentity="cn=Abigail.Frey,ou=People,dc=my-domain,dc=com">
+                <AccountItem name="groups">
+                  <value>
+                    <Set>
+                      <String>cn=Contractors,ou=Group,dc=my-domain,dc=com</String>
+                      <String>cn=WebApplicationAccess,ou=Group,dc=my-domain,dc=com</String>
+                    </Set>
+                  </value>
+                </AccountItem>
+              </RoleTarget>
+              <RoleTarget applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" displayName="Abigail Frey" nativeIdentity="CN=Abigail Frey,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                <AccountItem name="memberOf" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+              </RoleTarget>
+            </RoleDetection>
+          </List>
+        </value>
+      </entry>
+    </Map>
+  </Preferences>
+  <RoleMetadatas>
+    <Reference class="sailpoint.object.RoleMetadata" name="remidiateBusinessRole"/>
+  </RoleMetadatas>
+  <Links>
+    <Link displayName="Abigail Frey" identity="EMP01663" lastRefresh="1770698546901">
+      <ApplicationRef>
+        <Reference class="sailpoint.object.Application" name="WebServicesApplicationEshiam"/>
+      </ApplicationRef>
+      <Attributes>
+        <Map>
+          <entry key="department" value="Finance"/>
+          <entry key="job_title" value="Engineer"/>
+          <entry key="location" value="India"/>
+          <entry key="manager_id" value="1045"/>
+          <entry key="user_email" value="abigail.frey@example.com"/>
+          <entry key="user_id" value="EMP01663"/>
+          <entry key="user_name" value="Abigail Frey"/>
+          <entry key="user_status" value="ACTIVE"/>
+        </Map>
+      </Attributes>
+    </Link>
+    <Link displayName="Abigail Frey" entitlements="true" identity="CN=Abigail Frey,OU=People,OU=Demo,DC=Eshiam,DC=com" lastRefresh="1779698519521" manuallyCorrelated="true" uuid="{0b81ffa7-bfee-4ad6-9282-7360251178b7}">
+      <ApplicationRef>
+        <Reference class="sailpoint.object.Application" name="ActiveDirectory"/>
+      </ApplicationRef>
+      <Attributes>
+        <Map>
+          <entry key="NetBIOSName"/>
+          <entry key="accountFlags">
+            <value>
+              <List>
+                <String>Normal User Account</String>
+              </List>
+            </value>
+          </entry>
+          <entry key="cn" value="Abigail Frey"/>
+          <entry key="distinguishedName" value="CN=Abigail Frey,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+          <entry key="givenName" value="Abigail"/>
+          <entry key="mail" value="Finance"/>
+          <entry key="memberOf">
+            <value>
+              <List>
+                <String>CN=DataComm,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                <String>CN=DataArchive,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                <String>CN=AccountsReceivable,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                <String>CN=R&amp;D,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                <String>CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                <String>CN=AuditMgmt,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+              </List>
+            </value>
+          </entry>
+          <entry key="msDS-PrincipalName" value="ESHIAM\Abigail Frey"/>
+          <entry key="msNPAllowDialin" value="Not Set"/>
+          <entry key="objectClass">
+            <value>
+              <List>
+                <String>top</String>
+                <String>person</String>
+                <String>organizationalPerson</String>
+                <String>user</String>
+              </List>
+            </value>
+          </entry>
+          <entry key="objectSid" value="S-1-5-21-2678700903-2778472132-3948167259-1475"/>
+          <entry key="objectType" value="user"/>
+          <entry key="objectguid" value="{0b81ffa7-bfee-4ad6-9282-7360251178b7}"/>
+          <entry key="sAMAccountName" value="Abigail Frey"/>
+          <entry key="sn" value="Frey"/>
+        </Map>
+      </Attributes>
+    </Link>
+    <Link displayName="Abigail Frey" identity="Abigail Frey" lastRefresh="1767083253831">
+      <ApplicationRef>
+        <Reference class="sailpoint.object.Application" name="SCIMApp"/>
+      </ApplicationRef>
+      <Attributes>
+        <Map>
+          <entry key="IIQDisabled">
+            <value>
+              <Boolean/>
+            </value>
+          </entry>
+          <entry key="accounts">
+            <value>
+              <List>
+                <String>{"displayName":"Abigail Frey","value":"c0a8001697a21be78197acfed5181e5a","$ref":"http://localhost:8080/identityiq-8.4/scim/v2/Accounts/c0a8001697a21be78197acfed5181e5a"}</String>
+                <String>{"displayName":"Abigail Frey","value":"c0a8001697a21be78197afe1f6f22b42","$ref":"http://localhost:8080/identityiq-8.4/scim/v2/Accounts/c0a8001697a21be78197afe1f6f22b42"}</String>
+                <String>{"displayName":"Abigail Frey","value":"c0a801199b581419819b6a71ac431e99","$ref":"http://localhost:8080/identityiq-8.4/scim/v2/Accounts/c0a801199b581419819b6a71ac431e99"}</String>
+                <String>{"displayName":"Abigail Frey","value":"c0a81d8995cd1eaa8195d15b6bb712c9","$ref":"http://localhost:8080/identityiq-8.4/scim/v2/Accounts/c0a81d8995cd1eaa8195d15b6bb712c9"}</String>
+                <String>{"displayName":"Abigail Frey","value":"c0a81d8998c11a508198c29a4b65116a","$ref":"http://localhost:8080/identityiq-8.4/scim/v2/Accounts/c0a81d8998c11a508198c29a4b65116a"}</String>
+              </List>
+            </value>
+          </entry>
+          <entry key="active">
+            <value>
+              <Boolean>true</Boolean>
+            </value>
+          </entry>
+          <entry key="department" value="Finance"/>
+          <entry key="displayName" value="Abigail Frey"/>
+          <entry key="emails.work.primary.value" value="abigail.frey@example.com"/>
+          <entry key="employeeId" value="EMP01663"/>
+          <entry key="id" value="Abigail Frey"/>
+          <entry key="isManager">
+            <value>
+              <Boolean/>
+            </value>
+          </entry>
+          <entry key="lastRefresh">
+            <value>
+              <Date>1767017393230</Date>
+            </value>
+          </entry>
+          <entry key="name.familyName" value="Frey"/>
+          <entry key="name.formatted" value="Abigail Frey"/>
+          <entry key="name.givenName" value="Abigail"/>
+          <entry key="networkId" value="afrey338"/>
+          <entry key="riskScore">
+            <value>
+              <Integer>250</Integer>
+            </value>
+          </entry>
+          <entry key="userName" value="Abigail Frey"/>
+        </Map>
+      </Attributes>
+    </Link>
+    <Link displayName="Abigail.Frey" entitlements="true" identity="cn=Abigail.Frey,ou=People,dc=my-domain,dc=com" manuallyCorrelated="true">
+      <ApplicationRef>
+        <Reference class="sailpoint.object.Application" name="LDAPApplication"/>
+      </ApplicationRef>
+      <Attributes>
+        <Map>
+          <entry key="IIQDisabled">
+            <value>
+              <Boolean/>
+            </value>
+          </entry>
+          <entry key="cn" value="Abigail.Frey"/>
+          <entry key="dn" value="cn=Abigail.Frey,ou=People,dc=my-domain,dc=com"/>
+          <entry key="groups">
+            <value>
+              <List>
+                <String>cn=WebApplicationAccess,ou=Group,dc=my-domain,dc=com</String>
+                <String>cn=Contractors,ou=Group,dc=my-domain,dc=com</String>
+              </List>
+            </value>
+          </entry>
+          <entry key="mail" value="abigail.frey@eshiam.com"/>
+          <entry key="objectClass">
+            <value>
+              <List>
+                <String>inetOrgPerson</String>
+              </List>
+            </value>
+          </entry>
+          <entry key="sn" value="Frey"/>
+        </Map>
+      </Attributes>
+    </Link>
+    <Link displayName="Abigail Frey" identity="EMP01663" lastRefresh="1760088503096">
+      <ApplicationRef>
+        <Reference class="sailpoint.object.Application" name="HR2"/>
+      </ApplicationRef>
+      <Attributes>
+        <Map>
+          <entry key="Department" value="Finance"/>
+          <entry key="Email" value="abigail.frey@example.com"/>
+          <entry key="EmployeeNo" value="EMP01663"/>
+          <entry key="FirstName" value="Abigail"/>
+          <entry key="JoiningDate" value="2018-12-10"/>
+          <entry key="LastName" value="Frey"/>
+          <entry key="Name" value="Abigail Frey"/>
+          <entry key="NetworkID" value="afrey338"/>
+        </Map>
+      </Attributes>
+    </Link>
+    <Link displayName="Abigail Frey" identity="EMP01663" manuallyCorrelated="true">
+      <ApplicationRef>
+        <Reference class="sailpoint.object.Application" name="JDBCProvisioning"/>
+      </ApplicationRef>
+      <Attributes>
+        <Map>
+          <entry key="Department" value="Finance"/>
+          <entry key="EmailAddress" value="abigail.frey@example.com"/>
+          <entry key="FirstName" value="Abigail"/>
+          <entry key="LastName" value="Frey"/>
+          <entry key="Name" value="Abigail Frey"/>
+          <entry key="NetworkID" value="Abigail.Frey"/>
+          <entry key="managerID" value="1045"/>
+        </Map>
+      </Attributes>
+    </Link>
+  </Links>
+  <Scorecard certificationScore="1000" compositeScore="250" entitlementScore="1" rawEntitlementScore="1">
+    <ScoreItem compositePercentage="100" displayName="score_def_certificationAge_name" score="1000" scorePercentage="100" type="score_def_certificationAge_shortname">
+      <TargetMessage>
+        <Message key="cert_scorer_target_id_not_certified" type="Info"/>
+      </TargetMessage>
+    </ScoreItem>
+  </Scorecard>
+</Identity>

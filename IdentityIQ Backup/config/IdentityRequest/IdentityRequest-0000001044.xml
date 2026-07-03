@@ -1,0 +1,81 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE IdentityRequest PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<IdentityRequest executionStatus="Executing" name="0000001044" priority="Normal" requesterDisplayName="Mahesh.Nattali" requesterId="c0a801199bb61dc9819bb6c15c2e0002" source="LCM" state="Approve and Provision" targetClass="Identity" targetDisplayName="Alison Daniels" type="AccessRequest">
+  <Attributes>
+    <Map>
+      <entry key="taskResultId" value="c0a801199bd41668819bd6265b1b03c9"/>
+    </Map>
+  </Attributes>
+  <RequestItems>
+    <IdentityRequestItem application="IIQ" name="assignedRoles" operation="Add" provisioningEngine="IIQ" provisioningState="Pending" value="ad_business_role">
+      <Attributes>
+        <Map>
+          <entry key="assignmentId" value="0ac258b1f4b642d592fe193a6ed37d03"/>
+          <entry key="attachmentConfigList"/>
+          <entry key="attachments"/>
+          <entry key="displayableValue" value="ADBusinessRole"/>
+          <entry key="flow" value="AccessRequest"/>
+          <entry key="id" value="c0a800fb94691e9b8194ac0f8e9c397f"/>
+          <entry key="interface" value="LCM"/>
+          <entry key="operation" value="RoleAdd"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="2ba198d8577c43f4acdd85a68d2597ac">
+                <AccountRequest application="IIQ" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800fb94691e9b8194ac0f8e9c397f"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="RoleAdd"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="assignedRoles" op="Add" trackingId="2ba198d8577c43f4acdd85a68d2597ac" value="ad_business_role"/>
+                  <AttributeRequest name="Capabilities" op="Add" trackingId="2ba198d8577c43f4acdd85a68d2597ac" value="Auditor"/>
+                </AccountRequest>
+                <AccountRequest application="LDAPApplication" nativeIdentity="Daniels" op="Create" targetIntegration="LDAPApplication">
+                  <AttributeRequest name="groups" op="Add" trackingId="2ba198d8577c43f4acdd85a68d2597ac">
+                    <Value>
+                      <List>
+                        <String>cn=WebApplicationAccess,ou=Group,dc=my-domain,dc=com</String>
+                        <String>cn=Contractors,ou=Group,dc=my-domain,dc=com</String>
+                      </List>
+                    </Value>
+                  </AttributeRequest>
+                </AccountRequest>
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Alison Daniels,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create" targetIntegration="ActiveDirectory">
+                  <AttributeRequest name="memberOf" op="Add" trackingId="2ba198d8577c43f4acdd85a68d2597ac">
+                    <Value>
+                      <List>
+                        <String>CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                        <String>CN=AuditMgmt,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                      </List>
+                    </Value>
+                  </AttributeRequest>
+                </AccountRequest>
+                <AccountRequest application="ADX" nativeIdentity="CN=Alison Daniels,OU=XPeople,OU=Demo,DC=Eshiam,DC=com" op="Create">
+                  <AttributeRequest name="memberOf" op="Add" trackingId="2ba198d8577c43f4acdd85a68d2597ac">
+                    <Value>
+                      <List>
+                        <String>CN=Compensation,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                        <String>CN=DBAs,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                        <String>CN=XG06,OU=XGroups,OU=Demo,DC=Eshiam,DC=com</String>
+                      </List>
+                    </Value>
+                  </AttributeRequest>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+    </IdentityRequestItem>
+  </RequestItems>
+</IdentityRequest>

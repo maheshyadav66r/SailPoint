@@ -1,0 +1,70 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskDefinition PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskDefinition executor="sailpoint.reporting.LiveReportExecutor" name="Report-IdentityRequestItemData" progressMode="Percentage" resultAction="Rename" template="true" type="LiveReport">
+  <Attributes>
+    <Map>
+      <entry key="TaskDefinition.runLengthAverage" value="2"/>
+      <entry key="TaskDefinition.runLengthTotal" value="4"/>
+      <entry key="TaskDefinition.runs" value="2"/>
+      <entry key="report">
+        <value>
+          <LiveReport title="Demo Report Identity Audit">
+            <DataSource objectType="sailpoint.object.IdentityRequestItem" type="Filter">
+              <QueryParameters>
+                <Parameter argument="startDate">
+                  <QueryScript>
+                    <Source><![CDATA[
+                      import sailpoint.object.*;
+                      import sailpoint.api.*;
+
+                       queryOptions.addFilter(Filter.ge("created",value));
+                      queryOptions.addFilter(Filter.le("created",arguments.get("endDate")));
+                      return queryOptions;
+                    ]]></Source>
+                  </QueryScript>
+                </Parameter>
+              </QueryParameters>
+            </DataSource>
+            <Columns>
+              <ReportColumnConfig field="operation" header="Operation" property="operation" width="110"/>
+              <ReportColumnConfig field="name" header="Attribute Name" property="name" width="110"/>
+              <ReportColumnConfig field="attributeValue" header="Attribute Value" property="value" width="110"/>
+              <ReportColumnConfig field="displayValue" header="DisplayValue" property="displayName" width="110"/>
+              <ReportColumnConfig field="account" header="Account" property="nativeIdentity" width="110"/>
+              <ReportColumnConfig field="application" header="Application" property="application" width="110"/>
+              <ReportColumnConfig field="approvalStatus" header="Approval Status" property="approvalState" width="110"/>
+              <ReportColumnConfig field="provisioningStatus" header="Provisioning Status" property="provisioningState" width="110"/>
+              <ReportColumnConfig field="owner" header="Owner" property="owner" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.*;
+                    import sailpoint.api.*;
+
+                   // log.error(" owner value---"+value);
+                    Identity identity=(Identity)value;
+                    
+                    if(identity!=null)
+
+                    return identity.getName();
+                    return "";
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+            </Columns>
+          </LiveReport>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Description>Displays information about each role in detailed format.</Description>
+  <Signature>
+    <Inputs>
+      <Argument name="startDate" type="date">
+        <Description>application link of the identity</Description>
+      </Argument>
+      <Argument name="endDate" type="date">
+        <Description>department of the identity</Description>
+      </Argument>
+    </Inputs>
+  </Signature>
+</TaskDefinition>

@@ -1,0 +1,147 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE IdentityRequest PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<IdentityRequest completionStatus="Success" endDate="1765447235615" executionStatus="Completed" name="0000000665" priority="Normal" requesterDisplayName="The Administrator" requesterId="c0a81d898f331ca3818f33fcf64800ff" source="LCM" state="End" targetClass="Identity" targetDisplayName="Abdul samad" type="AccessRequest" verified="1765447235616">
+  <Attributes>
+    <Map>
+      <entry key="approvalSummaries">
+        <value>
+          <List>
+            <ApprovalSummary completer="Naveen Rasali" endDate="1765447234236" owner="SPT_WG" request="Identity Approval - Account Changes for User: Abdul samad" startDate="1748281773699" state="Finished" workItemId="c0a800fb970b1b0d81970db6cdfe0574" workItemType="Approval">
+              <ApprovalSet>
+                <ApprovalItem application="ActiveDirectory" approver="Naveen Rasali" displayValue="AccountingGeneral" name="memberOf" nativeIdentity="CN=abdul samad,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Add" state="Finished" value="CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a8002394fb1f308194ff6478ff0a83"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="nativeIdUpdated">
+                        <value>
+                          <Boolean>true</Boolean>
+                        </value>
+                      </entry>
+                      <entry key="operation" value="EntitlementAdd"/>
+                    </Map>
+                  </Attributes>
+                </ApprovalItem>
+              </ApprovalSet>
+            </ApprovalSummary>
+          </List>
+        </value>
+      </entry>
+      <entry key="provisionedProject">
+        <value>
+          <ProvisioningProject identity="Abdul samad">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <Filtered>
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Abdul samad,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                <Attributes>
+                  <Map>
+                    <entry key="attachmentConfigList"/>
+                    <entry key="attachments"/>
+                    <entry key="flow" value="AccessRequest"/>
+                    <entry key="id" value="c0a8002394fb1f308194ff6478ff0a83"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="logged" value="true"/>
+                    <entry key="nativeIdUpdated">
+                      <value>
+                        <Boolean>true</Boolean>
+                      </value>
+                    </entry>
+                    <entry key="operation" value="EntitlementAdd"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest displayValue="AccountingGeneral" name="memberOf" op="Add" value="CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                  <Attributes>
+                    <Map>
+                      <entry key="assignment" value="true"/>
+                      <entry key="reason">
+                        <value>
+                          <FilterReason>Exists</FilterReason>
+                        </value>
+                      </entry>
+                    </Map>
+                  </Attributes>
+                </AttributeRequest>
+              </AccountRequest>
+            </Filtered>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Abdul samad,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a8002394fb1f308194ff6478ff0a83"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="nativeIdUpdated">
+                        <value>
+                          <Boolean>true</Boolean>
+                        </value>
+                      </entry>
+                      <entry key="operation" value="EntitlementAdd"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest displayValue="AccountingGeneral" name="memberOf" op="Add" value="CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                    <Attributes>
+                      <Map>
+                        <entry key="assignment" value="true"/>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000665"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <ProvisioningTargets>
+                  <ProvisioningTarget application="ActiveDirectory" attribute="memberOf" value="CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                    <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" implicitCreate="true"/>
+                  </ProvisioningTarget>
+                </ProvisioningTargets>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningTarget application="ActiveDirectory" attribute="memberOf" value="CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+              <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" implicitCreate="true"/>
+            </ProvisioningTarget>
+            <ProvisioningTarget retain="true" role="ad_business_role">
+              <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" doCreate="true" selection="CN=abdul samad,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+            </ProvisioningTarget>
+            <ProvisioningTarget retain="true" role="BusinessRoleHTask">
+              <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ADX" selection="CN=abdul samad,OU=XPeople,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="ESHIAM\Xabdul samad" nativeIdentity="CN=abdul samad,OU=XPeople,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+            </ProvisioningTarget>
+            <ProvisioningTarget retain="true" role="BusinessRoleAccountingHtask">
+              <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ADX" selection="CN=abdul samad,OU=XPeople,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="ESHIAM\Xabdul samad" nativeIdentity="CN=abdul samad,OU=XPeople,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+            </ProvisioningTarget>
+            <ProvisioningTarget retain="true" role="IT-B-AD-Testcase1">
+              <AccountSelection applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" selection="cn=abdul.samad,ou=People,dc=my-domain,dc=com">
+                <AccountInfo displayName="sr19" nativeIdentity="cn=abdul.samad,ou=People,dc=my-domain,dc=com"/>
+              </AccountSelection>
+            </ProvisioningTarget>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="taskResultId" value="c0a800fb970b1b0d81970db6caef056d"/>
+    </Map>
+  </Attributes>
+</IdentityRequest>

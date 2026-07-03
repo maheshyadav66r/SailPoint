@@ -1,0 +1,202 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE IdentityRequest PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<IdentityRequest completionStatus="Success" endDate="1760469635754" executionStatus="Completed" name="0000000963" priority="Normal" requesterDisplayName="The Administrator" requesterId="c0a81d898f331ca3818f33fcf64800ff" source="LCM" state="End" targetClass="Identity" targetDisplayName="James Smith" type="AccessRequest" verified="1760500465324">
+  <Attributes>
+    <Map>
+      <entry key="messages">
+        <value>
+          <List>
+            <Message key="err_exception" type="Error">
+              <Parameters>
+                <Message key="msg_plain_text" type="Error">
+                  <Parameters>
+                    <String>BeanShell script error: bsh.EvalError: Sourced file: inline evaluation of: ``import sailpoint.object.*;   import sailpoint.api.*;   import sailpoint.tools.Ut . . . '' : Typed variable declaration : Error in method invocation: Method get(java.lang.String) not found in class'sailpoint.api.certification.IdentityCertificationBuilder$IdentityCertificationContext' : at Line: 6 : in file: inline evaluation of: ``import sailpoint.object.*;   import sailpoint.api.*;   import sailpoint.tools.Ut . . . '' : certContext .get ( "certificationItem" ) 
+ BSF info: certificationItemColumn_CustomizationRule at line: 0 column: columnNo</String>
+                  </Parameters>
+                </Message>
+              </Parameters>
+            </Message>
+          </List>
+        </value>
+      </entry>
+      <entry key="provisionedProject">
+        <value>
+          <ProvisioningProject identity="James Smith">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000963"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <Filtered>
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=James Smith,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                <Attributes>
+                  <Map>
+                    <entry key="logged" value="true"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="sn" op="Remove" value="1a">
+                  <Attributes>
+                    <Map>
+                      <entry key="assignment" value="true"/>
+                      <entry key="reason">
+                        <value>
+                          <FilterReason>Dependency</FilterReason>
+                        </value>
+                      </entry>
+                    </Map>
+                  </Attributes>
+                </AttributeRequest>
+              </AccountRequest>
+            </Filtered>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="IIQ" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800fc99cc14408199cdfa72e109ef"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="RoleRemove"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="detectedRoles" op="Remove" value="IT-ORGLDAP-Y">
+                    <Attributes>
+                      <Map>
+                        <entry key="deassignEntitlements">
+                          <value>
+                            <Boolean>true</Boolean>
+                          </value>
+                        </entry>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000963"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan targetIntegration="IIQ" trackingId="7290c271cf2249d3a31143badf6e026f">
+              <AccountRequest application="IIQ" op="Modify" targetIntegration="IIQ">
+                <Attributes>
+                  <Map>
+                    <entry key="attachmentConfigList"/>
+                    <entry key="attachments"/>
+                    <entry key="flow" value="AccessRequest"/>
+                    <entry key="id" value="c0a800fc99cc14408199cdfa72e109ef"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="operation" value="RoleRemove"/>
+                    <entry key="provisioningTransactionId" value="c0a8d9c799e319358199e42ace7f022b"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="detectedRoles" op="Remove" value="IT-ORGLDAP-Y">
+                  <Attributes>
+                    <Map>
+                      <entry key="deassignEntitlements">
+                        <value>
+                          <Boolean>true</Boolean>
+                        </value>
+                      </entry>
+                    </Map>
+                  </Attributes>
+                </AttributeRequest>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000963"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+            </ProvisioningPlan>
+            <ProvisioningTarget role="IT-ORGLDAP-Y">
+              <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=James Smith,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="James Smith" nativeIdentity="CN=James Smith,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+            </ProvisioningTarget>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="taskResultId" value="c0a8d9c799e319358199e42aca510224"/>
+    </Map>
+  </Attributes>
+  <RequestItems>
+    <IdentityRequestItem application="IIQ" approvalState="Finished" name="detectedRoles" operation="Remove" ownerName="spadmin" provisioningEngine="IIQ" provisioningState="Finished" value="IT-ORGLDAP-Y">
+      <Attributes>
+        <Map>
+          <entry key="assignmentId" value="TEMP:607fb73f75f74e5187d704d0578beabc"/>
+          <entry key="attachmentConfigList"/>
+          <entry key="attachments"/>
+          <entry key="displayableValue" value="IT-ORGLDAP-Y"/>
+          <entry key="flow" value="AccessRequest"/>
+          <entry key="id" value="c0a800fc99cc14408199cdfa72e109ef"/>
+          <entry key="identityEntitlementId" value="c0a8d9c799e319358199e42acdc30229"/>
+          <entry key="interface" value="LCM"/>
+          <entry key="operation" value="RoleRemove"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="875c279c41314ceb84b8db5e7526412d">
+                <AccountRequest application="IIQ" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800fc99cc14408199cdfa72e109ef"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="RoleRemove"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="detectedRoles" op="Remove" trackingId="875c279c41314ceb84b8db5e7526412d" value="IT-ORGLDAP-Y">
+                    <Attributes>
+                      <Map>
+                        <entry key="deassignEntitlements">
+                          <value>
+                            <Boolean>true</Boolean>
+                          </value>
+                        </entry>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                </AccountRequest>
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=James Smith,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                  <AttributeRequest name="sn" op="Remove" trackingId="875c279c41314ceb84b8db5e7526412d" value="1a">
+                    <Attributes>
+                      <Map>
+                        <entry key="allowSimplification" value="true"/>
+                        <entry key="assignment" value="true"/>
+                        <entry key="preferRemoveOverRetain" value="true"/>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+      <Owner>
+        <Reference class="sailpoint.object.Identity" name="spadmin"/>
+      </Owner>
+    </IdentityRequestItem>
+  </RequestItems>
+</IdentityRequest>

@@ -1,0 +1,114 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Advanced_SOD_Policy_Rule" type="Policy">
+  <Description>This rule is  to determine if a Policy has been violated.</Description>
+  <Signature returnType="PolicyViolation">
+    <Inputs>
+      <Argument name="log"/>
+      <Argument name="context"/>
+      <Argument name="identity"/>
+      <Argument name="policy"/>
+      <Argument name="constraint"/>
+    </Inputs>
+    <Returns>
+      <Argument name="violation">
+        <Description>The PolicyViolation object.</Description>
+      </Argument>
+    </Returns>
+  </Signature>
+  <Source><![CDATA[
+  
+import sailpoint.object.*; 
+import java.util.*; 
+import java.text.*; 
+import org.apache.log4j.Logger;   
+import org.apache.log4j.Level;   
+
+Logger log = Logger.getLogger("identity.test.sodPolicy");
+log.debug("=== ENTER: Test SOD Policy ==="); 
+
+PolicyViolation polVil = null; 
+boolean isViolation = false; 
+
+if (identity != null) { 
+  String identityidentityName = identity.getName(); 
+  log.debug(" Test SOD : identityName ---"+identityName); 
+
+  List roleAssigns = identity.getAssignedRoles(); 
+  log.debug("Have roleAssigns: " + roleAssigns); 
+
+  boolean roleViolation = true; 
+
+  if (roleAssigns != null){ 
+    log.debug("# currently assigned = " + roleAssigns.size());       
+
+    for (Bundle roleAssign : roleAssigns){ 
+      String rName = roleAssign.getName(); 
+      log.debug("Have role assign: " + rName); 
+
+      if(rName.equalsIgnoreCase("Security Officer")){ 
+        roleViolation = false; 
+      } 
+    } 
+  } 
+
+  List links = identity.getLinks(); 
+  
+  if(links != null && links.size() > 0){  
+    log.debug(" Test SOD : Inside links ---");    
+
+    //==Declare variables  
+    String appName; 
+    List entitlements; 
+    String entVal; 
+
+    //==Iterate thru the links 
+    for (Link link : links) { 
+      if (link != null && !link.isDisabled()) { 
+        appName = link.getApplicationName(); 
+        log.debug(" Test SOD : appName ---"+appName); 
+
+        if (appName != null && appName.equalsIgnoreCase("Test App")) { 
+          log.debug(" Test SOD : Inside Test App ---"); 
+
+          //==Retrieve the entitlements for the Application
+          entitlements = link.getEntitlements(Locale.getDefault(),""); 
+
+          if(entitlements != null && entitlements.size() > 0){ 
+            log.debug(" Test SOD : Inside Entitlements ---");
+             
+            //==Iterate thru the entitlements
+            for(Entitlement entitlement : entitlements){ 
+              entVal = entitlement.getAttributeValue(); 
+              log.debug(" Test SOD : entVal ---"+entVal); 
+
+              if(entVal.equalsIgnoreCase("TEST_ENT_2")){ 
+                log.debug(" Test SOD : entVal : TEST_ENT_2---"); 
+                if(roleViolation){ 
+                  //==Set the Policy Violation flag if Role Violation is Present
+                  isViolation = true; 
+                } 
+              } 
+            } 
+          }        
+        } 
+      } 
+    } 
+  } 
+}   
+
+//==Check for Violation 
+if (isViolation) { 
+  log.debug(" Test SOD : Inside Violation ---"); 
+  polVil = new PolicyViolation(); 
+  polVil.setActive(true); 
+  polVil.setIdentity(identity); 
+  polVil.setPolicy(policy); 
+  polVil.setDescription("This combination of Role is not allowed for the Identity");
+} 
+
+log.debug("=== EXIT: Test SOD Policy ===");
+return polVil;
+    
+  ]]></Source>
+</Rule>

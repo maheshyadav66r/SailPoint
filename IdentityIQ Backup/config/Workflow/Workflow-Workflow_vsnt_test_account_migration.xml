@@ -1,0 +1,492 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow explicitTransitions="true" handler="sailpoint.api.StandardWorkflowHandler" libraries="Identity,BatchRequest" name="Workflow_VSNT_Test_Account_Migration">
+  <Variable input="true" name="managersso"/>
+  <Variable input="true" name="requesterNameId"/>
+  <Variable input="true" name="requesterName"/>
+  <Variable input="true" name="appid" output="true"/>
+  <Variable input="true" name="appName" output="true"/>
+  <Variable name="requestApprover"/>
+  <Variable name="approverFullName"/>
+  <Variable initializer="Test" name="personType"/>
+  <Variable initializer="IDMFUNCTIONAL" name="locationID"/>
+  <Variable initializer="Test Account Creation" name="testAccountCreationAppName"/>
+  <Variable initializer="288" input="true" name="workItemHoursTillExpiration"/>
+  <Variable name="NewID" output="true"/>
+  <Variable name="conStartDate" output="true"/>
+  <Variable input="true" name="startDate"/>
+  <Variable name="UserName"/>
+  <Variable name="interflag"/>
+  <Variable name="requestID"/>
+  <Variable name="requesterEmail"/>
+  <Variable name="requesterFullName"/>
+  <Variable name="requestedBy"/>
+  <Variable name="requesteeEmail"/>
+  <Variable name="requesteeFullName"/>
+  <Variable name="requesteeFirstName"/>
+  <Variable name="requesteeLastName"/>
+  <Variable name="managerDetailsMap"/>
+  <Variable name="managerOrgSegmentID"/>
+  <Variable name="managerName"/>
+  <Variable name="managerEmail"/>
+  <Variable name="managerFullName"/>
+  <Variable name="displayNameValue"/>
+  <Variable name="fullDispName"/>
+  <Variable name="finalFirstName"/>
+  <Variable name="finalLastName"/>
+  <Variable name="reminderCCAddress"/>
+  <Variable name="rejectionToAddress"/>
+  <Variable name="managerComments"/>
+  <Variable name="managerApprovalList">
+    <Script>
+      <Source><![CDATA[                     
+
+        import sailpoint.object.Identity;
+        import sailpoint.object.QueryOptions;
+        import sailpoint.object.Filter;
+        import sailpoint.api.ObjectUtil;
+
+        List workgroupMembers = new ArrayList();
+        QueryOptions ops = new QueryOptions();  
+        Filter f = Filter.eq("workgroup", true);  
+        ops.addFilter(f);
+        String workgroupName = null;
+        Iterator it = context.search (Identity.class, ops, "name");
+        while (it.hasNext()) 
+        { 
+        workgroupName = (String)(it.next()[0]);
+        if(workgroupName.equalsIgnoreCase("RSASecondLevelApprovers"))
+        {
+        //Get the members of the workgroup  
+        Identity wrkGrp = context.getObjectByName(Identity.class, workgroupName);
+        workgroupMembers.add(wrkGrp);
+        break;
+        }
+        }
+        sailpoint.tools.Util.flushIterator(it);
+        if(managersso != null) {
+        workgroupMembers.add(managersso);
+        }
+        return workgroupMembers;
+
+      ]]></Source>
+    </Script>
+  </Variable>
+  <Variable name="userMap"/>
+  <Variable name="userMapAudit"/>
+  <Variable name="action"/>
+  <Variable name="appAuditResult"/>
+  <Variable name="contact"/>
+  <Variable name="MailCount"/>
+  <Variable name="subFlag"/>
+  <Variable name="ndiFlag"/>
+  <Variable name="provFlag"/>
+  <Variable name="compFlag"/>
+  <Variable name="stopFlag"/>
+  <Variable name="apprFlag"/>
+  <Variable name="compiledProject"/>
+  <Variable name="alternateMail"/>
+  <Variable name="ndiAudit"/>
+  <Variable name="userMapExc"/>
+  <Variable name="statusCheck" output="true"/>
+  <Variable name="NDICrerrMsg"/>
+  <Variable name="ADerrMsg"/>
+  <Variable name="NDIModerrMsg"/>
+  <Variable name="planAndValues"/>
+  <Variable name="plan"/>
+  <Variable name="planNDI"/>
+  <Variable name="planAD"/>
+  <Variable name="consolidatedPlanproject"/>
+  <Variable name="requesteeDisplayName"/>
+  <Variable name="owner" required="true">
+    <Script>
+      <Source><![CDATA[
+        return context.getUserName().toString();
+      ]]></Source>
+    </Script>
+  </Variable>
+  <Variable input="true" name="identityName" type="string"/>
+  <Variable initializer="script:(identityDisplayName != void) ? identityDisplayName : resolveDisplayName(identityName)" input="true" name="identityDisplayName">
+    <Description>
+      The displayName of the identity being updated.
+      Query for this using a projection query and fall back to the name.
+    </Description>
+  </Variable>
+  <Variable initializer="spadmin" name="fallbackApprover"/>
+  <Variable initializer="true" name="allowRequestsWithViolations"/>
+  <Variable input="true" name="policiesToCheck"/>
+  <Variable initializer="Normal" input="true" name="workItemPriority"/>
+  <Variable initializer="true" name="requireViolationReviewComments"/>
+  <Variable initializer="true" name="trace"/>
+  <Variable initializer="true" name="optimisticProvisioning"/>
+  <Variable initializer="true" name="autoVerifyIdentityRequest"/>
+  <Variable name="launcher"/>
+  <Variable name="approvalSet"/>
+  <Variable name="identityRequestId" output="true"/>
+  <Variable name="violationReviewDecision"/>
+  <Variable name="workItemComments"/>
+  <Variable initializer="Workflow_VSNT_TestAccount_Migration" name="loggerClass"/>
+  <Variable initializer="serial" input="true" name="approvalMode"/>
+  <Variable initializer="manager" input="true" name="approvalScheme"/>
+  <Variable initializer="continue" input="true" name="policyScheme"/>
+  <Variable initializer="none" input="true" name="notificationScheme"/>
+  <Variable editable="true" name="doRefresh"/>
+  <Variable name="name"/>
+  <Variable input="true" name="firstname"/>
+  <Variable input="true" name="lastname"/>
+  <Variable input="true" name="middlename"/>
+  <Variable name="email"/>
+  <Variable name="manager"/>
+  <Variable input="true" name="supervisorid"/>
+  <Variable name="supervisorname"/>
+  <Variable input="true" name="endDate"/>
+  <Variable name="drupalToSailPointRequestDate"/>
+  <Variable name="jobTitle"/>
+  <Variable name="authsource"/>
+  <Variable editable="true" name="uid"/>
+  <Variable initializer="true" name="transient"/>
+  <Variable input="true" name="requestee"/>
+  <Variable input="true" name="ADAccountOption" type="boolean"/>
+  <Variable name="membername"/>
+  <Variable name="memberemail"/>
+  <Variable name="mngrFirstName"/>
+  <Variable name="mngrlastname"/>
+  <Variable name="mngrname"/>
+  <Variable name="mngremail"/>
+  <Variable name="mngrbusinessUnitId"/>
+  <Variable name="mngrparentbusinessUnitId"/>
+  <Variable name="country"/>
+  <Variable name="street"/>
+  <Variable name="mngrhrlegalentity"/>
+  <Variable name="mngrlocid"/>
+  <Variable name="mngrorgid"/>
+  <Variable name="mngrpersareaid"/>
+  <Variable name="mngrpersareatext"/>
+  <Variable name="mngrsupheirarchy"/>
+  <Variable name="mngrDisplayName"/>
+  <Variable name="userDisplayName"/>
+  <Variable name="reqStatus"/>
+  <Variable name="errorStatus"/>
+  <Variable name="provResult"/>
+  <Variable input="true" name="comments"/>
+  <Variable name="identityRequestId" output="true"/>
+  <Variable name="requestedfor"/>
+  <Variable name="managerFullSSO"/>
+  <Variable name="CCAddress"/>
+  <Variable name="identityFullName"/>
+  <Variable initializer="Test Account Creation" name="testAccountCreationAppName"/>
+  <Description>This workflow creates Test Account.</Description>
+  <RuleLibraries>
+    <Reference class="sailpoint.object.Rule" name="LCM Workflow Library"/>
+    <Reference class="sailpoint.object.Rule" name="Approval Library"/>
+    <Reference class="sailpoint.object.Rule" name="Rule_VSNT_Workflow_RuleLibrary"/>
+    <Reference class="sailpoint.object.Rule" name="Rule_VSNT_DisplayName_RuleLibrary"/>
+  </RuleLibraries>
+  <Step icon="Start" name="Start" posX="28" posY="10">
+    <Script>
+      <Source><![CDATA[
+
+        updateRequiredWorkflowAttributesForTestAccount(workflow, appid, appName, requesterName);
+
+      ]]></Source>
+    </Script>
+    <Transition to="Get_Sequence"/>
+  </Step>
+  <Step action="rule:Rule_VSNT_Get_Sequence" icon="Default" name="Get_Sequence" posX="98" posY="10" resultVariable="NewID">
+    <Arg name="firstName" value="ref:appName"/>
+    <Arg name="lastName" value="ref:appid"/>
+    <Arg name="requestorSSO" value="ref:requesterFromDrupal"/>
+    <Transition to="Get_SegmentID">
+      <Script>
+        <Source><![CDATA[
+
+
+          import sailpoint.object.*;
+          import org.apache.log4j.Logger;
+          import org.apache.log4j.Level;
+          Logger log = Logger.getLogger(loggerClass);
+
+          int min = 10;
+          int max = 50;
+          int randomNum = (int)(Math.random() * (max - min + 1) + min);
+          int randomNum_prefix = (int)(Math.random() * (max - min + 1) + min);
+          String NewID = "250000" + Integer.toString(randomNum);
+          if(NewID != null){
+          String requesteeDisplayName = requesteeFullName+" ("+NewID+")";
+          workflow.put("requesteeDisplayName",requesteeDisplayName);
+          }
+          log.error("Workflow_VSNT_Test_Account_Migration: UID before map "+NewID);
+          workflow.put("NewID",NewID); 
+          workflow.put("identityName",NewID); 
+          workflow.put("UserName",NewID); 
+          return true;
+
+
+        ]]></Source>
+      </Script>
+    </Transition>
+  </Step>
+  <Step action="rule:Rule_VSNT_GetOrgSegmentID" icon="Default" name="Get_SegmentID" posX="98" posY="10" resultVariable="OrgSegmentID">
+    <Arg name="SSO" value="ref:managersso"/>
+    <Transition to="Create NDI ProvisionPlan">
+      <Script>
+        <Source><![CDATA[
+
+          workflow.put("managerOrgSegmentID", OrgSegmentID); 
+          return true;
+
+        ]]></Source>
+      </Script>
+    </Transition>
+  </Step>
+  <Step icon="Message" name="Create NDI ProvisionPlan" posX="406" posY="10" resultVariable="plan">
+    <Script>
+      <Source><![CDATA[
+        return createNDIProvPlanForTestAccount(workflow);
+
+      ]]></Source>
+    </Script>
+    <Transition to="Initialize AD UserMap"/>
+  </Step>
+  <Step name="Initialize AD UserMap" posX="1228" posY="126">
+    <Script>
+      <Source><![CDATA[
+
+
+        import java.util.HashMap;
+        import java.text.SimpleDateFormat;
+        import java.util.Date;
+        import java.text.DateFormat;
+        import sailpoint.object.*;
+        import org.apache.log4j.Logger;
+        import org.apache.log4j.Level;
+        //  Logger log = Logger.getLogger(loggerClass);
+
+        log.error("----------Initialize AD UserMap----------START ");
+
+        String address = null;
+
+        HashMap userMapAD = new HashMap();
+        userMapAD.put("identityName", NewID);
+
+        //SimpleDateFormat formatter2=new SimpleDateFormat("dd-MMM-yyyy");
+        //Date Provdate=formatter2.parse(conStartDate);
+        //SimpleDateFormat formatter3=new SimpleDateFormat("YYYYMMdd");
+        //String ProIDdate = formatter3.format(Provdate);
+
+        String ProvisionedID01 = "IDM-" + startDate;
+        userMapAD.put("ProvisionedID01", ProvisionedID01); 
+        userMapAD.put("EmpPop", "FunctionalUser");
+        userMapAD.put("AppID", appid);
+        userMapAD.put("type", "Functional");
+        userMapAD.put("subPersonType", "Test");
+
+        userMapAD.put("EffectiveStartDate", startDate);
+
+        userMapAD.put("BusinessUnitId", managerDetailsMap.get("mngrbusinessUnitId"));
+
+        userMapAD.put("SupervisorId", managersso);
+
+        userMapAD.put("LastName", lastName);
+        userMapAD.put("FirstName", firstName);
+        userMapAD.put("finalFirstName", firstName);
+        userMapAD.put("finalLastName", lastName);
+
+        workflow.put("userMapAD", userMapAD);
+
+        log.error("----------Initialize AD UserMap----------END ");
+
+      ]]></Source>
+    </Script>
+    <Transition to="BuildADPlan" when="ADAccountOption"/>
+    <Transition to="Consolidated Plan"/>
+  </Step>
+  <Step action="rule:Rule_VSNT_Create_AD_Provisioning_Plan" name="BuildADPlan" posX="1438" posY="126" resultVariable="planAD">
+    <Arg name="userMap" value="ref:userMapAD"/>
+    <Return name="planAD" to="planAD"/>
+    <Transition to="Consolidated Plan"/>
+  </Step>
+  <Step name="Consolidated Plan">
+    <Script>
+      <Source><![CDATA[
+
+        import sailpoint.object.ProvisioningPlan;
+        import sailpoint.object.ProvisioningPlan.AccountRequest;
+        import sailpoint.object.ProvisioningPlan.ObjectRequest;
+        import sailpoint.object.ProvisioningPlan.AttributeRequest;
+        import sailpoint.object.Identity;
+        import org.apache.log4j.Logger;
+        import org.apache.log4j.Level;
+
+        Logger log = Logger.getLogger(loggerClass);
+
+        List provPlansList = new ArrayList();
+
+        ProvisioningPlan ndiPlan = (ProvisioningPlan)workflow.get("plan");
+        ProvisioningPlan adPlan = (ProvisioningPlan)workflow.get("planAD");
+        provPlansList.add(ndiPlan);
+
+        if ( null != adPlan ) {
+        provPlansList.add(adPlan);
+        }
+
+        ProvisioningPlan provPlan = getConsolidatedPlan(provPlansList, NewID);
+        workflow.put("consolidatedPlan", provPlan);
+
+
+      ]]></Source>
+    </Script>
+    <Transition to="Provision"/>
+  </Step>
+  <Step icon="Task" name="Provision" posX="495" wait="-1">
+    <Arg name="source" value="ref:source"/>
+    <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+    <Arg name="doRefresh"/>
+    <Arg name="plan" value="ref:consolidatedPlan"/>
+    <Arg name="flow" value="ref:flow"/>
+    <Arg name="identityName" value="ref:identityName"/>
+    <Arg name="approvalScheme" value="none"/>
+    <Arg name="trace" value="ref:trace"/>
+    <Arg name="notificationScheme" value="none"/>
+    <Arg name="optimisticProvisioning" value="false"/>
+    <Return name="project" to="project"/>
+    <Return name="identityRequestId" to="identityRequestId"/>
+    <WorkflowRef>
+      <Reference class="sailpoint.object.Workflow" name="LCM Provisioning"/>
+    </WorkflowRef>
+    <Transition to="Stop"/>
+  </Step>
+  <Step catches="complete" icon="Catches" name="Finalize" posX="3280" posY="474">
+    <Arg name="trace" value="ref:trace"/>
+    <Arg name="batchRequestItemId" value="ref:batchRequestItemId"/>
+    <Arg name="autoVerifyIdentityRequest" value="ref:autoVerifyIdentityRequest"/>
+    <Arg name="approvalSet" value="ref:approvalSet"/>
+    <Arg name="ticketManagementApplication" value="ref:ticketManagementApplication"/>
+    <Arg name="project" value="ref:project"/>
+    <Arg name="identityRequestId" value="ref:identityRequestId"/>
+    <Arg name="priority" value="ref:workItemPriority"/>
+    <Arg name="wfCaseCatch" value="ref:wfcase"/>
+    <Arg name="userMapAudit" value="ref:userMapAudit"/>
+    <Description>
+      Call the standard subprocess that can audit/finalize the request.
+    </Description>
+    <Transition to="Notify Completion"/>
+  </Step>
+  <Step name="Notify Completion" posX="3374" posY="474">
+    <Script>
+      <Source><![CDATA[
+
+        import java.util.Map;
+        import java.util.Date;
+        import java.util.HashMap;
+        import java.text.DateFormat;
+        import java.text.SimpleDateFormat;
+
+        import sailpoint.object.Custom;
+        import sailpoint.object.EmailOptions;
+        import sailpoint.object.EmailTemplate;
+
+        import sailpoint.tools.Util;
+
+        import org.apache.log4j.Level;
+        import org.apache.log4j.Logger;
+
+        Logger logger = Logger.getLogger(loggerClass); 
+
+        EmailTemplate template = null;
+        if ( Util.nullSafeCaseInsensitiveEq(statuscheck, "Success") ) {
+        template = context.getObjectByName(EmailTemplate.class, "EmailTemplate_VSNT_Completion_Migration");
+        } else {
+        template = context.getObjectByName(EmailTemplate.class, "EmailTemplate_VSNT_Completion_With_Table_Migration");
+        }
+        if (template == null) {
+        log.debug("Test Account Creation: null template");
+        } else {
+        EmailOptions options = new EmailOptions();
+
+        String notification = null;
+        String subject = null;
+        String header = null;
+        //options.setCc("nbcuniidmsupportteam@nbcuni.com");
+
+        DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+        Date date = new Date();
+        String formattedDate = dateFormat.format(date);
+        Map dataMap = new HashMap();
+        dataMap.put("formattedDate", formattedDate);
+
+        if (statuscheck != null && statuscheck.equalsIgnoreCase("Success")) {
+        dataMap.put("statusCheck", statuscheck);
+        options.setTo(requesteeEmail);
+        options.setCc(managerEmail);
+
+        header = "Test Account created for  " + identityFullName;
+        log.debug("Test Account Creation: header : " + header);
+        notification = "New Test Account for " + identityFullName + " (" + NewID + ") has been created. This request was submitted by " + requesterFullName + ".";
+        log.debug("Test Account Creation: notification " + notification);
+
+        if (identityRequestId != null) {
+        subject = identityRequestId + " - ";
+        }
+        subject = "notification: " + subject + "New Test Account created for - " + identityFullName;
+        log.debug("Test Account Creation:  subject : " + subject);
+        } else {
+        Custom nbcuemailaddress = context.getObjectByName(Custom.class, "Custom_VSNT_Mail_box_Name");
+        String nbcumailbox = nbcuemailaddress.get("emailaddress");
+        options.setTo(nbcumailbox);
+        header = "Test Account creation failure for " + identityFullName;
+        log.debug("Test Account Creation: header : " + header);
+
+        notification = "While creation of Test Account failure happened.Please check the logs for " + managerFullName + " (" + supervisorid + ").";
+        log.debug("Test Account Creation: notification " + notification);
+        if (NDICrerrMsg != null) {
+        dataMap.put("NDICrerrMsg", NDICrerrMsg);
+        }
+        if (ADerrMsg != null) {
+        dataMap.put("ADerrMsg", ADerrMsg);
+        }		
+
+        log.debug("Test Account Creation:  ActionRequired : " + ActionRequired);
+        if (identityRequestId != null) {
+        subject = identityRequestId + " - ";
+        }
+        subject = "notification: " + subject + "Test Account Creation Failure notification - " + NewID;
+        log.debug("Test Account Creation: subject : " + subject);
+
+        if ( Util.isNotNullOrEmpty(firstname) ) {
+        dataMap.put("firstName", firstname);
+        }
+        if ( Util.isNotNullOrEmpty(lastname) ) {
+        dataMap.put("lastName", lastname);
+        }
+        if ( Util.isNotNullOrEmpty(NewID) ) {
+        dataMap.put("NewID", NewID);
+        }
+        if (startDate != null) {
+        dataMap.put("startDate", startDate);
+        }
+        if (endDate != null) {
+        dataMap.put("endDate", endDate);
+        }
+        if (chkADRequest != null) {
+        dataMap.put("chkADRequest", chkADRequest);
+        }
+        }
+
+        Map args = new HashMap();
+        args.put("header", header);
+        args.put("notification", notification);
+        args.put("subject", subject);
+        args.put("CCAddress", "");
+        if (dataMap != null) {
+        args.put("functionalTestAccountDrupalMailboxMigrationNotifyCompletionDataMap", dataMap);
+        }
+        options.setVariables(args);
+        context.sendEmailNotification(template, options);
+        }
+
+      ]]></Source>
+    </Script>
+  </Step>
+  <Step icon="Stop" name="Stop" posX="1590" posY="126"/>
+</Workflow>

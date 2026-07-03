@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Validation_ObjectRequestProvisioning" type="Validation">
+  <Source><![CDATA[
+  import sailpoint.object.*;
+  import sailpoint.api.*;
+  import sailpoint.tools.Util;
+  import java.util.Date;
+
+  Identity newIdentity=context.getObjectByName(Identity.class,"Valemoni Laxmikanth");
+  Date createddate=newIdentity.getCreated();
+  
+  try {
+    Date currentdate = new Date();
+    if (!currentdate.before(createddate)) { 
+      log.error("Current date is greater than or equal to created date."+"--createddate--"+createddate+"   ---currentdate--"+currentdate);
+      return true;
+    } else
+
+    {
+      log.error("Current date is less than created date."+"--createddate--"+createddate+"   ---currentdate--"+currentdate);
+      return false;
+    }
+
+  } catch (Exception e) {
+    e.printStackTrace();
+    log.error("-----dates are invalid--");
+
+  }
+
+
+
+
+
+
+
+  ]]></Source>
+</Rule>

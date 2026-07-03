@@ -1,0 +1,208 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow explicitTransitions="true" name="SOAR-Provisioning" type="LCMProvisioning">
+  <Variable input="true" name="operation"/>
+  <Variable initializer="SOAR-Provisioning" input="true" name="flow"/>
+  <Variable name="applicationName"/>
+  <Variable initializer="Active Directory - CIBEG" name="adCIBeg"/>
+  <Variable input="true" name="identityList"/>
+  <Variable name="plan"/>
+  <Variable initializer="false" name="trace"/>
+  <Variable name="userCount">
+    <Script>
+      <Source><![CDATA[
+
+        import sailpoint.tools.Util;
+
+        log.error("Identity List"+identityList);
+
+        return Util.nullSafeSize(Util.csvToList(identityList));
+
+      ]]></Source>
+    </Script>
+  </Variable>
+  <Variable initializer="script:new Integer(0);" name="index"/>
+  <Step icon="Start" name="Start" posX="20" posY="20" resultVariable="errorsList">
+    <Script>
+      <Source><![CDATA[
+        import sailpoint.tools.Util;
+        import sailpoint.object.Identity;
+
+        import java.util.ArrayList;
+        import java.util.List;
+
+        log.error("Entered into Workflow");
+        log.error("Identity List    " + identityList);
+        log.error("User Count List  " + userCount);
+        log.error("Counts           " + Util.nullSafeSize(Util.csvToList(identityList)));
+        log.error("ApplicationName  " + applicationName);
+        log.error("Operation        " + operation);
+
+        List  errorsList = new ArrayList();
+
+        // Validate identityList
+        if (Util.isNullOrEmpty(identityList)) {
+
+        log.error("Step =====   Util.isNullOrEmpty(identityList)");
+
+
+        errorsList.add("Please provide at least one user name. The list cannot be empty.");
+
+        errorsList.add("Enter user names in CSV format, for example: TestUser1, TestUser2.");
+
+        } else {
+
+        List csvToList = Util.csvToList(identityList);
+
+        log.error("Step =====  csvToList"+csvToList);
+
+        if (Util.nullSafeSize(csvToList) > 0) {
+        for (String eachIdName : csvToList) {
+
+        log.error("Step =====   eachIdName"+eachIdName);
+
+        if (context.getObjectByName(Identity.class,eachIdName) == null) {
+
+        log.error("Step =====   eachname null");
+        errorsList.add("The user '" + eachIdName + "' was not found. Please check the spelling or ensure the user exists in SailPoint.");
+        }
+        }
+        }
+        }
+        log.error("Step =====   Before Operation");
+
+        // Validate operation
+        if (Util.isNullOrEmpty(operation)) {
+
+        log.error("Step =====   Util.isNullOrEmpty(operation)");
+        errorsList.add("Please select an action. Allowed actions are 'lock' or 'unlock'.");
+        } else {
+        log.error("Before every check of Lock or Unlock");
+        
+        if (!("lock".equalsIgnoreCase(operation) || "unlock".equalsIgnoreCase(operation))) {
+
+        log.error("Step =====   Operation Checks");
+        errorsList.add("Invalid action: '" + operation + "'. Allowed actions are 'lock' or 'unlock'.");
+        }
+        }
+        log.error("Step =====   Before Application");
+        // Validate applicationName
+        if (Util.isNullOrEmpty(applicationName)) {
+        log.error("Step =====  (Util.isNullOrEmpty(applicationName))");
+        errorsList.add("Please specify the application. Allowed values are 'Active Directory' or 'All'.");
+        } else {
+        if (!("AD".equalsIgnoreCase(applicationName) || "All".equalsIgnoreCase(applicationName))) {
+
+        log.error("Step =====   AD or all");
+        errorsList.add("Invalid application: '" + applicationName + "'. Allowed values are 'Active Directory' or 'All'.");
+        }
+        }
+
+        if (!errorsList.isEmpty()) {
+        log.error("Validation errors: " + errorsList);
+        wfcase.addMessage(String.join("\n", errorsList)); 
+        }
+
+
+
+      ]]></Source>
+    </Script>
+    <Transition to="Stop" when="script:Util.nullSafeSize(errorsList) &gt; 0"/>
+    <Transition to="getIdentity"/>
+  </Step>
+  <Step name="getIdentity" posX="210" posY="27" resultVariable="identityName">
+    <Script>
+      <Source><![CDATA[
+
+        //return identityList.get(index + 1);
+        return Util.csvToList(identityList).get(index);
+
+      ]]></Source>
+    </Script>
+    <Transition to="BuildPlan"/>
+  </Step>
+  <Step icon="Default" name="BuildPlan" posX="410" posY="25" resultVariable="plan">
+    <Script>
+      <Source><![CDATA[
+
+        import sailpoint.tools.Util;
+        import sailpoint.object.ProvisioningPlan;
+        import sailpoint.object.Link;
+        import sailpoint.api.IdentityService;
+        import sailpoint.object.ProvisioningPlan.AccountRequest;
+        import sailpoint.object.Identity;
+        import sailpoint.object.Application;
+        import sailpoint.object.ProvisioningPlan.AccountRequest.Operation;
+        import sailpoint.object.Filter;
+        import sailpoint.object.QueryOptions;
+        import java.util.Iterator;
+        import sailpoint.api.SailPointContext;
+
+        String adCIBeg= null;
+        Identity objectByName = context.getObjectByName(Identity.class, identityName);
+
+        ProvisioningPlan plan = new ProvisioningPlan();
+
+        Filter filter = Filter.eq("identity.name", identityName);
+        QueryOptions qo = new QueryOptions();
+        qo.add(filter);
+        qo.setCloneResults(true);
+
+        Iterator search = context.search(Link.class,qo,"id");
+
+        while(search.hasNext()) {
+
+        String linkId= (String) search.next()[0];
+        Link objectById = context.getObjectById(Link.class, linkId);
+
+        if(objectById.getApplication().isAuthoritative())continue;
+        if(operation.equalsIgnoreCase("Lock")) {
+        if(objectById.isDisabled())continue;
+
+        plan.add( new AccountRequest(AccountRequest.Operation.Disable, objectById.getApplicationName(), null, objectById.getNativeIdentity()));
+
+        }
+
+        else if(operation.equalsIgnoreCase("unLock")) {
+
+        if(!objectById.isDisabled())continue;
+
+        if(objectById.getApplicationName().equalsIgnoreCase(adCIBeg))continue;  
+
+        plan.add( new AccountRequest(AccountRequest.Operation.Enable, objectById.getApplicationName(), null, objectById.getNativeIdentity()));
+
+        }
+        }
+
+        log.error("BuilPlan Step ======= "+plan.toXml()); 
+        return plan;
+      ]]></Source>
+    </Script>
+    <Transition to="Launch LCM Provisioning"/>
+  </Step>
+  <Step action="call:scheduleWorkflowEvent" name="Launch LCM Provisioning" posX="417" posY="245">
+    <Arg name="flow" value="ref:flow"/>
+    <Arg name="identityName" value="ref:identityName"/>
+    <Arg name="launcher" value="ref:launcher"/>
+    <Arg name="plan" value="ref:plan"/>
+    <Arg name="approvalScheme" value="none"/>
+    <Arg name="workflow" value="LCM Provisioning"/>
+    <Arg name="delaySeconds" value="1"/>
+    <Arg name="notificationScheme" value="ref:notificationScheme"/>
+    <Transition to="indexIncrement"/>
+  </Step>
+  <Step name="indexIncrement" posX="417" posY="245" resultVariable="index">
+    <Script>
+      <Source><![CDATA[
+
+        log.error("indexIncrement Step  : "+index +" "+identityName);
+
+        return index+1;
+
+      ]]></Source>
+    </Script>
+    <Transition to="getIdentity" when="script:index&lt;userCount"/>
+    <Transition to="Stop"/>
+  </Step>
+  <Step icon="Stop" name="Stop" posX="584" posY="28"/>
+</Workflow>

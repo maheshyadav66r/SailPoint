@@ -1,0 +1,45 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningTransaction PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningTransaction accountDisplayName="cn=Adam.Harvey,ou=People,dc=my-domain,dc=com" applicationName="LDAPApplication" identityDisplayName="Adam Harvey" identityName="Adam Harvey" integration="LDAPApplication" name="0000011166" nativeIdentity="cn=Adam.Harvey,ou=People,dc=my-domain,dc=com" operation="Create" source="LCM" status="Success" type="Auto">
+  <Attributes>
+    <Map>
+      <entry key="accessRequestId" value="0000001082"/>
+      <entry key="planResult">
+        <value>
+          <ProvisioningResult status="committed"/>
+        </value>
+      </entry>
+      <entry key="request">
+        <value>
+          <AccountRequest application="LDAPApplication" assignmentIds="6cfce4b49a8a486c8bb5dd9f44c5050e,655fa4aa27ac44f28e87f1af39615b2f" nativeIdentity="cn=Adam.Harvey,ou=People,dc=my-domain,dc=com" op="Create" targetIntegration="LDAPApplication">
+            <Attributes>
+              <Map>
+                <entry key="provisioningTransactionId" value="c0a801289dbd1d3c819dbf4f96de26b7"/>
+              </Map>
+            </Attributes>
+            <AttributeRequest name="groups" op="Add">
+              <Value>
+                <List>
+                  <String>cn=WebApplicationAccess,ou=Group,dc=my-domain,dc=com</String>
+                  <String>cn=Contractors,ou=Group,dc=my-domain,dc=com</String>
+                  <String>cn=Managers,ou=Group,dc=my-domain,dc=com</String>
+                  <String>cn=Employees,ou=Group,dc=my-domain,dc=com</String>
+                </List>
+              </Value>
+            </AttributeRequest>
+            <AttributeRequest name="password" op="Set">
+              <Attributes>
+                <Map>
+                  <entry key="secret" value="true"/>
+                </Map>
+              </Attributes>
+            </AttributeRequest>
+            <AttributeRequest name="sn" op="Set" value="Harvey"/>
+            <AttributeRequest name="mail" op="Set" value="adam.harvey@eshiam.com"/>
+            <ProvisioningResult status="committed"/>
+          </AccountRequest>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+</ProvisioningTransaction>

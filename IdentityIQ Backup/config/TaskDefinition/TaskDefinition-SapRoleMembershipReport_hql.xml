@@ -1,0 +1,362 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskDefinition PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskDefinition executor="sailpoint.reporting.LiveReportExecutor" name="SAP Role Membership Report_HQL" progressMode="Percentage" resultAction="Rename" subType="Identity and User Reports" template="true" type="LiveReport">
+  <Attributes>
+    <Map>
+      <entry key="report">
+        <value>
+          <LiveReport title="Identity Entitlements Report">
+            <DataSource objectType="IdentityEntitlement" type="Hql">
+              <Query>from IdentityEntitlement</Query>
+              <QueryScript>
+                <Source><![CDATA[  
+                  import sailpoint.object.Filter;
+                  import sailpoint.object.Bundle;
+                  import sailpoint.object.QueryOptions;
+                  import java.util.Calendar;
+                  import org.apache.commons.lang3.StringUtils;
+                  import java.util.Date;
+
+                  String org;
+                  String company;
+                  String dept;
+                  String ent;
+                  String userIdentity;
+                  if(args.get("Organization") != null){
+                  org=args.get("Organization");
+                  }
+                  if (org != null){
+
+                  if(StringUtils.isNotBlank(org) @and org.equals("IFC")){
+                  company = "0";
+                  }else if(StringUtils.isNotBlank(org) @and org.equals("IBRD")){
+                  company = "1";
+                  }
+                  else if(StringUtils.isNotBlank(org) @and org.equals("MIGA")){
+                  company = "2";
+                  }
+                  else if(StringUtils.isNotBlank(org) @and org.equals("GEF")){
+                  company = "5";
+                  }
+
+                  }
+                  if(args.get("Unit") != null){
+                  dept=args.get("Unit");
+                  }
+
+                  query=query + " where application in (select id from Application where name='SAP') and aggregationState='Connected'";
+                  if(company != null ){
+                  query=query + " and identity in (select id from Identity where extended1='"+company+"')";
+                  }
+                  if(dept != null){
+                  query=query + " and identity in (select id from Identity where extended7='"+dept+"')";
+                  }
+
+                  if(args.get("entitlement") != null){
+                  ent=args.get("entitlement");
+                  }
+
+                  if(ent != null) {
+                  query=query + " and value='"+ent+"'";
+                  }  
+                  if(args.get("identity") != null){
+                  userIdentity=args.get("identity");
+                  }
+
+                  if(userIdentity != null) {
+                  query=query + " and identity ='"+userIdentity+"'";
+                  }  
+
+                  return query;                              
+
+                ]]></Source>
+              </QueryScript>
+            </DataSource>
+            <Columns>
+              <ReportColumnConfig field="UPI" header="UPI" property="identity.name" sortable="true" width="50"/>
+              <ReportColumnConfig field="firstname" header="First Name" property="identity.firstname" sortable="true" width="110"/>
+              <ReportColumnConfig field="lastname" header="Last Name" property="identity.lastname" sortable="true" width="110"/>
+              <ReportColumnConfig field="identityDisplayName" header="Display Name" property="identity.displayName" sortable="true" width="110"/>
+              <ReportColumnConfig field="Unit" header="Unit" property="identity.extended7" sortable="true" width="110"/>
+              <ReportColumnConfig field="Country" header="Country" property="identity.extended16" sortable="true" width="110"/>
+              <ReportColumnConfig field="VPU" header="VPU" property="identity.extended11" sortable="true" width="110"/>
+              <ReportColumnConfig field="appointmentType" header="Appointment Type" property="identity.extended6" sortable="true" width="110"/>
+              <ReportColumnConfig field="Title" header="Job Title" property="identity.extended5" sortable="true" width="110"/>
+              <ReportColumnConfig field="application" header="label_application" property="application.name" sortable="true" width="110"/>
+              <ReportColumnConfig field="entitlementStartDate" header="Entitlement Start Date" property="identity.name" scriptArguments="identity,application,nativeIdentity" sortable="true" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+ 
+Application application = scriptArgs.get("application");
+Identity identity = scriptArgs.get("identity");
+String nativeIdentity = scriptArgs.get("nativeIdentity");
+
+if(application != null @and identity != null @and nativeIdentity != null){
+  IdentityService service = new IdentityService(context);
+  Link link = service.getLink(identity, application, null, nativeIdentity);
+  log.error("link :"+link);
+  if(null != link){
+    List list = link.getAttribute("Role Details");
+    if(null != list @and list.size() > 0){
+      for(String str : list){
+        if(str.startsWith(value)){
+          String details = str;
+          return details;
+        }
+      }
+    }
+  }
+  }
+ 
+ 
+String[] strArray = details.split("#");
+log.error("
+strArray :"+Arrays.asList(strArray));
+String startDate = strArray[1];
+log.error("startDate :"+startDate);
+String endDate = strArray[2];
+                 log.error("endDate :"+endDate);
+ ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="entitlementStartDate" header="Entitlement Start Date" property="endDate" scriptArguments="type" sortable="true" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+ if(type != null @and type.equalsIgnoreCase("Entitlement")){
+ return value;
+ }
+ ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="entitlementEndDate" header="Entitlement End Date" property="endDate" sortable="true" width="110"/>
+              <ReportColumnConfig field="entitlement" header="entitlement" property="value" sortable="true" width="110"/>
+              <ReportColumnConfig field="entitlementAttributeName" header="EntitlementAttributeName " property=" name " sortable="true" width="110"/>
+              <ReportColumnConfig field="nativeIdentity" header="Account Name" property="nativeIdentity" sortable="true" width="110"/>
+              <ReportColumnConfig field="functional roles" header="Functional Role" property="attributes.sourceDetectedRoles" sortable="true" width="110"/>
+              <ReportColumnConfig field="Business Role" header="Business Role" property="attributes.sourceAssignableRoles" sortable="true" width="110"/>
+              <ReportColumnConfig field="Business Role Description" header="Business Role Description" property="attributes.sourceAssignableRoles" sortable="true" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.Identity;
+                    import sailpoint.object.Bundle;
+                    import java.util.Map;
+                    Map bundledesc = new HashMap();
+                    if(null != value){
+                    Bundle bundleList = context.getObject(Bundle.class, value);
+                    if(bundleList !=null){
+
+                    bundledesc= bundleList.getDescriptions();
+                    if(bundledesc != null)
+                    {
+
+                    return bundledesc.get("en_US");
+                    }
+                    }
+                    }
+
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="Location" header="Location" property="identity.id" sortable="true" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.Identity;
+
+                    String location = null;
+                    if(null != value){
+                    Identity identity = context.getObject(Identity.class, value);
+                    if(identity !=null){
+                    location = identity.getAttribute("location");
+                    }
+                    }
+                    return location;
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="OUI code" header="OUI code" property="identity.id" sortable="true" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.Identity;
+
+                    String wboui = null;
+                    if(null != value){
+                    Identity identity = context.getObject(Identity.class, value);
+                    if(identity !=null){
+                    wboui = identity.getAttribute("wboui");
+                    }
+                    }
+                    return wboui;
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="Organization" header="Organization" property="identity.extended1" valueClass="java.lang.String" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.Identity;
+                    import org.apache.commons.lang3.StringUtils;
+                    import sailpoint.api.SailPointContext;
+                    import sailpoint.object.IdentityRequest;
+                    String company;
+                    if(null != value)
+                    {
+                    String org = value;
+                    if(StringUtils.isNotBlank(org) @and org.equals("0")){
+                    company = "IFC";
+                    }else if(StringUtils.isNotBlank(org) @and org.equals("1")){
+                    company = "IBRD";
+                    }
+                    else if(StringUtils.isNotBlank(org) @and org.equals("2")){
+                    company = "MIGA";
+                    }
+                    else if(StringUtils.isNotBlank(org) @and org.equals("5")){
+                    company = "GEF";
+
+                    }    
+                    }
+                    return company;
+
+
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="Business_Role_Start" header="Business Role Start " property="identity.id" scriptArguments="attributes.sourceAssignableRoles" sortable="true" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+      import java.util.Date;
+                    import java.util.List;
+                    import org.apache.commons.logging.Log;
+                    import sailpoint.object.Bundle;
+                    import sailpoint.object.Filter;
+                    import sailpoint.object.QueryOptions;
+                     import sailpoint.object.IdentityEntitlement;
+                    import sailpoint.object.IdentityRequestItem;
+                    import sailpoint.tools.Util;
+                    import sailpoint.object.RoleAssignment;
+                    import java.text.SimpleDateFormat;
+                    import sailpoint.tools.GeneralException;
+                   
+                    Date date = null;
+                    String ststr = null;
+                    try {
+                    if(null != value){
+                    String idenId = value;
+                   
+                   
+             List filters = new ArrayList();
+filters.add(Filter.eq("value", scriptArgs.get("attributes.sourceAssignableRoles")));
+filters.add(Filter.eq("name", "assignedRoles"));
+filters.add(Filter.eq("identity.id", idenId));
+
+QueryOptions qo = new QueryOptions();
+qo.setFilters(filters);
+Iterator it = context.search(IdentityEntitlement.class,qo);
+if(it.hasNext()){
+
+                    IdentityRequestItem reqItem = it.next().getRequestItem();
+if(reqItem != null){
+                    if(reqItem.getStartDate() != null){
+      date = reqItem.getStartDate();
+                    SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy h:mm a");
+                    log.debug("+++sdf++"+sdf);
+                    ststr = sdf.format(date);
+                    log.debug("+++ststr++"+ststr);
+                    log.debug("==Post formate =endDate==="+ststr);
+                    }
+                    }
+                    }
+                   
+                   
+                     return ststr;
+                    }
+       }
+                     catch (GeneralException e) {
+
+                    log.debug("GeneralException : " + e.getMessage());
+
+                    }
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="Business_Role_End" header="Business Role End" property="identity" scriptArguments="attributes.sourceAssignableRoles" sortable="true" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+
+                    import java.util.Date;
+                    import java.util.List;
+                    import java.text.SimpleDateFormat;
+                    import org.apache.commons.logging.Log;
+                    import sailpoint.object.Bundle;
+                    import sailpoint.object.Identity;
+                    import sailpoint.tools.Util;
+                    import sailpoint.object.RoleAssignment;
+                    import sailpoint.tools.GeneralException;
+                   
+                    Date endDate = null;
+                    String endstr = null;
+                    try {
+                    if(null != value){
+                    Identity identityObj = value;
+                    if(identityObj != null){
+                    if(identityObj.getPreferences() != null @and identityObj.getPreferences().size() > 0) {
+
+                    List<RoleAssignment> roleAssignments = (List) identityObj.getActiveRoleAssignments(scriptArgs.get("attributes.sourceAssignableRoles"));
+                    if(roleAssignments != null @and roleAssignments.size() > 0){
+                    for(RoleAssignment roleAssignment : roleAssignments) {
+                    if(roleAssignment.getEndDate() != null)
+                    {
+                    endDate = roleAssignment.getEndDate();
+                    log.debug("==before formate =endDate==="+endDate);
+                    SimpleDateFormat sdf=new SimpleDateFormat("MM/dd/yyyy h:mm a");
+                    log.debug("+++sdf++"+sdf);
+                    endstr = sdf.format(endDate);
+                    log.debug("+++endstr++"+endstr);
+                    log.debug("==Post formate =endDate==="+endstr);
+                    }  
+                    }
+                     return endstr;
+                    }
+                    }
+                    }
+                    }
+                    } catch (GeneralException e) {
+
+                    log.error("GeneralException : " + e.getMessage());
+
+                    }
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+            </Columns>
+          </LiveReport>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Description>Displays identity/account  associated with the Role and entitlement information.</Description>
+  <RequiredRights>
+    <Reference class="sailpoint.object.SPRight" name="FullAccessIdentityEntitlementReport"/>
+  </RequiredRights>
+  <Signature>
+    <Inputs>
+      <Argument name="identity" type="string">
+        <Description>Identities to include in the report</Description>
+        <Prompt>identities</Prompt>
+      </Argument>
+      <Argument name="entitlement" type="string">
+        <Description>Identities to include in the report</Description>
+        <Prompt>identities</Prompt>
+      </Argument>
+      <Argument name="Organization" type="string">
+        <Description>Identities to include in the report</Description>
+        <Prompt>identities</Prompt>
+      </Argument>
+      <Argument name="application" type="String">
+        <Description>Applications to include in the report</Description>
+        <Prompt>applications</Prompt>
+      </Argument>
+      <Argument name="Unit" type="String">
+        <Description>rept_input_biz_role_report_type</Description>
+      </Argument>
+    </Inputs>
+  </Signature>
+</TaskDefinition>

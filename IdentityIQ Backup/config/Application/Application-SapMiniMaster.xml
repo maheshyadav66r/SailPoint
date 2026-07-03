@@ -1,0 +1,287 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Application PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Application connector="sailpoint.connector.JDBCConnector" featuresString="DISCOVER_SCHEMA, PROVISIONING, SYNC_PROVISIONING, DIRECT_PERMISSIONS, SEARCH, ENABLE, UNLOCK" icon="databaseIcon" maintenanceExpiration="-1" name="SAP Mini Master" profileClass="" type="JDBC">
+  <Attributes>
+    <Map>
+      <entry key="SQL" value="select A.WorkdayId,A.Firstname,A.Lastname,A.Companycode,A.Costcenter,A.Employeetype,A.Startdate,A.Enddate,A.Employeestatus,A.Userid,A.Email,A.Workaddressline1,A.Workaddressline2,A.Workcity,A.Workstate,A.Workpostal,A.Workcountry,A.Role,A.costCenterEffectiveDate from SAPMiniMaster.SAPMiniMaster A;"/>
+      <entry key="acceleratorPackEnabled" value="TRUE"/>
+      <entry key="accountCorrelationAttrExpression" value="workday_id#IIQCorrelated#WorkdayId#IIQCorrelated#EQUALS"/>
+      <entry key="accountCreateConditionalRule"/>
+      <entry key="accountCreateEntitlements"/>
+      <entry key="accountDisableAttrExpression"/>
+      <entry key="accountLockAttrExpression"/>
+      <entry key="additionalAppBusApprovalRule"/>
+      <entry key="additionalAppBusApprovers"/>
+      <entry key="afterProvisioningRule" value="Rule-Audit-Framework"/>
+      <entry key="aggregationMode">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="apAdditionalApplicationAfterProvisioningRule"/>
+      <entry key="apAdditionalApplicationCorrelationRule"/>
+      <entry key="apAdditionalApplicationCreationRule"/>
+      <entry key="apAdditionalApplicationCustomizationRule"/>
+      <entry key="apAdditionalApplicationMCustomizationRule"/>
+      <entry key="apAdditionalApplicationMGroupRefreshRule"/>
+      <entry key="apAdditionalApplicationPreIterateRule"/>
+      <entry key="apAfterMoverJoiner">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="apAfterRehireAttrSync">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="apAttributeSyncEligibleRule"/>
+      <entry key="apBeforeMoverAttrSync">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="apPopulationReverseLeaverOptions"/>
+      <entry key="appBusApprovalRule"/>
+      <entry key="appBusApprovers"/>
+      <entry key="authoritativeEmployee" value="false"/>
+      <entry key="authoritativeNonEmployee" value="false"/>
+      <entry key="authoritativeServiceAccount" value="false"/>
+      <entry key="beforeProvisioningRule"/>
+      <entry key="beforemoverPrimaryaccount">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="birthrightEntAttrExpression"/>
+      <entry key="busApp">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="clientID" value="09202d73-0231-498b-9528-542df4e425ab"/>
+      <entry key="clientSecret" value="1:ACP:7yirEzCdHc11Hl5eVM12Nj3e7hVAqXDGov5oj6haHeZgHHpJcq6I0r7LUNWHv407+R20nDAmSsf/&#10;7I/TpMaEBYVx2ntj2hb5YSNqG+yhbfs="/>
+      <entry key="commentsAttr"/>
+      <entry key="commentsValue"/>
+      <entry key="compositeDefinition"/>
+      <entry key="connMaxRetry" value="3"/>
+      <entry key="connRetryEnable">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="connWaitTimeForRetry" value="2"/>
+      <entry key="createQuery" value="INSERT INTO SAPMiniMaster(WorkdayId,Firstname,Lastname,Companycode,Costcenter,Employeetype,Startdate,Enddate,Employeestatus,Role,Userid,Email,Workaddressline1,Workaddressline2,Workcity,Workstate,Workpostal,Workcountry,costCenterEffectiveDate) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"/>
+      <entry key="deltaTable"/>
+      <entry key="displayFormRule"/>
+      <entry key="driverClass" value="com.mysql.cj.jdbc.Driver"/>
+      <entry key="enablepswexpNotification"/>
+      <entry key="evaluateCreateprovpolicy" value="False"/>
+      <entry key="getDeltaSQL"/>
+      <entry key="getObjectSQL" value="select A.WorkdayId,A.Firstname,A.Lastname,A.Companycode,A.Costcenter,A.Employeetype,A.Startdate,A.Enddate,A.Employeestatus,A.Userid,A.Email,A.Workaddressline1,A.Workaddressline2,A.Workcity,A.Workstate,A.Workpostal,A.Workcountry,A.Role,A.costCenterEffectiveDate from SAPMiniMaster.SAPMiniMaster A where A.WorkdayId = '$(identity)';"/>
+      <entry key="hardPolicyviolations"/>
+      <entry key="hostURL" value="https://api-int.test.toyota.com/tmna/test/People/OneToyotaERP/DEV/HRMiniMaster"/>
+      <entry key="isPermissionEnabled">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="jdbcExceptionBucketing">
+        <value>
+          <Boolean>true</Boolean>
+        </value>
+      </entry>
+      <entry key="jdbcProvisionRule" value="SAP-MiniMaster-Global-Provisioning-Rule"/>
+      <entry key="joinerEnabled"/>
+      <entry key="joinerPopulationRegex"/>
+      <entry key="joinerRoles"/>
+      <entry key="loaProcess" value="Do Nothing"/>
+      <entry key="mergeRows">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="moveAccountContainer"/>
+      <entry key="moverExtendedRule"/>
+      <entry key="moverProcess" value="Do Nothing"/>
+      <entry key="moverRevocation" value="Do Nothing"/>
+      <entry key="nativeChangeDetectionAttributeScope" value="entitlements"/>
+      <entry key="nativeChangeDetectionAttributes"/>
+      <entry key="nativeChangeDetectionEnabled">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="nativeChangeDetectionOperations"/>
+      <entry key="nativeChangeProcess" value="Do Nothing"/>
+      <entry key="partitionMode">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="partitionStatements"/>
+      <entry key="password" value="1:ACP:JbSmxzRulGwxvLEoElz2MkrgcpDKhwSSLx5WdPqW5a1uFrFGobFYO0TM09I/TMdG"/>
+      <entry key="primarySyncaccounts">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="primarypasswordSyncaccounts">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="privilegedAccountAttrExpression"/>
+      <entry key="privilegedEntAttrExpression"/>
+      <entry key="provisionRule" value="globalRule"/>
+      <entry key="rehireExtendedRule"/>
+      <entry key="rehirePrimaryaccount">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="rehireProcess" value="Do Nothing"/>
+      <entry key="removeEntitlementLeaverExceptionExpression"/>
+      <entry key="renameLDAPaccount">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="requestorFormRole"/>
+      <entry key="reverseTerminationExtendedRule"/>
+      <entry key="reverseleaverProcess" value="Do Nothing"/>
+      <entry key="rtwloaProcess" value="Do Nothing"/>
+      <entry key="rtwltdProcess" value="Do Nothing"/>
+      <entry key="scramblePasswordAttr"/>
+      <entry key="skipConversion" value="true"/>
+      <entry key="skipSupervisorApproval"/>
+      <entry key="softPolicyviolations"/>
+      <entry key="sysDescriptions">
+        <value>
+          <Map>
+            <entry key="en_US"/>
+          </Map>
+        </value>
+      </entry>
+      <entry key="templateApplication" value="JDBC Template"/>
+      <entry key="terminationExtendedRule"/>
+      <entry key="terminationProcess" value="Disable and Remove Entitlements"/>
+      <entry key="testConnSQL" value="select A.WorkdayId,A.Firstname,A.Lastname,A.Companycode,A.Costcenter,A.Employeetype,A.Startdate,A.Enddate,A.Employeestatus,A.Userid,A.Email,A.Workaddressline1,A.Workaddressline2,A.Workcity,A.Workstate,A.Workpostal,A.Workcountry,A.Role,A.costCenterEffectiveDate from SAPMiniMaster.SAPMiniMaster A;"/>
+      <entry key="updateQuery" value="UPDATE SAPMiniMaster SET WorkdayId=?,Firstname=?,Lastname=?,Companycode=?,Costcenter=?,Employeetype=?,Startdate=?,Enddate=?,Employeestatus=?,Role=?,Userid=?,Email=?,Workaddressline1=?,Workaddressline2=?,Workcity=?,Workstate=?,Workpostal=?,Workcountry=?,costCenterEffectiveDate=? WHERE WorkdayId=?"/>
+      <entry key="url" value="jdbc:mysql://elp-dev-usw2-rdscr.cluster-cnpiecfc6wbl.us-west-2.rds.amazonaws.com/SAPMiniMaster?useServerPrepStmts=true&amp;tinyInt1isBit=true&amp;useUnicode=true&amp;characterEncoding=utf8&amp;useSSL=false"/>
+      <entry key="useExecuteQuery">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="useStoredProcedureDelta">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="useStoredProcedureDirectPermission">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="useStoredProcedureGetObject">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="useStoredProcedurePartition">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="useStoredProcedureSqlStmt">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="useStoredProcedureTestConn">
+        <value>
+          <Boolean/>
+        </value>
+      </entry>
+      <entry key="user" value="SAPMiniMaster_sa"/>
+      <entry key="xDays"/>
+      <entry key="xDeleteDays"/>
+    </Map>
+  </Attributes>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+  <ProvisioningForms>
+    <Form name="Create Account" objectType="account" type="Create">
+      <Attributes>
+        <Map>
+          <entry key="pageTitle" value="Create Account"/>
+        </Map>
+      </Attributes>
+      <Section name="User">
+        <Field displayName="Workday Id" name="WorkdayId" type="string"/>
+        <Field displayName="First Name" name="Firstname" type="string"/>
+        <Field displayName="Last Name" name="Lastname" type="string"/>
+        <Field displayName="Company Code" name="Companycode" type="string"/>
+        <Field displayName="Cost Center" name="Costcenter" type="string"/>
+        <Field displayName="Employee Type" name="Employeetype" type="string"/>
+        <Field displayName="End Date" name="Enddate" type="string"/>
+        <Field displayName="Status" name="Employeestatus" type="string"/>
+        <Field displayName="User Id" name="Userid" type="string"/>
+        <Field displayName="Email" name="Email" type="string"/>
+        <Field displayName="Work Address2" name="Workaddressline2" type="string"/>
+        <Field displayName="City" name="Workcity" type="string"/>
+        <Field displayName="State" name="Workstate" type="string"/>
+        <Field displayName="Postal Code" name="Workpostal" type="string"/>
+        <Field displayName="Country" name="country" type="string"/>
+        <Field displayName="Start date" name="Startdate" type="string"/>
+        <Field displayName="Cost Center Effective Date" name="costCenterEffectiveDate" type="string"/>
+      </Section>
+    </Form>
+    <Form name="Update Account" objectType="account" type="Update">
+      <Attributes>
+        <Map>
+          <entry key="pageTitle" value="Update Account"/>
+        </Map>
+      </Attributes>
+      <Section name="Update Account">
+        <Field displayName="Email" name="Email" type="string"/>
+      </Section>
+    </Form>
+    <Form name="Disable Account" objectType="account" type="Disable">
+      <Attributes>
+        <Map>
+          <entry key="pageTitle" value="Disable Account"/>
+        </Map>
+      </Attributes>
+      <Section name="Disable">
+        <Field displayName="Employeestatus" name="Employeestatus" type="string"/>
+      </Section>
+    </Form>
+  </ProvisioningForms>
+  <Schemas>
+    <Schema displayAttribute="Firstname" identityAttribute="Userid" instanceAttribute="" nativeObjectType="account" objectType="account" permissionsRemediationModificationType="None">
+      <AttributeDefinition name="WorkdayId" type="string"/>
+      <AttributeDefinition name="Firstname" type="string"/>
+      <AttributeDefinition name="Lastname" type="string"/>
+      <AttributeDefinition name="Companycode" type="string"/>
+      <AttributeDefinition name="Costcenter" type="string"/>
+      <AttributeDefinition name="Employeetype" type="string"/>
+      <AttributeDefinition name="Startdate" type="string"/>
+      <AttributeDefinition name="Enddate" type="string"/>
+      <AttributeDefinition name="Employeestatus" type="string"/>
+      <AttributeDefinition name="Userid" type="string"/>
+      <AttributeDefinition name="Email" type="string"/>
+      <AttributeDefinition name="Workaddressline1" type="string"/>
+      <AttributeDefinition name="Workaddressline2" type="string"/>
+      <AttributeDefinition name="Workcity" type="string"/>
+      <AttributeDefinition name="Workstate" type="string"/>
+      <AttributeDefinition name="Workpostal" type="string"/>
+      <AttributeDefinition name="Workcountry" type="string"/>
+      <AttributeDefinition name="costCenterEffectiveDate" type="string"/>
+      <AttributeDefinition entitlement="true" managed="true" name="Role" type="string"/>
+    </Schema>
+  </Schemas>
+  <ApplicationScorecard/>
+</Application>

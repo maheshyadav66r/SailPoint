@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskDefinition PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskDefinition executor="sailpoint.reporting.LiveReportExecutor" name="clone2-Access Request Status Report" progressMode="Percentage" resultAction="Delete" subType="Lifecycle Manager Reports" template="true" type="LiveReport">
+  <Attributes>
+    <Map>
+      <entry key="auditEventTypes" value="AccountsRequest"/>
+      <entry key="report">
+        <value>
+          <LiveReport title="Account Request Status Report Test">
+            <DataSource objectType="sailpoint.object.WorkItemArchive" type="Filter">
+              <QueryParameters>
+                <Parameter argument="applications">
+                  <QueryScript>
+                    <Source><![CDATA[
+                      import sailpoint.object.IdentityRequest;
+                      import sailpoint.api.IdIterator;
+                      import sailpoint.object.Application;
+                      import sailpoint.object.IdentityRequest.CompletionStatus;
+                      import sailpoint.object.WorkItem.State;
+                      import sailpoint.object.ApprovalItem.ProvisioningState;
+                      import sailpoint.object.*;
+
+
+                      log.error("field value : "+value);
+                      List list = new ArrayList();
+
+                      Application application = context.getObjectById(Application.class,value);
+
+
+                      String application_name = application.getName();
+                      Filter filter = Filter.eq("executionStatus","Executing");
+                      QueryOptions qo = new QueryOptions();
+                      qo.add(filter);
+                      //get particular application filtered data
+                      Iterator iterator = context.search(IdentityRequest.class,qo,"id");
+                      IdIterator idIterator = new IdIterator(context, iterator);
+                      if(idIterator != null){
+
+                      while(idIterator.hasNext()) {
+
+                      Object unKnownID = idIterator.next();
+                      String id = (String) unKnownID;
+                      IdentityRequest identityRequest=context.getObjectById(IdentityRequest.class,id);
+                      String iden_req_name  = identityRequest.getName();
+
+                      Filter filter =  Filter.eq("identityRequestId",iden_req_name);
+                      QueryOptions qo = new QueryOptions();
+                      qo.add(filter);
+                      log.error("executed");
+                      Iterator iteratorQuery = context.search("sql:select id from identityiq8_3.spt_work_item_archive where EXTRACTVALUE(attributes, '//ApprovalItem/@application') ='"+application_name+"'  and EXTRACTVALUE(attributes, '//ApprovalItem/@state') = 'Finished'",null,null);
+                      if(iteratorQuery != null){
+
+                      while(iteratorQuery.hasNext()) {
+                      String row = iteratorQuery.next();
+                      log.error("id-----"+row);
+                      list.add(Filter.eq("id",row));
+                      //Object Work_item_archive = iteratorQuery.next();
+                      //log.error("WorkItemArchive object ----"+row[0]);
+                      }
+                      }
+                      }
+                      }
+
+                      if(list.size() > 0){
+                      log.error("added into the list");
+                      Filter filter = Filter.or(list);
+                      queryOptions.addFilter(filter);
+                      return queryOptions;
+                      }
+                      else{
+                      log.error("no values in list");
+                      Filter filter = Filter.eq("name","abcdefghij");
+                      queryOptions.addFilter(filter);
+                      return queryOptions;
+                      }
+
+                    ]]></Source>
+                  </QueryScript>
+                </Parameter>
+              </QueryParameters>
+            </DataSource>
+            <Columns>
+              <ReportColumnConfig field="WorkItemArchive ID" header="WorkItemArchive ID" property="id" sortable="true" width="110"/>
+              <ReportColumnConfig field="identityRequestId" header="Identity Request ID" property="identityRequestId" sortable="true" width="110"/>
+              <ReportColumnConfig field="Owner Name" header="Owner Name" property="ownerName" sortable="true" width="110"/>
+              <ReportColumnConfig field="state" header="state" property="state" sortable="true" width="1110"/>
+              <ReportColumnConfig field="Application" header="Application Name" property="attributes" sortable="true" width="1110"/>
+              <ReportColumnConfig field="Approval Item State" header="Approval Item State" property="attributes" sortable="true" width="1110"/>
+            </Columns>
+          </LiveReport>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Description>Displays information about access requests from LCM in detailed format.</Description>
+  <RequiredRights>
+    <Reference class="sailpoint.object.SPRight" name="FullAccessEntitlementRequestStatusReport"/>
+  </RequiredRights>
+  <Signature>
+    <Inputs>
+      <Argument name="applications" type="Application">
+        <Description>rept_input_lcm_request_status_report_apps</Description>
+      </Argument>
+    </Inputs>
+  </Signature>
+</TaskDefinition>

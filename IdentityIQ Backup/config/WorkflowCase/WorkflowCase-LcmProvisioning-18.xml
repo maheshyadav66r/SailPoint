@@ -1,0 +1,1180 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE WorkflowCase PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<WorkflowCase launcher="Scheduler" name="LCM Provisioning - 18" type="LCM">
+  <Workflow configForm="Provisioning Workflow Config Form" currentStep="0cbbb7d056d24c98b4a59cec31e7041a" handler="sailpoint.api.StandardWorkflowHandler" libraries="Identity,Role,PolicyViolation,LCM,BatchRequest" name="LCM Provisioning" taskType="LCM" type="LCMProvisioning">
+    <Variable input="true" name="noCreateTemplates"/>
+    <Variable input="true" name="identityName"/>
+    <Variable initializer="false" input="true" name="endOnManualWorkItems"/>
+    <Variable initializer="false" input="true" name="endOnProvisioningForms"/>
+    <Variable initializer="script:(identityDisplayName != void) ? identityDisplayName : resolveDisplayName(identityName)" input="true" name="identityDisplayName"/>
+    <Variable input="true" name="plan"/>
+    <Variable input="true" name="flow"/>
+    <Variable editable="true" initializer="false" name="optimisticProvisioning"/>
+    <Variable editable="true" initializer="true" name="foregroundProvisioning"/>
+    <Variable input="true" name="batchRequestItemId"/>
+    <Variable editable="true" name="doRefresh"/>
+    <Variable initializer="user,requester" input="true" name="notificationScheme"/>
+    <Variable initializer="LCM User Notification" input="true" name="userEmailTemplate"/>
+    <Variable initializer="LCM Requester Notification" input="true" name="requesterEmailTemplate"/>
+    <Variable initializer="LCM Manager Notification" input="true" name="managerEmailTemplate"/>
+    <Variable input="true" name="securityOfficerEmailTemplate"/>
+    <Variable initializer="serial" input="true" name="approvalMode"/>
+    <Variable initializer="manager,owner,securityOfficer" input="true" name="approvalScheme"/>
+    <Variable initializer="LCM Identity Update Approval" input="true" name="approvalEmailTemplate"/>
+    <Variable initializer="Normal" input="true" name="workItemPriority"/>
+    <Variable initializer="Aaron Allen" input="true" name="securityOfficerName"/>
+    <Variable initializer="spadmin" input="true" name="fallbackApprover"/>
+    <Variable initializer="interactive" input="true" name="policyScheme"/>
+    <Variable initializer="false" input="true" name="enableRetryRequest"/>
+    <Variable input="true" name="policiesToCheck"/>
+    <Variable initializer="LCM" input="true" name="source"/>
+    <Variable initializer="true" name="trace"/>
+    <Variable name="approvalSet"/>
+    <Variable initializer="true" name="allowRequestsWithViolations"/>
+    <Variable initializer="true" name="requireViolationReviewComments"/>
+    <Variable name="project"/>
+    <Variable name="policyViolations"/>
+    <Variable name="identityRequestId" output="true"/>
+    <Variable name="violationReviewDecision"/>
+    <Variable name="workItemComments"/>
+    <Variable input="true" name="ticketManagementApplication"/>
+    <Variable name="ticketId"/>
+    <Variable input="true" name="managerElectronicSignature"/>
+    <Variable input="true" name="ownerElectronicSignature"/>
+    <Variable input="true" name="securityOfficerElectronicSignature"/>
+    <Variable input="true" name="approvingIdentities"/>
+    <Variable input="true" name="identityElectronicSignature"/>
+    <Variable input="true" name="identityEmailTemplate"/>
+    <Variable initializer="true" input="true" name="filterRejects"/>
+    <Variable initializer="false" input="true" name="setPreviousApprovalDecisions"/>
+    <Variable name="approvalSplitPoint"/>
+    <Variable name="splitPlans"/>
+    <Variable name="splitProjects"/>
+    <Variable name="splitApprovalSet"/>
+    <Variable name="splitWorkItemComments"/>
+    <Variable initializer="false" input="true" name="saveUnmanagedPlan_WithProjectArgument"/>
+    <Variable initializer="false" input="true" name="requireCommentsForApproval"/>
+    <Variable initializer="false" input="true" name="requireCommentsForDenial"/>
+    <RuleLibraries>
+      <Reference class="sailpoint.object.Rule" name="LCM Workflow Library"/>
+    </RuleLibraries>
+    <Step complete="true" icon="Start" name="Start" posX="25" posY="10">
+      <Script>
+        <Source><![CDATA[
+        log.error(" Provisioning plan in LCN Provisioning start Step   :::::  "+plan.toXml());
+      ]]></Source>
+      </Script>
+      <Transition to="Initialize"/>
+    </Step>
+    <Step complete="true" icon="Task" name="Initialize" posX="134" posY="10">
+      <Arg name="noCreateTemplates" value="ref:noCreateTemplates"/>
+      <Arg name="flow" value="ref:flow"/>
+      <Arg name="formTemplate" value="Identity Update"/>
+      <Arg name="identityName" value="ref:identityName"/>
+      <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+      <Arg name="launcher" value="ref:launcher"/>
+      <Arg name="optimisticProvisioning" value="ref:optimisticProvisioning"/>
+      <Arg name="plan" value="ref:plan"/>
+      <Arg name="workItemPriority" value="ref:workItemPriority"/>
+      <Arg name="policiesToCheck" value="ref:policiesToCheck"/>
+      <Arg name="policyScheme" value="ref:policyScheme"/>
+      <Arg name="source" value="ref:source"/>
+      <Arg name="trace" value="ref:trace"/>
+      <Arg name="requireViolationReviewComments" value="ref:requireViolationReviewComments"/>
+      <Arg name="allowRequestsWithViolations" value="ref:allowRequestsWithViolations"/>
+      <Arg name="enableRetryRequest" value="ref:enableRetryRequest"/>
+      <Arg name="batchRequestItemId" value="ref:batchRequestItemId"/>
+      <Arg name="endOnProvisioningForms" value="ref:endOnProvisioningForms"/>
+      <Arg name="endOnManualWorkItems" value="ref:endOnManualWorkItems"/>
+      <Return name="project" to="project"/>
+      <Return name="approvalSet" to="approvalSet"/>
+      <Return name="policyViolations" to="policyViolations"/>
+      <Return name="identityRequestId" to="identityRequestId"/>
+      <Return name="violationReviewDecision" to="violationReviewDecision"/>
+      <Return merge="true" name="workItemComments" to="workItemComments"/>
+      <Script>
+        <Source><![CDATA[
+        log.error(" Provisioning project in LCM Provisioning Initialize Step   :::::  "+project.toXml());
+      ]]></Source>
+      </Script>
+      <WorkflowRef>
+        <Reference class="sailpoint.object.Workflow" name="Identity Request Initialize"/>
+      </WorkflowRef>
+      <Transition to="Exit On Manual Work Items" when="script:(isTrue(endOnManualWorkItems) &amp;&amp; (project.getUnmanagedPlan() != null))"/>
+      <Transition to="Exit On Provisioning Form" when="script:(isTrue(endOnProvisioningForms) &amp;&amp; (project.hasQuestions()))"/>
+      <Transition to="Exit On Policy Violation" when="script:(&quot;cancel&quot;.equals(violationReviewDecision) || ((size(policyViolations) &gt; 0 ) &amp;&amp; (policyScheme.equals(&quot;fail&quot;))))"/>
+      <Transition to="Create Ticket"/>
+    </Step>
+    <Step complete="true" condition="script:(ticketManagementApplication != null)" icon="Task" name="Create Ticket" posX="381" posY="6">
+      <Arg name="action" value="open"/>
+      <Arg name="source" value="ref:source"/>
+      <Arg name="workItemPriority" value="ref:workItemPriority"/>
+      <Arg name="project" value="ref:project"/>
+      <Arg name="ticketManagementApplication" value="ref:ticketManagementApplication"/>
+      <Arg name="identityRequestId" value="ref:identityRequestId"/>
+      <Arg name="ticketDataGenerationRule" value=""/>
+      <Arg name="trace" value="ref:trace"/>
+      <Arg name="ticketId" value="ref:ticketId"/>
+      <Return name="ticketId" to="externalTicketId"/>
+      <WorkflowRef>
+        <Reference class="sailpoint.object.Workflow" name="Manage Ticket"/>
+      </WorkflowRef>
+      <Transition to="Pre Split Approve" when="script:(!isNull(approvalSplitPoint) &amp;&amp; csvToList(approvalScheme).contains(approvalSplitPoint))"/>
+      <Transition to="Approve and Provision"/>
+    </Step>
+    <Step condition="script:((flow == null) ||  (!&quot;UnlockAccount&quot;.equals(flow)))" icon="Task" name="Pre Split Approve" posX="518" posY="63">
+      <Arg name="approvalMode" value="ref:approvalMode"/>
+      <Arg name="approvalScheme" value="ref:approvalScheme">
+        <Script>
+          <Source><![CDATA[
+          import java.util.List;
+          import java.util.ArrayList;
+          import java.util.Iterator;
+          import sailpoint.tools.Util;
+
+          List schemes = Util.csvToList(approvalScheme);
+          List preSchemes = new ArrayList<String>();
+          for (String s : Util.safeIterable(schemes)) {
+          if (s.equals(approvalSplitPoint)) {
+          break;
+          } else {
+          preSchemes.add(s);
+          }
+          }
+          return Util.listToCsv(preSchemes);
+        ]]></Source>
+        </Script>
+      </Arg>
+      <Arg name="requireCommentsForApproval" value="ref:requireCommentsForApproval"/>
+      <Arg name="requireCommentsForDenial" value="ref:requireCommentsForDenial"/>
+      <Arg name="approvalSet" value="ref:approvalSet"/>
+      <Arg name="approvalAssignmentRule"/>
+      <Arg name="approvingIdentities" value="ref:approvingIdentities"/>
+      <Arg name="approvalSplitPoint" value="ref:approvalSplitPoint"/>
+      <Arg name="fallbackApprover" value="ref:fallbackApprover"/>
+      <Arg name="filterRejects" value="ref:filterRejects"/>
+      <Arg name="flow" value="ref:flow"/>
+      <Arg name="identityName" value="ref:identityName"/>
+      <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+      <Arg name="identityElectronicSignature" value="ref:identityElectronicSignature"/>
+      <Arg name="identityEmailTemplate" value="ref:identityEmailTemplate"/>
+      <Arg name="identityRequestId" value="ref:identityRequestId"/>
+      <Arg name="launcher" value="ref:launcher"/>
+      <Arg name="managerEmailTemplate" value="ref:approvalEmailTemplate"/>
+      <Arg name="managerElectronicSignature" value="ref:managerElectronicSignature"/>
+      <Arg name="ownerEmailTemplate" value="ref:approvalEmailTemplate"/>
+      <Arg name="ownerElectronicSignature" value="ref:ownerElectronicSignature"/>
+      <Arg name="project" value="ref:project"/>
+      <Arg name="plan" value="ref:plan"/>
+      <Arg name="policyViolations" value="ref:policyViolations"/>
+      <Arg name="workItemPriority" value="ref:workItemPriority"/>
+      <Arg name="securityOfficerName" value="ref:securityOfficerName"/>
+      <Arg name="securityOfficerEmailTemplate" value="ref:approvalEmailTemplate"/>
+      <Arg name="securityOfficerElectronicSignature" value="ref:securityOfficerElectronicSignature"/>
+      <Arg name="setPreviousApprovalDecisions" value="ref:setPreviousApprovalDecisions"/>
+      <Arg name="trace" value="ref:trace"/>
+      <Arg name="workItemReminderTemplate"/>
+      <Arg name="workItemHoursBetweenReminders"/>
+      <Arg name="workItemMaxReminders"/>
+      <Arg name="workItemEscalationTemplate"/>
+      <Arg name="workItemHoursTillEscalation"/>
+      <Arg name="workItemEscalationRule"/>
+      <Arg name="workItemComments"/>
+      <Return name="approvalSet"/>
+      <Return name="workItemComments"/>
+      <Return name="project"/>
+      <WorkflowRef>
+        <Reference class="sailpoint.object.Workflow" name="Provisioning Approval Subprocess"/>
+      </WorkflowRef>
+      <Transition to="Split Plan"/>
+    </Step>
+    <Step action="call:splitProvisioningPlan" icon="Task" name="Split Plan" posX="618" posY="63" resultVariable="splitPlans">
+      <Arg name="project" value="ref:project"/>
+      <Transition to="Approve and Provision Split"/>
+    </Step>
+    <Step icon="Task" name="Approve and Provision Split" posX="783" posY="63">
+      <Arg name="approvalMode" value="ref:approvalMode"/>
+      <Arg name="approvalScheme" value="ref:approvalScheme">
+        <Script>
+          <Source><![CDATA[
+          import java.util.List;
+          import java.util.Iterator;
+          import sailpoint.tools.Util;
+          List schemes = Util.csvToList(approvalScheme);
+          Iterator it = schemes.iterator();
+          while (it.hasNext()) {
+          String s = it.next();
+          if (!s.equals(approvalSplitPoint)) {
+          it.remove();
+          } else {
+          break;
+          }
+          }
+          return Util.listToCsv(schemes);
+        ]]></Source>
+        </Script>
+      </Arg>
+      <Arg name="requireCommentsForApproval" value="ref:requireCommentsForApproval"/>
+      <Arg name="requireCommentsForDenial" value="ref:requireCommentsForDenial"/>
+      <Arg name="approvalEmailTemplate" value="ref:approvalEmailTemplate"/>
+      <Arg name="approvalSet" value="ref:approvalSet"/>
+      <Arg name="approvalSplitPoint" value="ref:approvalSplitPoint"/>
+      <Arg name="approvalAssignmentRule"/>
+      <Arg name="approvingIdentities" value="ref:approvingIdentities"/>
+      <Arg name="batchRequestItemId" value="ref:batchRequestItemId"/>
+      <Arg name="clearApprovalDecisions"/>
+      <Arg name="enableRetryRequest" value="ref:enableRetryRequest"/>
+      <Arg name="endOnManualWorkItems" value="ref:endOnManualWorkItems"/>
+      <Arg name="endOnProvisioningForms" value="ref:endOnProvisioningForms"/>
+      <Arg name="fallbackApprover" value="ref:fallbackApprover"/>
+      <Arg name="foregroundProvisioning" value="ref:foregroundProvisioning"/>
+      <Arg name="formTemplate" value="Identity Update"/>
+      <Arg name="filterRejects" value="ref:filterRejects"/>
+      <Arg name="flow" value="ref:flow"/>
+      <Arg name="identityName" value="ref:identityName"/>
+      <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+      <Arg name="identityElectronicSignature" value="ref:identityElectronicSignature"/>
+      <Arg name="identityEmailTemplate" value="ref:identityEmailTemplate"/>
+      <Arg name="identityName" value="ref:identityName"/>
+      <Arg name="identityRequestId" value="ref:identityRequestId"/>
+      <Arg name="launcher" value="ref:launcher"/>
+      <Arg name="managerEmailTemplate" value="ref:approvalEmailTemplate"/>
+      <Arg name="managerElectronicSignature" value="ref:managerElectronicSignature"/>
+      <Arg name="manualActionsEmailTemplate" value="Pending Manual Changes"/>
+      <Arg name="optimisticProvisioning" value="ref:optimisticProvisioning"/>
+      <Arg name="ownerEmailTemplate" value="ref:approvalEmailTemplate"/>
+      <Arg name="ownerElectronicSignature" value="ref:ownerElectronicSignature"/>
+      <Arg name="project" value="ref:project"/>
+      <Arg name="plan" value="ref:plan"/>
+      <Arg name="policyScheme" value="ref:policyScheme"/>
+      <Arg name="policyViolations" value="ref:policyViolations"/>
+      <Arg name="requesterEmailTemplate" value="ref:requesterEmailTemplate"/>
+      <Arg name="workItemPriority" value="ref:workItemPriority"/>
+      <Arg name="securityOfficerName" value="ref:securityOfficerName"/>
+      <Arg name="securityOfficerEmailTemplate" value="ref:approvalEmailTemplate"/>
+      <Arg name="securityOfficerElectronicSignature" value="ref:securityOfficerElectronicSignature"/>
+      <Arg name="setPreviousApprovalDecisions" value="ref:setPreviousApprovalDecisions"/>
+      <Arg name="splitProvisioning" value="true"/>
+      <Arg name="source" value="ref:source"/>
+      <Arg name="ticketManagementApplication" value="ref:ticketManagementApplication"/>
+      <Arg name="trace" value="ref:trace"/>
+      <Arg name="userEmailTemplate" value="ref:userEmailTemplate"/>
+      <Arg name="workItemReminderTemplate" value="ref:workItemReminderTemplate"/>
+      <Arg name="workItemHoursBetweenReminders" value="ref:workItemHoursBetweenReminders"/>
+      <Arg name="workItemMaxReminders" value="ref:workItemMaxReminders"/>
+      <Arg name="workItemEscalationTemplate" value="ref:workItemEscalationTemplate"/>
+      <Arg name="workItemHoursTillEscalation" value="ref:workItemHoursTillEscalation"/>
+      <Arg name="workItemEscalationRule" value="ref:workItemEscalationRule"/>
+      <Arg name="workItemComments" value="ref:workItemComments"/>
+      <Arg name="saveUnmanagedPlan_WithProjectArgument" value="ref:saveUnmanagedPlan_WithProjectArgument"/>
+      <Replicator arg="plan" items="splitPlans"/>
+      <Return name="project" to="splitProjects"/>
+      <Return name="workItemComments" to="splitWorkItemComments"/>
+      <Return name="approvalSet" to="splitApprovalSet"/>
+      <WorkflowRef>
+        <Reference class="sailpoint.object.Workflow" name="Approve and Provision Subprocess"/>
+      </WorkflowRef>
+      <Transition to="Assimilate Splits"/>
+    </Step>
+    <Step action="call:joinLCMProvWorkflowSplits" icon="Task" name="Assimilate Splits" posX="914" posY="63">
+      <Arg name="splitProjects" value="ref:splitProjects"/>
+      <Arg name="splitWorkItemComments" value="ref:splitWorkItemComments"/>
+      <Arg name="splitApprovalSet" value="ref:splitApprovalSet"/>
+      <Transition to="Refresh Identity"/>
+    </Step>
+    <Step icon="Task" name="Approve and Provision" posX="699" posY="7">
+      <Arg name="approvalEmailTemplate" value="ref:approvalEmailTemplate"/>
+      <Arg name="approvalMode" value="ref:approvalMode"/>
+      <Arg name="approvalScheme" value="ref:approvalScheme"/>
+      <Arg name="requireCommentsForApproval" value="ref:requireCommentsForApproval"/>
+      <Arg name="requireCommentsForDenial" value="ref:requireCommentsForDenial"/>
+      <Arg name="approvalSet" value="ref:approvalSet"/>
+      <Arg name="approvalSplitPoint" value="ref:approvalSplitPoint"/>
+      <Arg name="approvalAssignmentRule" value="ref:approvalAssignmentRule"/>
+      <Arg name="approvingIdentities" value="ref:approvingIdentities"/>
+      <Arg name="batchRequestItemId" value="ref:batchRequestItemId"/>
+      <Arg name="clearApprovalDecisions" value="ref:clearApprovalDecisions"/>
+      <Arg name="endOnManualWorkItems" value="ref:endOnManualWorkItems"/>
+      <Arg name="endOnProvisioningForms" value="ref:endOnProvisioningForms"/>
+      <Arg name="enableRetryRequest" value="ref:enableRetryRequest"/>
+      <Arg name="fallbackApprover" value="ref:fallbackApprover"/>
+      <Arg name="foregroundProvisioning" value="ref:foregroundProvisioning"/>
+      <Arg name="formTemplate" value="Identity Update"/>
+      <Arg name="filterRejects" value="ref:filterRejects"/>
+      <Arg name="flow" value="ref:flow"/>
+      <Arg name="identityName" value="ref:identityName"/>
+      <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+      <Arg name="identityElectronicSignature" value="ref:identityElectronicSignature"/>
+      <Arg name="identityEmailTemplate" value="ref:identityEmailTemplate"/>
+      <Arg name="identityName" value="ref:identityName"/>
+      <Arg name="identityRequestId" value="ref:identityRequestId"/>
+      <Arg name="launcher" value="ref:launcher"/>
+      <Arg name="managerEmailTemplate" value="ref:approvalEmailTemplate"/>
+      <Arg name="managerElectronicSignature" value="ref:managerElectronicSignature"/>
+      <Arg name="manualActionsEmailTemplate" value="Pending Manual Changes"/>
+      <Arg name="noTriggers" value="ref:noTriggers"/>
+      <Arg name="optimisticProvisioning" value="ref:optimisticProvisioning"/>
+      <Arg name="ownerEmailTemplate" value="ref:approvalEmailTemplate"/>
+      <Arg name="ownerElectronicSignature" value="ref:ownerElectronicSignature"/>
+      <Arg name="project" value="ref:project"/>
+      <Arg name="plan" value="ref:plan"/>
+      <Arg name="policyScheme" value="ref:policyScheme"/>
+      <Arg name="policyViolations" value="ref:policyViolations"/>
+      <Arg name="requesterEmailTemplate" value="ref:requesterEmailTemplate"/>
+      <Arg name="workItemPriority" value="ref:workItemPriority"/>
+      <Arg name="securityOfficerName" value="ref:securityOfficerName"/>
+      <Arg name="securityOfficerEmailTemplate" value="ref:approvalEmailTemplate"/>
+      <Arg name="securityOfficerElectronicSignature" value="ref:securityOfficerElectronicSignature"/>
+      <Arg name="setPreviousApprovalDecisions" value="ref:setPreviousApprovalDecisions"/>
+      <Arg name="source" value="ref:source"/>
+      <Arg name="splitProvisioning" value="false"/>
+      <Arg name="ticketManagementApplication" value="ref:ticketManagementApplication"/>
+      <Arg name="trace" value="ref:trace"/>
+      <Arg name="userEmailTemplate" value="ref:userEmailTemplate"/>
+      <Arg name="workItemReminderTemplate" value="ref:workItemReminderTemplate"/>
+      <Arg name="workItemHoursBetweenReminders" value="ref:workItemHoursBetweenReminders"/>
+      <Arg name="workItemMaxReminders" value="ref:workItemMaxReminders"/>
+      <Arg name="workItemEscalationTemplate" value="ref:workItemEscalationTemplate"/>
+      <Arg name="workItemHoursTillEscalation" value="ref:workItemHoursTillEscalation"/>
+      <Arg name="workItemEscalationRule" value="ref:workItemEscalationRule"/>
+      <Arg name="workItemComments" value="ref:workItemComments"/>
+      <Arg name="saveUnmanagedPlan_WithProjectArgument" value="ref:saveUnmanagedPlan_WithProjectArgument"/>
+      <Return name="project" to="project"/>
+      <Return name="approvalSet" to="approvalSet"/>
+      <Return name="workItemComments" to="workItemComments"/>
+      <WorkflowRef>
+        <Reference class="sailpoint.object.Workflow" name="Approve and Provision Subprocess"/>
+      </WorkflowRef>
+      <Transition to="Refresh Identity"/>
+      <WorkflowCase launcher="Scheduler" name="Approve and Provision Subprocess">
+        <Workflow currentStep="12bf65e9d5fb4782a5fdba78229d8991" explicitTransitions="true" name="Approve and Provision Subprocess" type="Subprocess">
+          <Variable input="true" name="identityName"/>
+          <Variable initializer="false" input="true" name="endOnManualWorkItems"/>
+          <Variable initializer="false" input="true" name="endOnProvisioningForms"/>
+          <Variable initializer="script:(identityDisplayName != void) ? identityDisplayName : resolveDisplayName(identityName)" input="true" name="identityDisplayName"/>
+          <Variable input="true" name="plan"/>
+          <Variable input="true" name="noTriggers"/>
+          <Variable input="true" name="flow"/>
+          <Variable editable="true" initializer="false" name="optimisticProvisioning"/>
+          <Variable editable="true" initializer="true" name="foregroundProvisioning"/>
+          <Variable input="true" name="batchRequestItemId"/>
+          <Variable initializer="LCM User Notification" input="true" name="userEmailTemplate"/>
+          <Variable initializer="LCM Requester Notification" input="true" name="requesterEmailTemplate"/>
+          <Variable initializer="LCM Manager Notification" input="true" name="managerEmailTemplate"/>
+          <Variable input="true" name="securityOfficerEmailTemplate"/>
+          <Variable initializer="parallel" input="true" name="approvalMode"/>
+          <Variable initializer="owner" input="true" name="approvalScheme"/>
+          <Variable initializer="LCM Identity Update Approval" input="true" name="approvalEmailTemplate"/>
+          <Variable initializer="Normal" input="true" name="workItemPriority"/>
+          <Variable input="true" name="securityOfficerName"/>
+          <Variable initializer="spadmin" input="true" name="fallbackApprover"/>
+          <Variable initializer="false" input="true" name="enableRetryRequest"/>
+          <Variable initializer="LCM" input="true" name="source"/>
+          <Variable initializer="false" name="trace"/>
+          <Variable name="approvalSet"/>
+          <Variable input="true" name="approvalAssignmentRule"/>
+          <Variable name="project"/>
+          <Variable name="policyViolations"/>
+          <Variable name="identityRequestId" output="true"/>
+          <Variable name="workItemComments"/>
+          <Variable input="true" name="ticketManagementApplication"/>
+          <Variable input="true" name="managerElectronicSignature"/>
+          <Variable input="true" name="ownerElectronicSignature"/>
+          <Variable input="true" name="securityOfficerElectronicSignature"/>
+          <Variable initializer="true" input="true" name="filterRejects"/>
+          <Variable initializer="false" input="true" name="setPreviousApprovalDecisions"/>
+          <Variable input="true" name="approvalSplitPoint"/>
+          <Variable input="true" name="clearApprovalDecisions"/>
+          <Variable input="true" name="approvingIdentities"/>
+          <Variable input="true" name="formTemplate"/>
+          <Variable input="true" name="manualActionsEmailTemplate"/>
+          <Variable initializer="LCM Identity Update Approval" input="true" name="ownerEmailTemplate"/>
+          <Variable initializer="false" input="true" name="splitProvisioning"/>
+          <Variable initializer="false" input="true" name="saveUnmanagedPlan_WithProjectArgument"/>
+          <Variable initializer="false" input="true" name="requireCommentsForApproval"/>
+          <Variable initializer="false" input="true" name="requireCommentsForDenial"/>
+          <RuleLibraries>
+            <Reference class="sailpoint.object.Rule" name="LCM Workflow Library"/>
+          </RuleLibraries>
+          <Step complete="true" icon="Start" name="Start" posX="20" posY="20">
+            <Transition to="Compile Project"/>
+          </Step>
+          <Step action="call:compileProvisioningProject" complete="true" condition="script:(!approvalScheme.equalsIgnoreCase(&quot;none&quot;) &amp;&amp; !isNull(approvalSplitPoint))" icon="Task" name="Compile Project" posX="120" posY="20" resultVariable="project">
+            <Arg name="identityName" value="ref:identityName"/>
+            <Arg name="plan" value="ref:plan"/>
+            <Arg name="requester" value="ref:launcher"/>
+            <Arg name="source" value="ref:source"/>
+            <Arg name="optimisticProvisioning" value="ref:optimisticProvisioning"/>
+            <Arg name="disableRetryRequest" value="!ref:enableRetryRequest"/>
+            <Arg name="noApplicationTemplates">
+              <Script>
+                <Source><![CDATA[
+                    boolean ignoreForms = false;
+                    if ("ForgotPassword".equals(flow) || "ExpirePassword".equals(flow)) {
+                    ignoreForms = true;
+                    }
+                    return ignoreForms;
+                ]]></Source>
+              </Script>
+            </Arg>
+            <Transition to="Build Approval Set"/>
+          </Step>
+          <Step action="call:buildSplitApprovalSet" complete="true" condition="script:(!approvalScheme.equalsIgnoreCase(&quot;none&quot;) &amp;&amp; !isNull(approvalSplitPoint))" icon="Task" name="Build Approval Set" posX="220" posY="20" resultVariable="approvalSet">
+            <Arg name="plan" value="ref:plan"/>
+            <Return name="approvalSet" to="approvalSet"/>
+            <Transition to="Approve"/>
+          </Step>
+          <Step condition="script:((flow == null) ||  (!&quot;UnlockAccount&quot;.equals(flow)))" configForm="Provisioning Approval Step Form" icon="Approval" name="Approve" posX="320" posY="20">
+            <Arg name="approvalMode" value="ref:approvalMode"/>
+            <Arg name="approvalScheme" value="ref:approvalScheme"/>
+            <Arg name="approvalSet" value="ref:approvalSet"/>
+            <Arg name="approvalSplitPoint" value="ref:approvalSplitPoint"/>
+            <Arg name="approvalAssignmentRule" value="ref:approvalAssignmentRule"/>
+            <Arg name="approvingIdentities" value="ref:approvingIdentities"/>
+            <Arg name="fallbackApprover" value="ref:fallbackApprover"/>
+            <Arg name="filterRejects" value="ref:filterRejects"/>
+            <Arg name="flow" value="ref:flow"/>
+            <Arg name="identityName" value="ref:identityName"/>
+            <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+            <Arg name="identityElectronicSignature" value="ref:identityElectronicSignature"/>
+            <Arg name="identityEmailTemplate" value="ref:identityEmailTemplate"/>
+            <Arg name="identityRequestId" value="ref:identityRequestId"/>
+            <Arg name="launcher" value="ref:launcher"/>
+            <Arg name="managerEmailTemplate" value="ref:approvalEmailTemplate"/>
+            <Arg name="managerElectronicSignature" value="ref:managerElectronicSignature"/>
+            <Arg name="ownerEmailTemplate" value="ref:approvalEmailTemplate"/>
+            <Arg name="ownerElectronicSignature" value="ref:ownerElectronicSignature"/>
+            <Arg name="project" value="ref:project"/>
+            <Arg name="plan" value="ref:plan"/>
+            <Arg name="policyViolations" value="ref:policyViolations"/>
+            <Arg name="workItemPriority" value="ref:workItemPriority"/>
+            <Arg name="securityOfficerName" value="ref:securityOfficerName"/>
+            <Arg name="securityOfficerEmailTemplate" value="ref:approvalEmailTemplate"/>
+            <Arg name="securityOfficerElectronicSignature" value="ref:securityOfficerElectronicSignature"/>
+            <Arg name="setPreviousApprovalDecisions" value="ref:setPreviousApprovalDecisions"/>
+            <Arg name="trace" value="ref:trace"/>
+            <Arg name="workItemReminderTemplate" value="ref:workItemReminderTemplate"/>
+            <Arg name="workItemHoursBetweenReminders" value="ref:workItemHoursBetweenReminders"/>
+            <Arg name="workItemMaxReminders" value="ref:workItemMaxReminders"/>
+            <Arg name="workItemEscalationTemplate" value="ref:workItemEscalationTemplate"/>
+            <Arg name="workItemHoursTillEscalation" value="ref:workItemHoursTillEscalation"/>
+            <Arg name="workItemEscalationRule" value="ref:workItemEscalationRule"/>
+            <Arg name="workItemComments" value="ref:workItemComments"/>
+            <Arg name="clearApprovalDecisions" value="script:(!isNull(approvalSplitPoint) &amp;&amp; csvToList(approvalScheme).contains(approvalSplitPoint))"/>
+            <Return name="approvalSet"/>
+            <Return name="workItemComments"/>
+            <Return name="project"/>
+            <WorkflowRef>
+              <Reference class="sailpoint.object.Workflow" name="Provisioning Approval Subprocess"/>
+            </WorkflowRef>
+            <Transition to="Update Ticket Post Approval"/>
+            <WorkflowCase launcher="Scheduler" name="Provisioning Approval Subprocess">
+              <Workflow currentStep="4f47a615c9234296965520793b7f89af" explicitTransitions="true" libraries="Identity" name="Provisioning Approval Subprocess" type="Subprocess">
+                <Variable initializer="serial" input="true" name="approvalMode"/>
+                <Variable input="true" name="approvalScheme"/>
+                <Variable input="true" name="approvingIdentities"/>
+                <Variable initializer="spadmin" input="true" name="fallbackApprover"/>
+                <Variable input="true" name="flow"/>
+                <Variable input="true" name="identityName"/>
+                <Variable input="true" name="identityDisplayName"/>
+                <Variable input="true" name="identityRequestId"/>
+                <Variable input="true" name="noTriggers"/>
+                <Variable input="true" name="policyViolations"/>
+                <Variable input="true" name="managerElectronicSignature"/>
+                <Variable input="true" name="ownerElectronicSignature"/>
+                <Variable input="true" name="securityOfficerElectronicSignature"/>
+                <Variable input="true" name="identityElectronicSignature"/>
+                <Variable initializer="LCM Identity Update Approval" input="true" name="managerEmailTemplate"/>
+                <Variable initializer="LCM Identity Update Approval" input="true" name="ownerEmailTemplate"/>
+                <Variable initializer="LCM Identity Update Approval" input="true" name="securityOfficerEmailTemplate"/>
+                <Variable initializer="LCM Identity Update Approval" input="true" name="identityEmailTemplate"/>
+                <Variable initializer="false" name="trace"/>
+                <Variable input="true" name="workItemDescription"/>
+                <Variable input="true" name="workItemEscalationTemplate"/>
+                <Variable input="true" name="workItemHoursBetweenReminders"/>
+                <Variable input="true" name="workItemHoursTillEscalation"/>
+                <Variable initializer="Normal" input="true" name="workItemPriority"/>
+                <Variable input="true" name="workItemReminderTemplate"/>
+                <Variable input="true" name="workItemEscalationRule"/>
+                <Variable input="true" name="workItemMaxReminders"/>
+                <Variable initializer="true" input="true" name="filterRejects"/>
+                <Variable initializer="false" input="true" name="setPreviousApprovalDecisions"/>
+                <Variable initializer="false" input="true" name="clearApprovalDecisions"/>
+                <Variable initializer="true" input="true" name="dontUpdatePlan"/>
+                <Variable input="true" name="approvalSet" output="true"/>
+                <Variable input="true" name="project" output="true"/>
+                <Variable input="true" name="plan" output="true"/>
+                <Variable initializer="false" input="true" name="requireCommentsForApproval"/>
+                <Variable initializer="false" input="true" name="requireCommentsForDenial"/>
+                <RuleLibraries>
+                  <Reference class="sailpoint.object.Rule" name="LCM Workflow Library"/>
+                </RuleLibraries>
+                <Step complete="true" icon="Start" name="Start" posX="20" posY="22">
+                  <Transition to="Approval"/>
+                </Step>
+                <Step icon="Approval" name="Approval" posX="158" posY="22">
+                  <Approval mode="serial" originalOwner="call:buildCommonApprovals" renderer="lcmWorkItemRenderer.xhtml" send="identityDisplayName,identityName,approvalSet,flow,policyViolations,identityRequestId" started="true">
+                    <AfterScript>
+                      <Source><![CDATA[
+          import sailpoint.workflow.IdentityRequestLibrary;
+
+          if ( item == null ) 
+          return;
+
+         // log.error(" ApprovaSet in provision approval subprocess -approval step AfterScript.."+approvalSet.toXml());
+          assimilateWorkItemApprovalSet(wfcontext, item, approvalSet);          
+          auditDecisions(item);  
+          IdentityRequestLibrary.assimilateWorkItemApprovalSetToIdentityRequest(wfcontext, approvalSet);
+        ]]></Source>
+                    </AfterScript>
+                    <Arg name="launcher" value="ref:launcher"/>
+                    <Arg name="workItemDescription" value="ref:workItemDescription"/>
+                    <Arg name="workItemEscalationRule" value="ref:workItemEscalationRule"/>
+                    <Arg name="workItemEscalationTemplate" value="ref:workItemEscalationTemplate"/>
+                    <Arg name="workItemHoursTillEscalation" value="ref:workItemHoursTillEscalation"/>
+                    <Arg name="workItemMaxReminders" value="ref:workItemMaxReminders"/>
+                    <Arg name="workItemEscalationFrequency" value="ref:workItemEscalationFrequency"/>
+                    <Arg name="workItemHoursBetweenReminders" value="ref:workItemHoursBetweenReminders"/>
+                    <Arg name="workItemIdentityRequestId" value="ref:identityRequestId"/>
+                    <Arg name="workItemNotificationTemplate" value="ref:approvalEmailTemplate"/>
+                    <Arg name="workItemPriority" value="ref:workItemPriority"/>
+                    <Arg name="approvalMode" value="ref:approvalMode"/>
+                    <Arg name="approvalScheme" value="ref:approvalScheme"/>
+                    <Arg name="approvalSplitPoint" value="ref:approvalSplitPoint"/>
+                    <Arg name="clearApprovalDecisions" value="ref:clearApprovalDecisions"/>
+                    <Arg name="workItemReminderTemplate" value="ref:workItemReminderTemplate"/>
+                    <Arg name="workItemRequester" value="$(launcher)"/>
+                    <Approval description="Manager Approval - Account Changes for User: Billy Holmes" originalOwner="Henry Butler" owner="Henry Butler" startDate="1766742030896" started="true" workItemDescription="Manager Approval - Account Changes for User: Billy Holmes" workItemId="c0a801199b581419819b5a07f99a0298" workItemType="Approval">
+                      <ApprovalSet>
+                        <ApprovalItem application="ActiveDirectory" name="sAMAccountName" nativeIdentity="CN=Billy Holmes,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Add" value="Bi1b2c3c4c">
+                          <Attributes>
+                            <Map>
+                              <entry key="attachments"/>
+                            </Map>
+                          </Attributes>
+                        </ApprovalItem>
+                      </ApprovalSet>
+                      <Arg name="workItemTargetClass" value="sailpoint.object.Identity"/>
+                      <Arg name="workItemTargetName" value="Billy Holmes"/>
+                      <Arg name="workItemNotificationTemplate" value="LCM Identity Update Approval"/>
+                    </Approval>
+                    <Approval mode="parallelPoll">
+                      <Approval description="Owner Approval - Account Changes for User: Billy Holmes" owner="spadmin">
+                        <ApprovalSet>
+                          <ApprovalItem application="ActiveDirectory" name="sAMAccountName" nativeIdentity="CN=Billy Holmes,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Add" value="Bi1b2c3c4c"/>
+                        </ApprovalSet>
+                        <Arg name="workItemTargetClass" value="sailpoint.object.Identity"/>
+                        <Arg name="workItemTargetName" value="Billy Holmes"/>
+                        <Arg name="workItemNotificationTemplate" value="LCM Identity Update Approval"/>
+                      </Approval>
+                    </Approval>
+                    <Approval description="Security Officer Approval - Account Changes for User: Billy Holmes" owner="Aaron Allen">
+                      <ApprovalSet>
+                        <ApprovalItem application="ActiveDirectory" name="sAMAccountName" nativeIdentity="CN=Billy Holmes,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Add" owner="spadmin" value="Bi1b2c3c4c"/>
+                      </ApprovalSet>
+                      <Arg name="workItemTargetClass" value="sailpoint.object.Identity"/>
+                      <Arg name="workItemTargetName" value="Billy Holmes"/>
+                      <Arg name="workItemNotificationTemplate" value="LCM Identity Update Approval"/>
+                    </Approval>
+                    <InterceptorScript>
+                      <Source><![CDATA[
+
+          import sailpoint.object.Workflow.Approval;
+          import sailpoint.object.ApprovalItem;
+          import sailpoint.object.ApprovalSet;
+          import sailpoint.object.Workflow;
+          import sailpoint.object.WorkItem;
+          import sailpoint.tools.Util;
+          import java.util.Iterator;
+          import java.util.ArrayList;
+          import java.lang.Boolean;
+
+
+
+          if (Workflow.INTERCEPTOR_PRE_ASSIMILATION.equals(method)) {
+          // promote completion state to Rejected if all items are rejected
+          ApprovalSet aset = item.getApprovalSet();
+          if (aset != null) {
+          List items = aset.getItems();
+          if (items != null) {
+          int rejectCount = 0;
+          for (ApprovalItem item : items) {
+          // note that isRejected can't be used since that
+          // assumes no answer means rejected
+          if (item.getState() == WorkItem.State.Rejected) {
+          rejectCount++;
+          }
+          }
+          if (rejectCount == items.size()) {
+          item.setState(WorkItem.State.Rejected);
+          }
+          }
+          }
+          } else if (Workflow.INTERCEPTOR_START_APPROVAL.equals(method)) {
+
+          ApprovalSet currentSet = approval.getApprovalSet();
+
+          if (currentSet != null && !Util.isEmpty(currentSet.getItems())) {
+          //If filterRejects is true, filter any rejected items in the master ApprovalSet from the currentSet
+          if (Boolean.valueOf(filterRejects)) {
+          filterRejectsFromApprovalSet(approvalSet, currentSet);
+          }
+
+          //We've filtered all items from the approval set
+          if (Util.isEmpty(currentSet.getItems())) {
+          //Complete the approval if it contains no ApprovalItems
+          approval.setComplete(true);
+          } else {
+
+          if (Boolean.valueOf(setPreviousApprovalDecisions)) {
+          // If setPreviousApprovalDecisions is enabled, set the decision
+          // on the items to that of the global item.
+          setPreviousDecisionsOnApprovalSet(approvalSet, currentSet);
+          }
+          }
+          }
+
+          } else if (Workflow.INTERCEPTOR_END_APPROVAL.equals(method)) {
+          // Owner children approvals need to propagate the rejection state if all children are rejected
+          Approval parentApp = approval.getParent();
+          // Never relay the state to the root approval
+          // If we don't have an approvalSet, must be a container approval
+          if (parentApp != null && approval.getApprovalSet() == null) {
+          boolean completeAndRejected = false;
+          for (Approval child : Util.safeIterable(approval.getChildren())) {
+          if (child.isComplete() && child.getState() == WorkItem.State.Rejected) {
+          completeAndRejected = true;
+          } else {
+          completeAndRejected = false;
+          break;
+          }
+          }
+          //If all children complete and rejected, set the status on the parent approval
+          if (completeAndRejected) {
+          approval.setState(WorkItem.State.Rejected);
+          }
+          }
+          } else if (Workflow.INTERCEPTOR_OPEN_WORK_ITEM.equals(method)) {
+          import sailpoint.workflow.IdentityRequestLibrary;
+
+          //Sync IdentityRequestItems with the WorkItem
+          IdentityRequestLibrary.assimilateWorkItemApprovalSetToIdentityRequest(wfcontext, item.getApprovalSet(), false);
+          }
+
+        ]]></Source>
+                    </InterceptorScript>
+                  </Approval>
+                  <Transition to="Process Approval Decisions" when="script:(step.getApproval() != null &amp;&amp; step.getApproval().containsApprovalItems())"/>
+                  <Transition to="end"/>
+                </Step>
+                <Step action="call:processApprovalDecisions" icon="Task" name="Process Approval Decisions" posX="420" resultVariable="project">
+                  <Arg name="approvalSet" value="ref:approvalSet"/>
+                  <Arg name="disableAudit" value="true"/>
+                  <Arg name="project" value="ref:project"/>
+                  <Arg name="plan" value="ref:plan"/>
+                  <Arg name="recompilePlan" value="true"/>
+                  <Arg name="dontUpdatePlan" value="ref:dontUpdatePlan"/>
+                  <Transition to="end"/>
+                </Step>
+                <Step icon="Stop" name="end" posX="420" posY="225"/>
+                <Attributes>
+                  <Map>
+                    <entry key="approvalMode" value="serial"/>
+                    <entry key="approvalScheme" value="manager,owner,securityOfficer"/>
+                    <entry key="approvalSet">
+                      <value>
+                        <ApprovalSet>
+                          <ApprovalItem application="ActiveDirectory" name="sAMAccountName" nativeIdentity="CN=Billy Holmes,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Add" owner="spadmin" value="Bi1b2c3c4c"/>
+                        </ApprovalSet>
+                      </value>
+                    </entry>
+                    <entry key="approvingIdentities"/>
+                    <entry key="clearApprovalDecisions">
+                      <value>
+                        <Boolean/>
+                      </value>
+                    </entry>
+                    <entry key="dontUpdatePlan" value="true"/>
+                    <entry key="fallbackApprover" value="spadmin"/>
+                    <entry key="filterRejects" value="true"/>
+                    <entry key="flow"/>
+                    <entry key="identityDisplayName" value="Billy Holmes"/>
+                    <entry key="identityElectronicSignature"/>
+                    <entry key="identityEmailTemplate" value="LCM Identity Update Approval"/>
+                    <entry key="identityName" value="Billy Holmes"/>
+                    <entry key="identityRequestId" value="0000001028"/>
+                    <entry key="launcher" value="Scheduler"/>
+                    <entry key="managerElectronicSignature"/>
+                    <entry key="managerEmailTemplate" value="LCM Identity Update Approval"/>
+                    <entry key="noTriggers"/>
+                    <entry key="ownerElectronicSignature"/>
+                    <entry key="ownerEmailTemplate" value="LCM Identity Update Approval"/>
+                    <entry key="plan">
+                      <value>
+                        <ProvisioningPlan>
+                          <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Billy Holmes,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                            <AttributeRequest name="sAMAccountName" op="Add" value="Bi1b2c3c4c"/>
+                          </AccountRequest>
+                          <Attributes>
+                            <Map>
+                              <entry key="identityRequestId" value="0000001028"/>
+                              <entry key="requester" value="Scheduler"/>
+                              <entry key="source" value="LCM"/>
+                            </Map>
+                          </Attributes>
+                        </ProvisioningPlan>
+                      </value>
+                    </entry>
+                    <entry key="policyViolations"/>
+                    <entry key="project">
+                      <value>
+                        <ProvisioningProject identity="Billy Holmes">
+                          <Attributes>
+                            <Map>
+                              <entry key="disableRetryRequest">
+                                <value>
+                                  <Boolean>true</Boolean>
+                                </value>
+                              </entry>
+                              <entry key="identityRequestId" value="0000001028"/>
+                              <entry key="noApplicationTemplates">
+                                <value>
+                                  <Boolean>true</Boolean>
+                                </value>
+                              </entry>
+                              <entry key="noCreateTemplates" value="true"/>
+                              <entry key="optimisticProvisioning" value="false"/>
+                              <entry key="requester" value="Scheduler"/>
+                              <entry key="source" value="LCM"/>
+                            </Map>
+                          </Attributes>
+                          <Filtered>
+                            <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Billy Holmes,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                              <AttributeRequest name="sAMAccountName" op="Add" value="Bi1b2c3c4c">
+                                <Attributes>
+                                  <Map>
+                                    <entry key="reason">
+                                      <value>
+                                        <FilterReason>Exists</FilterReason>
+                                      </value>
+                                    </entry>
+                                  </Map>
+                                </Attributes>
+                              </AttributeRequest>
+                            </AccountRequest>
+                          </Filtered>
+                          <MasterPlan>
+                            <ProvisioningPlan>
+                              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Billy Holmes,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                                <AttributeRequest name="sAMAccountName" op="Add" value="Bi1b2c3c4c"/>
+                              </AccountRequest>
+                              <Attributes>
+                                <Map>
+                                  <entry key="identityRequestId" value="0000001028"/>
+                                  <entry key="requester" value="Scheduler"/>
+                                  <entry key="source" value="LCM"/>
+                                </Map>
+                              </Attributes>
+                            </ProvisioningPlan>
+                          </MasterPlan>
+                        </ProvisioningProject>
+                      </value>
+                    </entry>
+                    <entry key="requireCommentsForApproval" value="false"/>
+                    <entry key="requireCommentsForDenial" value="false"/>
+                    <entry key="securityOfficerElectronicSignature"/>
+                    <entry key="securityOfficerEmailTemplate" value="LCM Identity Update Approval"/>
+                    <entry key="securityOfficerName" value="Aaron Allen"/>
+                    <entry key="sessionOwner" value="Scheduler"/>
+                    <entry key="setPreviousApprovalDecisions" value="false"/>
+                    <entry key="trace" value="true"/>
+                    <entry key="workItemDescription"/>
+                    <entry key="workItemEscalationRule"/>
+                    <entry key="workItemEscalationTemplate"/>
+                    <entry key="workItemHoursBetweenReminders"/>
+                    <entry key="workItemHoursTillEscalation"/>
+                    <entry key="workItemMaxReminders"/>
+                    <entry key="workItemPriority" value="Normal"/>
+                    <entry key="workItemReminderTemplate"/>
+                  </Map>
+                </Attributes>
+              </Workflow>
+            </WorkflowCase>
+          </Step>
+          <Step condition="script:(ticketManagementApplication != null)" icon="Task" name="Update Ticket Post Approval" posX="470" posY="20">
+            <Arg name="action" value="postApproval"/>
+            <Arg name="workItemPriority" value="ref:workItemPriority"/>
+            <Arg name="project" value="ref:project"/>
+            <Arg name="source" value="ref:source"/>
+            <Arg name="ticketManagementApplication" value="ref:ticketManagementApplication"/>
+            <Arg name="identityRequestId" value="ref:identityRequestId"/>
+            <Arg name="ticketDataGenerationRule" value=""/>
+            <Arg name="trace" value="ref:trace"/>
+            <WorkflowRef>
+              <Reference class="sailpoint.object.Workflow" name="Manage Ticket"/>
+            </WorkflowRef>
+            <Transition to="Provision"/>
+          </Step>
+          <Step icon="Provision" name="Provision" posX="600" posY="20">
+            <Arg name="approvalScheme" value="ref:approvalScheme"/>
+            <Arg name="approvalSet" value="ref:approvalSet"/>
+            <Arg name="fallbackApprover" value="ref:fallbackApprover"/>
+            <Arg name="foregroundProvisioning" value="ref:foregroundProvisioning"/>
+            <Arg name="formTemplate" value="Identity Update"/>
+            <Arg name="flow" value="ref:flow"/>
+            <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+            <Arg name="identityName" value="ref:identityName"/>
+            <Arg name="identityRequestId" value="ref:identityRequestId"/>
+            <Arg name="launcher" value="ref:launcher"/>
+            <Arg name="manualActionsEmailTemplate" value="Pending Manual Changes"/>
+            <Arg name="noTriggers" value="ref:noTriggers"/>
+            <Arg name="optimisticProvisioning" value="ref:optimisticProvisioning"/>
+            <Arg name="policyViolations" value="ref:policyViolations"/>
+            <Arg name="project" value="ref:project"/>
+            <Arg name="policyScheme" value="ref:policyScheme"/>
+            <Arg name="workItemPriority" value="ref:workItemPriority"/>
+            <Arg name="trace" value="ref:trace"/>
+            <Arg name="workItemComments" value="ref:workItemComments"/>
+            <Arg name="splitProvisioning" value="ref:splitProvisioning"/>
+            <Arg name="saveUnmanagedPlan_WithProjectArgument" value="ref:saveUnmanagedPlan_WithProjectArgument"/>
+            <Return name="project" to="project"/>
+            <WorkflowRef>
+              <Reference class="sailpoint.object.Workflow" name="Identity Request Provision"/>
+            </WorkflowRef>
+            <Transition to="Update Ticket Post Provision"/>
+          </Step>
+          <Step condition="script:(ticketManagementApplication != null)" icon="Task" name="Update Ticket Post Provision" posX="700" posY="20">
+            <Arg name="action" value="postProvisioning"/>
+            <Arg name="source" value="ref:source"/>
+            <Arg name="workItemPriority" value="ref:workItemPriority"/>
+            <Arg name="project" value="ref:project"/>
+            <Arg name="ticketManagementApplication" value="ref:ticketManagementApplication"/>
+            <Arg name="identityRequestId" value="ref:identityRequestId"/>
+            <Arg name="ticketDataGenerationRule" value=""/>
+            <Arg name="trace" value="ref:trace"/>
+            <WorkflowRef>
+              <Reference class="sailpoint.object.Workflow" name="Manage Ticket"/>
+            </WorkflowRef>
+          </Step>
+          <Attributes>
+            <Map>
+              <entry key="approvalAssignmentRule"/>
+              <entry key="approvalEmailTemplate" value="LCM Identity Update Approval"/>
+              <entry key="approvalMode" value="serial"/>
+              <entry key="approvalScheme" value="manager,owner,securityOfficer"/>
+              <entry key="approvalSet">
+                <value>
+                  <ApprovalSet>
+                    <ApprovalItem application="ActiveDirectory" name="sAMAccountName" nativeIdentity="CN=Billy Holmes,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Add" owner="spadmin" value="Bi1b2c3c4c"/>
+                  </ApprovalSet>
+                </value>
+              </entry>
+              <entry key="approvalSplitPoint"/>
+              <entry key="approvingIdentities"/>
+              <entry key="batchRequestItemId"/>
+              <entry key="clearApprovalDecisions"/>
+              <entry key="enableRetryRequest" value="false"/>
+              <entry key="endOnManualWorkItems" value="false"/>
+              <entry key="endOnProvisioningForms" value="false"/>
+              <entry key="fallbackApprover" value="spadmin"/>
+              <entry key="filterRejects" value="true"/>
+              <entry key="flow"/>
+              <entry key="foregroundProvisioning" value="true"/>
+              <entry key="formTemplate" value="Identity Update"/>
+              <entry key="identityDisplayName" value="Billy Holmes"/>
+              <entry key="identityName" value="Billy Holmes"/>
+              <entry key="identityRequestId" value="0000001028"/>
+              <entry key="launcher" value="Scheduler"/>
+              <entry key="managerElectronicSignature"/>
+              <entry key="managerEmailTemplate" value="LCM Identity Update Approval"/>
+              <entry key="manualActionsEmailTemplate" value="Pending Manual Changes"/>
+              <entry key="noTriggers"/>
+              <entry key="optimisticProvisioning" value="false"/>
+              <entry key="ownerElectronicSignature"/>
+              <entry key="ownerEmailTemplate" value="LCM Identity Update Approval"/>
+              <entry key="plan">
+                <value>
+                  <ProvisioningPlan>
+                    <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Billy Holmes,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                      <AttributeRequest name="sAMAccountName" op="Add" value="Bi1b2c3c4c"/>
+                    </AccountRequest>
+                    <Attributes>
+                      <Map>
+                        <entry key="identityRequestId" value="0000001028"/>
+                        <entry key="requester" value="Scheduler"/>
+                        <entry key="source" value="LCM"/>
+                      </Map>
+                    </Attributes>
+                  </ProvisioningPlan>
+                </value>
+              </entry>
+              <entry key="policyScheme" value="interactive"/>
+              <entry key="policyViolations"/>
+              <entry key="project">
+                <value>
+                  <ProvisioningProject identity="Billy Holmes">
+                    <Attributes>
+                      <Map>
+                        <entry key="disableRetryRequest">
+                          <value>
+                            <Boolean>true</Boolean>
+                          </value>
+                        </entry>
+                        <entry key="identityRequestId" value="0000001028"/>
+                        <entry key="noApplicationTemplates">
+                          <value>
+                            <Boolean>true</Boolean>
+                          </value>
+                        </entry>
+                        <entry key="noCreateTemplates" value="true"/>
+                        <entry key="optimisticProvisioning" value="false"/>
+                        <entry key="requester" value="Scheduler"/>
+                        <entry key="source" value="LCM"/>
+                      </Map>
+                    </Attributes>
+                    <Filtered>
+                      <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Billy Holmes,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                        <AttributeRequest name="sAMAccountName" op="Add" value="Bi1b2c3c4c">
+                          <Attributes>
+                            <Map>
+                              <entry key="reason">
+                                <value>
+                                  <FilterReason>Exists</FilterReason>
+                                </value>
+                              </entry>
+                            </Map>
+                          </Attributes>
+                        </AttributeRequest>
+                      </AccountRequest>
+                    </Filtered>
+                    <MasterPlan>
+                      <ProvisioningPlan>
+                        <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Billy Holmes,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                          <AttributeRequest name="sAMAccountName" op="Add" value="Bi1b2c3c4c"/>
+                        </AccountRequest>
+                        <Attributes>
+                          <Map>
+                            <entry key="identityRequestId" value="0000001028"/>
+                            <entry key="requester" value="Scheduler"/>
+                            <entry key="source" value="LCM"/>
+                          </Map>
+                        </Attributes>
+                      </ProvisioningPlan>
+                    </MasterPlan>
+                  </ProvisioningProject>
+                </value>
+              </entry>
+              <entry key="requesterEmailTemplate" value="LCM Requester Notification"/>
+              <entry key="requireCommentsForApproval" value="false"/>
+              <entry key="requireCommentsForDenial" value="false"/>
+              <entry key="saveUnmanagedPlan_WithProjectArgument" value="false"/>
+              <entry key="securityOfficerElectronicSignature"/>
+              <entry key="securityOfficerEmailTemplate" value="LCM Identity Update Approval"/>
+              <entry key="securityOfficerName" value="Aaron Allen"/>
+              <entry key="sessionOwner" value="Scheduler"/>
+              <entry key="setPreviousApprovalDecisions" value="false"/>
+              <entry key="source" value="LCM"/>
+              <entry key="splitProvisioning" value="false"/>
+              <entry key="ticketManagementApplication"/>
+              <entry key="trace" value="true"/>
+              <entry key="userEmailTemplate" value="LCM User Notification"/>
+              <entry key="workItemComments"/>
+              <entry key="workItemPriority" value="Normal"/>
+            </Map>
+          </Attributes>
+        </Workflow>
+      </WorkflowCase>
+    </Step>
+    <Step action="call:refreshIdentity" condition="ref:doRefresh" icon="Task" name="Refresh Identity" posX="1028" posY="7">
+      <Arg name="identityName" value="ref:identityName"/>
+      <Arg name="correlateEntitlements" value="true"/>
+      <Transition to="Notify"/>
+    </Step>
+    <Step icon="Task" name="Notify" posX="1131" posY="7">
+      <Arg name="approvalScheme" value="ref:approvalScheme"/>
+      <Arg name="approvalSet" value="ref:approvalSet"/>
+      <Arg name="flow" value="ref:flow"/>
+      <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+      <Arg name="identityName" value="ref:identityName"/>
+      <Arg name="launcher" value="ref:launcher"/>
+      <Arg name="notificationScheme" value="ref:notificationScheme"/>
+      <Arg name="userEmailTemplate" value="ref:userEmailTemplate"/>
+      <Arg name="requesterEmailTemplate" value="ref:requesterEmailTemplate"/>
+      <Arg name="managerEmailTemplate" value="ref:managerEmailTemplate"/>
+      <Arg name="plan" value="ref:plan"/>
+      <Arg name="policyViolations" value="ref:policyViolations"/>
+      <Arg name="workItemPriority" value="ref:workItemPriority"/>
+      <Arg name="securityOfficerEmailTemplate" value="ref:securityOfficerEmailTemplate"/>
+      <Arg name="securityOfficerName" value="ref:securityOfficerName"/>
+      <Arg name="trace" value="ref:trace"/>
+      <Arg name="source" value="ref:source"/>
+      <WorkflowRef>
+        <Reference class="sailpoint.object.Workflow" name="Identity Request Notify"/>
+      </WorkflowRef>
+      <Transition to="end"/>
+    </Step>
+    <Step action="call:addMessage" name="Exit On Policy Violation" posX="201" posY="253">
+      <Arg name="message" value="Failed due to policy violation(s)"/>
+      <Arg name="type" value="Error"/>
+      <Transition to="end"/>
+    </Step>
+    <Step action="call:addMessage" name="Exit On Manual Work Items" posX="364" posY="107">
+      <Arg name="message" value="Failed due to manual work item(s)"/>
+      <Arg name="type" value="Error"/>
+      <Transition to="end"/>
+    </Step>
+    <Step action="call:addMessage" name="Exit On Provisioning Form" posX="280" posY="178">
+      <Arg name="message" value="Failed due to provisioning form"/>
+      <Arg name="type" value="Error"/>
+      <Transition to="end"/>
+    </Step>
+    <Step catches="complete" icon="Catches" name="Finalize" posX="1058" posY="308">
+      <Arg name="approvalSet" value="ref:approvalSet"/>
+      <Arg name="batchRequestItemId" value="ref:batchRequestItemId"/>
+      <Arg name="identityRequestId" value="ref:identityRequestId"/>
+      <Arg name="project" value="ref:project"/>
+      <Arg name="workItemPriority" value="ref:workItemPriority"/>
+      <Arg name="identityName" value="ref:identityName"/>
+      <Arg name="ticketManagementApplication" value="ref:ticketManagementApplication"/>
+      <Arg name="trace" value="ref:trace"/>
+      <WorkflowRef>
+        <Reference class="sailpoint.object.Workflow" name="Identity Request Finalize"/>
+      </WorkflowRef>
+    </Step>
+    <Step icon="Stop" name="end" posX="1131" posY="253"/>
+    <Attributes>
+      <Map>
+        <entry key="allowRequestsWithViolations" value="true"/>
+        <entry key="approvalEmailTemplate" value="LCM Identity Update Approval"/>
+        <entry key="approvalMode" value="serial"/>
+        <entry key="approvalScheme" value="manager,owner,securityOfficer"/>
+        <entry key="approvalSet">
+          <value>
+            <ApprovalSet>
+              <ApprovalItem application="ActiveDirectory" name="sAMAccountName" nativeIdentity="CN=Billy Holmes,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Add" owner="spadmin" value="Bi1b2c3c4c"/>
+            </ApprovalSet>
+          </value>
+        </entry>
+        <entry key="approvalSplitPoint"/>
+        <entry key="approvingIdentities"/>
+        <entry key="batchRequestItemId"/>
+        <entry key="doRefresh"/>
+        <entry key="enableRetryRequest" value="false"/>
+        <entry key="endOnManualWorkItems" value="false"/>
+        <entry key="endOnProvisioningForms" value="false"/>
+        <entry key="fallbackApprover" value="spadmin"/>
+        <entry key="filterRejects" value="true"/>
+        <entry key="flow"/>
+        <entry key="foregroundProvisioning" value="true"/>
+        <entry key="identityDisplayName" value="Billy Holmes"/>
+        <entry key="identityElectronicSignature"/>
+        <entry key="identityEmailTemplate"/>
+        <entry key="identityName" value="Billy Holmes"/>
+        <entry key="identityRequestId" value="0000001028"/>
+        <entry key="launcher" value="Scheduler"/>
+        <entry key="managerElectronicSignature"/>
+        <entry key="managerEmailTemplate" value="LCM Manager Notification"/>
+        <entry key="noCreateTemplates" value="true"/>
+        <entry key="notificationScheme" value="user,requester"/>
+        <entry key="optimisticProvisioning" value="false"/>
+        <entry key="ownerElectronicSignature"/>
+        <entry key="plan">
+          <value>
+            <ProvisioningPlan>
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Billy Holmes,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                <AttributeRequest name="sAMAccountName" op="Add" value="Bi1b2c3c4c"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000001028"/>
+                  <entry key="requester" value="Scheduler"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+            </ProvisioningPlan>
+          </value>
+        </entry>
+        <entry key="policiesToCheck"/>
+        <entry key="policyScheme" value="interactive"/>
+        <entry key="policyViolations"/>
+        <entry key="project">
+          <value>
+            <ProvisioningProject identity="Billy Holmes">
+              <Attributes>
+                <Map>
+                  <entry key="disableRetryRequest">
+                    <value>
+                      <Boolean>true</Boolean>
+                    </value>
+                  </entry>
+                  <entry key="identityRequestId" value="0000001028"/>
+                  <entry key="noApplicationTemplates">
+                    <value>
+                      <Boolean>true</Boolean>
+                    </value>
+                  </entry>
+                  <entry key="noCreateTemplates" value="true"/>
+                  <entry key="optimisticProvisioning" value="false"/>
+                  <entry key="requester" value="Scheduler"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Filtered>
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Billy Holmes,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                  <AttributeRequest name="sAMAccountName" op="Add" value="Bi1b2c3c4c">
+                    <Attributes>
+                      <Map>
+                        <entry key="reason">
+                          <value>
+                            <FilterReason>Exists</FilterReason>
+                          </value>
+                        </entry>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                </AccountRequest>
+              </Filtered>
+              <MasterPlan>
+                <ProvisioningPlan>
+                  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Billy Holmes,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                    <AttributeRequest name="sAMAccountName" op="Add" value="Bi1b2c3c4c"/>
+                  </AccountRequest>
+                  <Attributes>
+                    <Map>
+                      <entry key="identityRequestId" value="0000001028"/>
+                      <entry key="requester" value="Scheduler"/>
+                      <entry key="source" value="LCM"/>
+                    </Map>
+                  </Attributes>
+                </ProvisioningPlan>
+              </MasterPlan>
+            </ProvisioningProject>
+          </value>
+        </entry>
+        <entry key="requesterEmailTemplate" value="LCM Requester Notification"/>
+        <entry key="requireCommentsForApproval" value="false"/>
+        <entry key="requireCommentsForDenial" value="false"/>
+        <entry key="requireViolationReviewComments" value="true"/>
+        <entry key="saveUnmanagedPlan_WithProjectArgument" value="false"/>
+        <entry key="securityOfficerElectronicSignature"/>
+        <entry key="securityOfficerEmailTemplate"/>
+        <entry key="securityOfficerName" value="Aaron Allen"/>
+        <entry key="sessionOwner" value="Scheduler"/>
+        <entry key="setPreviousApprovalDecisions" value="false"/>
+        <entry key="source" value="LCM"/>
+        <entry key="splitApprovalSet"/>
+        <entry key="splitPlans"/>
+        <entry key="splitProjects"/>
+        <entry key="splitWorkItemComments"/>
+        <entry key="taskResultId" value="c0a801199b581419819b5a07f75e0294"/>
+        <entry key="ticketId"/>
+        <entry key="ticketManagementApplication"/>
+        <entry key="trace" value="true"/>
+        <entry key="userEmailTemplate" value="LCM User Notification"/>
+        <entry key="violationReviewDecision"/>
+        <entry key="workItemComments"/>
+        <entry key="workItemPriority" value="Normal"/>
+      </Map>
+    </Attributes>
+  </Workflow>
+</WorkflowCase>

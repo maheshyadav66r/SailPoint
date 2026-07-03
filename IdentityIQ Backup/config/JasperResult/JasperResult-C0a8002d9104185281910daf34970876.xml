@@ -1,0 +1,198 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE JasperResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<JasperResult handlerPageCount="-1" pageCount="-1" pagesPerBucket="-1">
+  <Attributes>
+    <Map>
+      <entry key="csvRowsPerBucket">
+        <value>
+          <Integer>1000</Integer>
+        </value>
+      </entry>
+      <entry key="header">
+        <value>
+          <LiveReportSummary title="User Details Report">
+            <Values>
+              <LiveReportSummaryValue label="Creator" name="creator">
+                <Value>
+                  <String>spadmin</String>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="Creation Date" name="date">
+                <Value>
+                  <String>8/1/24, 4:54 PM</String>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="First Name" name="_attr_firstname">
+                <Value>
+                  <String>Aaron</String>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="Last Name" name="_attr_lastname">
+                <Value>
+                  <String>Nichols</String>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="Display Name" name="_attr_displayName">
+                <Value>
+                  <String>Aaron Nichols</String>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="Inactive" name="_attr_inactive">
+                <Value>
+                  <String>false</String>
+                </Value>
+              </LiveReportSummaryValue>
+            </Values>
+          </LiveReportSummary>
+        </value>
+      </entry>
+      <entry key="reportDefinition">
+        <value>
+          <LiveReport title="User Details Report">
+            <DataSource defaultSort="name" objectType="Identity" type="Filter">
+              <QueryParameters>
+                <Parameter argument="lastRefresh" property="lastRefresh" valueClass="daterange"/>
+                <Parameter argument="lastLogin" property="lastLogin" valueClass="daterange"/>
+                <Parameter argument="identityApplications" property="links.application.id"/>
+                <Parameter argument="capabilities" property="capabilities.id"/>
+                <Parameter argument="identityRoles">
+                  <QueryScript>
+                    <Source><![CDATA[
+                            import sailpoint.object.*;
+                            import java.lang.*;
+                            List roleFilters = new ArrayList();
+                            if (value != null){
+                              for(String role : value){
+                                roleFilters.add(Filter.eq("bundles.id", role));
+                                roleFilters.add(Filter.eq("assignedRoles.id", role));
+                              }
+
+                              if (!roleFilters.isEmpty())
+                                queryOptions.addFilter(Filter.subquery("id", Identity.class, "id", Filter.or(roleFilters)));
+                            }
+                            return queryOptions;
+                          ]]></Source>
+                  </QueryScript>
+                </Parameter>
+                <Parameter argument="groupDefinitions">
+                  <QueryScript>
+                    <Source><![CDATA[
+                            import sailpoint.object.*;
+                            import sailpoint.reporting.*;
+                            Filter f = ReportingLibrary.getGroupDefinitionFilter(context, value, false);
+                            if(f!=null) {
+                                queryOptions.addFilter(f);
+                            }
+                            return queryOptions;
+                          ]]></Source>
+                  </QueryScript>
+                </Parameter>
+                <Parameter argument="_attr_firstname" ignoreCase="true" property="firstname" valueClass="string"/>
+                <Parameter argument="_attr_lastname" ignoreCase="true" property="lastname" valueClass="string"/>
+                <Parameter argument="_attr_displayName" ignoreCase="true" property="displayName" valueClass="string"/>
+                <Parameter argument="_attr_email" ignoreCase="true" property="email" valueClass="string"/>
+                <Parameter argument="_attr_manager" property="manager.id"/>
+                <Parameter argument="_attr_inactive" property="inactive" valueClass="boolean"/>
+                <Parameter argument="_attr_networkId" ignoreCase="true" property="networkId" valueClass="string"/>
+                <Parameter argument="_attr_employeeId" ignoreCase="true" property="employeeId" valueClass="string"/>
+                <Parameter argument="_attr_endDate" ignoreCase="true" property="endDate" valueClass="string"/>
+                <Parameter argument="_attr_joiningDate" ignoreCase="true" property="joiningDate" valueClass="string"/>
+                <Parameter argument="_attr_qualification" externalAttributeClass="sailpoint.object.Identity" ignoreCase="true" multi="true" property="qualification" valueClass="string"/>
+                <Parameter argument="_attr_backLogs" externalAttributeClass="sailpoint.object.Identity" ignoreCase="true" multi="true" property="backLogs" valueClass="string"/>
+                <Parameter argument="_attr_division" ignoreCase="true" property="division" valueClass="string"/>
+                <Parameter argument="_attr_department" externalAttributeClass="sailpoint.object.Identity" ignoreCase="true" multi="true" property="department" valueClass="string"/>
+                <Parameter argument="_attr_businessUnit" ignoreCase="true" property="businessUnit" valueClass="string"/>
+                <Parameter argument="_attr_jobTitle" ignoreCase="true" property="jobTitle" valueClass="string"/>
+                <Parameter argument="_attr_location" ignoreCase="true" property="location" valueClass="string"/>
+                <Parameter argument="_attr_qualification" externalAttributeClass="sailpoint.object.Identity" ignoreCase="true" multi="true" property="qualification" valueClass="string"/>
+                <Parameter argument="_attr_backLogs" externalAttributeClass="sailpoint.object.Identity" ignoreCase="true" multi="true" property="backLogs" valueClass="string"/>
+                <Parameter argument="_attr_department" externalAttributeClass="sailpoint.object.Identity" ignoreCase="true" multi="true" property="department" valueClass="string"/>
+              </QueryParameters>
+            </DataSource>
+            <ReportForm>
+              <Reference class="sailpoint.object.Form" name="Report Form Skeleton"/>
+            </ReportForm>
+            <Columns>
+              <ReportColumnConfig field="identity" header="Username" property="name" sortable="true" width="122"/>
+              <ReportColumnConfig field="lastName" header="Last Name" property="lastname" sortable="true" width="122"/>
+              <ReportColumnConfig field="firstName" header="First Name" property="firstname" sortable="true" width="122"/>
+              <ReportColumnConfig field="manager" header="Manager" property="manager.displayName" sortable="true" width="122"/>
+              <ReportColumnConfig field="roles" header="Roles" property="id" width="122">
+                <RenderScript>
+                  <Source><![CDATA[
+                          import sailpoint.object.*;
+                          import java.util.*;
+
+                          List nameFilter = new ArrayList();
+                          nameFilter.add(Filter.eq("name", "assignedRoles"));
+                          nameFilter.add(Filter.eq("name", "detectedRoles"));
+
+                          QueryOptions ops = new QueryOptions();
+                          ops.addFilter(Filter.eq("identity.id", value));
+                          ops.addFilter(Filter.or(nameFilter));
+
+                          List names = new ArrayList();
+                          List properties = new ArrayList();
+                          properties.add("value");
+                          Iterator iter = context.search(IdentityEntitlement.class, ops, properties);
+                          while(iter.hasNext()){
+                            names.add(iter.next()[0]);
+                          }
+                          return names;
+                        ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="applications" header="Applications" property="links.application.name" subQueryKey="id" width="122"/>
+            </Columns>
+            <InitializationRule>
+              <Reference class="sailpoint.object.Rule" name="Identity Report Form Customizer"/>
+            </InitializationRule>
+            <ReportHeader title="User Details Report">
+              <Values>
+                <LiveReportSummaryValue label="Creator" name="creator">
+                  <Value>
+                    <String>spadmin</String>
+                  </Value>
+                </LiveReportSummaryValue>
+                <LiveReportSummaryValue label="Creation Date" name="date">
+                  <Value>
+                    <String>8/1/24, 4:54 PM</String>
+                  </Value>
+                </LiveReportSummaryValue>
+                <LiveReportSummaryValue label="First Name" name="_attr_firstname">
+                  <Value>
+                    <String>Aaron</String>
+                  </Value>
+                </LiveReportSummaryValue>
+                <LiveReportSummaryValue label="Last Name" name="_attr_lastname">
+                  <Value>
+                    <String>Nichols</String>
+                  </Value>
+                </LiveReportSummaryValue>
+                <LiveReportSummaryValue label="Display Name" name="_attr_displayName">
+                  <Value>
+                    <String>Aaron Nichols</String>
+                  </Value>
+                </LiveReportSummaryValue>
+                <LiveReportSummaryValue label="Inactive" name="_attr_inactive">
+                  <Value>
+                    <String>false</String>
+                  </Value>
+                </LiveReportSummaryValue>
+              </Values>
+            </ReportHeader>
+          </LiveReport>
+        </value>
+      </entry>
+      <entry key="reportRowCount">
+        <value>
+          <Integer>1</Integer>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Files>
+    <Reference class="sailpoint.object.PersistedFile" name="Demo-User Detail Report.pdf"/>
+    <Reference class="sailpoint.object.PersistedFile" name="Demo-User Detail Report.csv"/>
+  </Files>
+</JasperResult>

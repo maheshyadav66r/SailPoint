@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE EmailTemplate PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<EmailTemplate name="Email Dynamic Content Test">
+  <Body>
+<![CDATA[<html>
+<body style="background:#FFFFFF;margin:0;padding:0;text-align:left;">
+
+#set($spctx=$spTools.class.forName("sailpoint.api.SailPointFactory").getMethod("getFactory", null).invoke(null, null).getCurrentContext())
+#set($ruleObj=$spctx.getObjectByName($spTools.class.forName("sailpoint.object.Rule"), "Bean Shell Dev Guide - 017 Generate Email Contents"))
+#set($ruleArgs = {
+    "someKey"  : "someValue",
+    "otherKey" : "otherValue"
+})
+#set($dynamicBodyContent=$spctx.runRule($ruleObj, $ruleArgs))
+
+Here is the dynamic email content:<br/>
+<br/>
+${dynamicBodyContent} <br/>
+<br/>
+This line comes <b>after</b> the dynamic content.<br/>
+</body>
+</html>]]>
+
+  </Body>
+  <Description>Dynamic Email Template Content with BeanShell</Description>
+  <Subject>Dynamic Email Template Content with BeanShell</Subject>
+</EmailTemplate>

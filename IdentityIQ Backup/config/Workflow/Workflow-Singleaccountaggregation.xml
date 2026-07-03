@@ -1,0 +1,220 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow explicitTransitions="true" name="SingleAccountAggregation" taskType="LCM" type="LCMProvisioning">
+  <Variable initializer="$(launcher)" input="true" name="requester"/>
+  <Variable input="true" name="nativeIdentity"/>
+  <Variable input="true" name="application"/>
+  <Variable initializer="true" input="true" name="transient"/>
+  <Description>This workflow is run based on input of a QuickLink Form which gathers a Native Identity and Application for which to aggregate a single account</Description>
+  <Step icon="Start" name="Start" posX="13" posY="59">
+    <Transition to="PresentUserForm"/>
+  </Step>
+  <Step icon="Stop" name="Stop" posX="741" posY="57"/>
+  <Step icon="Task" name="RunSingleAggregationRule" posX="503" posY="59">
+    <Arg name="application" value="ref:application"/>
+    <Arg name="nativeIdentity" value="ref:nativeIdentity"/>
+    <Script>
+      <Source><![CDATA[import sailpoint.object.Application;  
+        import sailpoint.object.Attributes;  
+        import sailpoint.object.Custom;  
+        import sailpoint.object.Filter;  
+        import sailpoint.object.Identity;  
+        import sailpoint.object.Link;  
+        import sailpoint.object.QueryOptions;  
+        import sailpoint.object.ResourceObject;  
+        import sailpoint.object.TaskResult;  
+        import sailpoint.object.Rule;  
+        import sailpoint.connector.JDBCConnector;  
+        import sailpoint.api.Aggregator;  
+        import sailpoint.connector.Connector;  
+
+        import org.apache.log4j.Logger;  
+        import org.apache.log4j.Level;  
+
+        // Declare a logger class for us to isolate these messages during aggregation.  
+        // Force the log level to DEBUG for initial testing.    
+        Logger log = Logger.getLogger("sailpoint.services.DemonstrateSingleAccountAggregation");  
+        log.setLevel(Level.DEBUG); // TODO: Turn this off or remove this line when checking in.  
+
+        // Initialize the error message to nothing.  
+        String errorMessage = "";  
+
+        // We should have an App name and nativeIdentity from the form
+
+
+        // We need some values defined to know which account we want to aggregate.  
+        String accountName = nativeIdentity;  
+
+        // We have already validated all of the arguments.  Now just load the objects.  
+        Application appObject = context.getObjectById(Application.class, application);  
+        applicationName = appObject.getName();
+        String appConnName = appObject.getConnector();  
+        log.debug("Application " + applicationName + " uses connector " + appConnName);  
+
+        Connector appConnector = sailpoint.connector.ConnectorFactory.getConnector(appObject, null);  
+        if (null == appConnector) {  
+        errorMessage = "Failed to construct an instance of connector [" + appConnName + "]";  
+        return errorMessage;  
+        }  
+
+        log.debug("Connector instantiated, calling getObject() to read account details...");  
+
+        ResourceObject rObj = null;  
+        try {  
+
+        rObj = (ResourceObject) appConnector.getObject("account", accountName, null);  
+
+        } catch (sailpoint.connector.ObjectNotFoundException onfe) {  
+        errorMessage = "Connector could not find account: [" + accountName + "]";  
+        errorMessage += " in application  [" + applicationName + "]";  
+        log.error(errorMessage);  
+        log.error(onfe);     
+        return errorMessage;  
+        }  
+
+        if (null == rObj) {  
+        errorMessage = "ERROR: Could not get ResourceObject for account: " + accountName;  
+        log.eror(errorMessage);  
+        return errorMessage;  
+        }  
+
+        log.debug("Got raw resourceObject: " + rObj.toXml());  
+
+        // Now we have a raw ResourceObject.  The Application in IdentityIQ may have a   
+        // Customization rule defined to transform the ResourceObject.  We need to   
+        // honor that configuration, so if the Applicaiton has a Rule then we run it.  
+        Rule customizationRule = appObject.getCustomizationRule();  
+        if (null != customizationRule) {  
+
+        log.debug("Customization rule found for applicaiton " + applicationName);     
+
+        try {  
+
+        // Pass the mandatory arguments to the Customization rule for the app.  
+        HashMap ruleArgs = new HashMap();  
+        ruleArgs.put("context",     context);  
+        ruleArgs.put("log",         log);  
+        ruleArgs.put("object",      rObj);  
+        ruleArgs.put("application", appObject);  
+        ruleArgs.put("connector",   appConnector);  
+        ruleArgs.put("state",       new HashMap());  
+
+        // Call the customization rule just like a normal aggregation would.  
+        ResourceObject newRObj = context.runRule(customizationRule, ruleArgs, null);  
+
+        // Make sure we got a valid resourceObject back from the rule.    
+        if (null != newRObj) {  
+        rObj = newRObj;  
+        log.debug("Got post-customization resourceObject: " + rObj.toXml());  
+        }      
+
+        } catch (Exception ex) {  
+
+        // Swallow any customization rule errors, the show must go on!  
+        log.error("Error while running Customization rule for " + applicationName);  
+
+        }    
+
+        }  
+
+        // Next we perform a miniature "Aggregation" using IIQ's built in Aggregator.  
+        // Create an arguments map for the aggregation task.   
+        // To change this (if you need to), the map contains aggregation options and is the same as the   
+        // arguments to the acocunt aggregation tasks.  Some suggestied defaults are:  
+        Attributes argMap = new Attributes();  
+        argMap.put("promoteAttributes",       "true");  
+        argMap.put("correlateEntitlements",   "true");  
+        argMap.put("noOptimizeReaggregation", "true");  // Note: Set to false to disable re-correlation.  
+
+        // Consturct an aggregator instance.  
+        Aggregator agg = new Aggregator(context, argMap);  
+        if (null == agg) {  
+        errorMessage = "Null Aggregator returned from constructor.  Unable to Aggregate!";  
+        log.eror(errorMessage);  
+        return errorMessage;  
+        }  
+
+        // Invoke the aggregation task by calling the aggregate() method.  
+        // Note: the aggregate() call may take serveral seconds to complete.  
+        log.debug("Calling aggregate() method... ");  
+        TaskResult taskResult = agg.aggregate(appObject, rObj);  
+        log.debug("aggregation complete.");  
+
+        if (null == taskResult) {  
+        errorMessage = "ERROR: Null taskResult returned from aggregate() call.";  
+        log.eror(errorMessage);  
+        return errorMessage;  
+        }  
+
+        // Show the task result details for engineers curious about the results.  
+        // These ususally look like the following:  
+        //    &lt;?xml version='1.0' encoding='UTF-8'?&gt;  
+        //    &lt;!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd"&gt;  
+        //    &lt;TaskResult&gt;  
+        //      &lt;Attributes&gt;  
+        //        &lt;Map&gt;  
+        //              &lt;entry key="applications" value="1"/&gt;  
+        //              &lt;entry key="exceptionChanges" value="1"/&gt;  
+        //              &lt;entry key="extendedAttributesRefreshed" value="1"/&gt;  
+        //              &lt;entry key="identityEntitlementsCreated" value="1"/&gt;  
+        //              &lt;entry key="identityEntitlementsIndirectLinkUpdates" value="1"/&gt;  
+        //              &lt;entry key="identityEntitlementsRoleAssignmentsUpdates" value="4"/&gt;  
+        //              &lt;entry key="identityEntitlementsRoleDetectionsUpdates" value="1"/&gt;  
+        //              &lt;entry key="identityEntitlementsUpdated" value="1"/&gt;  
+        //              &lt;entry key="total" value="1"/&gt;  
+        //              &lt;entry key="updated" value="1"/&gt;  
+        //        &lt;/Map&gt;  
+        //      &lt;/Attributes&gt;  
+        //    &lt;/TaskResult&gt;  
+        // Where the "udpated" indiciates the number of account links updated.  
+
+        String applications = taskResult.getAttribute("applications");
+        String updated = taskResult.getAttribute("updated");
+
+        log.debug("TaskResult details: \n" + taskResult.toXml());  
+        wfcase.addMessage("Aggregated App: " + applications);
+        wfcase.addMessage("Accounts Updated: " + updated);
+        return ("Success");  ]]></Source>
+    </Script>
+    <Transition to="Stop"/>
+  </Step>
+  <Step icon="Task" name="PresentUserForm" posX="124" posY="62">
+    <Approval name="SingleAccountAggregation" owner="ref:requester" return="nativeIdentity,application" send="">
+      <Form name="SingleAccountAggregation">
+        <Attributes>
+          <Map>
+            <entry key="pageTitle" value="SingleAccountAggregation"/>
+            <entry key="title" value="Single Account Aggregation"/>
+          </Map>
+        </Attributes>
+        <Description>Single Account Aggregation</Description>
+        <Section label="Enter the Native Identity and Application for Aggregation" name="secGetIdentityandApplication">
+          <Field displayName="Native Identity (specific to application)" helpKey="This could be a any id, etc.  (Whatever is defined as the Application Schema 'Identity Attribute')" name="nativeIdentity" required="true" type="string"/>
+          <Field displayName="Application" name="application" required="true" type="Application"/>
+        </Section>
+        <Button action="next" label="Submit"/>
+        <Button action="cancel" label="Cancel"/>
+      </Form>
+    </Approval>
+    <Transition to="UpdateTaskResultName"/>
+  </Step>
+  <Step icon="Default" name="Wait" posX="352" posY="63" wait="-1">
+    <Description>Added Wait step in order to background the workflow.  This has to be done after the form has been completed, otherwise a workitem is automatically generated, even if the user clicks cancel on the form.</Description>
+    <Transition to="RunSingleAggregationRule"/>
+  </Step>
+  <Step icon="Default" name="UpdateTaskResultName" posX="229" posY="61">
+    <Script>
+      <Source><![CDATA[import sailpoint.object.TaskResult;
+        import sailpoint.object.Application;
+        TaskResult tr = wfcase.getTaskResult();
+
+        Application appObject = context.getObjectById(Application.class, application);  
+        applicationName = appObject.getName();
+
+        tr.setName("Running Single Aggregation for nativeIdentity:"+nativeIdentity+" on Application:"+applicationName );
+
+        wfcase.addMessage("Single Aggregation Workflow has started");]]></Source>
+    </Script>
+    <Transition to="Wait"/>
+  </Step>
+</Workflow>

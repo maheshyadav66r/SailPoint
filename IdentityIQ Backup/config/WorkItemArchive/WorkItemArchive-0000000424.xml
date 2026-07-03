@@ -1,0 +1,70 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE WorkItemArchive PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<WorkItemArchive archived="1736439445231" completer="The Administrator" handler="sailpoint.api.Workflower" level="Normal" name="0000000424" ownerName="spadmin" renderer="workflow.xhtml" requester="spadmin" state="Finished" type="Form" workItemId="c0a8000a94311c9681944bdb23ca1cb0">
+  <Attributes>
+    <Map>
+      <entry key="appName"/>
+      <entry key="applicationId"/>
+      <entry key="requester" value="spadmin"/>
+      <entry key="workItemForm">
+        <value>
+          <Form name="ViceVersaValues">
+            <Section name="FirstSection">
+              <Field displayName="Select Application" dynamic="true" name="appName" postBack="true" type="String">
+                <AllowedValuesDefinition>
+                  <Value>
+                    <List>
+                      <String>JDBC</String>
+                      <String>JDBC001</String>
+                    </List>
+                  </Value>
+                </AllowedValuesDefinition>
+              </Field>
+              <Field displayName="Select Application Id" dynamic="true" name="applicationId" postBack="true" type="String">
+                <AllowedValuesDefinition>
+                  <Script>
+                    <Source><![CDATA[
+                  log.error("-------application-------"+appName);
+                  List list = new ArrayList();
+                  if(appName != null)
+                  {
+                  if("JDBC".equalsIgnoreCase(appName)){
+                  log.error("entered");
+                  form.getField("applicationId").setValue("JDBC001");
+                  }else{
+                  form.getField("applicationId").setValue("JDBC");
+                  }
+                  }
+                  list.add("JDBC");
+                  list.add("JDBC001");
+                  return list;
+                ]]></Source>
+                  </Script>
+                </AllowedValuesDefinition>
+                <Attributes>
+                  <Map>
+                    <entry key="hidden">
+                      <value>
+                        <Script>
+                          <Source><![CDATA[
+                        import sailpoint.object.Field;
+                        
+                        if ( form.getField("applicationId").getValue() != null && form.getField("applicationId").getValue().equalsIgnoreCase("JDBC") ) {
+                        form.getField("applicationId").setValue("JDBC001");
+                        }
+                      ]]></Source>
+                        </Script>
+                      </value>
+                    </entry>
+                  </Map>
+                </Attributes>
+              </Field>
+            </Section>
+            <Button action="next" label="Submit"/>
+          </Form>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Description>DemoFormApproval</Description>
+</WorkItemArchive>

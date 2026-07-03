@@ -1,0 +1,131 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE IdentityRequest PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<IdentityRequest completionStatus="Success" endDate="1749713956379" executionStatus="Completed" name="0000000713" priority="Normal" requesterDisplayName="The Administrator" requesterId="c0a81d898f331ca3818f33fcf64800ff" source="LCM" state="End" targetClass="sailpoint.object.Identity" targetDisplayName="Monica Swanson" type="AccountsRequest" verified="1749787058319">
+  <Attributes>
+    <Map>
+      <entry key="approvalSummaries">
+        <value>
+          <List>
+            <ApprovalSummary completer="The Administrator" endDate="1749713847195" owner="spadmin" request="IdentitySelectionForm" startDate="1749713828352" state="Finished" workItemId="c0a80071976016ea8197631239da024e" workItemType="Form"/>
+            <ApprovalSummary completer="The Administrator" endDate="1749713941046" owner="spadmin" request="disable_AD_Account_Form" startDate="1749713847334" state="Finished" workItemId="c0a80071976016ea8197631283de025a" workItemType="Form"/>
+          </List>
+        </value>
+      </entry>
+      <entry key="provisionedProject">
+        <value>
+          <ProvisioningProject identity="Monica Swanson">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000713"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Monica Swanson,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Disable">
+                  <AttributeRequest name="userAccountControl" op="Add" value="514"/>
+                  <AttributeRequest name="memberOf" op="Add" value="CN=Disable,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000713"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Monica Swanson" targetIntegration="ActiveDirectory" trackingId="912bdfe421214007871495698e9e4216">
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Monica Swanson,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Disable" targetIntegration="ActiveDirectory">
+                <Attributes>
+                  <Map>
+                    <entry key="provisioningTransactionId" value="c0a80071976016ea8197631428f602bd"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="userAccountControl" op="Add" value="514"/>
+                <AttributeRequest name="memberOf" op="Add" value="CN=Disable,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                <ProvisioningResult status="committed"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000713"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+            </ProvisioningPlan>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="taskResultId" value="c0a80071976016ea81976312397e024c"/>
+    </Map>
+  </Attributes>
+  <RequestItems>
+    <IdentityRequestItem application="ActiveDirectory" approvalState="Finished" name="userAccountControl" nativeIdentity="CN=Monica Swanson,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Add" ownerName="spadmin" provisioningEngine="ActiveDirectory" provisioningState="Unverifiable" value="514">
+      <Attributes>
+        <Map>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="edd98c9f12944410914c794eef0e8dbe">
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Monica Swanson,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Disable" targetIntegration="ActiveDirectory">
+                  <Attributes>
+                    <Map>
+                      <entry key="provisioningTransactionId" value="c0a80071976016ea8197631428f602bd"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="userAccountControl" op="Add" trackingId="edd98c9f12944410914c794eef0e8dbe" value="514"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+      <Owner>
+        <Reference class="sailpoint.object.Identity" name="spadmin"/>
+      </Owner>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="ActiveDirectory" approvalState="Finished" name="memberOf" nativeIdentity="CN=Monica Swanson,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Add" ownerName="spadmin" provisioningEngine="ActiveDirectory" provisioningState="Finished" value="CN=Disable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <Attributes>
+        <Map>
+          <entry key="identityEntitlementId" value="c0a80071976016ea81976313fafc02b3"/>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="9e613f98533b486db4910f7788a6d090">
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Monica Swanson,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Disable" targetIntegration="ActiveDirectory">
+                  <Attributes>
+                    <Map>
+                      <entry key="provisioningTransactionId" value="c0a80071976016ea8197631428f602bd"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="memberOf" op="Add" trackingId="9e613f98533b486db4910f7788a6d090" value="CN=Disable,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+      <Owner>
+        <Reference class="sailpoint.object.Identity" name="spadmin"/>
+      </Owner>
+    </IdentityRequestItem>
+  </RequestItems>
+</IdentityRequest>

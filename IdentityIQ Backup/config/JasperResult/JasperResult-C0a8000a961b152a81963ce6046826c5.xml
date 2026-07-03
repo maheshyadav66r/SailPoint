@@ -1,0 +1,133 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE JasperResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<JasperResult handlerPageCount="-1" pageCount="-1" pagesPerBucket="-1">
+  <Attributes>
+    <Map>
+      <entry key="csvRowsPerBucket">
+        <value>
+          <Integer>1000</Integer>
+        </value>
+      </entry>
+      <entry key="header">
+        <value>
+          <LiveReportSummary title="PasswordExpiryNotificationAudit-HQL">
+            <Values>
+              <LiveReportSummaryValue label="Creator" name="creator">
+                <Value>
+                  <String>spadmin</String>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="Creation Date" name="date">
+                <Value>
+                  <String>4/16/25, 10:10 AM</String>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="startDate" name="startDate">
+                <Value>
+                  <String>4/13/25</String>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="endDate" name="endDate">
+                <Value>
+                  <String>4/20/25</String>
+                </Value>
+              </LiveReportSummaryValue>
+            </Values>
+          </LiveReportSummary>
+        </value>
+      </entry>
+      <entry key="reportDefinition">
+        <value>
+          <LiveReport title="PasswordExpiryNotificationAudit-HQL">
+            <DataSource objectType="AuditEvent" type="Hql">
+              <Query>from AuditEvent ae where action='Password Expiration Notification' and target in(select name from Identity where type='employee')</Query>
+              <QueryScript>
+                <Source><![CDATA[
+                  import java.util.*;
+                  import sailpoint.object.QueryOptions;
+                  import sailpoint.object.Filter;;
+                  import sailpoint.tools.Util;
+                  import java.text.SimpleDateFormat;
+
+
+                  if(args.get("startDate") != null @and args.get("endDate") != null){
+
+                  Date startDate = args.get("startDate");
+                  String startDateString = Util.dateToString(startDate,"yyyy-MM-dd");
+
+                  Date endDate = args.get("endDate");
+                  String endDateString = Util.dateToString(endDate,"yyyy-MM-dd");
+
+
+                  SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                  Date startDate = sdf.parse(startDateString);
+                  Date endDate = sdf.parse(endDateString);
+
+                  // Convert to long (milliseconds since epoch)
+                  long startMillis = startDate.getTime();
+                  long endMillis = endDate.getTime();
+
+                  // Now your query becomes:
+                  //String query = "AND created BETWEEN " + startMillis + " AND " + endMillis;
+
+                  query = query +" and created BETWEEN "+startMillis +" AND "+endMillis;
+
+                  //query = query +" and created BETWEEN "+startDateString +" AND "+endDateString;
+                  log.error("query :"+query);
+                  }
+                  else{
+                  query = "from AuditEvent where id='28fdb4bjhf'";
+                  }
+                  return query;
+                ]]></Source>
+              </QueryScript>
+            </DataSource>
+            <ReportForm>
+              <Reference class="sailpoint.object.Form" name="Report Form Skeleton"/>
+            </ReportForm>
+            <Columns>
+              <ReportColumnConfig field="userName" header="UserName" property="target" width="146"/>
+              <ReportColumnConfig field="email" header="Email" property="attributeValue" width="146"/>
+              <ReportColumnConfig field="notificationDate" header="NotificationDate" property="created" width="146"/>
+              <ReportColumnConfig field="expiryDate" header="ExpiryDate" property="attributes.Expires On" width="146"/>
+              <ReportColumnConfig field="interval" header="Interval" property="attributes.Interval" width="146"/>
+            </Columns>
+            <ReportHeader title="PasswordExpiryNotificationAudit-HQL">
+              <Values>
+                <LiveReportSummaryValue label="Creator" name="creator">
+                  <Value>
+                    <String>spadmin</String>
+                  </Value>
+                </LiveReportSummaryValue>
+                <LiveReportSummaryValue label="Creation Date" name="date">
+                  <Value>
+                    <String>4/16/25, 10:10 AM</String>
+                  </Value>
+                </LiveReportSummaryValue>
+                <LiveReportSummaryValue label="startDate" name="startDate">
+                  <Value>
+                    <String>4/13/25</String>
+                  </Value>
+                </LiveReportSummaryValue>
+                <LiveReportSummaryValue label="endDate" name="endDate">
+                  <Value>
+                    <String>4/20/25</String>
+                  </Value>
+                </LiveReportSummaryValue>
+              </Values>
+            </ReportHeader>
+          </LiveReport>
+        </value>
+      </entry>
+      <entry key="reportRowCount">
+        <value>
+          <Integer>2</Integer>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Files>
+    <Reference class="sailpoint.object.PersistedFile" name="Task-HQL.pdf"/>
+    <Reference class="sailpoint.object.PersistedFile" name="Task-HQL.csv"/>
+  </Files>
+</JasperResult>

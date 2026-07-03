@@ -1,0 +1,251 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="AdminAccountCreation">
+  <Source><![CDATA[
+  import sailpoint.object.Identity;
+  import sailpoint.object.ProvisioningPlan;
+  import sailpoint.object.Application;
+  import sailpoint.object.AccountRequest;
+  import sailpoint.object.AttributeRequest;
+  import sailpoint.object.ProvisioningPlan.ObjectOperation;
+  import sailpoint.object.ProvisioningPlan.Operation;
+  import sailpoint.object.Filter;
+  import sailpoint.object.ProvisioningPlan.AccountRequest;
+  import sailpoint.api.*;
+  import sailpoint.object.ProvisioningProject;
+  import sailpoint.api.Provisioner;
+  import sailpoint.object.Custom;
+  import sailpoint.object.Filter;
+
+
+
+
+  Custom custom=context.getObjectByName(Custom.class,"SecondaryIdCreation Custom Object");
+
+
+  /* public String getAccNativeIdentity(String identityName,String applicationName){
+    log.error("**Entering into getAccNativeIdentity method...  :");
+    String nativeIdentity;
+
+    Filter filter=Filter.and(Filter.eq("displayName",identityName),Filter.eq("application.name",applicationName));
+    Link link=context.getUniqueObject(Link.class,filter);
+
+    if(link!=null){
+      Identity identity=link.getIdentity();
+      if(identity!=null){
+        String type=identity.getAttribute("type");
+        if(type!=null @and "employee".equalsIgnoreCase(type)){
+          nativeIdentity=link.getNativeIdentity();
+        }
+      }
+    }
+
+    return nativeIdentity;
+    log.error("**Exiting from getAccNativeIdentity method...  :");
+  }*/
+
+
+  log.error("....formModel in adminacoount rule..."+formModel);
+
+
+  public AccountRequest fetchAccountRequest(AccountRequest accReq,Map customAttributes){
+    log.error("**Entering from fetchAccountRequest method...  :");
+
+    String appName=accReq.getApplication();
+    String finalDn=accReq.getNativeIdentity();
+
+    if(appName.equals(custom.get("applicationName").get("ADAdmin"))){
+
+      Map toBeModifiedMap=custom.get("AD_Update_Atrributes");
+      String nativeIdentity=accReq.getNativeIdentity();
+
+      for(AttributeRequest attReq:accReq.getAttributeRequests()){  
+        String modifiedValue;
+        for(String newKey:toBeModifiedMap.keySet()){
+
+          if(newKey.equalsIgnoreCase(attReq.getName())){
+            modifiedValue=customAttributes.get(toBeModifiedMap.get(newKey));
+            attReq.setValue(modifiedValue);
+          }
+        }
+      }
+      String cnPrefix=finalDn.substring(0,finalDn.indexOf(","));
+      String cnSuffix=finalDn.substring(finalDn.indexOf(","));
+      String modifiedDn=cnPrefix+"-ADM"+cnSuffix;
+
+      String utilFinalDn = Util.replaceCharacter(nativeIdentity, modifiedDn, finalDn);
+      accReq.setNativeIdentity(utilFinalDn);
+    }
+
+    if(appName.equals(custom.get("applicationName").get("CloudAdmin"))){
+      Map toBeModifiedMap=custom.get("LDAP_Update_Atrributes");
+      String nativeIdentity=accReq.getNativeIdentity();
+
+      for(AttributeRequest attReq:accReq.getAttributeRequests()){  
+        String modifiedValue;
+        for(String newKey:toBeModifiedMap.keySet()){
+
+          if(newKey.equalsIgnoreCase(attReq.getName())){
+            modifiedValue=customAttributes.get(toBeModifiedMap.get(newKey));
+            attReq.setValue(modifiedValue);
+          }
+        }
+      }
+      String cnPrefix=finalDn.substring(0,finalDn.indexOf(","));
+      String cnSuffix=finalDn.substring(finalDn.indexOf(","));
+      String modifiedDn=cnPrefix+"-CADM"+cnSuffix;
+
+      String utilFinalDn = Util.replaceCharacter(nativeIdentity, modifiedDn, finalDn);
+      accReq.setNativeIdentity(utilFinalDn);
+    }
+    log.error("**Exiting from fetchAccountRequest method...  :");
+    return accReq;
+  }
+
+
+  public Application fetchApplication(String idType){
+    log.error("Entered into fetchApplication method... :");
+    Application application=null;
+
+    if(!custom.get("secondaryIdType").get("WireLessAdmin").equalsIgnoreCase(idType)){
+      String appicationName=custom.get("applicationName").get(idType);
+      application=context.getObjectByName(Application.class,appicationName);
+    }else{
+      String appicationName=custom.get("applicationName").get(idType);
+      application=context.getObjectByName(Application.class,appicationName);
+    }
+    log.error("**Exiting from fetchApplication method...  :");
+    return application;
+  }
+
+
+  public List getCompiledPlansList(Application application, Identity identity){
+    log.error("**Entering into getCompiledPlansList method...  :");
+   
+    List plansList;
+    ProvisioningPlan finalPlan=new ProvisioningPlan();
+    if(application!=null @and identity!=null){
+      finalPlan.setIdentity(identity);
+      AccountRequest accReq= new AccountRequest();
+      accReq.setApplication(application.getName());
+      accReq.setOperation(ProvisioningPlan.AccountRequest.Operation.Create);
+      finalPlan.add(accReq);
+
+      Provisioner pr=new Provisioner(context);
+      ProvisioningProject project=pr.compile(finalPlan);
+      plansList=project.getPlans();
+
+      if(plansList==null @or plansList.isEmpty()){
+        throw new Exception(" No valid plans are available for the account from ProvisioningProject "); 
+      }
+    }
+    log.error("**Exiting from getCompiledPlansList method...  :");
+    return plansList;
+  }
+
+
+  public List getADAdminUpdatedPlan(List compiledPlans,Identity identity){
+    log.error("**Entering into getADAdminUpdatedPlan method...  :");
+
+    List listOfAccountRequests=new ArrayList();
+    if(compiledPlans!=null @and identity!=null){
+
+      String currentFullName=identity.getName();
+
+      AccountRequest finalAccReq=null;
+      Map currentAttributes=new HashMap();
+
+      currentAttributes.put("currentsAMAccountName",currentFullName);
+      currentAttributes.put("modifiedsAMAccountName",currentFullName+"-ADM");
+
+      for(ProvisioningPlan plan: compiledPlans){
+        List accReqs=plan.getAccountRequests();
+
+        for(AccountRequest accReq:accReqs){
+
+          String applicationName=accReq.getApplicationName();
+
+          if(applicationName.equals(custom.get("applicationName").get("ADAdmin"))){
+            finalAccReq=fetchAccountRequest(accReq,currentAttributes);
+            listOfAccountRequests.add(finalAccReq);
+          }
+        }
+      }
+    }
+    log.error("**Exiting from getADAdminUpdatedPlan acclist method...  :");
+    return listOfAccountRequests;
+  }
+
+
+
+
+  public List getCADAdminUpdatedPlan(List compiledPlans,Identity identity){
+    log.error("**Entering into getCADAdminUpdatedPlan method...  :");
+
+    List listOfAccountRequests=new ArrayList();
+    if(compiledPlans!=null @and identity!=null){
+      String currentFullName=identity.getName();
+
+      Map currentAttributes=new HashMap();
+
+      currentAttributes.put("currentcn",currentFullName);
+      currentAttributes.put("modifiedcn",currentFullName+"-CADM");
+
+      for(ProvisioningPlan plan: compiledPlans){
+        List accReqs=plan.getAccountRequests();
+
+        for(AccountRequest accReq:accReqs){
+
+          String applicationName=accReq.getApplicationName();
+
+          if(applicationName.equals(custom.get("applicationName").get("CloudAdmin"))){
+            AccountRequest finalAccReq=fetchAccountRequest(accReq,currentAttributes);
+            listOfAccountRequests.add(finalAccReq);
+
+          }
+        }
+      }
+    }
+    log.error("**Exiting from getCADAdminUpdatedPlan acclist method...  :");
+    return listOfAccountRequests;
+  }
+
+
+
+  public ProvisioningPlan buildProvisioningPlan(Identity identity,String secondaryIdType){
+
+    log.error("**Entering into buildProvisioningPlan method... ");
+    ProvisioningPlan finalPlan=new ProvisioningPlan();
+    if(identity!=null @and secondaryIdType!=null){
+
+      finalPlan.setIdentity(identity);
+      if(secondaryIdType.equalsIgnoreCase(custom.get("secondaryIdType").get("WireLessAdmin"))){
+        //build plan for WireLessAdmin
+      }
+
+      Application application=fetchApplication(secondaryIdType);
+      List compiledPlans =getCompiledPlansList(application,identity);
+
+      if(secondaryIdType.equalsIgnoreCase(custom.get("secondaryIdType").get("ADAdmin"))){
+        List updateADaccReqs=getADAdminUpdatedPlan(compiledPlans,identity);
+
+        for(AccountRequest accReq:updateADaccReqs){
+          finalPlan.add(accReq);
+        }
+      }
+
+      if(secondaryIdType.equalsIgnoreCase(custom.get("secondaryIdType").get("CloudAdmin"))){
+        List updateCADaccReqs=getCADAdminUpdatedPlan(compiledPlans,identity);
+
+        for(AccountRequest accReq:updateCADaccReqs){
+          finalPlan.add(accReq);
+        }
+      }
+    }
+    log.error("**Exiting from buildProvisioningPlan method...  :");
+    return finalPlan;
+  }
+
+  //log.error("formModel in rule library==="+formModel);
+  ]]></Source>
+</Rule>

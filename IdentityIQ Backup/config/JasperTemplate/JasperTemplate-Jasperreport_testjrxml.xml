@@ -1,0 +1,105 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE JasperTemplate PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<JasperTemplate name="JasperReport_TestJRXML">
+  <DesignXml>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;jasperReport name="JasperReport_TestJRXML" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" whenNoDataType="NoPages"&gt;
+
+    &lt;style name="Header" fontName="Arial" fontSize="12" isBold="true" backcolor="#1A7182" forecolor="#FFFFFF" mode="Opaque"/&gt;
+    &lt;style name="Detail" fontName="Arial" fontSize="10" mode="Transparent"/&gt;
+    &lt;style name="DetailAlt" style="Detail" backcolor="#F5F5F5" mode="Opaque"/&gt;
+
+    &lt;parameter name="taskResultDataSource" class="net.sf.jasperreports.engine.JRDataSource"/&gt;
+    &lt;parameter name="TaskResultReport" class="net.sf.jasperreports.engine.JasperReport"/&gt;
+
+    &lt;field name="name" class="java.lang.String"/&gt;
+    &lt;field name="employeeId" class="java.lang.String"/&gt;
+    &lt;field name="email" class="java.lang.String"/&gt;
+    &lt;field name="firstname" class="java.lang.String"/&gt;
+    &lt;field name="lastname" class="java.lang.String"/&gt;
+
+    &lt;title&gt;
+        &lt;band height="40"&gt;
+            &lt;staticText&gt;
+                &lt;reportElement x="0" y="10" width="782" height="30"/&gt;
+                &lt;textElement textAlignment="Center"&gt;
+                    &lt;font size="16" isBold="true"/&gt;
+                &lt;/textElement&gt;
+                &lt;text&gt;&lt;![CDATA[Employee Report]]&gt;&lt;/text&gt;
+            &lt;/staticText&gt;
+        &lt;/band&gt;
+    &lt;/title&gt;
+
+    &lt;pageHeader&gt;
+        &lt;band height="20"&gt;
+            &lt;subreport isUsingCache="true"&gt;
+                &lt;reportElement x="0" y="0" width="782" height="20"/&gt;
+                &lt;dataSourceExpression&gt;&lt;![CDATA[$P{taskResultDataSource}]]&gt;&lt;/dataSourceExpression&gt;
+                &lt;subreportExpression&gt;&lt;![CDATA[$P{TaskResultReport}]]&gt;&lt;/subreportExpression&gt;
+            &lt;/subreport&gt;
+        &lt;/band&gt;
+    &lt;/pageHeader&gt;
+
+    &lt;columnHeader&gt;
+        &lt;band height="25"&gt;
+            &lt;staticText&gt;
+                &lt;reportElement style="Header" x="0" y="0" width="150" height="25"/&gt;
+                &lt;text&gt;&lt;![CDATA[Name]]&gt;&lt;/text&gt;
+            &lt;/staticText&gt;
+            &lt;staticText&gt;
+                &lt;reportElement style="Header" x="150" y="0" width="150" height="25"/&gt;
+                &lt;text&gt;&lt;![CDATA[Employee ID]]&gt;&lt;/text&gt;
+            &lt;/staticText&gt;
+            &lt;staticText&gt;
+                &lt;reportElement style="Header" x="300" y="0" width="150" height="25"/&gt;
+                &lt;text&gt;&lt;![CDATA[Email]]&gt;&lt;/text&gt;
+            &lt;/staticText&gt;
+            &lt;staticText&gt;
+                &lt;reportElement style="Header" x="450" y="0" width="150" height="25"/&gt;
+                &lt;text&gt;&lt;![CDATA[First Name]]&gt;&lt;/text&gt;
+            &lt;/staticText&gt;
+            &lt;staticText&gt;
+                &lt;reportElement style="Header" x="600" y="0" width="150" height="25"/&gt;
+                &lt;text&gt;&lt;![CDATA[Last Name]]&gt;&lt;/text&gt;
+            &lt;/staticText&gt;
+        &lt;/band&gt;
+    &lt;/columnHeader&gt;
+
+    &lt;detail&gt;
+        &lt;band height="20"&gt;
+            &lt;textField&gt;
+                &lt;reportElement style="Detail" x="0" y="0" width="150" height="20"/&gt;
+                &lt;textFieldExpression&gt;&lt;![CDATA[$F{name}]]&gt;&lt;/textFieldExpression&gt;
+            &lt;/textField&gt;
+            &lt;textField&gt;
+                &lt;reportElement style="Detail" x="150" y="0" width="150" height="20"/&gt;
+                &lt;textFieldExpression&gt;&lt;![CDATA[$F{employeeId}]]&gt;&lt;/textFieldExpression&gt;
+            &lt;/textField&gt;
+            &lt;textField&gt;
+                &lt;reportElement style="Detail" x="300" y="0" width="150" height="20"/&gt;
+                &lt;textFieldExpression&gt;&lt;![CDATA[$F{email}]]&gt;&lt;/textFieldExpression&gt;
+            &lt;/textField&gt;
+            &lt;textField&gt;
+                &lt;reportElement style="Detail" x="450" y="0" width="150" height="20"/&gt;
+                &lt;textFieldExpression&gt;&lt;![CDATA[$F{firstname}]]&gt;&lt;/textFieldExpression&gt;
+            &lt;/textField&gt;
+            &lt;textField&gt;
+                &lt;reportElement style="Detail" x="600" y="0" width="150" height="20"/&gt;
+                &lt;textFieldExpression&gt;&lt;![CDATA[$F{lastname}]]&gt;&lt;/textFieldExpression&gt;
+            &lt;/textField&gt;
+        &lt;/band&gt;
+    &lt;/detail&gt;
+
+    &lt;pageFooter&gt;
+        &lt;band height="20"&gt;
+            &lt;textField&gt;
+                &lt;reportElement x="0" y="0" width="100" height="20"/&gt;
+                &lt;textElement&gt;
+                    &lt;font size="10" isItalic="true"/&gt;
+                &lt;/textElement&gt;
+                &lt;textFieldExpression&gt;&lt;![CDATA["Page " + $V{PAGE_NUMBER}]]&gt;&lt;/textFieldExpression&gt;
+            &lt;/textField&gt;
+        &lt;/band&gt;
+    &lt;/pageFooter&gt;
+&lt;/jasperReport&gt;
+</DesignXml>
+</JasperTemplate>

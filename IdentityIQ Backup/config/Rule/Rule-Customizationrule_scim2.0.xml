@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="CustomizationRule_Scim2.0" type="ResourceObjectCustomization">
+  <Description>This rule is configured on the application and is called after the connector has build a ResourceObject from the native application data.
+
+    Initially designed for non-rule based connectors to add SPPrivileged flag to an object, but could be used to do any transformations.</Description>
+  <Signature returnType="ResourceObject"/>
+  <Source><![CDATA[
+
+  boolean isTrue = object.getBoolAttribute("inactiveIdentity");
+  log.error(" resourceObject ..."+object.toXml());
+  log.error("  state     "+ isTrue+"...."+state);
+
+
+  if(isTrue != null && isTrue)
+  return object;
+  return null;
+
+  ]]></Source>
+</Rule>

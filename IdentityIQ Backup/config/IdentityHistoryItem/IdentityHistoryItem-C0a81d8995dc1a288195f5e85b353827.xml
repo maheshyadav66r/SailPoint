@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE IdentityHistoryItem PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<IdentityHistoryItem actor="The Administrator" certificationType="Bundle" entryDate="1743587142637" role="remidiateITRole" status="Remediated" type="Decision">
+  <CertificationAction actorDisplayName="The Administrator" actorName="spadmin" decisionCertificationId="c0a81d8995dc1a288195f5e267b737ee" decisionDate="1743587142637" ownerName="Aaron Nichols" readyForRemediation="true" remediationAction="OpenWorkItem" reviewed="true" status="Remediated">
+    <Description>Remediate entitlements on 'Asha Alam'</Description>
+    <RemediationPlan>
+      <ProvisioningPlan trackingId="c0a81d8995dc1a288195f5e2860837fb">
+        <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Asha Alam,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+          <AttributeRequest name="memberOf" op="Remove" trackingId="c0a81d8995dc1a288195f5e2860837fb" value="CN=AccountsReceivable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+            <Attributes>
+              <Map>
+                <entry key="allowSimplification" value="true"/>
+                <entry key="assignment" value="true"/>
+                <entry key="preferRemoveOverRetain" value="true"/>
+              </Map>
+            </Attributes>
+          </AttributeRequest>
+        </AccountRequest>
+        <AccountRequest application="Duplicate_Ent" nativeIdentity="001" op="Modify">
+          <AttributeRequest name="roleId" op="Remove" trackingId="c0a81d8995dc1a288195f5e2860837fb" value="2">
+            <Attributes>
+              <Map>
+                <entry key="allowSimplification" value="true"/>
+                <entry key="assignment" value="true"/>
+                <entry key="preferRemoveOverRetain" value="true"/>
+              </Map>
+            </Attributes>
+          </AttributeRequest>
+        </AccountRequest>
+        <AccountRequest application="IntConApplication" nativeIdentity="001" op="Modify">
+          <AttributeRequest name="GroupId" op="Remove" trackingId="c0a81d8995dc1a288195f5e2860837fb" value="GIC2">
+            <Attributes>
+              <Map>
+                <entry key="allowSimplification" value="true"/>
+                <entry key="assignment" value="true"/>
+                <entry key="preferRemoveOverRetain" value="true"/>
+              </Map>
+            </Attributes>
+          </AttributeRequest>
+        </AccountRequest>
+        <Attributes>
+          <Map>
+            <entry key="source" value="Certification"/>
+            <entry key="sourceId" value="c0a81d8995dc1a288195f5e267b737ee"/>
+            <entry key="sourceName" value="Targeted Access Review for Mahesh Nattali"/>
+          </Map>
+        </Attributes>
+      </ProvisioningPlan>
+    </RemediationPlan>
+  </CertificationAction>
+  <CertifiableDescriptor businessRole="remidiateITRole"/>
+  <CertificationLink completed="1743587152139" identitySnapshotId="c0a81d8995dc1a288195f5e285f237fa" type="Focused">
+    <Certifiers>
+      <String>Mahesh Nattali</String>
+    </Certifiers>
+  </CertificationLink>
+  <HistoryIdentity>
+    <Reference class="sailpoint.object.Identity" name="Asha Alam"/>
+  </HistoryIdentity>
+</IdentityHistoryItem>

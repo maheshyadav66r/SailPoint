@@ -1,0 +1,436 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow explicitTransitions="true" libraries="Identity,IdentityRequest" name="Test_CIB_SpecialAssignments_Workflow-1">
+  <Variable initializer="true" name="transient">
+    <Description>It can be used to build
+      the provisioning plan, but does not need to be
+      persisted with the case, so marked as transient.</Description>
+  </Variable>
+  <Variable name="plan"/>
+  <Variable initializer="Area Manager-Workgroup" input="true" name="areaManWorkgroup">
+    <Description>Area Manager Approvals</Description>
+  </Variable>
+  <Variable input="true" name="launcher" type="string">
+    <Description>The identity who initiated or launched the workflow.</Description>
+  </Variable>
+  <Variable initializer="true" name="trace"/>
+  <Variable name="policyViolations"/>
+  <Variable input="true" name="quickLinkIdentityId">
+    <Description>The identity id.</Description>
+  </Variable>
+  <Variable input="true" name="WorkItemForm"/>
+  <Variable initializer="spadmin" input="true" name="fallbackApprover"/>
+  <Variable initializer="LCM" input="true" name="source"/>
+  <Variable initializer="Normal" input="true" name="workItemPriority"/>
+  <Variable editable="true" initializer="false" name="optimisticProvisioning"/>
+  <Variable editable="true" initializer="true" name="foregroundProvisioning"/>
+  <Variable name="identityName"/>
+  <Variable initializer="script:(identityDisplayName != void) ? identityDisplayName : resolveDisplayName(identityName)" input="true" name="identityDisplayName"/>
+  <Variable name="approvalSet" output="true"/>
+  <Variable name="project"/>
+  <Variable initializer="Special Assignment" name="flow"/>
+  <Variable name="identityRequestId" output="true"/>
+  <Variable name="operation" type="string"/>
+  <Variable name="department" type="string"/>
+  <Variable name="position" type="string"/>
+  <Variable name="startDate" type="date"/>
+  <Variable name="endDate" type="date"/>
+  <Variable name="userName" type="string"/>
+  <Variable name="userFullName" type="string"/>
+  <Variable name="branch" type="string"/>
+  <Variable name="email" type="string"/>
+  <Variable name="assignmentDataMap"/>
+  <Variable name="instructions" type="text"/>
+  <Variable initializer="any" input="true" name="approvalMode"/>
+  <Variable initializer="" input="true" name="userEmailTemplate">
+    <Description>Initial Email Notification to the User After Adding a Special Assignment.</Description>
+  </Variable>
+  <Variable initializer="http://localhost:8080/identityIQ/identityRequest/identityRequest.jsf#/request/" input="true" name="baseURL"/>
+  <RuleLibraries>
+    <Reference class="sailpoint.object.Rule" name="LCM Workflow Library"/>
+  </RuleLibraries>
+  <Step icon="Start" name="Start" posX="20" posY="20">
+    <Transition to="IdentityDetails"/>
+  </Step>
+  <Step icon="Default" name="IdentityDetails" posX="20" posY="20" resultVariable="detailsMap">
+    <Script>
+      <Source><![CDATA[
+        import sailpoint.object.QueryOptions;
+        import sailpoint.object.Identity;
+
+        Map detailsMap = new HashMap();
+        public List getListUsingIdentityAttributes(String attrName)
+        {
+
+        List resultList = new ArrayList();
+        QueryOptions qo = new QueryOptions();
+
+        qo.setDistinct(true);
+        qo.addGroupBy(attrName);
+        qo.setOrderAscending(true);
+        qo.setCloneResults(true);
+        qo.add(Filter.notnull(attrName));
+
+        Iterator itr = context.search(Identity.class, qo, attrName);
+
+        while (itr != null @and itr.hasNext())
+        {
+        Object[] row = (Object[]) itr.next();
+        resultList.add((String) row[0]);
+        }
+
+        return resultList;
+        }
+
+        detailsMap.put("departmentDropDown",getListUsingIdentityAttributes("department"));
+
+        return detailsMap;
+      ]]></Source>
+    </Script>
+    <Transition to="Build Assignment Data"/>
+  </Step>
+  <Step name="Build Assignment Data" resultVariable="assignmentDataMap">
+    <Script>
+      <Source><![CDATA[
+        import sailpoint.object.Identity;
+        import sailpoint.object.IdentityRequestItem;
+        import sailpoint.object.Filter;
+        import sailpoint.object.QueryOptions;
+        import sailpoint.tools.Util;
+        import java.util.*;
+
+        // ---------- helper ----------
+        public + getRequestNumber(String value, String userName) {
+
+        Filter filter = Filter.and(
+        Filter.eq("application", "IIQ"),
+        Filter.eq("value", value),
+        Filter.eq("name", "specialAssignments"),
+        Filter.eq("nativeIdentity", userName),
+        Filter.eq("operation", "Add")
+        );
+
+        QueryOptions qo = new QueryOptions();
+        qo.add(filter);
+        qo.setCloneResults(true);//When using this to clone query results into memory, keep in mind that the eventual query will force a committed transaction to occur.
+        qo.setResultLimit(1);
+
+        Iterator it = context.search(IdentityRequestItem.class, qo, "identityRequest.name");
+
+        if (it != null && it.hasNext()) {
+        Object[] row = (Object[]) it.next();
+        return (String) row[0];
+        }
+
+        return null;
+        }
+
+        // ---------- main ----------
+        Map assignmentDataMap = new HashMap();
+
+        Identity identity = context.getObjectById(Identity.class, quickLinkIdentityId);
+
+        StringBuilder html = new StringBuilder();
+
+        html.append("<div style='padding:10px; font-family:Arial;'>");
+        html.append("<div style='border:1px solid #ccc;'>");
+        html.append("<table border='1' cellspacing='0' style='border-collapse:collapse; width:100%; font-size:13px;'>");
+
+        html.append("<tr style='background-color:#011E69;'>")
+        .append("<th style='color:white;'>SNo</th>")
+        .append("<th style='color:white;'>Start Date</th>")
+        .append("<th style='color:white;'>End Date</th>")
+        .append("<th style='color:white;'>Department</th>")
+        .append("<th style='color:white;'>Branch</th>")
+        .append("<th style='color:white;'>Position</th>")
+        .append("<th style='color:white;'>AccessRequest Id</th>")
+        .append("<th style='color:white;'>Status </th>")
+        .append("</tr>");
+
+        if (identity != null) {
+
+        assignmentDataMap.put("identityName", identity.getName());
+
+        List list = identity.getAttribute("specialAssignments");
+
+        if (!Util.isEmpty(list)) {
+
+        for (int i = 0; i < list.size(); i++) {
+
+        String fullAssignment = (String) list.get(i);
+        String[] parts = fullAssignment.split(";");
+        String requestNumber = getRequestNumber(fullAssignment, identity.getName());
+        String rowColor = (i % 2 == 0) ? "#ffffff" : "#f9f9f9";
+
+        html.append("<tr style='background-color:").append(rowColor).append(";'>")
+        .append("<td>").append(i + 1).append("</td>")
+        .append("<td>").append(parts.length > 0 ? parts[0] : "").append("</td>")
+        .append("<td>").append(parts.length > 1 ? parts[1] : "").append("</td>")
+        .append("<td>").append(parts.length > 2 ? parts[2] : "").append("</td>")
+        .append("<td>").append(parts.length > 3 ? parts[3] : "").append("</td>")
+        .append("<td>").append(parts.length > 4 ? parts[4] : "").append("</td>")
+
+        .append("<td>").append(requestNumber != null ? "<a href='" + baseURL + requestNumber + "'target='_blank'>"+ requestNumber +"</a>" : "").append("</td>")
+
+        //.append("<td>").append(requestNumber != null ? requestNumber : "").append("</td>")
+        .append("<td>").append(parts.length > 5 ? parts[5] : "").append("</td>")
+        .append("</tr>");
+        }
+
+        } else {
+        html.append("<tr><td colspan='7' style='text-align:center;'>No Special Assignments</td></tr>");
+        }
+
+        } else {
+        html.append("<tr><td colspan='7' style='color:red;text-align:center;'>Identity Not Found</td></tr>");
+        }
+
+        html.append("</table></div></div>");
+
+        log.error("00000");
+
+        assignmentDataMap.put("tableHtml", html.toString());
+
+        log.error("99999");
+
+        return assignmentDataMap;
+      ]]></Source>
+    </Script>
+    <Transition to="Form1"/>
+  </Step>
+  <Step icon="Default" name="Form1" posX="207" posY="120">
+    <Approval name="CIB-Future Assignments-Display Details-Form-1" owner="ref:launcher" return="department,position,startDate,endDate,operation,status,userName,userFullName,email,quickLinkIdentityId,existingSpecialAssignments,instructions,branch" send="department,position,startDate,endDate,operation,userName,status,userFullName,email,quickLinkIdentityId,existingSpecialAssignments,instructions,branch">
+      <Arg name="workItemType" value="Form"/>
+      <Arg name="workItemForm" value="CIB-Future Assignments-Display Details-Form-1"/>
+      <Arg name="assignmentDataMap" value="ref:assignmentDataMap"/>
+      <Arg name="detailsMap" value="ref:detailsMap"/>
+    </Approval>
+    <Transition to="Stop" when="!approved"/>
+    <Transition to="Confirmation Form1" when="approved"/>
+  </Step>
+  <Step name="Confirmation Form1" posX="418" posY="232">
+    <Approval description="ref:LineManager" name="CIB-Future Assignments-Display Details-ReadOnlyForm" owner="ref:launcher" return="department,status,position,startDate,endDate,operation,userName,userFullName,email,quickLinkIdentityId,existingSpecialAssignments,instructions,branch" send="department,status,position,startDate,endDate,operation,userName,userFullName,email,quickLinkIdentityId,existingSpecialAssignments,instructions,branch">
+      <Arg name="workItemType" value="Form"/>
+      <Arg name="workItemForm" value="CIB-Future Assignments-Display Details-ReadOnlyForm-1"/>
+    </Approval>
+    <Transition to="Form1" when="!approved"/>
+    <Transition to="Approver2"/>
+  </Step>
+  <Step icon="Default" name="Approver2" posX="850" posY="300">
+    <Approval name="Area Manager Approval" owner="ref:areaManWorkgroup" renderer="lcmWorkItemRenderer.xhtml" return="department,position,startDate,endDate,operation,status,userName,userFullName,email,quickLinkIdentityId,existingSpecialAssignments,instructions,branch" send="department,position,startDate,endDate,status,operation,userName,userFullName,email,quickLinkIdentityId,existingSpecialAssignments,instructions,branch">
+      <Arg name="approvalMode" value="ref:approvalMode"/>
+      <Arg name="workItemType" value="Approval"/>
+      <Arg name="workItemForm" value="CIB-Future Assignments-Display Details-ApprovalForm-1"/>
+    </Approval>
+    <Transition to="Workgroup Approver" when="approved"/>
+    <Transition to="Stop" when="!approved"/>
+  </Step>
+  <Step icon="Default" name="Workgroup Approver" posX="850" posY="300">
+    <Approval name="Area Operations Manager Approval" owner="ref:areaOpsWorkgroup" renderer="lcmWorkItemRenderer.xhtml" return="status,department,position,startDate,endDate,operation,userName,userFullName,email,quickLinkIdentityId,existingSpecialAssignments,instructions,branch" send="status,department,position,startDate,endDate,operation,userName,userFullName,email,quickLinkIdentityId,existingSpecialAssignments,instructions,branch">
+      <Arg name="approvalMode" value="ref:approvalMode"/>
+      <Arg name="workItemType" value="Approval"/>
+      <Arg name="workItemForm" value="CIB-Future Assignments-Display Details-ApprovalForm-1"/>
+    </Approval>
+    <Transition to="Build ProvisioningPlan" when="approved"/>
+    <Transition to="Stop" when="!approved"/>
+  </Step>
+  <Step name="Build ProvisioningPlan" posX="1037" posY="20" resultVariable="plan">
+    <Script>
+      <Source><![CDATA[
+        import sailpoint.object.Identity;
+        import sailpoint.object.ProvisioningPlan;
+        import sailpoint.object.ProvisioningPlan.AccountRequest;
+        import sailpoint.object.ProvisioningPlan.AttributeRequest;
+        import sailpoint.tools.Util;
+        import java.util.Calendar;
+
+        Identity identity = context.getObjectById(Identity.class, quickLinkIdentityId);
+        wfcontext.setVariable("identityName", identity.getName());
+        wfcontext.setVariable("identityDisplayName", identity.getDisplayName());
+
+        ProvisioningPlan plan = new ProvisioningPlan();
+        plan.setIdentity(identity);
+
+        AccountRequest accReq = new AccountRequest();
+        accReq.setApplication("IIQ");
+        accReq.setOperation(AccountRequest.Operation.Modify);
+        accReq.setNativeIdentity(identity.getName());
+
+        if (endDate != null) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(endDate);
+        cal.set(Calendar.HOUR_OF_DAY, 23);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.SECOND, 59);
+        cal.set(Calendar.MILLISECOND, 999);
+        endDate = cal.getTime();
+        }
+
+        String specialAssignmentsVal = (startDate != null ? startDate : "") + ";" + (endDate != null ? endDate : "") + ";" + (department != null ? department : "NA")  + ";" + (branch != null ? branch : "NA")   + ";" + (position != null ? position : "NA") ;
+
+
+        if (operation == null) {
+        log.error("No operation specified");
+        }
+
+        else if (operation.equalsIgnoreCase("Remove Existing Special Assignment")) {
+        log.error("Operation: Remove");
+        List list = identity.getAttribute("specialAssignments");
+        if (Util.nullSafeSize(list) > 0 && department != null && branch != null && position != null) {
+        for (String existingData : list) {
+        String[] parts = existingData.split(";");
+        if (parts.length >= 5) {
+        if (department.equalsIgnoreCase(parts[2]) && branch.equalsIgnoreCase(parts[3]) && position.equalsIgnoreCase(parts[4])) {
+        log.error("Removing existing assignment: " + existingData);
+        accReq.add(new AttributeRequest("specialAssignments", ProvisioningPlan.Operation.Remove, existingData));
+        }
+        }
+        }
+        }
+        }
+
+        else if (operation.equalsIgnoreCase("Add New Special Assignment")) {
+        log.error("Operation: Add");
+        log.error("Adding assignment: " + specialAssignmentsVal);
+        accReq.add(new AttributeRequest("specialAssignments", ProvisioningPlan.Operation.Add, specialAssignmentsVal));
+        }
+
+        else if (operation.equalsIgnoreCase("Modify/Update Existing Special Assignment")) {
+
+        List list = identity.getAttribute("specialAssignments");
+        if (Util.nullSafeSize(list) > 0 && department != null && branch != null  && position != null) {
+        for (String existingData : list) {
+        String[] parts = existingData.split(";");
+        if (department.equalsIgnoreCase(parts[2])  && branch.equalsIgnoreCase(parts[3]) && position.equalsIgnoreCase(parts[4])) {
+        log.error("Removing existing assignment before modify: " + existingData);
+        accReq.add(new AttributeRequest("specialAssignments", ProvisioningPlan.Operation.Remove, existingData));
+        }
+        }
+        }
+
+        log.error("Adding updated assignment: " + specialAssignmentsVal);
+        accReq.add(new AttributeRequest("specialAssignments", ProvisioningPlan.Operation.Add, specialAssignmentsVal));
+        }
+
+        plan.add(accReq);
+        log.error("Provisioning Plan XML: " + plan.toXml());
+
+        return plan;
+      ]]></Source>
+    </Script>
+    <Transition to="Initialize"/>
+  </Step>
+  <Step icon="Stop" name="Stop" posX="1214" posY="308"/>
+  <Step icon="Task" name="Initialize" posX="170" posY="10">
+    <Arg name="formTemplate" value="Identity Update"/>
+    <Arg name="identityName" value="ref:identityName"/>
+    <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+    <Arg name="launcher" value="ref:launcher"/>
+    <Arg name="optimisticProvisioning" value="ref:optimisticProvisioning"/>
+    <Arg name="plan" value="ref:plan"/>
+    <Arg name="policyScheme" value="none"/>
+    <Arg name="workItemPriority" value="ref:workItemPriority"/>
+    <Arg name="source" value="ref:source"/>
+    <Arg name="trace" value="ref:trace"/>
+    <Arg name="flow" value="ref:flow"/>
+    <Description>
+      Call the standard subprocess to initialize the request, this includes
+      auditing, building the approvalset, compiling the plan into
+      project and checking policy violations.
+    </Description>
+    <Return name="project" to="project"/>
+    <Return name="approvalSet" to="approvalSet"/>
+    <Return name="identityRequestId" to="identityRequestId"/>
+    <Return name="policyViolations" to="policyViolations"/>
+    <WorkflowRef>
+      <Reference class="sailpoint.object.Workflow" name="Identity Request Initialize"/>
+    </WorkflowRef>
+    <Transition to="Provision"/>
+  </Step>
+  <Step condition="script:!((size(policyViolations) &gt; 0 ) &amp;&amp; (policyScheme.equals(&quot;fail&quot;)))" icon="Task" name="Provision" posX="290" posY="10">
+    <Arg name="approvalScheme" value="ref:approvalScheme"/>
+    <Arg name="fallbackApprover" value="ref:fallbackApprover"/>
+    <Arg name="foregroundProvisioning" value="ref:foregroundProvisioning"/>
+    <Arg name="formTemplate" value="Identity Update"/>
+    <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+    <Arg name="identityName" value="ref:identityName"/>
+    <Arg name="identityRequestId" value="ref:identityRequestId"/>
+    <Arg name="launcher" value="ref:launcher"/>
+    <Arg name="manualActionsEmailTemplate" value="Pending Manual Changes"/>
+    <Arg name="optimisticProvisioning" value="ref:optimisticProvisioning"/>
+    <Arg name="workItemPriority" value="ref:workItemPriority"/>
+    <Arg name="project" value="ref:project"/>
+    <Arg name="policyScheme" value="none"/>
+    <Arg name="noTriggers" value="true"/>
+    <Arg name="trace" value="ref:trace"/>
+    <Description>
+      Call the standard subprocess that will process the
+      approval decisions and do provisioning.  This
+      includes calling any configured provisioning
+      connectors and building manual actions.
+    </Description>
+    <Return name="project" to="project"/>
+    <WorkflowRef>
+      <Reference class="sailpoint.object.Workflow" name="Identity Request Provision"/>
+    </WorkflowRef>
+    <Transition to="Finalize"/>
+  </Step>
+  <Step catches="complete" condition="script:!((size(policyViolations) &gt; 0 ) &amp;&amp; (policyScheme.equals(&quot;fail&quot;)))" icon="Task" name="Finalize" posX="410" posY="10">
+    <Arg name="approvalSet" value="ref:cart"/>
+    <Arg name="project" value="ref:project"/>
+    <Arg name="workItemPriority" value="ref:workItemPriority"/>
+    <Arg name="trace" value="ref:trace"/>
+    <Arg name="identityRequestId" value="ref:identityRequestId"/>
+    <Arg name="identityName" value="ref:identityName"/>
+    <Description>
+      Call the standard subprocess that can audit/finalize the request.
+    </Description>
+    <WorkflowRef>
+      <Reference class="sailpoint.object.Workflow" name="Identity Request Finalize"/>
+    </WorkflowRef>
+    <Transition to="EmailNotification"/>
+  </Step>
+  <Step name="EmailNotification" posX="1037" posY="20">
+    <Arg name="userEmailTemplate" value="ref:userEmailTemplate"/>
+    <Script>
+      <Source><![CDATA[
+        import sailpoint.object.EmailOptions;
+        import sailpoint.object.EmailTemplate;
+
+        log.error("email ---------- " + email);
+
+        try {
+        EmailTemplate emailTemplate = context.getObjectByName(EmailTemplate.class, userEmailTemplate);
+
+        if (userEmailTemplate == null) {
+        return "email template is not found";
+        }
+
+        Map map = new HashMap();
+        map.put("identityName", identityName);
+        map.put("startDate", startDate);
+        map.put("endDate", endDate);
+        map.put("department", department);
+        map.put("branch", branch);
+        map.put("position", position);
+        map.put("status", status);
+
+        if (email == null || email.isEmpty()) {
+        log.error("User email not found. Using default email.");
+        email = "default@company.com";
+        }
+
+        EmailOptions emailOptions = new EmailOptions(email, map);
+        context.sendEmailNotification(emailTemplate, emailOptions);
+        } catch (Exception e) {
+        log.error("Exception while sending email: " + e);
+        return "error";
+        }
+
+        return "success";
+
+      ]]></Source>
+    </Script>
+    <Transition to="Stop"/>
+  </Step>
+</Workflow>

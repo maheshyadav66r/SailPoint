@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Policy PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Policy certificationActions="Remediated,Mitigated,Delegated" configPage="entitlementPolicy.xhtml" executor="sailpoint.policy.EntitlementSODPolicyExecutor" name="ActiveDirectorySOD_B_Policy" state="Active" type="EntitlementSOD" typeKey="policy_type_entitlement_sod" violationOwnerType="Manager">
+  <PolicyAlert disabled="true" escalationStyle="none"/>
+  <Attributes>
+    <Map>
+      <entry key="sysDescriptions">
+        <value>
+          <Map>
+            <entry key="en_US"/>
+          </Map>
+        </value>
+      </entry>
+      <entry key="taskResultId" value="c0a801199b3617ea819b41b696860c04"/>
+    </Map>
+  </Attributes>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="Naveen Rasali"/>
+  </Owner>
+  <GenericConstraints>
+    <GenericConstraint disabled="true" name="new rule" violationOwnerType="None">
+      <Attributes>
+        <Map>
+          <entry key="taskResultId" value="c0a801199b34190d819b35c6cc9101e5"/>
+        </Map>
+      </Attributes>
+      <IdentitySelector>
+        <MatchExpression>
+          <MatchTerm name="memberOf" type="Entitlement" value="CN=BenefitCommittee,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+            <ApplicationRef>
+              <Reference class="sailpoint.object.Application" name="ActiveDirectory"/>
+            </ApplicationRef>
+          </MatchTerm>
+        </MatchExpression>
+      </IdentitySelector>
+      <IdentitySelector>
+        <MatchExpression>
+          <MatchTerm name="memberOf" type="Entitlement" value="CN=Benefits,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+            <ApplicationRef>
+              <Reference class="sailpoint.object.Application" name="ActiveDirectory"/>
+            </ApplicationRef>
+          </MatchTerm>
+        </MatchExpression>
+      </IdentitySelector>
+    </GenericConstraint>
+  </GenericConstraints>
+</Policy>

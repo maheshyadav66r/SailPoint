@@ -1,0 +1,337 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Validation RoleAssignment Check" type="Validation">
+  <Source><![CDATA[
+  import java.util.ArrayList;
+  import java.util.HashSet;
+  import java.util.List;
+  import java.util.Set;
+  import java.io.BufferedReader;
+  import java.io.FileReader;
+  import java.io.IOException;
+  import sailpoint.api.ObjectUtil;
+  import sailpoint.api.SailPointContext;
+  import sailpoint.api.SailPointFactory;
+  import sailpoint.object.Bundle;
+  import sailpoint.object.Identity;
+  import sailpoint.object.Profile;
+  import sailpoint.object.RoleAssignment;
+  import sailpoint.object.RoleTarget;
+  import sailpoint.tools.GeneralException;
+  import sailpoint.api.IdentityService;
+  import sailpoint.object.Link;
+  import sailpoint.object.Application;
+
+  import java.io.BufferedReader;
+  import java.io.FileReader;
+  import java.util.ArrayList;
+  import java.util.Arrays;
+  import java.util.HashMap;
+  import java.util.List;
+  import java.util.Map;
+
+  import sailpoint.api.Provisioner;
+  import sailpoint.api.SailPointContext;
+  import sailpoint.api.SailPointFactory;
+  import sailpoint.object.Identity;
+  import sailpoint.object.ProvisioningPlan;
+  import sailpoint.object.ProvisioningProject;
+  import sailpoint.object.Source;
+  import sailpoint.tools.GeneralException;
+  import sailpoint.tools.RFC4180LineParser;
+
+
+
+
+  int skipLines = 7;
+  String inputfileName = "TRE-TCR-ICAM_Monthly 1.csv";
+  String stringToAppend ="Daily";
+
+  // String h=(String)application.getAttributes().getMap().get("file");
+  String h="C:/Users/Mahes/Downloads/TRE-TCR-ICAM_Target 1.csv";
+  int index=h.lastIndexOf("/");
+  String basePath=h.substring(0,(index+1));
+
+  // String inputfile = basePath+inputfileName;
+  String inputfile = "C:\\Users\\Mahes\\Downloads\\TRE-TCR-ICAM_Monthly 1.csv";
+  BufferedReader grpIn = null;
+  Map map = new HashMap();
+
+  try {
+    grpIn = new BufferedReader(new FileReader(inputfile));
+    System.out.println("Opening of input file");
+
+    String rawStr;
+
+    List headerLines = new ArrayList();
+    boolean headerDone = false;
+
+    while ((rawStr = grpIn.readLine()) != null) {
+
+      // ===== HEADER LOGIC =====
+      if (!headerDone) {
+        headerLines.add(rawStr);
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < headerLines.size(); i++) {
+          sb.append(headerLines.get(i));
+        }
+
+        String temp = sb.toString().replace("\"", "");
+        String[] cols = temp.split(",");
+
+        // HEADER COMPLETE WHEN 12+ VALUES (4 metadata + 8 columns)
+        if (cols.length >= 12) {
+
+          List finalHeader = new ArrayList();
+
+          for (int i = 4; i < cols.length; i++) { // skip first 4 metadata
+            finalHeader.add(cols[i].trim().replaceAll("\\s+", " "));
+          }
+
+          map.put("Header", finalHeader);
+          headerDone = true;
+
+          System.out.println("HEADER :: " + finalHeader);
+        }
+
+        continue;
+      }
+      // ===== END HEADER =====
+
+
+      // ===== DATA LOGIC =====
+      if (rawStr.trim().length() == 0) continue;
+
+      RFC4180LineParser csvParser = new RFC4180LineParser(',');
+      ArrayList arl = csvParser.parseLine(rawStr);
+
+      if (arl == null || arl.size() < 5) {
+        System.out.println("Skipping: " + rawStr);
+        continue;
+      }
+
+      String key = (String) arl.get(0);
+      if (key == null || key.trim().isEmpty()) continue;
+
+      key = key.replace("SSCDIRECT\\","");
+
+      String entValue = (String) arl.get(2);
+      if(entValue!=null && !entValue.contains("SSCDIRECT\\")) {
+        entValue ="SSCDIRECT\\" +entValue;
+      }
+
+      String value = key+","+ entValue+","+arl.get(4)+","+arl.get(6);
+      value = value.replace("SSCDIRECT",stringToAppend);
+
+      if(map.containsKey(key)) {
+        List curentLst = (List) map.get(key);
+        curentLst.add(value);
+      } else {
+        List newList = new ArrayList();
+        newList.add(value);
+        map.put(key,newList);
+      }
+      // ===== END DATA =====
+    }
+
+  } catch (Exception e) {
+    e.printStackTrace();
+  }
+  finally {
+    try { if (grpIn != null) grpIn.close(); } catch (Exception e) {}
+  }
+
+  System.out.println("FINAL MAP :: " + map);
+
+  return map;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  List dataList = new ArrayList();
+  List missingTargets = new ArrayList();
+  StringBuilder finalData = new StringBuilder(10000);
+  StringBuilder missingTarget = new StringBuilder(10000);
+  Identity identityObj = null;
+  // String filePath = "D:\\csv files\\UsersRoleData.csv";
+  // BufferedReader br = null;
+
+  String inputData = config.get("identities");
+
+
+  /* for(int i=0;i<this.variables.length;i++){
+    log.error("variables  ::  "+this.variables[i]);
+  }*/
+  log.error(" config map in TaskDefinition "+config);
+  log.error(" config Map in RunRule Task identities inputData :: "+inputData);
+  List identities = null;
+
+  if(inputData.contains(",")){
+    identities = Arrays.asList(inputData.split(","));
+
+  }else{
+
+    identities.add(inputData);
+
+  }
+
+
+  //log.error(" taskExecutor in RunRule Task  "+taskExecutor);
+
+  log.error("identities List :: "+identities);
+
+  try{
+
+    // br = new BufferedReader(new FileReader(filePath), 8192); // bigger buffer
+
+    // String line,identityName;
+
+    //while ((line = br.readLine()) != null) {
+    // if (line.trim().isEmpty()) continue;
+
+    // return line;
+    /*String[] parts = line.split(",");
+      if (parts.length == 0) continue;
+
+      identityName = parts[0].trim();
+      if (identityName.isEmpty()) continue;*/
+    //String identityName ="Aaron Nichols";
+
+    for(String identityName : identities){
+
+      log.error("IdentityNames : "+ identityName);
+
+      identityObj = context.getObjectByName(Identity.class, identityName);
+      if (identityObj == null) {
+        return "Identity not found";
+      }
+
+      List assignedRoles = identityObj.getAssignedRoles();
+      if (assignedRoles == null || assignedRoles.isEmpty()) {  //Util.nullSafeSize()
+        return "No assigned roles";
+      }
+
+      //  Fetch once (avoid repeated preference calls)
+      List assignments = (List) identityObj.getPreference("roleAssignments");
+
+      //  Convert assignments to Map for O(1) lookup
+      Map roleTargetMap = new HashMap();
+      if (assignments != null) {
+        for (RoleAssignment ra : assignments) {
+          if (ra != null && ra.getRoleName() != null) {
+            roleTargetMap.put(ra.getRoleName().toLowerCase(), ra.getTargets());
+          }
+        }
+      }
+
+
+      // Loop assignedRole
+      for (Bundle assignedRole : assignedRoles) {
+
+        if (assignedRole == null || !"business".equalsIgnoreCase(assignedRole.getType())) {
+          continue;
+        }
+
+        String roleName = assignedRole.getName();
+        if (roleName == null) continue;
+
+        //  Use Set directly avoid duplicate application
+        Set profileApps = new HashSet();
+
+        //  Get IT roles (bundles or requirements)
+        List itRoles = assignedRole.getRequirements();
+        if (itRoles == null || itRoles.isEmpty()) {
+          continue;
+        }
+
+        for (Bundle itRole : itRoles) {
+          if (itRole == null) continue;
+
+          List profiles = itRole.getProfiles();
+          if (profiles == null) continue;
+
+          for (Profile profile : profiles) {
+            if (profile != null && profile.getApplication() != null) {
+              profileApps.add(profile.getApplication().getName());
+            }
+          }
+        }
+
+        // Check RoleTargets against BRName from roleTargetMap
+        List targets = (List) roleTargetMap.get(roleName.toLowerCase());
+        if (targets == null) continue;
+
+        for (RoleTarget target : targets) {
+          if (target == null) continue;
+          String appName = target.getApplicationName();
+
+          log.error(" application set before target loop  "+profileApps);
+          //  lookup application Name using Set(Bundle AppNames)
+          if (profileApps.contains(appName)) {
+            profileApps.remove(appName);
+
+            IdentityService idService = new IdentityService(context);
+            Link  link = idService.getLink(identityObj,context.getObjectByName(Application.class ,appName) , null , target.getNativeIdentity());
+
+            if(link == null){
+              finalData.append(roleName).append(" , ")
+                .append(target.getNativeIdentity()).append(" , ")
+                .append(appName).append("\n");
+              //dataList.add(finalData);
+            }
+          }
+        }
+        log.error(" application set after target loop  "+profileApps);
+        if(!profileApps.isEmpty()){
+
+          missingTarget.append(roleName)
+            .append(" , ")
+            .append(identityName)
+            .append(" , ")
+            .append(Util.listToCsv(new ArrayList(profileApps)))
+            .append("\n");
+          //missingTargets.add(missingTarget);
+        }
+      }
+      dataList.add(missingTarget);
+      dataList.add(finalData);
+    }
+  } catch (Exception e) {
+    System.out.println("Exception in rule: "+ e.getMessage());
+  }finally{
+    context.decache(identityObj);
+  }
+
+
+  System.out.println("OUTPUTDATA : \n"+dataList);
+
+  return "dataList";
+  //return"DATA FROM CODE:\n"+finalData;
+  ]]></Source>
+</Rule>

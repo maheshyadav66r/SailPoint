@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningTransaction PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningTransaction accountDisplayName="cn=Mahesh.Nattali,ou=People,dc=my-domain,dc=com" applicationName="LDAPApplication" identityDisplayName="Mahesh Nattali" identityName="Mahesh Nattali" integration="LDAPApplication" name="0000007025" nativeIdentity="cn=Mahesh.Nattali,ou=People,dc=my-domain,dc=com" operation="Create" source="LCM" status="Failed" type="Auto">
+  <Attributes>
+    <Map>
+      <entry key="accessRequestId" value="0000000668"/>
+      <entry key="planResult">
+        <value>
+          <ProvisioningResult status="failed">
+            <Errors>
+              <Message key="sailpoint.connector.InvalidConfigurationException: [ InvalidConfigurationException ] &#10; [ Error details ] [LDAP: error code 17 - employeeId: attribute type undefined]" type="Error"/>
+            </Errors>
+          </ProvisioningResult>
+        </value>
+      </entry>
+      <entry key="request">
+        <value>
+          <AccountRequest application="LDAPApplication" nativeIdentity="cn=Mahesh.Nattali,ou=People,dc=my-domain,dc=com" op="Create">
+            <Attributes>
+              <Map>
+                <entry key="flow" value="AccountsRequest"/>
+                <entry key="forceNewAccount" value="true"/>
+                <entry key="interface" value="LCM"/>
+                <entry key="nativeIdUpdated">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="operation" value="Create"/>
+                <entry key="provisioningTransactionId" value="c0a800fc971a158a81971acf996b01bc"/>
+              </Map>
+            </Attributes>
+            <AttributeRequest name="password" op="Set">
+              <Attributes>
+                <Map>
+                  <entry key="secret" value="true"/>
+                </Map>
+              </Attributes>
+            </AttributeRequest>
+            <AttributeRequest name="sn" op="Set" value="Nattali"/>
+            <AttributeRequest name="mail" op="Set" value="mahesh.nattali@eshiam.com"/>
+            <AttributeRequest name="employeeId" op="Add" value="1045"/>
+            <ProvisioningResult status="failed">
+              <Errors>
+                <Message key="sailpoint.connector.InvalidConfigurationException: [ InvalidConfigurationException ] &#10; [ Error details ] [LDAP: error code 17 - employeeId: attribute type undefined]" type="Error"/>
+              </Errors>
+            </ProvisioningResult>
+          </AccountRequest>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+</ProvisioningTransaction>

@@ -1,0 +1,141 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1723624335714" completionStatus="Error" launched="1723617051963" launcher="spadmin" name="Update Identity Adam Kennedy AccountsRequest" targetClass="Identity" targetName="Adam Kennedy" type="LCM">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000288"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Adam Kennedy">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000288"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="LDAPApplication" nativeIdentity="cn=Adam.Kennedynew,ou=People,dc=my-domain,dc=com" op="Enable">
+                  <Attributes>
+                    <Map>
+                      <entry key="flow" value="AccountsRequest"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="Enable"/>
+                    </Map>
+                  </Attributes>
+                </AccountRequest>
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Adam Kennedynew,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Enable">
+                  <Attributes>
+                    <Map>
+                      <entry key="flow" value="AccountsRequest"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="Enable"/>
+                    </Map>
+                  </Attributes>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000288"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Adam Kennedy" targetIntegration="LDAPApplication" trackingId="4c844ea1cd6b4e829cfb82df77e429a3">
+              <AccountRequest application="LDAPApplication" nativeIdentity="cn=Adam.Kennedynew,ou=People,dc=my-domain,dc=com" op="Enable">
+                <Attributes>
+                  <Map>
+                    <entry key="flow" value="AccountsRequest"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="operation" value="Enable"/>
+                    <entry key="provisioningTransactionId" value="c0a81d89912c1c5a81914f950c572b12"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="businessCategory" op="Set" value="Active"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000288"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+              <ProvisioningResult status="failed">
+                <Errors>
+                  <Message key="[ InvalidConfigurationException ] &#10; [ Possible suggestions ] a) Furnish the correct host and port. b) Ensure the OpenLDAP host is up and running. &#10; [ Error details ] Failed to connect to server: localhost:389" type="Error"/>
+                </Errors>
+              </ProvisioningResult>
+            </ProvisioningPlan>
+            <ProvisioningPlan nativeIdentity="Adam Kennedy" targetIntegration="ActiveDirectory" trackingId="4f3fbde9ea844de4afba5d2411787b84">
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Adam Kennedynew,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Enable" targetIntegration="ActiveDirectory">
+                <Attributes>
+                  <Map>
+                    <entry key="flow" value="AccountsRequest"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="operation" value="Enable"/>
+                  </Map>
+                </Attributes>
+                <ProvisioningResult>
+                  <Errors>
+                    <Message key="Connection timed out: connect" type="Error"/>
+                  </Errors>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000288"/>
+                  <entry key="inRetry">
+                    <value>
+                      <Boolean>true</Boolean>
+                    </value>
+                  </entry>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a81d89912c1c5a81914f95069a2b0a"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="end"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="[ InvalidConfigurationException ] &#10; [ Possible suggestions ] a) Furnish the correct host and port. b) Ensure the OpenLDAP host is up and running. &#10; [ Error details ] Failed to connect to server: localhost:389" type="Error"/>
+    <Message key="Connection timed out: connect" type="Error"/>
+  </Messages>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

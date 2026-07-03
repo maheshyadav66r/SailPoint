@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Policy PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Policy certificationActions="Remediated,Mitigated,Delegated" configPage="entitlementPolicy.xhtml" executor="sailpoint.policy.EffectiveEntitlementSODPolicyExecutor" name="Confilct _btwn Effective Entlmt SOD Policy" state="Active" type="EffectiveEntitlementSOD" typeKey="policy_type_effective_entitlement_sod" violationOwnerType="Identity">
+  <PolicyAlert disabled="true" escalationStyle="none"/>
+  <Attributes>
+    <Map>
+      <entry key="sysDescriptions">
+        <value>
+          <Map>
+            <entry key="en_US" value="&lt;b&gt;POLICY LEVEL:&lt;/b&gt;Confilct _between Effective Entlmt SOD Policy Description"/>
+          </Map>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+  <ViolationOwner>
+    <Reference class="sailpoint.object.Identity" name="Mahesh Nattali"/>
+  </ViolationOwner>
+  <GenericConstraints>
+    <GenericConstraint disabled="true" name="Effective Entlmt SOD Policy check rule_1" violationOwnerType="None">
+      <Attributes>
+        <Map>
+          <entry key="taskResultId" value="c0a81d8992c311298192dc09e5ff115a"/>
+        </Map>
+      </Attributes>
+      <Description>Rule Level:Effective Entlmt SOD Policy Rule_1 Description</Description>
+      <IdentitySelector>
+        <MatchExpression>
+          <MatchTerm checkEffective="true" name="memberOf" type="Entitlement" value="CN=DEV_Internal,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+            <ApplicationRef>
+              <Reference class="sailpoint.object.Application" name="ADX"/>
+            </ApplicationRef>
+          </MatchTerm>
+        </MatchExpression>
+      </IdentitySelector>
+      <IdentitySelector>
+        <MatchExpression>
+          <MatchTerm checkEffective="true" name="memberOf" type="Entitlement" value="CN=DEV_Mgmt,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+            <ApplicationRef>
+              <Reference class="sailpoint.object.Application" name="ADX"/>
+            </ApplicationRef>
+          </MatchTerm>
+        </MatchExpression>
+      </IdentitySelector>
+    </GenericConstraint>
+  </GenericConstraints>
+</Policy>

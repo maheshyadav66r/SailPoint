@@ -1,0 +1,99 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="WorkItemForward-Rule" type="WorkItemForward">
+  <Description>A rule used to examine a WorkItem and determine whether or not it needs to be forwarded to a new owner for further analysis or action.  The default forwarding rule in the system configuratin will be called every time a WorkItem is opened, and whenever it is forwarded in the user interface.</Description>
+  <Signature returnType="Object">
+    <Inputs>
+      <Argument name="log">
+        <Description>
+          The log object associated with the SailPointContext.
+        </Description>
+      </Argument>
+      <Argument name="context">
+        <Description>
+          A sailpoint.api.SailPointContext object that can be used to query the database if necessary.
+        </Description>
+      </Argument>
+      <Argument name="item">
+        <Description>
+          The WorkItem being opened or forwarded.
+        </Description>
+      </Argument>
+      <Argument name="owner">
+        <Description>
+          The Identity that currently owns the work item.
+        </Description>
+      </Argument>
+    </Inputs>
+    <Returns>
+      <Argument name="newOwner">
+        <Description>
+          An Identity that should own the work item.  Alternatively, this can
+          be a String that is the name or id of the Identity.
+        </Description>
+      </Argument>
+    </Returns>
+  </Signature>
+  <Source><![CDATA[
+  import sailpoint.api.ObjectUtil;
+  import sailpoint.api.Workflower;
+  import sailpoint.object.WorkItem;
+  import sailpoint.object.WorkItem.State;
+  import java.util.Date;
+
+  List properties = new ArrayList();
+  properties.add("name");
+
+
+  log.error(" Entered into  WorkItemForward rule........");
+  //log.error("  item........"+item.toXml());
+  log.error("   in the beginning item........======"+item.toXml());
+  // log.error("  owner........"+owner.toXml());
+  // log.error("  newOwner........"+newOwner);
+
+
+  if(owner!=null){
+    Iterator it=ObjectUtil.getWorkgroupMembers(context,owner,properties);
+
+    if(it!=null @and !it.hasNext()){
+
+      log.error(" if it is empty the  item is before nullifying item........"+item.toXml());
+      item.setState(WorkItem.State.Canceled);
+      item.setExpiration(new Date());
+      log.error(" item expiry checking........"+item.isExpired());
+      log.error(" if it is empty the  item is after nullifying item........"+item.toXml());
+
+    }else{
+
+      log.error(" if it is not empty the  item is not nullifying item........"+item.toXml());
+      //item=item;
+    }
+  }
+  log.error(" after all conditions item........"+item.toXml());
+  return owner;
+
+  /* try{
+    list.add("name");
+    //if(null != item ) log.error("RWF-1 : item : "+item.toXml());
+    if(owner != null ) { 
+      Iterator iterator = sailpoint.api.ObjectUtil.getWorkgroupMembers(context,owner,list);
+      log.error("RWF-2 : isEmpty : "+sailpoint.tools.Util.isEmpty(iterator));
+      log.error("RWF-3 : List : "+sailpoint.tools.Util.iteratorToList(iterator));
+      if( sailpoint.tools.Util.isEmpty(iterator)){
+        item.setState(sailpoint.object.WorkItem.State.Rejected) ;
+        //item.setState(sailpoint.object.WorkItem.State.Finished) ;
+        Workflower workflower = new Workflower(context);
+        workflower.process(wi,false);
+        //context.saveObject(item);
+        //context.commitTransaction();
+      }
+    }
+    if(null != item )
+      log.error("RWF-1 : item : "+item.getState());
+  }catch(Exception ex){
+    log.error("RWF-4 : error : "+ex.getMessage());
+  }*/
+
+  // return owner; 
+  ]]></Source>
+</Rule>

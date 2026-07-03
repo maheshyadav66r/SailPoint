@@ -1,0 +1,265 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="DB_Valuescheck_RuleLibrary">
+  <Source><![CDATA[
+  import java.sql.Connection;
+  import java.sql.DriverManager;
+  import java.sql.PreparedStatement;
+  import java.sql.ResultSet;
+  import java.sql.Connection;
+  import java.sql.SQLException;
+  import sailpoint.tools.Message; 
+  import sailpoint.tools.Util;
+  import sailpoint.object.Identity;
+  import java.util.HashMap;
+  import sailpoint.transformer.IdentityTransformer;
+  import javax.faces.application.FacesMessage;
+
+
+
+  public Connection  buildConnection(){
+    log.error("......Entering into buildConnection method.....");
+
+
+    Connection connection = null;
+    PreparedStatement preparedStatement = null;
+    ResultSet resultSet = null;
+
+    String dbUrl = "jdbc:mysql://localhost:3306/test"; 
+    String dbUsername = "root"; 
+    String dbPassword = "root"; 
+
+    Class.forName("com.mysql.cj.jdbc.Driver");
+    Connection  connection = null;
+
+    try{
+
+      Class.forName("com.mysql.cj.jdbc.Driver");
+      connection = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
+
+    }catch (SQLException e) {
+      e.printStackTrace();
+    } 
+
+    log.error("......Exiting from buildConnection method.....");
+    return connection;
+  }
+
+
+  public void uiPopUp(){
+
+    log.error("......Enterd into DB_Valuescheck_RuleLibrary uiPopUp method.....");
+
+    List currentMessages = httpSession.getAttribute("sailpoint.web.PageCodeBase.sessionMessages");
+    FacesMessage myMessage = new FacesMessage(FacesMessage.SEVERITY_INFO, "DB Operation is canceled", "This is ignored");
+
+    List myMessages = new ArrayList();
+    myMessages.add(myMessage);
+
+    httpSession.setAttribute("sailpoint.web.PageCodeBase.sessionMessages", myMessages);
+
+    log.error("......Exiting from DB_Valuescheck_RuleLibrary uiPopUp method.....");
+  }
+
+
+  public Map buildFormModel(){
+
+    HashMap model = new HashMap();
+    IdentityTransformer transformer = new IdentityTransformer(context);
+    model.put(IdentityTransformer.ATTR_TRANSFORMER_CLASS, transformer.getClass().getName());
+    model.put(IdentityTransformer.ATTR_TRANSFORMER_OPTIONS, "");
+
+    return model;
+  }
+
+
+
+  public void changeOwner(){
+
+    log.error("......Enterd into DB_Valuescheck_RuleLibrary changeOwner method.....");
+
+    Connection connection =null;
+    PreparedStatement preparedStatement = null;
+    ResultSet resultSet = null;
+
+    String c1value = null;
+    String c2value = null;
+    String c3value = null;
+    String newOwner = null;
+    int rowsInserted = 0;
+
+    if(formModel != null){
+
+      c1value = formModel.get("c11");
+      c2value = formModel.get("c22");
+      c3value = formModel.get("c33");
+      newOwner = formModel.get("ownerr");
+
+    }
+
+    try{
+
+      connection = buildConnection();
+      String insertQuery = "update test.columns_data set owner = ? where c1 = ? and c2 = ? and c3 = ?";
+
+
+      //if(!newOwner.isEmpty() @and newOwner != null @and !c1value.isEmpty() @and c1value != null @and !c2value.isEmpty() @and c2value != null @and !c3value.isEmpty() @and c3value != null ){
+      if(newOwner != null  @and c1value != null  @and c2value != null  @and c3value != null ){
+
+        preparedStatement = connection.prepareStatement(insertQuery);
+
+        preparedStatement.setString(1, newOwner);
+        preparedStatement.setString(2, c1value);
+        preparedStatement.setString(3, c2value);
+        preparedStatement.setString(4, c3value);
+
+        rowsInserted = preparedStatement.executeUpdate();
+
+      }
+    }catch (SQLException e) {
+
+      log.error(e.getMessage());
+
+    } finally {
+
+      try {
+
+        if (resultSet != null) resultSet.close();
+        if (preparedStatement != null) preparedStatement.close();
+        if (connection != null) connection.close();
+
+      } catch (SQLException e) {
+
+        log.error(e.getMessage());
+      }
+    }
+
+    log.error("......Exiting from DB_Valuescheck_RuleLibrary changeOwner method.....");
+
+  }
+
+
+
+  public void readDBData(){
+
+    List c1List = new ArrayList();
+    List c2List = new ArrayList();
+    List c3List = new ArrayList();
+
+    Connection connection =null;
+    PreparedStatement preparedStatement = null;
+    ResultSet resultSet = null;
+
+    try{
+
+      connection = buildConnection();
+
+      String existingCheckQuery="SELECT * FROM test.columns_data";
+
+      preparedStatement = connection.prepareStatement(existingCheckQuery);
+
+      resultSet = preparedStatement.executeQuery();
+
+      while(resultSet.next()) {
+
+        c1List.add(resultSet.getString(1));
+        c2List.add(resultSet.getString(2));
+        c3List.add(resultSet.getString(3));
+
+      }
+
+    }catch (SQLException e) {
+      log.error(e.getMessage());
+    } finally {
+
+      try {
+
+        if (resultSet != null) resultSet.close();
+        if (preparedStatement != null) preparedStatement.close();
+        if (connection != null) connection.close();
+
+      } catch (SQLException e) {
+        log.error(e.toString());
+      }
+    }
+
+    Util.	removeDuplicates(c1List);
+    Util.	removeDuplicates(c2List);
+    Util.	removeDuplicates(c3List);
+
+    formModel.put("c1",c1List);
+    formModel.put("c2",c2List);
+    formModel.put("c3",c3List); 
+
+  }
+
+
+
+  public void insertData(){
+
+    log.error("......Entering into insertData method.....");
+
+    int rowsInserted ;
+
+    if(formModel!=null){
+
+      int existcount=formModel.get("existcount");
+
+      if (existcount == 0) {
+
+        String c1value;
+        String c2value;
+        String c3value;
+        String owner;
+        String dn; 
+
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+
+        c1value = formModel.get("c1");
+        c2value = formModel.get("c2");
+        c3value = formModel.get("c3");
+        owner = formModel.get("ownerr");
+        dn = "DC="+c1value+",DC="+c2value+",DC="+c3value;
+
+
+
+        try{
+          connection = buildConnection();
+
+          String insertQuery = "insert into test.columns_data (c1, c2, c3, dn, owner) values (?, ?, ?, ?, ?)";
+
+          preparedStatement = connection.prepareStatement(insertQuery);
+
+          preparedStatement.setString(1, c1value);
+          preparedStatement.setString(2, c2value);
+          preparedStatement.setString(3, c3value);
+          preparedStatement.setString(4, dn);
+          preparedStatement.setString(5, owner);
+
+          rowsInserted = preparedStatement.executeUpdate();
+
+        }catch (SQLException e) 
+        {
+          log.error(e.getMessage());
+        }
+        finally
+        {
+
+          try{
+
+            if(preparedStatement != null) preparedStatement.close();
+            if(connection != null) connection.close();
+
+          }catch(SQLException e){
+
+            e.printStackTrace();
+          }
+        }
+      } 
+    } 
+    log.error("......Exiting from insertData method.....");
+  }
+  ]]></Source>
+</Rule>

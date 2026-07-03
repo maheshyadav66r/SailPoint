@@ -1,0 +1,173 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1748501503898" completionStatus="Error" launched="1748501500282" launcher="spadmin" name="Update Identity Mahesh Nattali AccountsRequest - 3" targetClass="Identity" targetName="Mahesh Nattali" type="LCM">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000668"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Mahesh Nattali">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000668"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="IntConApplication" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="flow" value="AccountsRequest"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="nativeIdUpdated">
+                        <value>
+                          <Boolean>true</Boolean>
+                        </value>
+                      </entry>
+                      <entry key="operation" value="Create"/>
+                    </Map>
+                  </Attributes>
+                </AccountRequest>
+                <AccountRequest application="LDAPApplication" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="flow" value="AccountsRequest"/>
+                      <entry key="forceNewAccount" value="true"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="nativeIdUpdated">
+                        <value>
+                          <Boolean>true</Boolean>
+                        </value>
+                      </entry>
+                      <entry key="operation" value="Create"/>
+                    </Map>
+                  </Attributes>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000668"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Mahesh Nattali" targetIntegration="LDAPApplication" trackingId="9fdcb8a9cb394a7aa9e7b216955f520a">
+              <AccountRequest application="LDAPApplication" nativeIdentity="cn=Mahesh.Nattali,ou=People,dc=my-domain,dc=com" op="Create">
+                <Attributes>
+                  <Map>
+                    <entry key="flow" value="AccountsRequest"/>
+                    <entry key="forceNewAccount" value="true"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="nativeIdUpdated">
+                      <value>
+                        <Boolean>true</Boolean>
+                      </value>
+                    </entry>
+                    <entry key="operation" value="Create"/>
+                    <entry key="provisioningTransactionId" value="c0a800fc971a158a81971acf996b01bc"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="password" op="Set">
+                  <Attributes>
+                    <Map>
+                      <entry key="secret" value="true"/>
+                    </Map>
+                  </Attributes>
+                </AttributeRequest>
+                <AttributeRequest name="sn" op="Set" value="Nattali"/>
+                <AttributeRequest name="mail" op="Set" value="mahesh.nattali@eshiam.com"/>
+                <AttributeRequest name="employeeId" op="Add" value="1045"/>
+                <ProvisioningResult status="failed">
+                  <Errors>
+                    <Message key="sailpoint.connector.InvalidConfigurationException: [ InvalidConfigurationException ] &#10; [ Error details ] [LDAP: error code 17 - employeeId: attribute type undefined]" type="Error"/>
+                  </Errors>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000668"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+              <ProvisioningResult status="failed">
+                <Errors>
+                  <Message key="sailpoint.connector.InvalidConfigurationException: [ InvalidConfigurationException ] &#10; [ Error details ] [LDAP: error code 17 - employeeId: attribute type undefined]" type="Error"/>
+                </Errors>
+              </ProvisioningResult>
+            </ProvisioningPlan>
+            <ProvisioningPlan nativeIdentity="Mahesh Nattali" targetIntegration="ProvisionIntegrMod" trackingId="b33d3a231a604ac0bab2804dc2227d71">
+              <AccountRequest application="IntConApplication" nativeIdentity="1045" op="Create" targetIntegration="ProvisionIntegrMod">
+                <Attributes>
+                  <Map>
+                    <entry key="flow" value="AccountsRequest"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="nativeIdUpdated">
+                      <value>
+                        <Boolean>true</Boolean>
+                      </value>
+                    </entry>
+                    <entry key="operation" value="Create"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="Name" op="Set" value="Mahesh Nattali"/>
+                <AttributeRequest name="FirstName" op="Set" value="Mahesh"/>
+                <AttributeRequest name="LastName" op="Set" value="Nattali"/>
+                <AttributeRequest name="Department" op="Set" value="Executive Management"/>
+                <AttributeRequest name="Email" op="Set" value="mahesh.nattali@eshiam.com"/>
+                <AttributeRequest name="manager" op="Set" value="Manuel  l"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000668"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+              <ProvisioningResult status="failed!!!"/>
+            </ProvisioningPlan>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a800fc971a158a81971acf938a01aa"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="end"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="sailpoint.connector.InvalidConfigurationException: [ InvalidConfigurationException ] &#10; [ Error details ] [LDAP: error code 17 - employeeId: attribute type undefined]" type="Error"/>
+  </Messages>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

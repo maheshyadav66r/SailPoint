@@ -1,0 +1,187 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1717586401571" completionStatus="Error" launched="1717582617948" launcher="spadmin" name="Update Identity Albert Woods AccessRequest - 6" targetClass="Identity" targetName="Albert Woods" type="LCM">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000172"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Albert Woods">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000172"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="IIQ" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800fb8f7b1606818f868b2f060bd0"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="RoleAdd"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="assignedRoles" op="Add" value="IT InheritedRoles"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000172"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <ProvisioningTargets>
+                  <ProvisioningTarget role="IT InheritedRoles">
+                    <AccountSelection applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" selection="cn=Albert.Woods,ou=People,dc=my-domain,dc=com">
+                      <AccountInfo displayName="Albert.Woods" nativeIdentity="cn=Albert.Woods,ou=People,dc=my-domain,dc=com"/>
+                    </AccountSelection>
+                    <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ActiveDirectory" selection="CN=Albert Woods,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                      <AccountInfo displayName="Albert Woods" nativeIdentity="CN=Albert Woods,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+                    </AccountSelection>
+                  </ProvisioningTarget>
+                </ProvisioningTargets>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan targetIntegration="IIQ" trackingId="7be04e6cc20d4ad89325fd2111d759f4">
+              <AccountRequest application="IIQ" op="Modify" targetIntegration="IIQ">
+                <Attributes>
+                  <Map>
+                    <entry key="attachmentConfigList"/>
+                    <entry key="attachments"/>
+                    <entry key="flow" value="AccessRequest"/>
+                    <entry key="id" value="c0a800fb8f7b1606818f868b2f060bd0"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="operation" value="RoleAdd"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="assignedRoles" op="Add" value="IT InheritedRoles"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000172"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+            <ProvisioningPlan nativeIdentity="Albert Woods" targetIntegration="ActiveDirectory" trackingId="10898808e3bb45128980b9888cac68c5">
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Albert Woods,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify" targetIntegration="ActiveDirectory">
+                <AttributeRequest name="memberOf" op="Add">
+                  <Value>
+                    <List>
+                      <String>CN=DEV_All,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                      <String>CN=DEV_EastCoast,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                      <String>CN=Compensation,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                      <String>CN=Corporate-VPN,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                    </List>
+                  </Value>
+                </AttributeRequest>
+                <ProvisioningResult>
+                  <Errors>
+                    <Message key="Connection timed out: connect" type="Error"/>
+                  </Errors>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000172"/>
+                  <entry key="inRetry">
+                    <value>
+                      <Boolean>true</Boolean>
+                    </value>
+                  </entry>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+            <ProvisioningPlan nativeIdentity="Albert Woods" targetIntegration="LDAPApplication" trackingId="e2bd50ed2f52473691be2cbb83e7a837">
+              <AccountRequest application="LDAPApplication" nativeIdentity="cn=Albert.Woods,ou=People,dc=my-domain,dc=com" op="Modify">
+                <Attributes>
+                  <Map>
+                    <entry key="provisioningTransactionId" value="c0a81d898fc9197a818fe7e73783172e"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="groups" op="Add">
+                  <Value>
+                    <List>
+                      <String>cn=WebApplicationAccess,ou=Group,dc=my-domain,dc=com</String>
+                      <String>cn=Contractors,ou=Group,dc=my-domain,dc=com</String>
+                      <String>cn=Managers,ou=Group,dc=my-domain,dc=com</String>
+                    </List>
+                  </Value>
+                </AttributeRequest>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000172"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+              <ProvisioningResult status="failed">
+                <Errors>
+                  <Message key="[ InvalidConfigurationException ] &#10; [ Possible suggestions ] a) Furnish the correct host and port. b) Ensure the OpenLDAP host is up and running. &#10; [ Error details ] Failed to connect to server: localhost:389" type="Error"/>
+                </Errors>
+              </ProvisioningResult>
+            </ProvisioningPlan>
+            <ProvisioningTarget role="IT InheritedRoles">
+              <AccountSelection applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" selection="cn=Albert.Woods,ou=People,dc=my-domain,dc=com">
+                <AccountInfo displayName="Albert.Woods" nativeIdentity="cn=Albert.Woods,ou=People,dc=my-domain,dc=com"/>
+              </AccountSelection>
+              <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ActiveDirectory" selection="CN=Albert Woods,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="Albert Woods" nativeIdentity="CN=Albert Woods,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+            </ProvisioningTarget>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a81d898fc9197a818fe7e6dede1719"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="end"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="Connection timed out: connect" type="Error"/>
+    <Message key="[ InvalidConfigurationException ] &#10; [ Possible suggestions ] a) Furnish the correct host and port. b) Ensure the OpenLDAP host is up and running. &#10; [ Error details ] Failed to connect to server: localhost:389" type="Error"/>
+  </Messages>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

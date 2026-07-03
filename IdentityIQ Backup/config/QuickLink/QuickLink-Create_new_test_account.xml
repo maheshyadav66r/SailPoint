@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE QuickLink PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<QuickLink action="workflow" category="Custom" messageKey="CreateNewTestAccount" name="Create_New_Test_Account">
+  <Attributes>
+    <Map>
+      <entry key="httpSession">
+        <value>
+          <Script>
+            <Source><![CDATA[
+            
+              import javax.faces.context.FacesContext;
+              import javax.servlet.http.HttpSession;
+              FacesContext fc = FacesContext.getCurrentInstance();
+              HttpSession session = fc.getExternalContext().getSession(true);
+              return session;
+            
+            ]]></Source>
+          </Script>
+        </value>
+      </entry>
+      <entry key="launcher">
+        <value>
+          <Script>
+            <Source><![CDATA[
+            
+              return context.getUserName();
+			
+            ]]></Source>
+          </Script>
+        </value>
+      </entry>
+      <entry key="workflowName" value="Workflow_VSNT_Create_New_Test_Account_Wrapper"/>
+      <entry key="workflowSuccess" value="lauched Successfully"/>
+    </Map>
+  </Attributes>
+  <QuickLinkOptions allowSelf="true">
+    <DynamicScopeRef>
+      <Reference class="sailpoint.object.DynamicScope" name="Everyone"/>
+    </DynamicScopeRef>
+  </QuickLinkOptions>
+</QuickLink>

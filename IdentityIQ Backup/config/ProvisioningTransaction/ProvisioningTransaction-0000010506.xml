@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningTransaction PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningTransaction accountDisplayName="Thompson" applicationName="LDAPApplication" identityDisplayName="Alexandria Thompson" identityName="Alexandria Thompson" integration="LDAPApplication" name="0000010506" nativeIdentity="Thompson" operation="Create" source="IdentityRefresh" status="Failed" type="Auto">
+  <Attributes>
+    <Map>
+      <entry key="planResult">
+        <value>
+          <ProvisioningResult status="committed"/>
+        </value>
+      </entry>
+      <entry key="request">
+        <value>
+          <AccountRequest application="LDAPApplication" nativeIdentity="Thompson" op="Create" targetIntegration="LDAPApplication">
+            <Attributes>
+              <Map>
+                <entry key="provisioningTransactionId" value="c0a801289c451b3a819c46641ead0868"/>
+              </Map>
+            </Attributes>
+            <AttributeRequest name="groups" op="Add" value="cn=Managers,ou=Group,dc=my-domain,dc=com">
+              <Attributes>
+                <Map>
+                  <entry key="assignment">
+                    <value>
+                      <Boolean>true</Boolean>
+                    </value>
+                  </entry>
+                </Map>
+              </Attributes>
+            </AttributeRequest>
+            <AttributeRequest name="groups" op="Add" value="cn=Employees,ou=Group,dc=my-domain,dc=com">
+              <Attributes>
+                <Map>
+                  <entry key="assignment">
+                    <value>
+                      <Boolean>true</Boolean>
+                    </value>
+                  </entry>
+                </Map>
+              </Attributes>
+            </AttributeRequest>
+            <AttributeRequest name="password" op="Set">
+              <Attributes>
+                <Map>
+                  <entry key="secret" value="true"/>
+                </Map>
+              </Attributes>
+            </AttributeRequest>
+            <AttributeRequest name="sn" op="Set" value="Thompson"/>
+            <AttributeRequest name="mail" op="Set" value="alexandria.thompson@eshiam.com"/>
+            <ProvisioningResult status="failed">
+              <Errors>
+                <Message key="sailpoint.connector.InvalidRequestException: [ InvalidRequestException ] &#10; [ Possible suggestions ] Ensure that value of 'User DN' is correct. &#10; [ Error details ] Invalid name: Thompson" type="Error"/>
+              </Errors>
+            </ProvisioningResult>
+          </AccountRequest>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+</ProvisioningTransaction>

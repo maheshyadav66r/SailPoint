@@ -1,0 +1,56 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="WebServiceBeforeOperationRule10451" type="WebServiceBeforeOperationRule">
+  <Description>The Web Services connector will call this rule before performing ANY defined operation. This rule can be used to add/update values in the endpoint object before performing the operation and/or add persistent values to the application's data.
+(See information about what to return for more information)</Description>
+  <Signature returnType="Object"/>
+  <Source><![CDATA[import sailpoint.object.*;
+  import sailpoint.api.*;
+  import java.time.LocalDate;
+  import java.util.Date;
+  import java.text.SimpleDateFormat;
+  import java.time.Instant;
+  import java.time.temporal.ChronoUnit;
+  import java.util.TimeZone;
+  import sailpoint.tools.Util;
+  import org.apache.log4j.Logger; 
+  import org.apache.log4j.Level;
+  import org.apache.commons.logging.LogFactory;
+
+  Logger wboLog = Logger.getLogger("rule.eshiam.WebServiceBeforeOp1045");
+  wboLog.trace("EWBO-001: Executing  rule.eshiam.WebServiceBeforeOp1045");
+
+  wboLog.trace("EWBO-002: requestEndPoint .."+requestEndPoint);
+
+  // Get or create request body
+  Map requestBody = requestEndPoint.getBody();
+  if (requestBody == null) {
+    requestBody = new HashMap();
+  }
+
+  String jSonBody = "";
+  String operationType = requestEndPoint.getOperationType();
+
+
+  // Get or create jsonBody
+  if (requestBody != null) {
+    jSonBody =requestBody.get("jsonBody");
+  }
+
+  //String nativeIdentity =  (String)jSonBody.get("user_id");
+  String nativeIdentity =  provisioningPlan.getAccountRequests().get(0).getNativeIdentity();
+  log.error(" nativeIdentity : "+nativeIdentity);
+  String currentnativeIdentity = nativeIdentity+"SkyisTheLimit.Eshiam";
+
+  provisioningPlan.getAccountRequests().get(0).setNativeIdentity(currentnativeIdentity);
+  log.error(" provisioningPlan in create acccount before rule :: "+provisioningPlan.toXml());
+  jSonBody =  jSonBody.replaceAll(nativeIdentity,currentnativeIdentity);
+
+  // Update request body with modified JSON
+  requestBody.put("jsonBody", jSonBody);
+  requestEndPoint.setBody(requestBody);
+
+  log.error("EWBO-004: requestEndPoint at the end of rule .."+requestEndPoint);
+
+  return requestEndPoint;]]></Source>
+</Rule>

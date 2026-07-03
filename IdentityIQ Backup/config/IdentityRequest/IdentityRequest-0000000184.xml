@@ -1,0 +1,275 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE IdentityRequest PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<IdentityRequest completionStatus="Failure" endDate="1718771699100" executionStatus="Completed" name="0000000184" priority="Normal" requesterDisplayName="Scheduler" source="LCM" state="End" targetClass="sailpoint.object.Identity" targetDisplayName="Vamshi Mech" verified="1718791961272">
+  <Attributes>
+    <Map>
+      <entry key="approvalSummaries">
+        <value>
+          <List>
+            <ApprovalSummary completer="Albert Woods" endDate="1718771697684" owner="Albert Woods" request="Owner Approval - Account Changes for User: Vamshi Mech" startDate="1718363376698" state="Finished" workItemId="c0a81d8990161d12819016704c0b00b2" workItemType="Approval">
+              <ApprovalSet>
+                <ApprovalItem application="ActiveDirectory" approver="Albert Woods" name="memberOf" nativeIdentity="CN=Vamshi Mech,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Add" state="Finished" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachments"/>
+                      <entry key="nativeIdUpdated">
+                        <value>
+                          <Boolean>true</Boolean>
+                        </value>
+                      </entry>
+                    </Map>
+                  </Attributes>
+                </ApprovalItem>
+                <ApprovalItem application="ActiveDirectory" approver="Albert Woods" name="memberOf" nativeIdentity="CN=Vamshi Mech,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Add" state="Finished" value="CN=AccountsReceivable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachments"/>
+                      <entry key="nativeIdUpdated">
+                        <value>
+                          <Boolean>true</Boolean>
+                        </value>
+                      </entry>
+                    </Map>
+                  </Attributes>
+                </ApprovalItem>
+              </ApprovalSet>
+            </ApprovalSummary>
+          </List>
+        </value>
+      </entry>
+      <entry key="messages">
+        <value>
+          <List>
+            <Message key="Exception occurred while executing the RPCRequest: Errors returned from IQService. &quot;The object already exists. The object already exists. 00000524: UpdErr: DSID-031A1261, problem 6005 (ENTRY_EXISTS), data 0 00000524: UpdErr: DSID-031A1261, problem 6005 (ENTRY_EXISTS), data 0 . HRESULT:[0x80071392] For identity: CN=Vamshi Mech,OU=People,OU=Demo,DC=Eshiam,DC=com&quot;" type="Error"/>
+            <Message key="task_msg_identity_request_verification_failed_noIdentity" type="Error">
+              <Parameters>
+                <String>Vamshi Mech</String>
+              </Parameters>
+            </Message>
+          </List>
+        </value>
+      </entry>
+      <entry key="provisionedProject">
+        <value>
+          <ProvisioningProject identity="Vamshi Mech">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000184"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="Scheduler"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="ActiveDirectory" op="Create">
+                  <AttributeRequest name="memberOf" op="Add" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                  <AttributeRequest name="memberOf" op="Add" value="CN=AccountsReceivable,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000184"/>
+                    <entry key="requester" value="Scheduler"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Vamshi Mech" targetIntegration="ActiveDirectory" trackingId="7c44f1b4c1994775bd594faf23a44a04">
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Vamshi Mech,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create">
+                <Attributes>
+                  <Map>
+                    <entry key="provisioningTransactionId" value="c0a81d89902e12bb81902ec6cba90098"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="memberOf" op="Add">
+                  <Value>
+                    <List>
+                      <String>CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                      <String>CN=AccountsReceivable,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                    </List>
+                  </Value>
+                </AttributeRequest>
+                <AttributeRequest name="sAMAccountName" op="Set" value="Vamshi Mech"/>
+                <AttributeRequest name="password" op="Set"/>
+                <ProvisioningResult status="failed">
+                  <Errors>
+                    <Message key="Exception occurred while executing the RPCRequest: Errors returned from IQService. &quot;The object already exists. The object already exists. 00000524: UpdErr: DSID-031A1261, problem 6005 (ENTRY_EXISTS), data 0 00000524: UpdErr: DSID-031A1261, problem 6005 (ENTRY_EXISTS), data 0 . HRESULT:[0x80071392] For identity: CN=Vamshi Mech,OU=People,OU=Demo,DC=Eshiam,DC=com&quot;" type="Error"/>
+                  </Errors>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000184"/>
+                  <entry key="requester" value="Scheduler"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+            </ProvisioningPlan>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="taskResultId" value="c0a81d8990161d12819016704a3f00ac"/>
+    </Map>
+  </Attributes>
+  <RequestItems>
+    <IdentityRequestItem application="ActiveDirectory" approvalState="Finished" approverName="Albert Woods" name="memberOf" nativeIdentity="CN=Vamshi Mech,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Add" ownerName="Albert Woods" provisioningEngine="ActiveDirectory" provisioningState="Failed" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <Attributes>
+        <Map>
+          <entry key="errors">
+            <value>
+              <List>
+                <Message key="Exception occurred while executing the RPCRequest: Errors returned from IQService. &quot;The object already exists. The object already exists. 00000524: UpdErr: DSID-031A1261, problem 6005 (ENTRY_EXISTS), data 0 00000524: UpdErr: DSID-031A1261, problem 6005 (ENTRY_EXISTS), data 0 . HRESULT:[0x80071392] For identity: CN=Vamshi Mech,OU=People,OU=Demo,DC=Eshiam,DC=com&quot;" type="Error"/>
+              </List>
+            </value>
+          </entry>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="6a763ebb032e46c69e4238775b667bdd">
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Vamshi Mech,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="provisioningTransactionId" value="c0a81d89902e12bb81902ec6cba90098"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="memberOf" op="Add" trackingId="6a763ebb032e46c69e4238775b667bdd" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+      <Owner>
+        <Reference class="sailpoint.object.Identity" name="Albert Woods"/>
+      </Owner>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="ActiveDirectory" approvalState="Finished" approverName="Albert Woods" name="memberOf" nativeIdentity="CN=Vamshi Mech,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Add" ownerName="Albert Woods" provisioningEngine="ActiveDirectory" provisioningState="Failed" value="CN=AccountsReceivable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <Attributes>
+        <Map>
+          <entry key="errors">
+            <value>
+              <List>
+                <Message key="Exception occurred while executing the RPCRequest: Errors returned from IQService. &quot;The object already exists. The object already exists. 00000524: UpdErr: DSID-031A1261, problem 6005 (ENTRY_EXISTS), data 0 00000524: UpdErr: DSID-031A1261, problem 6005 (ENTRY_EXISTS), data 0 . HRESULT:[0x80071392] For identity: CN=Vamshi Mech,OU=People,OU=Demo,DC=Eshiam,DC=com&quot;" type="Error"/>
+              </List>
+            </value>
+          </entry>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="6cce9db4ec224ce38f05cc1f8142dc36">
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Vamshi Mech,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="provisioningTransactionId" value="c0a81d89902e12bb81902ec6cba90098"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="memberOf" op="Add" trackingId="6cce9db4ec224ce38f05cc1f8142dc36" value="CN=AccountsReceivable,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+      <Owner>
+        <Reference class="sailpoint.object.Identity" name="Albert Woods"/>
+      </Owner>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="ActiveDirectory" nativeIdentity="CN=Vamshi Mech,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Create" provisioningEngine="ActiveDirectory" provisioningState="Failed">
+      <Attributes>
+        <Map>
+          <entry key="errors">
+            <value>
+              <List>
+                <Message key="Exception occurred while executing the RPCRequest: Errors returned from IQService. &quot;The object already exists. The object already exists. 00000524: UpdErr: DSID-031A1261, problem 6005 (ENTRY_EXISTS), data 0 00000524: UpdErr: DSID-031A1261, problem 6005 (ENTRY_EXISTS), data 0 . HRESULT:[0x80071392] For identity: CN=Vamshi Mech,OU=People,OU=Demo,DC=Eshiam,DC=com&quot;" type="Error"/>
+              </List>
+            </value>
+          </entry>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="d1e5d051064f4e35af03de36418c05ad">
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Vamshi Mech,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="provisioningTransactionId" value="c0a81d89902e12bb81902ec6cba90098"/>
+                    </Map>
+                  </Attributes>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="ActiveDirectory" approvalState="Finished" compilationStatus="Expansion" expansionCause="ProvisioningPolicy" name="sAMAccountName" nativeIdentity="CN=Vamshi Mech,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Set" provisioningEngine="ActiveDirectory" provisioningState="Failed" value="Vamshi Mech">
+      <Attributes>
+        <Map>
+          <entry key="errors">
+            <value>
+              <List>
+                <Message key="Exception occurred while executing the RPCRequest: Errors returned from IQService. &quot;The object already exists. The object already exists. 00000524: UpdErr: DSID-031A1261, problem 6005 (ENTRY_EXISTS), data 0 00000524: UpdErr: DSID-031A1261, problem 6005 (ENTRY_EXISTS), data 0 . HRESULT:[0x80071392] For identity: CN=Vamshi Mech,OU=People,OU=Demo,DC=Eshiam,DC=com&quot;" type="Error"/>
+              </List>
+            </value>
+          </entry>
+          <entry key="expansionInfo" value="ActiveDirectory"/>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="bd849e6b3efb401baadb46ccf83f7a84">
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Vamshi Mech,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="provisioningTransactionId" value="c0a81d89902e12bb81902ec6cba90098"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="sAMAccountName" op="Set" trackingId="bd849e6b3efb401baadb46ccf83f7a84" value="Vamshi Mech"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="ActiveDirectory" approvalState="Finished" compilationStatus="Expansion" expansionCause="ProvisioningPolicy" name="password" nativeIdentity="CN=Vamshi Mech,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Set" provisioningEngine="ActiveDirectory" provisioningState="Failed">
+      <Attributes>
+        <Map>
+          <entry key="audit_password_change_failure_error_msg" value="&quot;Exception occurred while executing the RPCRequest: Errors returned from IQService. &quot;&quot;The object already exists. The object already exists. 00000524: UpdErr: DSID-031A1261, problem 6005 (ENTRY_EXISTS), data 0 00000524: UpdErr: DSID-031A1261, problem 6005 (ENTRY_EXISTS), data 0 . HRESULT:[0x80071392] For identity: CN=Vamshi Mech,OU=People,OU=Demo,DC=Eshiam,DC=com&quot;&quot;&quot;"/>
+          <entry key="errors">
+            <value>
+              <List>
+                <Message key="Exception occurred while executing the RPCRequest: Errors returned from IQService. &quot;The object already exists. The object already exists. 00000524: UpdErr: DSID-031A1261, problem 6005 (ENTRY_EXISTS), data 0 00000524: UpdErr: DSID-031A1261, problem 6005 (ENTRY_EXISTS), data 0 . HRESULT:[0x80071392] For identity: CN=Vamshi Mech,OU=People,OU=Demo,DC=Eshiam,DC=com&quot;" type="Error"/>
+              </List>
+            </value>
+          </entry>
+          <entry key="expansionInfo" value="ActiveDirectory"/>
+          <entry key="managedAttributeType" value="Entitlement"/>
+        </Map>
+      </Attributes>
+    </IdentityRequestItem>
+  </RequestItems>
+</IdentityRequest>

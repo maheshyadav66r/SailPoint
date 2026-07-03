@@ -1,0 +1,105 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE JasperResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<JasperResult handlerPageCount="-1" pageCount="-1" pagesPerBucket="-1">
+  <Attributes>
+    <Map>
+      <entry key="csvRowsPerBucket">
+        <value>
+          <Integer>1000</Integer>
+        </value>
+      </entry>
+      <entry key="header">
+        <value>
+          <LiveReportSummary title="Demo Report Identity Audit">
+            <Values>
+              <LiveReportSummaryValue label="Creator" name="creator">
+                <Value>
+                  <String>spadmin</String>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="Creation Date" name="date">
+                <Value>
+                  <String>4/27/26, 9:40 PM</String>
+                </Value>
+              </LiveReportSummaryValue>
+            </Values>
+          </LiveReportSummary>
+        </value>
+      </entry>
+      <entry key="reportDefinition">
+        <value>
+          <LiveReport title="Demo Report Identity Audit">
+            <DataSource objectType="sailpoint.object.IdentityRequestItem" type="Filter">
+              <QueryParameters>
+                <Parameter argument="startDate">
+                  <QueryScript>
+                    <Source><![CDATA[
+                      import sailpoint.object.*;
+                      import sailpoint.api.*;
+
+                       queryOptions.addFilter(Filter.ge("created",value));
+                      queryOptions.addFilter(Filter.le("created",arguments.get("endDate")));
+                      return queryOptions;
+                    ]]></Source>
+                  </QueryScript>
+                </Parameter>
+              </QueryParameters>
+            </DataSource>
+            <ReportForm>
+              <Reference class="sailpoint.object.Form" name="Report Form Skeleton"/>
+            </ReportForm>
+            <Columns>
+              <ReportColumnConfig field="operation" header="Operation" property="operation" width="110"/>
+              <ReportColumnConfig field="name" header="Attribute Name" property="name" width="110"/>
+              <ReportColumnConfig field="attributeValue" header="Attribute Value" property="value" width="110"/>
+              <ReportColumnConfig field="displayValue" header="DisplayValue" property="displayName" width="110"/>
+              <ReportColumnConfig field="account" header="Account" property="nativeIdentity" width="110"/>
+              <ReportColumnConfig field="application" header="Application" property="application" width="110"/>
+              <ReportColumnConfig field="approvalStatus" header="Approval Status" property="approvalState" width="110"/>
+              <ReportColumnConfig field="provisioningStatus" header="Provisioning Status" property="provisioningState" width="110"/>
+              <ReportColumnConfig field="owner" header="Owner" property="owner" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.*;
+                    import sailpoint.api.*;
+
+                   // log.error(" owner value---"+value);
+                    Identity identity=(Identity)value;
+                    
+                    if(identity!=null)
+
+                    return identity.getName();
+                    return "";
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+            </Columns>
+            <ReportHeader title="Demo Report Identity Audit">
+              <Values>
+                <LiveReportSummaryValue label="Creator" name="creator">
+                  <Value>
+                    <String>spadmin</String>
+                  </Value>
+                </LiveReportSummaryValue>
+                <LiveReportSummaryValue label="Creation Date" name="date">
+                  <Value>
+                    <String>4/27/26, 9:40 PM</String>
+                  </Value>
+                </LiveReportSummaryValue>
+              </Values>
+            </ReportHeader>
+          </LiveReport>
+        </value>
+      </entry>
+      <entry key="reportRowCount">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Files>
+    <Reference class="sailpoint.object.PersistedFile" name="Report-IdentityRequestItemData.pdf"/>
+    <Reference class="sailpoint.object.PersistedFile" name="Report-IdentityRequestItemData.csv"/>
+  </Files>
+</JasperResult>

@@ -1,0 +1,240 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE JasperResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<JasperResult handlerPageCount="-1" pageCount="-1" pagesPerBucket="-1">
+  <Attributes>
+    <Map>
+      <entry key="csvRowsPerBucket">
+        <value>
+          <Integer>1000</Integer>
+        </value>
+      </entry>
+      <entry key="header">
+        <value>
+          <LiveReportSummary title="Role Membership Report by RoleDivision">
+            <Values>
+              <LiveReportSummaryValue label="Creator" name="creator">
+                <Value>
+                  <String>spadmin</String>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="Creation Date" name="date">
+                <Value>
+                  <String>4/29/26, 3:07 PM</String>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="roleDivision" name="roleDivision">
+                <Value>
+                  <String>Medium, High</String>
+                </Value>
+              </LiveReportSummaryValue>
+            </Values>
+          </LiveReportSummary>
+        </value>
+      </entry>
+      <entry key="reportDefinition">
+        <value>
+          <LiveReport title="Role Membership Report by RoleDivision">
+            <DataSource objectType="IdentityEntitlement" type="Filter">
+              <Join joinProperty="Bundle.name" property="value"/>
+              <QueryParameters>
+                <Parameter argument="roleDivision" property="Bundle.roleCriticality"/>
+              </QueryParameters>
+            </DataSource>
+            <ReportForm>
+              <Reference class="sailpoint.object.Form" name="Report Form Skeleton"/>
+            </ReportForm>
+            <Columns>
+              <ReportColumnConfig field="identityName" header="Identity Name" property="IdentityEntitlement.identity" sortable="true" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.*;
+                    String name= null;
+                    if(null != value)
+                    {
+                    Identity id = value;
+                    if(null != id)
+                    {
+                    name= id.getName();
+                    }
+                    }
+                    return name;
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="identityFirstName" header="First Name" property="IdentityEntitlement.identity" sortable="true" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.*;
+                    String dep= null;
+                    if(null != value)
+                    {
+                    Identity id = value;
+                    if(null != id)
+                    {
+                    dep= id.getAttribute("firstname");
+                    }
+                    }
+                    return dep;
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="identityLastName" header="Last Name" property="IdentityEntitlement.identity" sortable="true" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.*;
+                    String dep= null;
+                    if(null != value)
+                    {
+                    Identity id = value;
+                    if(null != id)
+                    {
+                    dep= id.getAttribute("lastname");
+                    }
+                    }
+                    return dep;
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="identityDepartment" header="Identity Department" property="IdentityEntitlement.identity" sortable="true" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.*;
+                    String dep= null;
+                    if(null != value)
+                    {
+                    Identity id = value;
+                    if(null != id)
+                    {
+                    dep= id.getAttribute("department");
+                    }
+                    }
+                    return dep;
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="roleName" header="Role Name" property="Bundle.name" sortable="true" width="110"/>
+              <ReportColumnConfig field="roleType" header="Role Type" property="IdentityEntitlement.name" sortable="true" width="110"/>
+              <ReportColumnConfig field="roleOwner" header="Role Owner" property="Bundle.owner" sortable="true" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.*;
+                    String owner= null;
+                    if(null != value)
+                    {
+                    Identity id = value;
+                    if(null != id)
+                    {
+                    owner= id.getName();
+                    }
+                    }
+                    return owner;
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="roleDescription" header="Role Description" property="Bundle.name" sortable="true" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.*;
+                    String description= null;
+                    if(null != value)
+                    {
+                    Bundle bu = context.getObjectByName(Bundle.class,value);
+                    if(null != bu)
+                    {
+                    description= bu.getDescription("EN_US");
+                    }
+                    }
+                    return description;
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="roleDivision" header="Role Division" property="Bundle.name" sortable="true" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.*;
+                    String roleDiv= null;
+                    if(null != value)
+                    {
+                    Bundle bu = context.getObjectByName(Bundle.class,value);
+                    if(null != bu)
+                    {
+                    // if(bu.getAttribute("RoleDivision") != null){
+                    if(bu.getAttribute("roleLevel") != null){
+                   // roleDiv= bu.getAttribute("RoleDivision").toString();
+                    roleDiv= bu.getAttribute("roleLevel");
+                    
+                    }
+                    }
+                    }
+                    return roleDiv;
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="roleLogicalAppName" header="Role Logical App Name" property="Bundle.name" sortable="true" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.*;
+                   
+                    String description= null;
+                    if(null != value)
+                    {
+                    Bundle bu = context.getObjectByName(Bundle.class,value);
+                    if(null != bu)
+                    {
+                    description = bu.getAttribute("roleCriticality");
+                    }
+                    }
+                    return description;
+                    
+                    
+                    
+                    
+                    /* String description= null;
+                    if(null != value)
+                    {
+                    Bundle bu = context.getObjectByName(Bundle.class,value);
+                    if(null != bu)
+                    {
+                    description= bu.getAttribute("appName");
+                    }
+                    }
+                    return description;*/
+                    
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+            </Columns>
+            <ReportHeader title="Role Membership Report by RoleDivision">
+              <Values>
+                <LiveReportSummaryValue label="Creator" name="creator">
+                  <Value>
+                    <String>spadmin</String>
+                  </Value>
+                </LiveReportSummaryValue>
+                <LiveReportSummaryValue label="Creation Date" name="date">
+                  <Value>
+                    <String>4/29/26, 3:07 PM</String>
+                  </Value>
+                </LiveReportSummaryValue>
+                <LiveReportSummaryValue label="roleDivision" name="roleDivision">
+                  <Value>
+                    <String>Medium, High</String>
+                  </Value>
+                </LiveReportSummaryValue>
+              </Values>
+            </ReportHeader>
+          </LiveReport>
+        </value>
+      </entry>
+      <entry key="reportRowCount">
+        <value>
+          <Integer>169</Integer>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Files>
+    <Reference class="sailpoint.object.PersistedFile" name="RMBO1.pdf"/>
+    <Reference class="sailpoint.object.PersistedFile" name="RMBO1.csv"/>
+  </Files>
+</JasperResult>

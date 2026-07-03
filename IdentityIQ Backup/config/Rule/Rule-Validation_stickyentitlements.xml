@@ -1,0 +1,84 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Validation_StickyEntitlements" type="Validation">
+  <Source><![CDATA[
+  import sailpoint.object.Filter;
+   import sailpoint.object.Application;
+  import sailpoint.object.Identity;
+  import sailpoint.object.IdentityEntitlement;
+  import sailpoint.object.QueryOptions;
+  import sailpoint.tools.Util;
+  import sailpoint.api.Terminator;
+  import sailpoint.api.IdentityService;
+
+
+  Identity identity = null;
+  Application application = null;
+  IdentityService idService = new IdentityService(context);
+  boolean isLogicalBusiness = false;
+
+  try {
+    identity = context.getObjectByName(Identity.class,"Aaron Wade");
+    application = context.getObjectByName(Application.class,"ActiveDirectory");
+    List adLinks = idService.	getLinks(identity, application);
+
+    if(Util.nullSafeSize(adLinks)>0){
+
+      Link link = adLinks.get(0);
+      List entitlements = link.getAttribute("memberOf");
+
+      if(Util.nullSafeSize(entitlements)>0){
+        for(String entitlement : entitlements){
+
+          Filter filter = Filter.eq("value",entitlement);
+          ManagedAttribute ma = context.getUniqueObject(ManagedAttribute.class,filter);
+
+          if(ma!=null){
+
+            String logicalValue = ma.getAttribute("logicalBusinessAttribute");
+
+            if(Util.nullSafeEq(logicalValue,"TRE-GIT")){
+              isLogicalBusiness = true;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+  } catch (Exception e) {
+    log.error("Exception in Logical Business attribute Criteria assignment Rule : "+e.getMessage());
+  } finally{
+    context.decache(application);
+  }
+
+  return isLogicalBusiness;
+
+
+
+
+
+
+
+
+
+  /*
+     Filter nameFilter = Filter.and(Filter.eq("aggregationState","Disconnected"));
+
+   // Filter subqueryFilter = Filter.subquery("name", IdentityRequestItem.class, "name", Filter.eq("provisioningState","Failed"));
+    //Filter joinFilter = Filter.join("name", "IdentityRequestItem.name");
+
+    QueryOptions options = new QueryOptions();
+    options.addFilter(Filter.and(nameFilter));
+
+   // list = context.getObjects(IdentityEntitlement.class,options);
+
+
+
+    Terminator terminator = new Terminator(context);
+     terminator.deleteObjects(IdentityEntitlement.class,options);
+     */
+
+
+  ]]></Source>
+</Rule>

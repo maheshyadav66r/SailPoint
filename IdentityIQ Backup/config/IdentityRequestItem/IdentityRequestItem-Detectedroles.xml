@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE IdentityRequestItem PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<IdentityRequestItem application="IIQ" approvalState="Finished" approverName="Lori Ferguson" name="detectedRoles" operation="Remove" ownerName="Lori Ferguson" provisioningEngine="IIQ" provisioningState="Finished" value="IT2AD-DefaltAllUsers">
+  <Attributes>
+    <Map>
+      <entry key="assignmentId" value="TEMP:a825abbe3d7d42179c5113d00d229832"/>
+      <entry key="attachmentConfigList"/>
+      <entry key="attachments"/>
+      <entry key="displayableValue" value="IT2AD-DefaltAllUsers"/>
+      <entry key="flow" value="AccessRequest"/>
+      <entry key="id" value="c0a81d89907c11f581907d9e07570226"/>
+      <entry key="identityEntitlementId" value="c0a800fb94691e9b8194a707abb930cf"/>
+      <entry key="interface" value="LCM"/>
+      <entry key="operation" value="RoleRemove"/>
+      <entry key="provisioningPlan">
+        <value>
+          <ProvisioningPlan trackingId="a9e00324b4fc4eeda27833da53702736">
+            <AccountRequest application="IIQ" op="Modify">
+              <Attributes>
+                <Map>
+                  <entry key="attachmentConfigList"/>
+                  <entry key="attachments"/>
+                  <entry key="flow" value="AccessRequest"/>
+                  <entry key="id" value="c0a81d89907c11f581907d9e07570226"/>
+                  <entry key="interface" value="LCM"/>
+                  <entry key="operation" value="RoleRemove"/>
+                  <entry key="provisioningTransactionId" value="c0a800fb94691e9b8194a707878230c3"/>
+                </Map>
+              </Attributes>
+              <AttributeRequest name="detectedRoles" op="Remove" trackingId="a9e00324b4fc4eeda27833da53702736" value="IT2AD-DefaltAllUsers">
+                <Attributes>
+                  <Map>
+                    <entry key="deassignEntitlements">
+                      <value>
+                        <Boolean>true</Boolean>
+                      </value>
+                    </entry>
+                  </Map>
+                </Attributes>
+              </AttributeRequest>
+              <AttributeRequest name="Capabilities" op="Remove" trackingId="a9e00324b4fc4eeda27833da53702736" value="HelpDesk">
+                <Attributes>
+                  <Map>
+                    <entry key="allowSimplification" value="true"/>
+                    <entry key="assignment" value="true"/>
+                    <entry key="preferRemoveOverRetain" value="true"/>
+                  </Map>
+                </Attributes>
+              </AttributeRequest>
+            </AccountRequest>
+            <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Deepthi nuthalapati,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+              <AttributeRequest name="memberOf" op="Remove" trackingId="a9e00324b4fc4eeda27833da53702736" value="CN=All_Users,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                <Attributes>
+                  <Map>
+                    <entry key="allowSimplification" value="true"/>
+                    <entry key="assignment" value="true"/>
+                    <entry key="preferRemoveOverRetain" value="true"/>
+                  </Map>
+                </Attributes>
+              </AttributeRequest>
+            </AccountRequest>
+            <Attributes>
+              <Map>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+          </ProvisioningPlan>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="Lori Ferguson"/>
+  </Owner>
+</IdentityRequestItem>

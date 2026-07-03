@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Toyota Org LDAP Atldapuser Role Assignment Test" type="IdentitySelector">
+  <Description>This rule is used to auto assign based on the Organization ID supOrgFuncCode and exclude user(s) if they are member of the Workgroup</Description>
+  <Signature returnType="boolean">
+    <Inputs>
+      <Argument name="log" type="org.apache.commons.logging.Log">
+        <Description>
+          The log object associated with the SailPointContext.
+        </Description>
+      </Argument>
+      <Argument name="context" type="sailpoint.api.SailPointContext">
+        <Description>
+          A sailpoint.api.SailPointContext object that can be used to query the database if necessary.
+        </Description>
+      </Argument>
+      <Argument name="identity" type="Identity">
+        <Description>
+          The identity.
+        </Description>
+      </Argument>
+      <Argument name="roleName" type="String">
+        <Description>
+          The name of the sailpoint.object.Bundle (role) that is being selected for the Identity. 
+          If roles are not applicable to this Identity selection, this value will be void.
+        </Description>
+      </Argument>
+    </Inputs>
+    <Returns>
+      <Argument name="success">
+        <Description>
+          True if the selection was successful; false otherwise.
+        </Description>
+      </Argument>
+    </Returns>
+  </Signature>
+  <Source><![CDATA[
+  import org.apache.commons.logging.Log;
+  import org.apache.commons.logging.LogFactory;
+  import sailpoint.object.Application;
+  import sailpoint.object.Link;
+  import sailpoint.object.Identity;
+  import sailpoint.tools.Util;
+  import sailpoint.api.IdentityService;
+  import sailpoint.rapidapponboarding.logger.LogEnablement;
+
+  {
+    Log tlog = LogFactory.getLog("rule.ToyotaOrgLDAPAtldapuserRoleAssignment");    
+    LogEnablement.isLogTraceEnabled(tlog, "TMNA-TOARA-001-Entering Toyota Org LDAP Atldapuser Role Assignment.");  
+
+    boolean exclude = false;
+    try {
+      IdentityService service = new IdentityService(context);
+      String attrValue = identity.getAttribute("supOrgFuncCode");
+      String workGroupName = "AT-LDAP Excluded Users";
+      Application orgLdap = null;
+      List orgLdapLinks = null;
+      Identity exclusionWorkGroup  = context.getObjectByName(Identity.class,workGroupName);
+
+      if ( Util.nullSafeCaseInsensitiveEq(attrValue, "SO-226923")) {
+        if (null != exclusionWorkGroup && exclusionWorkGroup.isWorkgroup() && !identity.isInWorkGroup(exclusionWorkGroup) ) {
+          orgLdap = context.getObjectByName(Application.class,"Org LDAP");
+          if ( null != orgLdap){
+            orgLdapLinks = service.getLinks(identity,application);
+            if ( Util.nullSafeSize(orgLdapLinks) > 0 ) {
+              if ( !orgLdapLinks.get(0).isDisabled() ) {
+                exclude = true;
+              }
+            }
+          }
+        }
+      }
+    } catch (Exception e) {
+      LogEnablement.isLogTraceEnabled(tlog, "TMNA-TOARA-002-ERROR for User: " +identity.getName()+ "Error Message: An exception was thrown while attempting to process Toyota Org LDAP Atldapuser Role Assignment " + e.toString());      
+    } 
+    LogEnablement.isLogTraceEnabled(tlog, "TMNA-TOARA-003-Exiting Toyota Org LDAP Atldapuser Role Assignment.");  
+    return exclude;
+  }
+  ]]></Source>
+</Rule>

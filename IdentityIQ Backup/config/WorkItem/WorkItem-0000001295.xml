@@ -1,0 +1,114 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE WorkItem PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<WorkItem handler="sailpoint.api.Workflower" level="Normal" name="0000001295" renderer="workflow.xhtml" type="Form">
+  <Attributes>
+    <Map>
+      <entry key="formModel">
+        <value>
+          <Map>
+            <entry key="operation" value="Create"/>
+            <entry key="transformerClass" value="sailpoint.transformer.IdentityTransformer"/>
+            <entry key="transformerOptions"/>
+          </Map>
+        </value>
+      </entry>
+      <entry key="workItemForm">
+        <value>
+          <Form name="createForm">
+            <Attributes>
+              <Map>
+                <entry key="formBasePath" value="formModel"/>
+                <entry key="pageTitle" value="CreateForm"/>
+              </Map>
+            </Attributes>
+            <Section columns="3" name="dataCollection">
+              <Field columnSpan="1" displayName="C1" name="c1" postBack="true" type="string"/>
+              <Field columnSpan="1" displayName="C2" name="c2" postBack="true" type="string"/>
+              <Field columnSpan="1" displayName="C3" name="c3" postBack="true" type="string">
+                <ValidationScript>
+                  <Source><![CDATA[
+                import java.sql.Connection;
+                import java.sql.DriverManager;
+                import java.sql.PreparedStatement;
+                import java.sql.ResultSet;
+                import java.sql.SQLException;
+                import java.sql.SQLException;
+                import sailpoint.tools.Message;
+
+                int existcount = 0;
+
+                Message msg = new Message();
+
+                Connection connection = null;
+                PreparedStatement preparedStatement = null;
+                ResultSet resultSet = null;
+
+                String dbUrl = "jdbc:mysql://localhost:3306/test"; 
+                String dbUsername = "root"; 
+                String dbPassword = "root"; 
+
+                try{
+
+                Class.forName("com.mysql.cj.jdbc.Driver");
+                connection = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
+
+                String existanceCheckQuery="SELECT COUNT(*) FROM test.columns_data WHERE c1 = ? AND c2 = ? AND c3 = ?";
+
+                preparedStatement = connection.prepareStatement(existanceCheckQuery);
+                preparedStatement.setString(1, c1);
+                preparedStatement.setString(2, c2);
+                preparedStatement.setString(3, c3);
+
+                resultSet = preparedStatement.executeQuery();
+
+                if (resultSet.next()) {
+
+                existcount = resultSet.getInt(1);
+
+                }
+
+                formModel.put("existcount",existcount);
+
+                }catch (SQLException e) {
+                e.printStackTrace();
+                }finally {
+
+                try{
+
+                if (resultSet != null) resultSet.close();
+                if (preparedStatement != null)  preparedStatement.close();
+                if (connection != null)  connection.close();
+
+                } catch (SQLException e) {
+                log.error(e.getMessage());
+                }
+                }
+
+                if(existcount > 0){
+                msg.setKey("Duplicate combination exists.Enter new values.");
+                }
+                return msg;
+              ]]></Source>
+                </ValidationScript>
+              </Field>
+              <Field columnSpan="3" displayName="Owner" name="ownerr" type="sailpoint.object.Identity"/>
+            </Section>
+            <Button action="next" label="Submit"/>
+            <Button action="back" label="Cancel"/>
+          </Form>
+        </value>
+      </entry>
+      <entry key="workItemFormBasePath" value="formModel"/>
+    </Map>
+  </Attributes>
+  <Description>createApproval</Description>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+  <Requester>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Requester>
+  <WorkflowCaseRef>
+    <Reference class="sailpoint.object.WorkflowCase" name="QuickLink Launch for identity spadmin - 763"/>
+  </WorkflowCaseRef>
+</WorkItem>

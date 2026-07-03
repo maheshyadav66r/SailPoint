@@ -1,0 +1,55 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Salesforce_Plan_Compilation" type="Validation">
+  <Source><![CDATA[
+  import sailpoint.object.*;
+  import sailpoint.api.*;
+  import sailpoint.object.ProvisioningPlan.AttributeRequest;
+  import sailpoint.object.ProvisioningPlan.AccountRequest;
+  import org.apache.commons.logging.Log;
+//Logger logs=Logger.getLogger("secondaryIdCreation.eshiam.assam");
+  
+  
+  Identity identity = context.getObjectByName(Identity.class,"Amanda Ross");
+  ProvisioningPlan plan=new ProvisioningPlan();
+  plan.setIdentity(identity);
+  AccountRequest accountRequest = new AccountRequest();
+
+  accountRequest.setOp(ProvisioningPlan.ObjectOperation.Create);
+  accountRequest.setApplication("SalesForceApp");
+ // accountRequest.setNativeIdentity("005dN000007ZwmfQAC");
+  //accountRequest.add(new AttributeRequest("memberOf", ProvisioningPlan.Operation.Add, "CN=DataArchive,OU=Groups,OU=Demo,DC=Eshiam,DC=com"));
+  // accountRequest.add(new AttributeRequest("memberOf", ProvisioningPlan.Operation.Remove, "CN=DataArchive,OU=Groups,OU=Demo,DC=Eshiam,DC=com"));
+  
+  plan.add(accountRequest);
+  
+  Provisioner provisioner=new Provisioner(context);
+ // ProvisioningProject provisioningProject = provisioner.compile(plan);
+  provisioner.execute(plan);
+  
+  log.error("....Salesforce_Plan_Compilation...");
+  
+  
+  return "provisioningProject";
+  
+  
+ /* ProvisioningProject proj= provisioner.compile(plan);
+
+  ProvisioningPlan plan2=proj.getPlan("ActiveDirectory");
+
+  AccountRequest accReq=plan2.getAccountRequest("ActiveDirectory");
+  //String nativeId=accReq.getNativeIdentity();
+
+  accReq.setNativeIdentity("CN="+"ADM-"+identity.getDisplayName()+",OU=People,OU=Demo,DC=Eshiam,DC=com");
+
+  ProvisioningPlan finalPlan = new ProvisioningPlan();
+  finalPlan.setIdentity(identity);
+  finalPlan.add(accReq);
+
+  provisioner.execute(finalPlan);
+  
+  return finalPlan;*/
+
+  //return plan2.toXml();
+  ]]></Source>
+</Rule>

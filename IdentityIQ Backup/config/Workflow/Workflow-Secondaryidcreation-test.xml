@@ -1,0 +1,287 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow explicitTransitions="true" name="SecondaryIdcreation-Test">
+  <Variable initializer="true" name="trace"/>
+  <Variable initializer="AccountsRequest" name="flow"/>
+  <Variable input="true" name="launcher"/>
+  <Variable name="formModel"/>
+  <Variable name="plan"/>
+  <Variable name="account_plan"/>
+  <Variable name="identity_plan"/>
+  <Variable name="identity"/>
+  <Variable name="identityName"/>
+  <Variable name="applicationName"/>
+  <Variable name="identityDisplayName"/>
+  <Variable name="identityRequestId" output="true"/>
+  <RuleLibraries>
+    <Reference class="sailpoint.object.Rule" name="AdminAccountCreationInDirectoriesRuleLibrary"/>
+  </RuleLibraries>
+  <Step icon="Start" name="Start" posX="21" posY="118">
+    <Script>
+      <Source><![CDATA[
+        log.error(" SecondaryIdcreation start step==");
+      ]]></Source>
+    </Script>
+    <Transition to="Initializer"/>
+  </Step>
+  <Step icon="Default" name="Initializer" posX="143" posY="119" resultVariable="formModel">
+    <Description>
+      Initialize the data in the model.
+    </Description>
+    <Script>
+      <Source><![CDATA[
+        import sailpoint.object.Identity;
+        import java.util.HashMap;
+        import sailpoint.transformer.IdentityTransformer;
+
+        HashMap model = new HashMap();
+        IdentityTransformer transformer = new IdentityTransformer(context);
+        model.put(IdentityTransformer.ATTR_TRANSFORMER_CLASS, transformer.getClass().getName());
+        model.put(IdentityTransformer.ATTR_TRANSFORMER_OPTIONS, "");
+
+        return model;
+      ]]></Source>
+    </Script>
+    <Transition to="ApprovalStep"/>
+  </Step>
+  <Step icon="Approval" name="ApprovalStep" posX="279" posY="118">
+    <Approval name="SecodaryIdRegistrationForm" owner="$(launcher)" return="formModel" send="launcher,formModel">
+      <Arg name="workItemType" value="Form"/>
+      <Arg name="workItemFormBasePath" value="formModel"/>
+      <Form name="SecodaryIdRegistrationForm">
+        <Attributes>
+          <Map>
+            <entry key="pageTitle" value="SecodaryIdRegistrationForm"/>
+          </Map>
+        </Attributes>
+        <Section name="userInstructions" type="text">
+          <Field value="This form is to create an Admin Account for AD and CloudAD"/>
+        </Section>
+        <Section name="IdType">
+          <Field displayName="SecondaryIdType" name="secondaryIdType" postBack="true" required="true" type="string">
+            <AllowedValuesDefinition>
+              <Value>
+                <List>
+                  <String>ADAdmin</String>
+                  <String>CloudAdmin</String>
+                  <String>WireLessAdmin</String>
+                </List>
+              </Value>
+            </AllowedValuesDefinition>
+          </Field>
+          <Field displayName="PrimaryAccount" dynamic="true" helpKey="Must be an active employee" name="primaryAccount" postBack="true" required="true" type="sailpoint.object.Identity">
+            <Attributes>
+              <Map>
+                <entry key="hidden">
+                  <value>
+                    <Script>
+                      <Source><![CDATA[
+                        //log.error("second field"+formModel);
+                        if((secondaryIdType!=null) @and (secondaryIdType.equalsIgnoreCase("ADAdmin") @or secondaryIdType.equalsIgnoreCase("CloudAdmin")))
+                        return false;
+                        return true;
+                      ]]></Source>
+                    </Script>
+                  </value>
+                </entry>
+              </Map>
+            </Attributes>
+            <ValidationScript>
+              <Source><![CDATA[
+                import sailpoint.object.Identity;
+                import sailpoint.api.IdentityService;
+                import sailpoint.object.Application;
+                import sailpoint.object.Link;
+                import sailpoint.tools.Message;
+
+                Message msg = new Message();
+                //log.error("---entered into validation script-----");
+
+                Identity identity=context.getObjectById(Identity.class,value);
+                IdentityService identityService = new IdentityService(context);
+
+                if(identity!=null){
+
+                if(secondaryIdType.equalsIgnoreCase("ADAdmin")){
+                Application adApp=context.getObjectByName(Application.class,"ActiveDirectory");
+
+                if(adApp!=null){
+                List adLinks=identityService.getLinks(identity,adApp);
+
+                if(adLinks!=null @and !adLinks.isEmpty()){
+                return null;
+                }else{
+                msg.setKey("Identity doesn't have Account in AD select existed identity");
+                }
+                }
+                }
+                else if(secondaryIdType.equalsIgnoreCase("CloudAdmin"))
+                {
+                Application ldapApp=context.getObjectByName(Application.class,"LDAPApplication");
+                if(ldapApp!=null){
+                List ldapLinks=identityService.getLinks(identity,ldapApp);
+
+                if(ldapLinks!=null @and !ldapLinks.isEmpty()){
+                return null;
+
+                }else{
+                msg.setKey("Identity doesn't have Account in LDAP select existed identity");
+                }
+                }
+                }
+                }
+                // log.error("formModel in second field in form==="+formModel);
+
+                return msg;
+              ]]></Source>
+            </ValidationScript>
+          </Field>
+        </Section>
+        <Button action="next" label="Submit"/>
+        <Button action="back" label="Cancel"/>
+      </Form>
+    </Approval>
+    <Transition to="Request CreateADAdminAccount" when="script:(formModel.get(&quot;secondaryIdType&quot;)).equalsIgnoreCase(&quot;ADAdmin&quot;)"/>
+    <Transition to="Request CreateLADPAdminAccount" when="script:(formModel.get(&quot;secondaryIdType&quot;)).equalsIgnoreCase(&quot;CloudAdmin&quot;)"/>
+  </Step>
+  <Step action="script:buildProvisioningPlan(identity,secondaryIdType)" name="Request CreateADAdminAccount" posX="451" posY="199" resultVariable="account_plan">
+    <Arg name="secondaryIdType">
+      <Script>
+        <Source><![CDATA[
+          String secondaryIdType;
+          if(formModel!=null){
+          secondaryIdType= formModel.get("secondaryIdType");
+          workflow.put("secondaryIdType",secondaryIdType);
+          }else{
+          throw new Exception("formModel secondaryIdType value is null...");
+          }
+          return secondaryIdType
+        ]]></Source>
+      </Script>
+    </Arg>
+    <Arg name="identity">
+      <Script>
+        <Source><![CDATA[
+          import sailpoint.object.Identity;
+          import sailpoint.object.Filter;
+          Identity identity=null;
+          if(formModel!=null @and formModel.get("primaryAccount")!=null){
+          String identityId=formModel.get("primaryAccount");
+          Filter filter=Filter.or(Filter.eq("name",identityId),Filter.eq("id",identityId));
+          identity=context.getUniqueObject(Identity.class,filter);
+          workflow.put("identity",identity);
+          workflow.put("identityName",identity.getName());
+          if(wfcontext!=null @and wfcontext.getWorkflowCase()!=null @and  wfcontext.getWorkflowCase().getTaskResult()!=null){
+          wfcontext.getWorkflowCase().getTaskResult().setName(secondaryIdType+" -Account For "+identity.getName());
+          }
+          return identity;
+          }else{
+          throw new Exception("formModel primaryAccount value is null...");
+          }
+
+        ]]></Source>
+      </Script>
+    </Arg>
+    <Transition to="Calling LCM Provisioning"/>
+  </Step>
+  <Step action="script:buildProvisioningPlan(identity,secondaryIdType)" name="Request CreateLADPAdminAccount" posX="476" posY="20" resultVariable="account_plan">
+    <Arg name="secondaryIdType">
+      <Script>
+        <Source><![CDATA[
+
+          String secondaryIdType;
+          if(formModel!=null){
+          secondaryIdType= formModel.get("secondaryIdType");
+          workflow.put("secondaryIdType",secondaryIdType);
+          }else{
+          throw new Exception("formModel secondaryIdType value is null...");
+          }
+          return secondaryIdType
+        ]]></Source>
+      </Script>
+    </Arg>
+    <Arg name="identity">
+      <Script>
+        <Source><![CDATA[
+          import sailpoint.object.Identity;
+          import sailpoint.object.Filter;
+          Identity identity=null;
+          if(formModel!=null @and formModel.get("primaryAccount")!=null){
+          String identityId=formModel.get("primaryAccount");
+          Filter filter=Filter.or(Filter.eq("name",identityId),Filter.eq("id",identityId));
+          identity=context.getUniqueObject(Identity.class,filter);
+          workflow.put("identity",identity);
+          workflow.put("identityName",identity.getName());
+          if(wfcontext!=null @and wfcontext.getWorkflowCase()!=null @and  wfcontext.getWorkflowCase().getTaskResult()!=null){
+          wfcontext.getWorkflowCase().getTaskResult().setName(workfsecondaryIdType+" -Account For "+identity.getName());
+          }
+          return identity;
+          }else{
+          throw new Exception("formModel primaryAccount value is null...");
+          }
+        ]]></Source>
+      </Script>
+    </Arg>
+    <Transition to="Calling LCM Provisioning"/>
+  </Step>
+  <Step icon="Stop" name="Stop" posX="929" posY="83"/>
+  <Step icon="Default" name="Calling LCM Provisioning" posX="668" posY="88">
+    <Arg name="identityEmailTemplate"/>
+    <Arg name="enableRetryRequest"/>
+    <Arg name="securityOfficerElectronicSignature"/>
+    <Arg name="fallbackApprover"/>
+    <Arg name="noCreateTemplates" value="true"/>
+    <Arg name="endOnManualWorkItems"/>
+    <Arg name="userEmailTemplate"/>
+    <Arg name="policiesToCheck"/>
+    <Arg name="project"/>
+    <Arg name="workItemComments"/>
+    <Arg name="approvalSplitPoint"/>
+    <Arg name="source"/>
+    <Arg name="identityDisplayName"/>
+    <Arg name="foregroundProvisioning"/>
+    <Arg name="ownerElectronicSignature"/>
+    <Arg name="batchRequestItemId"/>
+    <Arg name="saveUnmanagedPlan_WithProjectArgument"/>
+    <Arg name="splitPlans"/>
+    <Arg name="doRefresh"/>
+    <Arg name="plan" value="ref:account_plan"/>
+    <Arg name="flow"/>
+    <Arg name="identityElectronicSignature"/>
+    <Arg name="identityName" value="ref:identityName"/>
+    <Arg name="approvalSet"/>
+    <Arg name="violationReviewDecision"/>
+    <Arg name="filterRejects"/>
+    <Arg name="splitProjects"/>
+    <Arg name="requireCommentsForDenial"/>
+    <Arg name="requesterEmailTemplate"/>
+    <Arg name="approvalEmailTemplate"/>
+    <Arg name="ticketManagementApplication"/>
+    <Arg name="securityOfficerName"/>
+    <Arg name="approvingIdentities"/>
+    <Arg name="managerEmailTemplate"/>
+    <Arg name="ticketId"/>
+    <Arg name="approvalScheme"/>
+    <Arg name="allowRequestsWithViolations"/>
+    <Arg name="workItemPriority"/>
+    <Arg name="managerElectronicSignature"/>
+    <Arg name="requireViolationReviewComments"/>
+    <Arg name="splitApprovalSet"/>
+    <Arg name="approvalMode"/>
+    <Arg name="trace" value="true"/>
+    <Arg name="endOnProvisioningForms"/>
+    <Arg name="splitWorkItemComments"/>
+    <Arg name="requireCommentsForApproval"/>
+    <Arg name="notificationScheme"/>
+    <Arg name="policyViolations"/>
+    <Arg name="policyScheme"/>
+    <Arg name="setPreviousApprovalDecisions"/>
+    <Arg name="optimisticProvisioning"/>
+    <Arg name="securityOfficerEmailTemplate"/>
+    <Return name="identityRequestId" to="identityRequestId"/>
+    <WorkflowRef>
+      <Reference class="sailpoint.object.Workflow" name="LCM Provisioning"/>
+    </WorkflowRef>
+    <Transition to="Stop"/>
+  </Step>
+</Workflow>

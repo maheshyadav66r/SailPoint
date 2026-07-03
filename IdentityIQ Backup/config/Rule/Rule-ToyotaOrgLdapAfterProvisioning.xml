@@ -1,0 +1,148 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Toyota Org Ldap After Provisioning" type="AfterProvisioning">
+  <Description>An IdentityIQ server-side rule that is executed after the connector's provisioning method is called. This gives the customer the ability to customize or react to anything in the ProvisioningPlan AFTER it has been sent out to the specific applications. 
+    This rule will be called for any application found in a plan that also has a configured 'afterProvisioningRule' configured.</Description>
+  <ReferencedRules>
+    <Reference class="sailpoint.object.Rule" name="Identity Request Launcher Library"/>
+  </ReferencedRules>
+  <Signature>
+    <Inputs>
+      <Argument name="log" type="org.apache.commons.logging.Log">
+        <Description>
+          The log object associated with the SailPointContext.
+        </Description>
+      </Argument>
+      <Argument name="context" type="sailpoint.api.SailPointContext">
+        <Description>
+          A sailpoint.api.SailPointContext object that can be used to query the database if necessary.
+        </Description>
+      </Argument>
+      <Argument name="plan">
+        <Description>
+          The ProvisioningPlan object on its way to the Connector.
+        </Description>
+      </Argument>
+      <Argument name="application">
+        <Description>
+          The application object that references this before/after script.
+        </Description>
+      </Argument>
+      <Argument name="result">
+        <Description>
+          The ProvisioningResult object returned by the connectors provision method. This can be null and in many cases the connector will  not return a result and instead will annotate the plan's ProvisioningResult either at the plan or account level.        
+        </Description>
+      </Argument>
+    </Inputs>
+  </Signature>
+  <Source><![CDATA[
+  import org.apache.commons.logging.Log;
+  import org.apache.commons.logging.LogFactory;
+  import sailpoint.api.IdentityService;
+  import sailpoint.object.Identity;
+  import sailpoint.object.Application;
+  import sailpoint.object.ProvisioningPlan;
+  import sailpoint.object.ProvisioningPlan.AbstractRequest;
+  import sailpoint.object.ProvisioningPlan.AccountRequest;
+  import sailpoint.object.ProvisioningPlan.AttributeRequest;
+  import sailpoint.object.ProvisioningResult;
+  import sailpoint.object.Link;
+  import sailpoint.rapidapponboarding.logger.LogEnablement;
+  import sailpoint.tools.GeneralException;
+  import sailpoint.tools.Util;
+
+  {
+    Log tlog = LogFactory.getLog("rule.ToyotaOrgLdapAfterProvisioning");    
+    LogEnablement.isLogTraceEnabled(tlog, "TMNA-TOA-001-Entering Toyota Org Ldap After Provisioning.");  
+    LogEnablement.isLogTraceEnabled(tlog, "TMNA-TOA-002-Provisioning Plan: " + plan.toXml() );
+
+   /**
+   * Validates Plan for Modify Account Request operation to address two usecases.
+   * 1. Role Request - When Attribute Request operation is Add and atldapuser is Y, build a plan to set Uniqueid from Org Ldap application to update Workerdb Atldap and invoke Create Identity Request method by passing the plan 
+   * 1. Role Remove - When Attribute Request operation is Remove and atldapuser is Y, build a plan to provision atldapuser-N entitlement from Org Ldap application to update Workerdb Atldap and invoke Create Identity Request method by passing the plan 
+   */
+    
+    Link workerDbLink = null;
+    Application workerDbAppObj = null;
+    List workerDbLinks = null;
+    Identity identity = null;
+    Link orgLdapLink = null;
+    String attReqOp,attReqValue;
+
+    try{
+      IdentityService idService = new IdentityService(context);
+      if(null != plan){
+        identity = plan.getIdentity();
+        //Fetch the account requests from the plan
+        List accountRequests = plan.getAccountRequests();
+        if(Util.nullSafeSize(accountRequests) > 0){
+          for(AccountRequest accReq:accountRequests){
+            
+            //Validate accountrequest in the plan for Modify operation and Original accountrequest result is committed 
+            if("Modify".equals(accReq.getOperation().toString()) && null != accReq.getResult() && accReq.getResult().isCommitted()){
+              //Get the Org Ldap link object for the user from SailPoint      
+              List orgLdapLinks = idService.getLinks(identity,application);
+              orgLdapLink = orgLdapLinks.get(0);
+              //Fetching atldapuser attribute request from the account request
+              AttributeRequest attrReq = accReq.getAttributeRequest("atldapUser");
+              if(null != attrReq) {
+                attReqOp = attrReq.getOperation().toString();
+                attReqValue = attrReq.getValue();
+                
+                //This block is executed only When a Role Addition is requested with atldapuser Y entitlement 
+                if(("Add".equals(attReqOp) || "Set".equals(attReqOp)) && "Y".equalsIgnoreCase(attReqValue)){
+                  // Get the WorkerDB application object from SailPoint
+                  workerDbAppObj = context.getObjectByName(Application.class,"WorkerDB");
+                  if(workerDbAppObj != null){
+                    //Get the Org Ldap link object for the user from SailPoint
+                    workerDbLinks = idService.getLinks(identity,workerDbAppObj);
+                    if(Util.nullSafeSize(workerDbLinks) > 0){
+                      workerDbLink = workerDbLinks.get(0);
+                      //Check WorkerDB and Org Ldap links are active before provisioning
+                      if(!workerDbLink.isDisabled() && !orgLdapLink.isDisabled()){
+												//Get the uniqueUid attribute from Org Ldap link to push that value to Workerdb Atldap
+                        String atldapValue = orgLdapLink.getAttribute("uniqueUid");
+                        
+                        //Compare uniqueUid value with Workerdb Atldap, build a plan to sync only if the values are not same
+                        if(!atldapValue.equals(workerDbLink.getAttribute("ATLDAP"))){
+                          //Build a plan to set Workerdb Atldap attribute value with uniqueUid value since atldapuser is Y.
+                          ProvisioningPlan workerDbPlan = new ProvisioningPlan();
+                          workerDbPlan.setIdentity(identity);
+                          AccountRequest workerDbAccReq = new AccountRequest(ProvisioningPlan.AccountRequest.Operation.Modify,workerDbAppObj.getName(),null, null);
+                          workerDbAccReq.setNativeIdentity(workerDbLink.getNativeIdentity());
+                          workerDbAccReq.add(new AttributeRequest("ATLDAP",ProvisioningPlan.Operation.Set,atldapValue));
+                          workerDbPlan.add(workerDbAccReq);
+    							        LogEnablement.isLogTraceEnabled(tlog, "TMNA-TOA-003-Add Updated Provisioning Plan: " + workerDbPlan.toXml()); 
+
+                          //Invoking an existing CreateIdentityRequest method to generate Identity Request to update atldap attribute in Workerdb application.
+                          createIdentityRequest(context, workerDbPlan, true, null);
+                        }
+                      }
+                    }
+                  }
+                } else if(null != attrReq && "Remove".equals(attReqOp) && "Y".equalsIgnoreCase(attReqValue)){  //This block is executed only When a Role Removal is requested to set the atldapuser value to N
+                  //Build a plan to set Org Ldap atldapuser attribute to N.
+                  ProvisioningPlan ldapPlan = new ProvisioningPlan();
+                  ldapPlan.setIdentity(identity);
+                  AccountRequest ldapAccReq = new AccountRequest(ProvisioningPlan.AccountRequest.Operation.Modify,application.getName(),null, null);
+                  ldapAccReq.setNativeIdentity(orgLdapLink.getNativeIdentity());
+                  ldapAccReq.add(new AttributeRequest("atldapUser",ProvisioningPlan.Operation.Set,"N"));
+                  ldapPlan.add(ldapAccReq);
+    							LogEnablement.isLogTraceEnabled(tlog, "TMNA-TOA-004-Remove Updated Provisioning Plan: " + ldapPlan.toXml()); 
+                  
+                  //Invoking an existing CreateIdentityRequest method to generate Identity Request to update atldapuser attribute to N in Org ldap application.
+                  createIdentityRequest(context, ldapPlan, true, null);;
+                }
+              }
+            }
+          }
+        }
+      }
+    } catch (Exception ex) {
+      // Return error message as string 
+      LogEnablement.isLogTraceEnabled(tlog, "TMNA-TOA-005-ERROR for User: " +identity.getName()+ "Error Message: An exception was thrown while attempting to process Toyota Org Ldap After Provisioning: " + ex.toString());      
+    }
+    LogEnablement.isLogTraceEnabled(tlog, "TMNA-TOA-006-Exiting Toyota Org Ldap After Provisioning.");
+  }
+  ]]></Source>
+</Rule>

@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow explicitTransitions="true" libraries="Identity" name="Sending email notification" type="IdentityLifecycle">
+  <Step icon="Start" name="Start" posX="28" posY="10">
+    <Transition to="triggering emailTemplate"/>
+  </Step>
+  <Step icon="Task" name="triggering emailTemplate" posX="213" posY="11">
+    <Script>
+      <Source><![CDATA[
+        import sailpoint.api.*;
+        import sailpoint.object.*;
+        import sailpoint.object.EmailTemplate;
+        import sailpoint.object.EmailOptions;
+
+        EmailTemplate template=context.getObjectByName(EmailTemplate.class,emailTemplateName);
+        if(template!=null){
+        // EmailTemplate template=new EmailTemplate();
+        // template.setName("emailTemplate for Workflow schedule Demo");
+
+        // String toMail="mahesh.nattali@eshiam.com";
+
+        Map args=new HashMap();
+        args.put("identityName",identityName);
+        args.put("emailTemplateName" ,emailTemplateName);
+
+        EmailOptions ops=new EmailOptions(identityName,args);
+        context.sendEmailNotification(template,ops);
+        }
+        else
+        {
+        log.error("ERROR:EmailTemplate Not Found");
+        }
+
+      ]]></Source>
+    </Script>
+    <Transition to="Stop"/>
+  </Step>
+  <Step icon="Stop" name="Stop"/>
+</Workflow>

@@ -1,0 +1,110 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Plugin PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Plugin certificationLevel="None" disabled="true" displayName="Access Request Archival Plugin" installDate="1773816479921" minSystemVersion="7.1" name="AccessRequestArchivalPlugin" rightRequired="PluginPrototype" version="2.0">
+  <Attributes>
+    <Map>
+      <entry key="fullPage">
+        <value>
+          <FullPage title="Access Request Archival Full Page"/>
+        </value>
+      </entry>
+      <entry key="minUpgradableVersion" value="1.0"/>
+      <entry key="restResources">
+        <value>
+          <List>
+            <String>com.eshiam.plugin.rest.SearchResource</String>
+          </List>
+        </value>
+      </entry>
+      <entry key="settings">
+        <value>
+          <List>
+            <Setting dataType="int" defaultValue="200" label="Max Objects to Search" name="maxSearchObjectCount" value="200"/>
+            <Setting dataType="boolean" defaultValue="false" label="Enable Debugging" name="isDebuggingEnabled" value="false"/>
+            <Setting dataType="string" label="Database Type" name="database" value="PostgreSQL"/>
+            <Setting dataType="string" label="URL" name="url" value="jdbc:postgresql://localhost:5432/postgres"/>
+            <Setting dataType="string" label="Username" name="user" value="postgres"/>
+            <Setting dataType="string" label="Password" name="password" value="root"/>
+            <Setting dataType="string" label="Driver Class" name="driverClass" value="org.postgresql.Driver"/>
+            <Setting dataType="string" label="Schema" name="schema" value="identity_request_archival"/>
+          </List>
+        </value>
+      </entry>
+      <entry key="settingsForm">
+        <value>
+          <Form name="DatabaseConfigForm">
+            <Section label="Database Selection">
+              <Field displayName="Database Type" displayType="combobox" helpKey="Select the database type." name="database" postBack="true" type="string">
+                <AllowedValues>
+                  <String>PostgreSQL</String>
+                  <String>MySQL</String>
+                  <String>Oracle</String>
+                  <String>Default Database</String>
+                </AllowedValues>
+              </Field>
+              <Field displayName="URL" name="url" type="string"/>
+              <Field displayName="UserName" name="user" type="string"/>
+              <Field displayName="Password" name="password" type="secret"/>
+              <Field displayName="Driver Class" name="driverClass" type="string"/>
+              <Field displayName="Schema Name" dynamic="true" name="schema" type="string"/>
+            </Section>
+            <Section label="Search Configuration">
+              <Field displayName="Enable Debugging" name="isDebuggingEnabled" type="boolean"/>
+            </Section>
+          </Form>
+        </value>
+      </entry>
+      <entry key="snippets">
+        <value>
+          <List>
+            <Snippet>
+              <StyleSheets>
+                <String>ui/css/style.css</String>
+              </StyleSheets>
+            </Snippet>
+            <Snippet>
+              <StyleSheets>
+                <String>ui/css/_theme.css</String>
+              </StyleSheets>
+            </Snippet>
+            <Snippet>
+              <StyleSheets>
+                <String>ui/css/_base-container.css</String>
+              </StyleSheets>
+            </Snippet>
+            <Snippet>
+              <StyleSheets>
+                <String>ui/css/_details.css</String>
+              </StyleSheets>
+            </Snippet>
+            <Snippet>
+              <StyleSheets>
+                <String>ui/css/_dark-mode.css</String>
+              </StyleSheets>
+            </Snippet>
+            <Snippet regexPattern=".*home.jsf" rightRequired="PluginPrototype">
+              <Scripts>
+                <String>ui/js/plugintest.js</String>
+              </Scripts>
+            </Snippet>
+            <Snippet regexPattern=".*" rightRequired="PluginPrototype">
+              <Scripts>
+                <String>ui/js/snippets/snippet-insert.js</String>
+              </Scripts>
+            </Snippet>
+          </List>
+        </value>
+      </entry>
+      <entry key="taskExecutors">
+        <value>
+          <List>
+            <String>com.eshiam.plugin.task.SearchTaskExecutor</String>
+          </List>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <File>
+    <Reference class="sailpoint.object.PersistedFile" name="AccessRequestArchivalPlugin.2.0.0 18 03 2026.zip"/>
+  </File>
+</Plugin>

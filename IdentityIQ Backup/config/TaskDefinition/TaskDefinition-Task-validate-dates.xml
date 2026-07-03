@@ -1,0 +1,74 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskDefinition PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskDefinition executor="sailpoint.reporting.LiveReportExecutor" name="Task-Validate-Dates" progressMode="String" resultAction="Delete" subType="Identity and User Reports" template="true" type="LiveReport">
+  <Attributes>
+    <Map>
+      <entry key="report">
+        <value>
+          <LiveReport>
+            <DataSource objectType="sailpoint.object.CertificationItem" type="Filter">
+              <QueryParameters>
+                <Parameter argument="startDate" property="created">
+                  <QueryScript>
+                    <Source><![CDATA[
+                      import java.time.temporal.ChronoUnit;
+                      import java.util.Calendar;
+                      import sailpoint.object.Filter;
+
+                      log.error("entered into the QueryOptions");
+                      log.error("startDate :"+value);
+                      log.error("endDate :"+arguments.get("endDate"));
+
+                      Calendar startCal = Calendar.getInstance();
+                      Calendar endCal = Calendar.getInstance();
+
+                      startCal.setTime(value);
+                      endCal.setTime(arguments.get("endDate"));
+
+                      int yearDiff = endCal.get(Calendar.YEAR) - startCal.get(Calendar.YEAR);
+                      int monthDiff = endCal.get(Calendar.MONTH) - startCal.get(Calendar.MONTH);
+
+                      int noOfMonths =  yearDiff * 12 + monthDiff;
+                      log.error(" noOfMonths :"+noOfMonths);
+
+                      if(noOfMonths > 12){
+                      log.error("It is greater than 12 ");
+                      queryOptions.addFilter(Filter.ge("created", "abc"));
+                      }else{
+                      log.error("it is less than 12 ");
+                      queryOptions.addFilter(Filter.ge("created", value));
+                      queryOptions.addFilter(Filter.le("created", arguments.get("endDate")));
+                      log.error("queryOptions :"+queryOptions);
+                      }
+                      log.error("last one ");
+                      return queryOptions;
+                    ]]></Source>
+                  </QueryScript>
+                </Parameter>
+              </QueryParameters>
+            </DataSource>
+            <ReportForm>
+              <Reference class="sailpoint.object.Form" name="TskDateValidationForm"/>
+            </ReportForm>
+            <Columns>
+              <ReportColumnConfig field="targetname" header="TargetName" property="targetName" sortable="true" width="110"/>
+              <ReportColumnConfig field="targetdisplayname" header="TargetDisplayName" property="targetDisplayName" sortable="true" width="110"/>
+              <ReportColumnConfig field="exceptionapplication" header="ExcptnApp" property="exceptionApplication" sortable="true" width="110"/>
+              <ReportColumnConfig field="exceptionattributename" header="ExptnAttrName" property="exceptionAttributeName" sortable="true" width="110"/>
+              <ReportColumnConfig field="exceptionattributevalue" header="ExcptnAttrValue" property="exceptionAttributeValue" sortable="true" width="110"/>
+              <ReportColumnConfig field="type" header="Type" property="type" sortable="true" width="110"/>
+              <ReportColumnConfig field="subtype" header="SubType" property="subType" sortable="true" width="110"/>
+            </Columns>
+          </LiveReport>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Description>A detailed view of each identity and the entitlements that they are assigned.</Description>
+  <Signature>
+    <Inputs>
+      <Argument name="startDate" type="date"/>
+      <Argument name="endDate" type="date"/>
+    </Inputs>
+  </Signature>
+</TaskDefinition>

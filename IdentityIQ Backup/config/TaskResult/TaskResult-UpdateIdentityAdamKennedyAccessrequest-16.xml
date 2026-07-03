@@ -1,0 +1,339 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1740377555688" completionStatus="Error" launched="1740377551961" launcher="spadmin" name="Update Identity Adam Kennedy AccessRequest - 16" targetClass="Identity" targetName="Adam Kennedy" type="LCM">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000508"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Adam Kennedy">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000508"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="IntConApplication" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a8000e952e19188195312dee58010b"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="nativeIdUpdated">
+                        <value>
+                          <Boolean>true</Boolean>
+                        </value>
+                      </entry>
+                      <entry key="operation" value="EntitlementAdd"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="GroupId" op="Add" value="GIC2">
+                    <Attributes>
+                      <Map>
+                        <entry key="assignment" value="true"/>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000508"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <ProvisioningTargets>
+                  <ProvisioningTarget application="IntConApplication" attribute="GroupId" value="GIC2">
+                    <AccountSelection applicationId="c0a8002394fb1f3081952339b50f2a6d" applicationName="IntConApplication" implicitCreate="true"/>
+                  </ProvisioningTarget>
+                  <ProvisioningTarget retain="true" role="Testing">
+                    <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ADX" doCreate="true" selection="CN=Adam Kennedy,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+                  </ProvisioningTarget>
+                </ProvisioningTargets>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Adam Kennedy" targetIntegration="ProvisionIntegrMod" trackingId="d9fcae7c61da4f488f915ba8e3e7436e">
+              <AccountRequest application="IntConApplication" nativeIdentity="1b2c3a4e" op="Create">
+                <Attributes>
+                  <Map>
+                    <entry key="attachmentConfigList"/>
+                    <entry key="attachments"/>
+                    <entry key="flow" value="AccessRequest"/>
+                    <entry key="id" value="c0a8000e952e19188195312dee58010b"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="nativeIdUpdated">
+                      <value>
+                        <Boolean>true</Boolean>
+                      </value>
+                    </entry>
+                    <entry key="operation" value="EntitlementAdd"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="GroupId" op="Add" value="GIC2">
+                  <Attributes>
+                    <Map>
+                      <entry key="assignment" value="true"/>
+                    </Map>
+                  </Attributes>
+                </AttributeRequest>
+                <AttributeRequest name="Name" op="Set" value="Adam Kennedy"/>
+                <AttributeRequest name="FirstName" op="Set" value="Adam"/>
+                <AttributeRequest name="Department" op="Set" value="Accounting"/>
+                <AttributeRequest name="Email" op="Set" value="Adam.Kennedy@eshiam.com"/>
+                <AttributeRequest name="manager" op="Set">
+                  <Value>
+                    <Identity bundleSummary="IT2LDAP-DefaltAllUsers" correlated="true" lastLogin="1726211268517" lastRefresh="1739335157652" managerStatus="true" name="Douglas Flores" password="1:ACP:8faiz7F73+YeEeAgCF4EjLZde7dr8ussJimXm/Ah8Rw=">
+                      <Attributes>
+                        <Map>
+                          <entry key="costCenter">
+                            <value>
+                              <List>
+                                <String>R01e, L03</String>
+                              </List>
+                            </value>
+                          </entry>
+                          <entry key="department" value="Accounting"/>
+                          <entry key="displayName" value="Douglas Flores"/>
+                          <entry key="email" value="Douglas.Flores@eshiam.com"/>
+                          <entry key="employeeId" value="1b2c3a"/>
+                          <entry key="firstname" value="Douglas"/>
+                          <entry key="lastname" value="Flores"/>
+                          <entry key="networkId" value="Douglas.Flores"/>
+                          <entry key="region" value="Europe"/>
+                          <entry key="type" value="employee"/>
+                        </Map>
+                      </Attributes>
+                      <AttributeMetaDatas>
+                        <AttributeMetaData attribute="displayName" source="HR-Application:Name"/>
+                        <AttributeMetaData attribute="email" source="HR-Application:Email"/>
+                        <AttributeMetaData attribute="firstname" source="HR-Application:FirstName"/>
+                        <AttributeMetaData attribute="lastname" source="HR-Application:LastName"/>
+                        <AttributeMetaData attribute="employeeId" source="HR-Application:EmployeeNo"/>
+                        <AttributeMetaData attribute="department" source="HR-Application:Department"/>
+                        <AttributeMetaData attribute="networkId" source="HR-Application:NetworkID"/>
+                        <AttributeMetaData attribute="manager" source="HR-Application:manager"/>
+                        <AttributeMetaData attribute="costCenter" source="HR Employees TRNG:costcenter"/>
+                        <AttributeMetaData attribute="region" source="HR Employees TRNG:region"/>
+                        <AttributeMetaData attribute="type" source="HR Employees TRNG:AppRule: TRNG-IdentityAttribute-Employee HR Employees TRNG$TRNG-IdentityAttribute-Employee"/>
+                      </AttributeMetaDatas>
+                      <Bundles>
+                        <Reference class="sailpoint.object.Bundle" name="IT2LDAP-DefaltAllUsers"/>
+                      </Bundles>
+                      <CertificationLinks>
+                        <CertificationLink completed="1726821167376" identitySnapshotId="c0a81d89912c1c5a81914fbd704a2ba1" type="Manager">
+                          <Certifiers>
+                            <String>Amanda Ross</String>
+                          </Certifiers>
+                        </CertificationLink>
+                      </CertificationLinks>
+                      <Manager>
+                        <Reference class="sailpoint.object.Identity" name="Amanda Ross"/>
+                      </Manager>
+                      <Preferences>
+                        <Map>
+                          <entry key="roleAssignments"/>
+                          <entry key="roleDetections">
+                            <value>
+                              <List>
+                                <RoleDetection date="1720269339452" roleName="IT2LDAP-DefaltAllUsers">
+                                  <RoleTarget applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" displayName="Douglas.Flores" nativeIdentity="cn=Douglas.Flores,ou=People,dc=my-domain,dc=com">
+                                    <AccountItem name="groups" value="cn=Users,ou=Group,dc=my-domain,dc=com"/>
+                                  </RoleTarget>
+                                </RoleDetection>
+                              </List>
+                            </value>
+                          </entry>
+                        </Map>
+                      </Preferences>
+                      <Links>
+                        <Link displayName="Douglas Flores" identity="1b2c3a" lastRefresh="1714615485555">
+                          <ApplicationRef>
+                            <Reference class="sailpoint.object.Application" name="HR-ApplicationTarget"/>
+                          </ApplicationRef>
+                          <Attributes>
+                            <Map>
+                              <entry key="Department" value="Accounting"/>
+                              <entry key="Email" value="Douglas.Flores@eshiam.com"/>
+                              <entry key="EmployeeNo" value="1b2c3a"/>
+                              <entry key="FirstName" value="Douglas"/>
+                              <entry key="LastName" value="Flores"/>
+                              <entry key="Name" value="Douglas Flores"/>
+                              <entry key="NetworkID" value="Douglas.Flores"/>
+                              <entry key="manager" value="1b2c"/>
+                            </Map>
+                          </Attributes>
+                        </Link>
+                        <Link displayName="Douglas Flores" identity="1b2c3a" lastRefresh="1714616259631">
+                          <ApplicationRef>
+                            <Reference class="sailpoint.object.Application" name="JDBC"/>
+                          </ApplicationRef>
+                          <Attributes>
+                            <Map>
+                              <entry key="Department" value="Accounting"/>
+                              <entry key="Email" value="Douglas.Flores@eshiam.com"/>
+                              <entry key="EmployeeNo" value="1b2c3a"/>
+                              <entry key="FirstName" value="Douglas"/>
+                              <entry key="LastName" value="Flores"/>
+                              <entry key="Name" value="Douglas Flores"/>
+                              <entry key="NetworkID" value="Douglas.Flores"/>
+                              <entry key="manager" value="1b2c"/>
+                            </Map>
+                          </Attributes>
+                        </Link>
+                        <Link disabled="true" displayName="Douglas.Flores" entitlements="true" identity="cn=Douglas.Flores,ou=People,dc=my-domain,dc=com" lastRefresh="1719333216930">
+                          <ApplicationRef>
+                            <Reference class="sailpoint.object.Application" name="LDAPApplication"/>
+                          </ApplicationRef>
+                          <Attributes>
+                            <Map>
+                              <entry key="IIQDisabled">
+                                <value>
+                                  <Boolean>true</Boolean>
+                                </value>
+                              </entry>
+                              <entry key="businessCategory" value="Inactive"/>
+                              <entry key="cn" value="Douglas.Flores"/>
+                              <entry key="dn" value="cn=Douglas.Flores,ou=People,dc=my-domain,dc=com"/>
+                              <entry key="groups" value="cn=Users,ou=Group,dc=my-domain,dc=com"/>
+                              <entry key="objectClass">
+                                <value>
+                                  <List>
+                                    <String>inetOrgPerson</String>
+                                  </List>
+                                </value>
+                              </entry>
+                              <entry key="sn" value="Flores"/>
+                            </Map>
+                          </Attributes>
+                        </Link>
+                        <Link displayName="Douglas Flores" identity="CN=Douglas Flores,OU=People,OU=Demo,DC=Eshiam,DC=com" lastRefresh="1739955553697" uuid="{bb8334a4-4f59-428c-8095-635278b269d9}">
+                          <ApplicationRef>
+                            <Reference class="sailpoint.object.Application" name="ActiveDirectory"/>
+                          </ApplicationRef>
+                          <Attributes>
+                            <Map>
+                              <entry key="NetBIOSName"/>
+                              <entry key="accountFlags">
+                                <value>
+                                  <List>
+                                    <String>Normal User Account</String>
+                                  </List>
+                                </value>
+                              </entry>
+                              <entry key="cn" value="Douglas Flores"/>
+                              <entry key="department" value="Accounting"/>
+                              <entry key="displayName" value="Flores, Douglas"/>
+                              <entry key="distinguishedName" value="CN=Douglas Flores,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+                              <entry key="employeeID" value="1b2c3a"/>
+                              <entry key="givenName" value="Douglas"/>
+                              <entry key="mail" value="Douglas.Flores@eshiam.com"/>
+                              <entry key="memberOf"/>
+                              <entry key="msDS-PrincipalName" value="ESHIAM\Douglas Flores"/>
+                              <entry key="msNPAllowDialin" value="Not Set"/>
+                              <entry key="objectClass">
+                                <value>
+                                  <List>
+                                    <String>top</String>
+                                    <String>person</String>
+                                    <String>organizationalPerson</String>
+                                    <String>user</String>
+                                  </List>
+                                </value>
+                              </entry>
+                              <entry key="objectSid" value="S-1-5-21-2678700903-2778472132-3948167259-1297"/>
+                              <entry key="objectType" value="user"/>
+                              <entry key="objectguid" value="{bb8334a4-4f59-428c-8095-635278b269d9}"/>
+                              <entry key="sAMAccountName" value="Douglas Flores"/>
+                              <entry key="sn" value="Flores"/>
+                              <entry key="userPrincipalName" value="Douglas Flores@test.eshiam.com"/>
+                            </Map>
+                          </Attributes>
+                        </Link>
+                        <Link displayName="Douglas Flores" identity="1b2c3a" lastRefresh="1714564677337">
+                          <ApplicationRef>
+                            <Reference class="sailpoint.object.Application" name="HR-Application"/>
+                          </ApplicationRef>
+                          <Attributes>
+                            <Map>
+                              <entry key="Department" value="Accounting"/>
+                              <entry key="Email" value="Douglas.Flores@eshiam.com"/>
+                              <entry key="EmployeeNo" value="1b2c3a"/>
+                              <entry key="FirstName" value="Douglas"/>
+                              <entry key="LastName" value="Flores"/>
+                              <entry key="Name" value="Douglas Flores"/>
+                              <entry key="NetworkID" value="Douglas.Flores"/>
+                              <entry key="manager" value="1b2c"/>
+                            </Map>
+                          </Attributes>
+                        </Link>
+                      </Links>
+                      <Scorecard/>
+                    </Identity>
+                  </Value>
+                </AttributeRequest>
+                <AttributeRequest name="NYU NET ID" value="Adam Kennedy"/>
+                <AttributeRequest name="Approver1 NetID" value="RC151"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000508"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+              <ProvisioningResult status="failed">
+                <Errors>
+                  <Message key="sailpoint.tools.GeneralException: The application script threw an exception: java.lang.NullPointerException: Attempt to invoke method getName on null value BSF info: Rule-IntegrationConfig at line: 0 column: columnNo" type="Error"/>
+                </Errors>
+              </ProvisioningResult>
+            </ProvisioningPlan>
+            <ProvisioningTarget application="IntConApplication" attribute="GroupId" value="GIC2">
+              <AccountSelection applicationId="c0a8002394fb1f3081952339b50f2a6d" applicationName="IntConApplication" implicitCreate="true"/>
+            </ProvisioningTarget>
+            <ProvisioningTarget retain="true" role="Testing">
+              <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ADX" doCreate="true" selection="CN=Adam Kennedy,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+            </ProvisioningTarget>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a800fb95361b2181953695f86d0169"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="end"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="sailpoint.tools.GeneralException: The application script threw an exception: java.lang.NullPointerException: Attempt to invoke method getName on null value BSF info: Rule-IntegrationConfig at line: 0 column: columnNo" type="Error"/>
+  </Messages>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

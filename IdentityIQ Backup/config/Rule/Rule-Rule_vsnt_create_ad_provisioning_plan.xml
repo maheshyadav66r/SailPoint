@@ -1,0 +1,662 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Rule_VSNT_Create_AD_Provisioning_Plan">
+  <Signature>
+    <Inputs>
+      <Argument name="userMap">
+        <Description>
+          This Map Contains all the user details required for building AD creation Plan.
+        </Description>
+      </Argument>
+    </Inputs>
+    <Returns>
+      <Argument name="plan">
+        <Description>
+          Returns AD Plan for AD Creation.
+        </Description>
+      </Argument>
+    </Returns>
+  </Signature>
+  <Source><![CDATA[
+
+  import sailpoint.object.ProvisioningPlan;
+  import sailpoint.object.ProvisioningPlan.AccountRequest;
+  import sailpoint.object.ProvisioningPlan.AttributeRequest;
+  import sailpoint.object.Application;
+  import sailpoint.object.Link;
+  import sailpoint.object.Identity;
+  import sailpoint.object.PasswordPolicy;
+  import sailpoint.api.PasswordGenerator;
+  import sailpoint.object.Custom;
+  import sailpoint.tools.Util;
+
+  import java.util.List;
+  import java.util.ArrayList;
+  import java.util.Date;
+  import java.text.SimpleDateFormat;
+
+  log.error("Entered into Rule_VSNT_Create_AD_Provisioning_Plan");
+
+  ProvisioningPlan plan = new ProvisioningPlan();
+  List accountRequests = new ArrayList();
+  AccountRequest accountRequest = new AccountRequest();
+
+  accountRequest.setOperation(AccountRequest.Operation.Create);
+  accountRequest.setApplication("Application_VSNT_TFAYD_ActiveDirectory");
+
+
+  String identityName = null;
+  String EmpPop = null;
+  String country = null;
+  String type = null;
+  String middleName=null;
+  String subOrgSegment = null;
+  String orgSegment=null;
+  boolean isRequestCreatedForAD = false;
+  String oNBoardingResource = null;
+  String subPersonType = null;
+  String finalLastName = null;
+  String finalFirstName = null;
+  String EndDate = null;
+  String PersonTypeId = null;
+  String ProvisionedID01=null;
+
+  String endDate = null;
+  String startDate = null;
+  String company = null;
+  String businessUnitId = null;
+  String state = null;
+  String city = null;
+  String address = null;
+  String pcode = null;
+  String SupervisorId = null;
+  String jobTitle = null;	
+  String AssistantId = null;
+  String AppID = null;
+  String interflag = null;
+  String Mailbox = null; //Added as part of RITM1498499
+  String remoteADGroups = null; //Added as part of RITM1498499
+  String adWithCR = null; //Added as part of RITM1856500
+  String RestrictPSTFlag = null;
+  String email = null;
+  String nickName = null;
+  String preferredFName = null;
+  String mgrSubOrgSegId = null;
+  String managerOrgSegmentID = null;
+
+  Custom joinerDetails = context.getObjectByName(Custom.class, "Custom_VSNT_Joiner_Details");
+  //List ParksExludeDomainList = joinerDetails.getList("ParksExludeDomainList");
+
+  /* Defining an array list with the list of email domains */
+  List excludeDomainList = new ArrayList();
+  excludeDomainList.add("uniparks.com");
+  excludeDomainList.add("universalorlando.com");
+  excludeDomainList.add("usjc.co.jp");
+  excludeDomainList.add("udx.com");
+  excludeDomainList.add("comcast.com");
+  excludeDomainList.add("cable.comcast.com");
+  excludeDomainList.add("comcastspectacor.com");
+  excludeDomainList.add("sky.*");
+
+  mgrSubOrgSegId = userMap.get("mgrSubOrgSegId");
+  managerOrgSegmentID = userMap.get("managerOrgSegmentID");
+
+  /* udx user if orgsegmentid or suborgsegmentid matches Custom_VSNT_Joiner_Details*/
+  public boolean isUDXUser(){
+    List orgSegmentIdList = joinerDetails.getList("orgSegmentId");
+    List subOrgSegmentIdList = joinerDetails.getList("subOrgSegmentId");
+
+    if(Util.nullSafeContains(orgSegmentIdList,managerOrgSegmentID) || Util.nullSafeContains(subOrgSegmentIdList, mgrSubOrgSegId))
+    {
+      return true;
+    }
+    return false;
+  }
+
+  nickName = userMap.get("nickName");
+  alternateEmail = userMap.get("alternateEmail");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: alternateEmail : "+alternateEmail);
+  identityName = userMap.get("identityName");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: identityName : "+identityName);
+
+  EmpPop = userMap.get("EmpPop");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: EmpPop : "+EmpPop);
+
+  country = userMap.get("country");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: country : "+country);
+
+  type = userMap.get("type");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: type : "+type);
+
+  middleName = userMap.get("middleName");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: middleName : "+middleName);
+
+  orgSegment = userMap.get("orgSegment");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: orgSegment : "+orgSegment);
+
+  subOrgSegment = userMap.get("subOrgSegment");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: subOrgSegment : "+subOrgSegment);
+
+  oNBoardingResource = userMap.get("oNBoardingResource");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: oNBoardingResource : "+oNBoardingResource);
+
+  subPersonType = userMap.get("subPersonType");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: subPersonType : "+subPersonType);
+
+  finalLastName = userMap.get("finalLastName");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: finalLastName : "+finalLastName);
+
+  finalFirstName = userMap.get("finalFirstName");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: finalFirstName : "+finalFirstName);
+
+  EndDate = userMap.get("EndDate");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: EndDate : "+EndDate);
+
+  endDate = userMap.get("EffectiveEndDate");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: endDate : "+endDate);
+
+  startDate = userMap.get("EffectiveStartDate");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: startDate : "+startDate);
+
+  company = userMap.get("company");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: company : "+company);
+
+  businessUnitId = userMap.get("businessUnitId");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: businessUnitId : "+businessUnitId);
+
+  state = userMap.get("state");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: state : "+state);
+
+  city = userMap.get("city");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: city : "+city);
+
+  address = userMap.get("address");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: address : "+address);
+
+  pcode = userMap.get("pcode");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: pcode : "+pcode);
+
+  SupervisorId = userMap.get("SupervisorId");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: SupervisorId : "+SupervisorId);
+
+  jobTitle = userMap.get("jobTitle");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: jobTitle : "+jobTitle);
+
+  businessPhone = userMap.get("businessPhone");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: businessPhone : "+businessPhone);
+
+  interflag = userMap.get("interflag");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: interflag : "+interflag);
+
+  AppID = userMap.get("AppID");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: AppID : "+AppID);
+
+  AssistantId = userMap.get("AssistantId");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: AssistantId : "+AssistantId);
+
+  PersonTypeId = userMap.get("PersonTypeId");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: PersonTypeId : "+PersonTypeId);
+
+  ProvisionedID01 = userMap.get("ProvisionedID01");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: ProvisionedID01 : "+ProvisionedID01);
+
+  //Added as part of RITM1498499
+  Mailbox = userMap.get("Mailbox");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: Mailbox : "+Mailbox);
+
+  remoteADGroups = userMap.get("remoteADGroups");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: remoteADGroups : "+remoteADGroups);
+
+  //Added as part of RITM1856500
+  adWithCR = userMap.get("adWithCR");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: adWithCR : "+adWithCR);
+
+  RestrictPSTFlag = userMap.get("RestrictPSTFlag");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: RestrictPSTFlag : "+RestrictPSTFlag);
+
+  email = userMap.get("email");
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: email : "+email);
+
+  Identity identityObject = context.getObjectByName(Identity.class, identityName);
+
+  //To set password in AD
+  String policyName = "PasswordPolicy_VSNT_JoinerPolicy";
+
+  PasswordPolicy policy = context.getObjectByName(PasswordPolicy.class, policyName);
+  password = new PasswordGenerator(context).generatePassword(policy);
+
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: password : "+password);
+
+  //Important Note: If we are making changes in below OU conditions need to make changes in Rule_VSNT_Get_AD_FullDN as well
+
+  String DN =null;
+  String GDN = null;
+
+  String attributeValue = "CN="+finalLastName+ "\\, "+finalFirstName+" ("+identityName+")" + ",";
+
+  if((type != null && type != "") && (EmpPop != null && EmpPop != ""))
+  {
+    if(type.equalsIgnoreCase("Functional") && EmpPop.equalsIgnoreCase("FunctionalUser"))
+    {
+      GDN = "%%RuleVSNTCreateADProvisioningPlan-Provisioned-Accounts-DN%%";	
+
+      if(subPersonType != null && subPersonType != "")
+      {
+        if(subPersonType.equalsIgnoreCase("Device")){
+          GDN = "%%RuleVSNTCreateADProvisioningPlan-TFAYD-AD-DeviceAccounts-DN%%";
+        }else if(subPersonType.equalsIgnoreCase("Admin Account")){
+          GDN = "%%RuleVSNTCreateADProvisioningPlan-TFAYD-AD-AdminAccounts-DN%%";
+        }else if(subPersonType.equalsIgnoreCase("Resource")){
+          GDN = "%%RuleVSNTCreateADProvisioningPlan-TFAYD-AD-ResourceAccounts-DN%%";
+        }else if(subPersonType.equalsIgnoreCase("Service")){
+          GDN = "%%RuleVSNTCreateADProvisioningPlan-TFAYD-AD-ServiceAccounts-DN%%";
+          accountRequest.add(new AttributeRequest("memberOf","%%RuleVSNTCreateADProvisioningPlan-DomainServiceLogon-Group%%"));
+        }else if(subPersonType.equalsIgnoreCase("Test")){
+          GDN = "%%RuleVSNTCreateADProvisioningPlan-TFAYD-AD-TestAccounts-DN%%";
+        }else if(subPersonType.equalsIgnoreCase("Generic Mailbox")){
+          if(adWithCR != null) //Added as part of RITM1856500
+          {
+            log.error("adWithCR Creation if: " +adWithCR);
+            if("true".equalsIgnoreCase(adWithCR))
+            {		  		  
+              GDN = "%%RuleVSNTCreateADProvisioningPlan-TFAYD-Contacts-Primary-DN%%";
+              //GDN = "%%RuleVSNTCreateADProvisioningPlan-TFAYD-PrimaryGroupDN%%";
+            }
+          }
+          else{
+            // GDN = "OU=NoSync,OU=ResourceAccounts,OU=Users,DC=TFAYD,DC=com";
+            // GDN = "OU=Users,OU=Provisioned-Accounts,OU=IDM,DC=TFAYD,DC=com";
+            GDN = "%%RuleVSNTCreateADProvisioningPlan-Resource-Accounts-DN-NOSYNC%%";
+          }
+          /*	Generic Mailbox Enhancement 
+			Identity identityManager = context.getObjectByName(Identity.class, SupervisorId);
+            if(identityManager != null)
+            {
+              Link linkAD = identityManager.getLink(context.getObjectByName(Application.class, "Application_VSNT_TFAYD_ActiveDirectory"));
+              if(linkAD!=null)
+              {
+                String CN_Manager = (String)linkAD.getAttribute("distinguishedName");
+                String getDN = CN_Manager.substring(CN_Manager.indexOf(new String("OU=")));
+                GDN = getDN;
+              }
+            }
+			*/
+        }else if(subPersonType.equalsIgnoreCase("BOT")){
+          attributeValue = "CN="+finalLastName+ " \\, "+finalFirstName+",";
+          if(email != null && email.equalsIgnoreCase("TRUE")){
+            GDN = "%%RuleVSNTCreateADProvisioningPlan-BotAccount-Sync-DN%%";
+            accountRequest.add(new AttributeRequest("memberOf","%%RuleVSNTCreateADProvisioningPlan-AD-PROVISIONING-APL-Azure-LIC-Office365-E3-GROUP%%"));
+            accountRequest.add(new AttributeRequest("memberOf","%%RuleVSNTCreateADProvisioningPlan-AD-PROVISIONING-APG-Duo-MFA-Pilot-O365-GROUP2%%"));
+            accountRequest.add(new AttributeRequest("memberOf","%%RuleVSNTCreateADProvisioningPlan-AD-PROVISIONING-GPL-OU-DU-Authorized-Certificates-SHA2-GROUP3%%"));
+          }else{
+
+            GDN = "%%RuleVSNTCreateADProvisioningPlan-BotAccount-NoSync-DN%%";
+
+          }
+
+        }
+      }
+
+      DN = attributeValue + GDN;
+
+      log.error("AD Creation: subPersonType: attributeValue : "+attributeValue);
+      log.error("AD Creation: subPersonType: DN : "+DN);
+      log.error("AD Creation: subPersonType: GDN : "+GDN);
+    }
+  }
+
+  if(EmpPop != null && EmpPop != "")
+  {
+    //inc Paramesh Changes
+    if("Orlando".equalsIgnoreCase(EmpPop) || "USJ".equalsIgnoreCase(EmpPop) || "Dreamworks".equalsIgnoreCase(EmpPop) || "NECN Users".equalsIgnoreCase(EmpPop) || "Sportsengine".equalsIgnoreCase(EmpPop) || "Weather Channel Feed".equalsIgnoreCase(EmpPop) || "RSN Users".equalsIgnoreCase(EmpPop) || "GOLF Channel Users".equalsIgnoreCase(EmpPop) || "CNS Users".equalsIgnoreCase(EmpPop) || "Fandango".equalsIgnoreCase(EmpPop) || "Daily Candy".equalsIgnoreCase(EmpPop) || "Production EE".equalsIgnoreCase(EmpPop) || "Parks".equalsIgnoreCase(EmpPop) || "Daily Hires".equalsIgnoreCase(EmpPop) || "VSNTniversal Employees".equalsIgnoreCase(EmpPop) || "PRIV".equalsIgnoreCase(EmpPop) || "Craftsy".equalsIgnoreCase(EmpPop) || "Ingresso".equalsIgnoreCase(EmpPop) || "Matchbox".equalsIgnoreCase(EmpPop) || "Monkeykingdom".equalsIgnoreCase(EmpPop) || "Focus Features".equalsIgnoreCase(EmpPop) || "Working Title".equalsIgnoreCase(EmpPop) || "Comcast Spectacor".equalsIgnoreCase(EmpPop) || "Comcast".equalsIgnoreCase(EmpPop))
+    {
+      GDN = "%%RuleVSNTCreateADProvisioningPlan-TFAYD-PrimaryGroupDN%%";
+      DN = attributeValue + GDN;
+      accountRequest.add(new AttributeRequest("employeeType","Employee"));
+    }
+    // Added condition for international fandango Employee Population   
+    if("InternationalUser".equalsIgnoreCase(EmpPop) || "International USJ".equalsIgnoreCase(EmpPop) || "International Fandango".equalsIgnoreCase(EmpPop))
+    {
+
+      GDN = "%%RuleVSNTCreateADProvisioningPlan-TFAYD-International-User-PrimaryDN%%";
+
+      DN = attributeValue + GDN;
+      accountRequest.add(new AttributeRequest("employeeType","Employee"));
+    }
+
+    if("Partner".equalsIgnoreCase(EmpPop))
+    {
+
+      GDN = "%%RuleVSNTCreateADProvisioningPlan-TFAYD-Partner-PrimaryDN%%";
+
+      DN = attributeValue + GDN;
+      accountRequest.add(new AttributeRequest("employeeType","Partner"));
+    }
+
+    if("Contractor".equals(EmpPop))
+    {
+      GDN = "%%RuleVSNTCreateADProvisioningPlan-Provisioned-Accounts-DN%%";
+      accountRequest.add(new AttributeRequest("employeeType","Contractor"));
+
+      if(interflag != null){
+        if("false".equalsIgnoreCase(interflag))
+          GDN = "%%RuleVSNTCreateADProvisioningPlan-TFAYD-PrimaryGroupDN%%";
+        else
+
+          GDN = "%%RuleVSNTCreateADProvisioningPlan-TFAYD-International-User-PrimaryDN%%";
+
+      }
+      else{
+        if("US".equalsIgnoreCase(country) || "USA".equalsIgnoreCase(country) || "United States".equalsIgnoreCase(country))
+          GDN = "%%RuleVSNTCreateADProvisioningPlan-TFAYD-PrimaryGroupDN%%";
+        else
+
+          GDN = "%%RuleVSNTCreateADProvisioningPlan-TFAYD-International-User-PrimaryDN%%";
+
+      }
+      if(Util.isNotNullOrEmpty(alternateEmail))
+      {
+        log.error("AlternateEmail Creation if: " +alternateEmail);
+        if(!(alternateEmail.toLowerCase().contains("nbcuni.com")))
+        {
+          String domain = alternateEmail.split("@")[1];
+          if(!Util.nullSafeContains(excludeDomainList , domain) && !domain.startsWith("sky.") && !isUDXUser())
+          {
+            //GDN = "%%RuleVSNTCreateADProvisioningPlan-TFAYD-International-User-PrimaryDN%%";
+            GDN = "%%RuleVSNTCreateADProvisioningPlan-TFAYD-PrimaryGroupDN%%";
+            //GDN = "%%RuleVSNTCreateADProvisioningPlan-TFAYD-Contacts-Primary-DN%%";
+            accountRequest.add(new AttributeRequest("ProvisionedID02", "Internal_Guest"));
+          }
+          else if (Util.nullSafeContains(excludeDomainList , domain) || domain.startsWith("sky."))
+          {
+            GDN = "%%RuleVSNTCreateADProvisioningPlan-TFAYD-Contacts-Primary-DN%%";
+          }
+        }
+        if(isUDXUser())
+        {
+          GDN = "%%RuleVSNTCreateADProvisioningPlan-TFAYD-Contacts-Primary-DN%%";         
+        }
+      }
+      //code to check if not VSNTniversal Mailbox then provisioned to Contacts OU in TFAYD
+      if(!"true".equals(Mailbox) && isUDXUser())
+      {
+        GDN = "%%RuleVSNTCreateADProvisioningPlan-TFAYD-Contacts-Primary-DN%%";         
+      }
+
+
+      DN = attributeValue + GDN;
+      if (AssistantId != null)
+        accountRequest.add(new AttributeRequest("AssistantId",AssistantId));
+    }
+    log.error("AD Creation: " + EmpPop +" : attributeValue : "+attributeValue);
+    log.error("AD Creation: " + EmpPop +" : DN : "+DN);
+    log.error("AD Creation: " + EmpPop +" : GDN : "+GDN);
+
+    if("FunctionalUser".equalsIgnoreCase(EmpPop)){
+      if(subPersonType.equalsIgnoreCase("BOT")){
+        accountRequest.add(new AttributeRequest("employeeType",type));
+      }else{
+        accountRequest.add(new AttributeRequest("employeeType",subPersonType));
+      }
+      if (AssistantId != null){
+        accountRequest.add(new AttributeRequest("AssistantId",AssistantId));
+      }
+      if (AppID != null){
+        accountRequest.add(new AttributeRequest("AppID",AppID));
+      }
+      if("FunctionalUser".equalsIgnoreCase(EmpPop) && !subPersonType.equalsIgnoreCase("Test")){
+        accountRequest.add(new AttributeRequest("SSOADStatus","2"));
+      }
+    }
+    if("Partner".equalsIgnoreCase(EmpPop))
+    {
+      accountRequest.add(new AttributeRequest("employeeType","Partner"));
+      accountRequest.add(new AttributeRequest("employeeNumber",identityName));
+      accountRequest.add(new AttributeRequest("userAccountControl","512"));
+    }
+  }    
+
+  ArrayList Cable_Entertainment_User = new ArrayList();
+  Cable_Entertainment_User.add("Cable Ent Finance");
+  Cable_Entertainment_User.add("USA");
+  Cable_Entertainment_User.add("Oxygen");
+  Cable_Entertainment_User.add("Cable Ent Communications");
+  Cable_Entertainment_User.add("UCP");
+  Cable_Entertainment_User.add("Bravo");
+  Cable_Entertainment_User.add("SYFY");
+
+
+  ArrayList Operations_And_Technical_Services = new ArrayList();
+  Operations_And_Technical_Services.add("Technology");
+  Operations_And_Technical_Services.add("West Coast Studio Ops");
+
+
+  ArrayList Staff = new ArrayList();
+  Staff.add("Technology");
+  Staff.add("Media Labs");
+
+
+  ArrayList Telemundo_User = new ArrayList();
+  Telemundo_User.add("TLMD TI");
+  Telemundo_User.add("TLMD Business & Legal Affairs");
+  Telemundo_User.add("TLMD Operations");
+  Telemundo_User.add("TLMD Finance");
+  Telemundo_User.add("TLMD News");
+  Telemundo_User.add("TLMD Marketing");
+  Telemundo_User.add("TLMD Sr Management");
+  Telemundo_User.add("TLMD Technical Production");
+  Telemundo_User.add("TLMD Programming");
+  Telemundo_User.add("TLMD Talent Development & Strategy");
+  Telemundo_User.add("TLMD Promotions");
+  Telemundo_User.add("TLMD Digital Media");
+  Telemundo_User.add("Telemundo Enterprises Leadership");
+  Telemundo_User.add("NBC Universo");
+  Telemundo_User.add("TLMD Sports");
+  Telemundo_User.add("TLMD Alt Prog");
+  Telemundo_User.add("TLMD Scenery");
+  Telemundo_User.add("TLMD Communications");
+  Telemundo_User.add("TLMD Research & Insights");
+  Telemundo_User.add("TLMD Interns");
+  Telemundo_User.add("TLMD Human Resources");
+  Telemundo_User.add("TLMD Studios");
+  Telemundo_User.add("TLMD Strategy");
+
+  // Mailbox
+  if(type != null && type != "")
+  {
+    if(Mailbox != null && Mailbox.equalsIgnoreCase("true")) 
+    {
+
+      accountRequest.add(new AttributeRequest("memberOf","%%RuleVSNTCreateADProvisioningPlan-AD-PROVISIONING-VIRTUAL_ONEDRIVE_GROUP%%"));
+
+    }
+  }
+  if((type != null && type != "") && (EmpPop != null && EmpPop != "")) 
+  {
+    if(!EmpPop.equalsIgnoreCase("Daily Hires"))
+    {
+      accountRequest.add(new AttributeRequest("memberOf","%%RuleVSNTCreateADProvisioningPlan-AD-PROVISIONING-GPL-OU-DU-Authorized-Certificates-SHA2-GROUP3%%"));
+
+    }
+    //Added as part of RITM1498499
+    if(Mailbox != null && Mailbox.equalsIgnoreCase("true")){
+      if(!(type.equalsIgnoreCase("Functional")  || EmpPop.equalsIgnoreCase("Partner")))
+      {
+        if(remoteADGroups != null && remoteADGroups.equalsIgnoreCase("true"))
+        {
+          accountRequest.add(new AttributeRequest("memberOf","%%RuleVSNTCreateADProvisioningPlan-AD-PROVISIONING-APG-MFA-O365-Hotfix-GROUP1A%%"));
+          accountRequest.add(new AttributeRequest("memberOf","%%RuleVSNTCreateADProvisioningPlan-AD-PROVISIONING-APL-AD-IntuneMAM-o365-GROUP1B%%"));
+          accountRequest.add(new AttributeRequest("memberOf","%%RuleVSNTCreateADProvisioningPlan-AD-PROVISIONING-APL-Azure-LIC-Office365-E3-GROUP%%"));
+          accountRequest.add(new AttributeRequest("memberOf","%%RuleVSNTCreateADProvisioningPlan-AD-PROVISIONING-APG-Duo-MFA-Pilot-O365-GROUP2%%"));
+
+        }
+
+      }
+
+      accountRequest.add(new AttributeRequest("memberOf","%%RuleVSNTCreateADProvisioningPlan-BRTONE-AD-APL-OneDrive-Mig-Users-Group%%"));
+
+    }
+  }
+
+  if(RestrictPSTFlag != null && RestrictPSTFlag.equalsIgnoreCase("true"))
+  {
+    if(remoteADGroups != null && remoteADGroups.equalsIgnoreCase("true"))
+    {
+      accountRequest.add(new AttributeRequest("memberOf","%%RuleVSNTCreateADProvisioningPlan-AD-PROVISIONING-RESTRICT_PST_GROUP%%"));
+
+    }
+  }	
+
+  if(EmpPop!=null && EmpPop != "") 
+  {
+    if("VSNTniversal Employees".equalsIgnoreCase(EmpPop))	
+    {
+      if(orgSegment!=null && subOrgSegment!=null)  
+      {
+        if(orgSegment.equals("Cable Entertainment") && Cable_Entertainment_User.contains(subOrgSegment))
+
+          accountRequest.add(new AttributeRequest("memberOf","%%RuleVSNTCreateADProvisioningPlan-MemberOf-Cable-Entertainment%%"));
+
+
+        if(orgSegment.equals("Ad Sales") && subOrgSegment.startsWith("Ad Sales"))
+          accountRequest.add(new AttributeRequest("memberOf","%%RuleVSNTCreateADProvisioningPlan-MemberOf-Ad-Sales%%"));
+
+
+        if(orgSegment.equals("Operations & Technical Services") && Operations_And_Technical_Services.contains(subOrgSegment))
+          accountRequest.add(new AttributeRequest("memberOf","%%RuleVSNTCreateADProvisioningPlan-MemberOf-Operations-And-Technical-Services-Or-Staff%%"));
+
+
+        if(orgSegment.equals("Staff") && Staff.contains(subOrgSegment))
+          accountRequest.add(new AttributeRequest("memberOf","%%RuleVSNTCreateADProvisioningPlan-MemberOf-Operations-And-Technical-Services-Or-Staff%%"));
+
+
+        if(orgSegment.equals("Telemundo Enterprises") && Telemundo_User.contains(subOrgSegment))
+          accountRequest.add(new AttributeRequest("memberOf","%%RuleVSNTCreateADProvisioningPlan-MemberOf-Telemundo-Enterprises%%"));
+
+      }
+    }
+  }
+
+  //attributes added after removing policy from application
+  accountRequest.add(new AttributeRequest("givenName",finalFirstName));
+  accountRequest.add(new AttributeRequest("sn",finalLastName));
+  accountRequest.add(new AttributeRequest("ObjectType","User"));
+  accountRequest.add(new AttributeRequest("IIQDisabled","false"));
+  accountRequest.add(new AttributeRequest("sAMAccountName",identityName));        
+  accountRequest.add(new AttributeRequest("distinguishedName",DN));
+  accountRequest.add(new AttributeRequest("employeeID",identityName));
+  accountRequest.add(new AttributeRequest("middleName",middleName));
+  accountRequest.add(new AttributeRequest("NDIStatus","Active"));
+  if(ProvisionedID01 != null && ProvisionedID01 != ""){
+    accountRequest.add(new AttributeRequest("ProvisionedID01",ProvisionedID01));
+  }   
+  if(subPersonType!=null && subPersonType.equalsIgnoreCase("Generic Mailbox")){
+    accountRequest.add(new AttributeRequest("userAccountControl","512"));
+    accountRequest.add(new AttributeRequest("memberOf","%%RuleVSNTCreateADProvisioningPlan-TFAYD-GenericMailbox-Group%%"));
+
+    // Added for generic mailbox
+    accountRequest.add(new AttributeRequest("memberOf","%%RuleVSNTCreateADProvisioningPlan-AD-PROVISIONING-VIRTUAL_ONEDRIVE_GROUP%%"));
+
+  }
+  if(subPersonType!=null && subPersonType.equalsIgnoreCase("Device") && subPersonType.equalsIgnoreCase("Test") && subPersonType.equalsIgnoreCase("Admin Account") && subPersonType.equalsIgnoreCase("BOT")){
+    accountRequest.add(new AttributeRequest("userAccountControl","512"));
+  }
+  else if(subPersonType!=null && subPersonType.equalsIgnoreCase("Resource") && subPersonType.equalsIgnoreCase("Service")){
+    accountRequest.add(new AttributeRequest("userAccountControl","66048"));
+  }
+
+  String appendSSO="(ssoid)";
+  String appendSSOfinal=appendSSO.replace("ssoid",identityName);
+
+  String userPrincipalName = identityName+"%%RuleVSNTCreateADProvisioningPlan-TFAYD-DomainName%%";
+
+  accountRequest.add(new AttributeRequest("userPrincipalName",userPrincipalName));
+  accountRequest.add(new AttributeRequest("password",password));
+
+
+  if(subPersonType != null && !subPersonType.equalsIgnoreCase("BOT")){
+    String displayName=finalLastName+", "+finalFirstName+" "+appendSSOfinal;
+    accountRequest.add(new AttributeRequest("displayName",displayName));
+  }
+  // Added as part of User Story 2
+  preferredFName = Util.isNotNullOrEmpty(nickName)?nickName:finalFirstName;
+  log.error("Rule_VSNT_Create_AD_Provisioning_Plan: preferredFName : "+preferredFName);
+  String dName=finalLastName+", "+preferredFName+" "+appendSSOfinal;
+  accountRequest.add(new AttributeRequest("displayName",dName));
+  // Added as part of Contractor 
+  accountRequest.add(new AttributeRequest("scriptPath","tfayd.bat"));
+  // Added as part of User Story 1814
+  accountRequest.add(new AttributeRequest("memberOf","%%RuleVSNTCreateADProvisioningPlan-DigiCertDC%%"));
+  if (endDate != null)
+    accountRequest.add(new AttributeRequest("EffectiveEndDate",endDate));
+
+  if (startDate != null)
+    accountRequest.add(new AttributeRequest("EffectiveStartDate",startDate));
+
+  if (company != null)
+    accountRequest.add(new AttributeRequest("Company",company));
+
+  if (businessUnitId != null)
+    accountRequest.add(new AttributeRequest("BusinessUnitId",businessUnitId));
+
+  if (state != null)
+    accountRequest.add(new AttributeRequest("st",state));
+
+  if (city != null)
+    accountRequest.add(new AttributeRequest("l",city));
+
+  if (address != null)
+    accountRequest.add(new AttributeRequest("streetAddress",address));
+
+  if (pcode != null)
+    accountRequest.add(new AttributeRequest("postalCode",pcode));
+
+  if (SupervisorId != null)
+    accountRequest.add(new AttributeRequest("SupervisorId",SupervisorId));
+
+  if (jobTitle != null)
+    accountRequest.add(new AttributeRequest("title",jobTitle));
+
+  if (businessPhone != null)
+    accountRequest.add(new AttributeRequest("telephoneNumber",businessPhone));
+
+  if (country != null)
+    accountRequest.add(new AttributeRequest("co",country));
+
+  accountRequest.setNativeIdentity(DN);
+
+  if(EmpPop != null && EmpPop != "")
+  {
+    //Added condition for International Fandango employee Population
+    if((("Contractor".equalsIgnoreCase(EmpPop)) || ("FunctionalUser".equalsIgnoreCase(EmpPop) && ("Generic Mailbox".equalsIgnoreCase(subPersonType)|| ("Device".equalsIgnoreCase(subPersonType)) || ("Admin Account".equalsIgnoreCase(subPersonType)) ||("Test".equalsIgnoreCase(subPersonType)))) || ("InternationalUser".equalsIgnoreCase(EmpPop) && PersonTypeId.equalsIgnoreCase("99999")) || ("International Fandango".equalsIgnoreCase(EmpPop) && PersonTypeId.equalsIgnoreCase("99999")) || "Partner".equalsIgnoreCase(EmpPop)) && (EndDate != null && EndDate != ""))
+    {
+      SimpleDateFormat df = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss a z");
+      Date dt = null;
+      long epochTime;
+      String accountExpires = null;
+      try
+      {
+        dt = df.parse(EndDate);
+        epochTime = (dt.getTime()*10000L) + 116444736000000000L;
+        log.error("End date of Contractor:"+dt);
+      } catch(Exception e)
+      {
+        log.error("Error Occurred while Calculating Account Expires: "+e.toString());
+      }
+
+      accountExpires = new Long(epochTime).toString();
+      log.error("accountExpires: "+ accountExpires);
+
+      accountRequest.add(new AttributeRequest("accountExpires",accountExpires));
+    }
+  }
+
+  accountRequests.add(accountRequest);
+
+  plan.setAccountRequests(accountRequests);
+  plan.setIdentity(identityObject);
+
+  return plan; 
+
+  ]]></Source>
+</Rule>

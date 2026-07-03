@@ -1,0 +1,256 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1756461902476" completionStatus="Error" launched="1756458246976" launcher="spadmin" name="Update Identity Anna Ward AccessRequest - 5" targetClass="Identity" targetName="Anna Ward" type="LCM">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000912"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Anna Ward">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000912"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <Filtered>
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Anna Ward,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                <Attributes>
+                  <Map>
+                    <entry key="logged" value="true"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="memberOf" op="Add">
+                  <Attributes>
+                    <Map>
+                      <entry key="reason">
+                        <value>
+                          <FilterReason>Exists</FilterReason>
+                        </value>
+                      </entry>
+                    </Map>
+                  </Attributes>
+                  <Value>
+                    <List>
+                      <String>CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                    </List>
+                  </Value>
+                </AttributeRequest>
+              </AccountRequest>
+            </Filtered>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="IIQ" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800279065142581906e414e3a0451"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="RoleAdd"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="assignedRoles" op="Add" value="FinanceBusinessRole"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000912"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <ProvisioningTargets>
+                  <ProvisioningTarget role="FinanceBusinessRole">
+                    <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=Anna Ward,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                      <AccountInfo displayName="Anna Ward" nativeIdentity="CN=Anna Ward,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+                    </AccountSelection>
+                    <AccountSelection applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" doCreate="true"/>
+                  </ProvisioningTarget>
+                  <ProvisioningTarget retain="true" role="ad_business_role">
+                    <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=Anna Ward,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                      <AccountInfo displayName="Anna Ward" nativeIdentity="CN=Anna Ward,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+                    </AccountSelection>
+                    <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ADX" selection="CN=Anna Ward,OU=XPeople,OU=Demo,DC=Eshiam,DC=com">
+                      <AccountInfo displayName="ESHIAM\XAnna Ward" nativeIdentity="CN=Anna Ward,OU=XPeople,OU=Demo,DC=Eshiam,DC=com"/>
+                    </AccountSelection>
+                  </ProvisioningTarget>
+                  <ProvisioningTarget retain="true" role="BusinessRoleHTask">
+                    <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ADX" selection="CN=Anna Ward,OU=XPeople,OU=Demo,DC=Eshiam,DC=com">
+                      <AccountInfo displayName="ESHIAM\XAnna Ward" nativeIdentity="CN=Anna Ward,OU=XPeople,OU=Demo,DC=Eshiam,DC=com"/>
+                    </AccountSelection>
+                  </ProvisioningTarget>
+                  <ProvisioningTarget retain="true" role="BusinessRoleAccountingHtask">
+                    <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ADX" selection="CN=Anna Ward,OU=XPeople,OU=Demo,DC=Eshiam,DC=com">
+                      <AccountInfo displayName="ESHIAM\XAnna Ward" nativeIdentity="CN=Anna Ward,OU=XPeople,OU=Demo,DC=Eshiam,DC=com"/>
+                    </AccountSelection>
+                  </ProvisioningTarget>
+                </ProvisioningTargets>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan targetIntegration="IIQ" trackingId="b543389ed21a49488d8d411d395b895a">
+              <AccountRequest application="IIQ" op="Modify" targetIntegration="IIQ">
+                <Attributes>
+                  <Map>
+                    <entry key="attachmentConfigList"/>
+                    <entry key="attachments"/>
+                    <entry key="flow" value="AccessRequest"/>
+                    <entry key="id" value="c0a800279065142581906e414e3a0451"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="operation" value="RoleAdd"/>
+                    <entry key="provisioningTransactionId" value="c0a8008598f111308198f51244870373"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="assignedRoles" op="Add" value="FinanceBusinessRole"/>
+                <AttributeRequest name="Capabilities" op="Add" value="Auditor"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000912"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+            <ProvisioningPlan nativeIdentity="Anna Ward" targetIntegration="ActiveDirectory" trackingId="98e1516d6687405fa71ba0312f827f08">
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Anna Ward,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify" targetIntegration="ActiveDirectory">
+                <Attributes>
+                  <Map>
+                    <entry key="provisioningTransactionId" value="c0a8008598f111308198f51242a9036e"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="memberOf" op="Add" value="CN=Finance,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                <ProvisioningResult>
+                  <Errors>
+                    <Message key="Connection timed out: connect" type="Error"/>
+                  </Errors>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000912"/>
+                  <entry key="inRetry">
+                    <value>
+                      <Boolean>true</Boolean>
+                    </value>
+                  </entry>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+            <ProvisioningPlan nativeIdentity="Anna Ward" targetIntegration="LDAPApplication" trackingId="8b49982e72fd4599b8f8df10e1d036d7">
+              <AccountRequest application="LDAPApplication" assignmentIds="70d676b2599c432fad6f5aeef3bc9e56" nativeIdentity="cn=Anna.Ward,ou=People,dc=my-domain,dc=com" op="Create" targetIntegration="LDAPApplication">
+                <Attributes>
+                  <Map>
+                    <entry key="provisioningTransactionId" value="c0a8008598f111308198f51243ff0372"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="groups" op="Add">
+                  <Value>
+                    <List>
+                      <String>cn=WebApplicationAccess,ou=Group,dc=my-domain,dc=com</String>
+                      <String>cn=Contractors,ou=Group,dc=my-domain,dc=com</String>
+                    </List>
+                  </Value>
+                </AttributeRequest>
+                <AttributeRequest name="password" op="Set">
+                  <Attributes>
+                    <Map>
+                      <entry key="secret" value="true"/>
+                    </Map>
+                  </Attributes>
+                </AttributeRequest>
+                <AttributeRequest name="sn" op="Set" value="Ward"/>
+                <AttributeRequest name="mail" op="Set" value="anna.ward@eshiam.com"/>
+                <AttributeRequest name="employeeId" op="Add" value="1a2c3b4e"/>
+                <ProvisioningResult status="failed">
+                  <Errors>
+                    <Message key="sailpoint.connector.InvalidConfigurationException: [ InvalidConfigurationException ] &#10; [ Error details ] [LDAP: error code 17 - employeeId: attribute type undefined]" type="Error"/>
+                  </Errors>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000912"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+              <ProvisioningResult status="failed">
+                <Errors>
+                  <Message key="sailpoint.connector.InvalidConfigurationException: [ InvalidConfigurationException ] &#10; [ Error details ] [LDAP: error code 17 - employeeId: attribute type undefined]" type="Error"/>
+                </Errors>
+              </ProvisioningResult>
+            </ProvisioningPlan>
+            <ProvisioningTarget role="FinanceBusinessRole">
+              <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=Anna Ward,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="Anna Ward" nativeIdentity="CN=Anna Ward,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+              <AccountSelection applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" doCreate="true"/>
+            </ProvisioningTarget>
+            <ProvisioningTarget retain="true" role="ad_business_role">
+              <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=Anna Ward,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="Anna Ward" nativeIdentity="CN=Anna Ward,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+              <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ADX" selection="CN=Anna Ward,OU=XPeople,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="ESHIAM\XAnna Ward" nativeIdentity="CN=Anna Ward,OU=XPeople,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+            </ProvisioningTarget>
+            <ProvisioningTarget retain="true" role="BusinessRoleHTask">
+              <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ADX" selection="CN=Anna Ward,OU=XPeople,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="ESHIAM\XAnna Ward" nativeIdentity="CN=Anna Ward,OU=XPeople,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+            </ProvisioningTarget>
+            <ProvisioningTarget retain="true" role="BusinessRoleAccountingHtask">
+              <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ADX" selection="CN=Anna Ward,OU=XPeople,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="ESHIAM\XAnna Ward" nativeIdentity="CN=Anna Ward,OU=XPeople,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+            </ProvisioningTarget>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a8008598f111308198f511e7bd035b"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="end"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="Connection timed out: connect" type="Error"/>
+    <Message key="sailpoint.connector.InvalidConfigurationException: [ InvalidConfigurationException ] &#10; [ Error details ] [LDAP: error code 17 - employeeId: attribute type undefined]" type="Error"/>
+  </Messages>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

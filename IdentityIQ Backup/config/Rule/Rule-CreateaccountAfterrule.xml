@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="CreateAccount AfterRule" type="WebServiceAfterOperationRule">
+  <Description>The Web Services connector will call this rule after performing ANY defined operation. This rule can be used to update the parsed resource object and/or add persistent values to the application's data.
+(See information about what to return for more information)</Description>
+  <Signature returnType="Object">
+    <Inputs>
+      <Argument name="log" type="org.apache.commons.logging.Log">
+        <Description>
+          The log object associated with the SailPointContext.
+        </Description>
+      </Argument>
+      <Argument name="context" type="sailpoint.api.SailPointContext">
+        <Description>
+          A sailpoint.api.SailPointContext object that can be used to query the database if necessary.
+        </Description>
+      </Argument>
+      <Argument name="application">
+        <Description>The application whose data file is being processed.</Description>
+      </Argument>
+      <Argument name="requestEndPoint">
+        <Description>The current request information contain header, body ,response object</Description>
+      </Argument>
+      <Argument name="processedResponseObject">
+        <Description>Response Object processed by the Web services connector</Description>
+      </Argument>
+      <Argument name="rawResponseObject">
+        <Description>Response Object returned from the end system</Description>
+      </Argument>
+      <Argument name="restClient">
+        <Description>REST Client Object</Description>
+      </Argument>
+    </Inputs>
+    <Returns>
+      <Argument name="Map">
+        <Description>A newly created map containing a 'data' key and optionally, a 'connectorStateMap' key.  The 'data' value should be set to a map containing a parsed list of accounts/groups.  
+                The 'connectorStateMap' value can be set to a map containing values that will be persisted to the application definition.
+                </Description>
+      </Argument>
+    </Returns>
+  </Signature>
+  <Source><![CDATA[log.error("  -=====Entred into the create After operation rull =========");
+
+//log.error("  application--"+application);
+log.error("  processedResponseObject- After Rule getObjectMethod............"+processedResponseObject);
+log.error("  rawResponseObject   After Rule  getObjectMethod--"+rawResponseObject);
+
+log.error("  requestEndPoint   After Rule  getObjectMethod --:::::::::::::"+requestEndPoint);
+
+
+return requestEndPoint;]]></Source>
+</Rule>

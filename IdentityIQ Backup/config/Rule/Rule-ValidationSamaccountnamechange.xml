@@ -1,0 +1,178 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Validation sAMAccountNameChange" type="Validation">
+  <Source><![CDATA[
+  import sailpoint.object.Identity;
+  import sailpoint.tools.Util;
+  import sailpoint.object.Attributes;
+  import sailpoint.object.ProvisioningPlan;
+  import sailpoint.object.Application;
+  import sailpoint.object.Link;
+  import sailpoint.object.Filter;
+  import sailpoint.connector.Connector;
+  import sailpoint.api.IdentityService;
+  import sailpoint.object.ResourceObject;
+  import sailpoint.object.WorkflowLaunch;
+  import sailpoint.api.Workflower;
+  import sailpoint.object.Workflow;
+  import sailpoint.object.TaskResult;
+  import sailpoint.object.ProvisioningResult;
+  import sailpoint.object.ProvisioningProject;
+  import sailpoint.object.IdentityRequest;
+  import java.io.IOException;
+  import java.io.FileReader;
+  import java.io.File;
+  import sailpoint.object.ProvisioningPlan.Operation;
+  import sailpoint.object.ProvisioningPlan.AccountRequest;
+  import sailpoint.object.ProvisioningPlan.AttributeRequest;
+  import sailpoint.object.ProvisioningPlan.AccountRequest.Operation;
+  import sailpoint.connector.ConnectorFactory;
+  import sailpoint.api.Provisioner;
+  import java.io.BufferedReader;
+  import org.apache.commons.logging.LogFactory;
+  import org.apache.commons.logging.Log;
+  import sailpoint.rapidapponboarding.logger.LogEnablement;
+
+  Log tlog = LogFactory.getLog("ADsAMAccountNameChange.eshiam.rule");
+  if (tlog.isTraceEnabled()) {
+    tlog.trace("ADSNC::001-Entering Toyota AtldapId Transformation");
+  }
+
+
+
+  String filePath= config.get("filePath");
+  String samAccountName,line,newSAMAccountName,idFirstName,nativeIdentity;
+  int updateCount = 0;
+  int accountsRed = 0;
+  ProvisioningPlan plan= null;
+  AccountRequest accountRequest =null;
+  Identity identity = null;
+  IdentityService idService = new IdentityService(context);
+  Application application = context.getObjectByName(Application.class , "ActiveDirectory");
+
+
+  try{
+
+    if(!Util.isNullOrEmpty(filePath)){
+      BufferedReader br=new BufferedReader(new FileReader(new File(filePath)));
+      String header=br.readLine();
+
+      while ((line=br.readLine())!=null )
+      {
+        boolean status;
+        String userName = line;
+        Filter iiqFilter = Filter.eq("employeeId" , userName);
+        identity = context.getUniqueObject(Identity.class , iiqFilter);
+        idFirstName = identity.getFirstname();
+
+        if ( application != null && idService.countLinks(identity ,application)==1 )
+        {
+          Link adLink = idService.getLinks(identity,application).get(0);
+          nativeIdentity = adLink.getNativeIdentity();
+          Connector connector = ConnectorFactory.getConnector(application , null);
+          ResourceObject rObject = connector.getObject("account",nativeIdentity,null);
+          samAccountName = rObject.getAttribute("sAMAccountName");
+
+          if(!Util.nullSafeContains(samAccountName,userName))
+          {
+            newSAMAccountName = idFirstName.substring(0,2)+userName;
+
+            if (tlog.isTraceEnabled()) {
+              tlog.trace( "ADSNC::010  updateSAMAccountName method entry for : "+identity.getName()+userName+idFirstName+adLink+connector+newSAMAccountName+rObject);
+            }
+
+            if( Util.isNotNullOrEmpty(newSAMAccountName)){
+              plan=new ProvisioningPlan();
+              plan.setIdentity(identity);
+              accountRequest =new AccountRequest();
+              accountRequest.setOp(ProvisioningPlan.ObjectOperation.Modify);
+              accountRequest.setApplication("ActiveDirectory");
+              accountRequest.setNativeIdentity(nativeIdentity);
+              accountRequest.add(new AttributeRequest("sAMAccountName", ProvisioningPlan.Operation.Add, newSAMAccountName));
+              plan.add(accountRequest);
+
+
+              WorkflowLaunch wflaunch = new WorkflowLaunch();
+              String workflowName ="LCM Provisioning";
+              HashMap launchArgsMap = new HashMap();
+              launchArgsMap.put("identityName",identity.getName());
+              launchArgsMap.put("plan",plan);
+              launchArgsMap.put("noCreateTemplates","true");
+              launchArgsMap.put("trace","false");
+               launchArgsMap.put("approvalScheme","none");
+
+              Workflow wf = context.getObjectByName(Workflow.class,workflowName);
+              wflaunch.setWorkflowName(wf.getName());  
+              wflaunch.setWorkflowRef(wf.getName());
+              wflaunch.setVariables(launchArgsMap);
+
+              //Create Workflower and launch workflow from WorkflowLaunch
+              Workflower workflower = new Workflower(context);
+              WorkflowLaunch launch = workflower.launch(wflaunch);
+
+
+              TaskResult tResult = launch.getTaskResult();
+              if (tlog.isTraceEnabled()) 
+              {
+                tlog.trace( "ADSNC::011  ProvisioningPlan   : "+plan.toXml());
+                tlog.trace( "ADSNC::011  tResult   : "+tResult.toXml());
+              }
+
+
+              if(Util.nullSafeEq(tResult.getType().toString() , "LCM"))
+              {
+                String reuestId = tResult.getAttribute("identityRequestId");
+                log.error(" identityRequestId :::::::"+reuestId);
+                IdentityRequest idReq = context.getObjectByName(IdentityRequest.class,reuestId);
+                if( idReq != null && idReq.isSuccessful()){
+                  IdentityRequestItem idItem = idReq.getItems().get(0);
+                  log.error("  IdentityRequestItem  ::::::::::::::  "+idItem);
+                  if( idItem != null ){
+                    ProvisioningPlan resultPlan = idItem.getProvisioningPlan();
+                    log.error("  resultPlan  ::::::::::::::  "+resultPlan.toXml());
+
+                    if( Util.nullSafeEq(resultPlan.getResult().getStatus() , "committed"))
+                    {
+                      log.error("  ProvisioningResult  check block ::::::");
+                      updateCount++;
+                      log.error(" status ::::::: "+resultPlan.getResult().getStatus() +"      "+reuestId);
+                    }
+                  }
+                }
+
+                /*try
+              {
+                Provisioner provisioner=new Provisioner(context);
+                provisioner.execute(plan);
+                status = true;
+              }catch(Exception e)
+              {
+                if (tlog.isTraceEnabled()) 
+                  log.error(" Exception in calling method updateSAMAccountName : "+e.toString());
+              }*/
+              }
+
+              /* if(status)
+            {
+              updateCount++;
+            }*/
+            }
+          }
+          accountsRed++;
+        }
+      }
+      tlog.trace( "ADSNC::014  updateCount  and accountsRed loop : "+updateCount+"   "+accountsRed);
+      taskResult.setAttribute("Accounts Red From File",accountsRed);
+      taskResult.setAttribute("Accounts Updated in AD",updateCount);
+    }
+  }catch(Exception e){
+    if (tlog.isTraceEnabled()) {
+      tlog.trace( "ADSNC::015 Exception occured while changing sAMAccountName for "+identity.getName()+" : "+e.toString());
+    }
+  }
+
+  return "mmmmm"
+
+
+    ]]></Source>
+</Rule>

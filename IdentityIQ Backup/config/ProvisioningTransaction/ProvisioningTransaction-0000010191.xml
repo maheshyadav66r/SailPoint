@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningTransaction PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningTransaction accountDisplayName="Alexander" applicationName="LDAPApplication" identityDisplayName="Ann Alexander" identityName="Ann Alexander" integration="LDAPApplication" name="0000010191" nativeIdentity="Alexander" operation="Create" source="IdentityRefresh" status="Failed" type="Auto">
+  <Attributes>
+    <Map>
+      <entry key="planResult">
+        <value>
+          <ProvisioningResult status="failed">
+            <Errors>
+              <Message key="sailpoint.connector.InvalidRequestException: [ InvalidRequestException ] &#10; [ Possible suggestions ] Ensure that value of 'User DN' is correct. &#10; [ Error details ] Invalid name: Alexander" type="Error"/>
+            </Errors>
+          </ProvisioningResult>
+        </value>
+      </entry>
+      <entry key="request">
+        <value>
+          <AccountRequest application="LDAPApplication" nativeIdentity="Alexander" op="Create">
+            <Attributes>
+              <Map>
+                <entry key="provisioningTransactionId" value="c0a801199c071190819c08a24757052c"/>
+              </Map>
+            </Attributes>
+            <AttributeRequest name="groups" op="Add" value="cn=Contractors,ou=Group,dc=my-domain,dc=com">
+              <Attributes>
+                <Map>
+                  <entry key="assignment">
+                    <value>
+                      <Boolean>true</Boolean>
+                    </value>
+                  </entry>
+                </Map>
+              </Attributes>
+            </AttributeRequest>
+            <AttributeRequest name="dn" op="Set" value="cn=Ann.Alexander,ou=People,dc=my-domain,dc=com"/>
+            <AttributeRequest name="password" op="Set">
+              <Attributes>
+                <Map>
+                  <entry key="secret" value="true"/>
+                </Map>
+              </Attributes>
+            </AttributeRequest>
+            <AttributeRequest name="mail" op="Set" value="ann.alexander@eshiam.com"/>
+            <ProvisioningResult status="failed">
+              <Errors>
+                <Message key="sailpoint.connector.InvalidRequestException: [ InvalidRequestException ] &#10; [ Possible suggestions ] Ensure that value of 'User DN' is correct. &#10; [ Error details ] Invalid name: Alexander" type="Error"/>
+              </Errors>
+            </ProvisioningResult>
+          </AccountRequest>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+</ProvisioningTransaction>

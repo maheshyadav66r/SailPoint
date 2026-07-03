@@ -1,0 +1,448 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Validation SubQuery Filter" type="Validation">
+  <Source><![CDATA[
+  import sailpoint.object.*;
+  import sailpoint.api.*;
+  import sailpoint.tools.Util;
+  import java.util.Date;
+
+  import sailpoint.object.Bundle;
+  import sailpoint.object.QueryOptions;
+  import sailpoint.object.BundleProfileRelation;
+  import sailpoint.object.*;
+
+  import sailpoint.object.Filter;
+  import sailpoint.object.Custom;
+  import sailpoint.object.ManagedAttribute;
+  import sailpoint.object.IdentityEntitlement;
+  import sailpoint.object.Bundle;
+  import sailpoint.api.ObjectUtil;
+  import sailpoint.object.Identity;
+  import sailpoint.object.Attributes;
+  import sailpoint.object.Application;
+  import sailpoint.tools.GeneralException;
+  import sailpoint.object.ProvisioningTransaction;
+  import sailpoint.object.ProvisioningPlan.AccountRequest;
+  import sailpoint.object.ProvisioningPlan.AttributeRequest;
+
+  import java.util.ArrayList;
+  import java.util.HashSet;
+  import java.util.List;
+  import java.util.Set;
+
+  import sailpoint.api.ObjectUtil;
+  import sailpoint.api.SailPointContext;
+  import sailpoint.api.SailPointFactory;
+  import sailpoint.object.Bundle;
+  import sailpoint.object.Identity;
+  import sailpoint.object.Profile;
+  import sailpoint.object.RoleAssignment;
+  import sailpoint.object.RoleTarget;
+  import sailpoint.tools.GeneralException;
+
+
+  import java.io.BufferedReader;
+  import java.io.FileReader;
+  import java.util.*;
+
+
+  String filePath = "D:\\csv files\\UsersRoleData.csv";
+  StringBuilder finalData = new StringBuilder(10000); // better than List for huge data
+  BufferedReader br = null;
+
+  try {
+    br = new BufferedReader(new FileReader(filePath), 8192); // bigger buffer
+
+    String line,identityName;
+
+    while ((line = br.readLine()) != null) {
+
+      if (line.trim().isEmpty()) continue;
+
+      String[] parts = line.split(",");
+      if (parts.length == 0) continue;
+
+      String identityName = parts[0].trim();
+      if (identityName.isEmpty()) continue;
+
+      Identity identityObj = context.getObjectByName(Identity.class, identityName);
+
+      if (identityObj == null) continue;
+
+      List assignedRoles = identityObj.getAssignedRoles();
+      if (assignedRoles == null || assignedRoles.isEmpty()) {
+        context.decache(identityObj);
+        continue;
+      }
+
+      // Fetch once
+      List assignments = (List) identityObj.getPreference("roleAssignments");
+
+      Map roleTargetMap = new HashMap();
+
+      if (assignments != null) {
+        for (RoleAssignment ra : assignments) {
+          if (ra != null && ra.getRoleName() != null) {
+            roleTargetMap.put(ra.getRoleName().toLowerCase(), ra.getTargets());
+          }
+        }
+      }
+
+      for (Bundle assignedRole : assignedRoles) {
+
+        if (assignedRole == null || !"business".equalsIgnoreCase(assignedRole.getType())) {
+          continue;
+        }
+
+        String roleName = assignedRole.getName();
+        if (roleName == null) continue;
+
+        String roleKey = roleName.toLowerCase();
+
+        // Faster lookup set
+        Set profileApps = new HashSet(8);
+
+        List itRoles = assignedRole.getRequirements();
+        if (itRoles == null || itRoles.isEmpty()) {
+          continue;
+        }
+
+        for (Bundle itRole : itRoles) {
+          List profiles = itRole.getProfiles();
+          if (profiles == null) continue;
+          for (Profile profile : profiles) {
+            if (profile != null && profile.getApplication() != null) {
+              profileApps.add(profile.getApplication().getName());
+            }
+          }
+        }
+
+        List targets = roleTargetMap.get(roleKey);
+        if (targets == null) continue;
+
+        for (RoleTarget target : targets) {
+          if (target == null) continue;
+
+          String appName = target.getApplicationName();
+
+          if (profileApps.contains(appName)) {
+            finalData.append(roleName)
+              .append(" , ")
+              .append(target.getNativeIdentity())
+              .append(" , ")
+              .append(appName)
+              .append("\n");
+          }
+
+
+        }
+      }
+
+      // VERY IMPORTANT for large runs
+      context.decache(identityObj);
+    }
+
+  } catch (Exception e) {
+    System.out.println("Exception in rule: " + e.getMessage());
+    e.printStackTrace();
+  } finally {
+    if (br != null) {
+      try { br.close(); } catch (Exception ignored) {}
+    }
+  }
+
+  // Final Output
+  System.out.println("OUTPUTDATA:\n" + finalData.toString());
+  return finalData.toString();
+
+
+
+
+
+
+  String entitlementName = "Ben";
+  QueryOptions qo = new QueryOptions();
+  Filter targetFilter = Filter.eq("identityRequest.targetId", "Aaron Nichols");
+  // subquery
+  Filter maFilter = Filter.subquery( "value", ManagedAttribute.class,"value",Filter.like("displayableName", entitlementName, Filter.MatchMode.ANYWHERE));
+  // Combine properly
+  Filter finalFilter = Filter.and(targetFilter , Filter.eq("operation", "Add") , Filter.eq("provisioningState", "Pending") , Filter.ne("name", "IIQ") , maFilter);
+  qo.addFilter(finalFilter);
+  // join
+  qo.addFilter(Filter.join("value", "ManagedAttribute.value"));
+
+  qo.addFilter(Filter.join("identityRequest", "IdentityRequest.id"));
+  log.error("Filter ::: " + qo);
+
+  Iterator itr = context.search(IdentityRequestItem.class, qo,"IdentityRequest.name,IdentityRequestItem.value");
+
+  List result = new ArrayList();
+
+  while (itr.hasNext()) {
+    Object[] item =  itr.next();
+    log.error(" IdentityRequestName  : "+item[0]+"  "+"IdentityRequestItemvalue  :  "+item[1]);
+  }
+  // log.error(" result items :: "+result);
+  return "result";
+
+
+
+
+
+  String attribute = "Accountspayable";
+  Filter f = Filter.subquery( "value", ManagedAttribute.class , "value" ,Filter.like("displayableName", attribute, Filter.MatchMode.ANYWHERE));
+  QueryOptions qo = new QueryOptions();
+  qo.addFilter(f);
+  qo.addFilter(Filter.join("name" , "ManagedAttribute.attribute"));
+  qo.addFilter(Filter.join("value", "ManagedAttribute.value"));
+  qo.addFilter(Filter.join("application", "ManagedAttribute.application.name"));
+
+  List displayNames = new ArrayList();
+  List ieObjects = context.getObjects(IdentityEntitlement.class ,qo);
+
+
+  for(IdentityEntitlement dname :ieObjects){
+    displayNames.add(dname.getValue());
+  }
+
+  return displayNames;
+
+
+
+
+
+  // target filter
+  /* Filter targetFilter = Filter.eq("identityRequest.targetId", "Aaron Nichols");
+  Filter operationFilter = Filter.eq("operation", "Add");
+  Filter stateFilter = Filter.eq("provisioningState", "Pending");
+  Filter notIIQFilter = Filter.ne("name", "IIQ");*/
+  // Optional
+  // Filter nativeIdentityFilter = Filter.eq("nativeIdentity", "CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com");
+
+
+
+
+
+
+
+
+
+  Custom custom = context.getObjectByName(Custom.class, "ProvisioningTransaction Get Add Operation Entitlement");
+  if (custom == null) {
+    throw new GeneralException("The Custom Object with 'ProvisioningTransaction Get Add Operation Entitlement' is not exist");
+  }
+  String provTransactionId = custom.get("latestProvisioningTransactionID");
+  if (provTransactionId == null || provTransactionId.isEmpty()) {
+    throw new GeneralException("latestProvisoningTransactionID  key value is null or Empty");
+  }
+  String query = "sql:SELECT name FROM identityiq.spt_provisioning_transaction where name > " + provTransactionId + " and attributes LIKE '%op=\"Add\"%' and status='Success' and source='IdentityRefresh' and operation='Create' and application_name in('AD_Active-Directory','WBG - Azure AD','IDM_LDAP-Linux') order by name DESC";
+  List finalList = new ArrayList();
+  Iterator provTransacNames = context.search(query, null, null);
+  while (provTransacNames.hasNext()) {
+
+    String[]row = provTransacNames.next();
+    ProvisioningTransaction transaction = context.getObjectByName(ProvisioningTransaction.class, row[0]);
+    Identity identity = context.getObjectByName(Identity.class, row[1]);
+    Application application = context.getObjectByName(Application.class, row[2]);
+
+    List listOfGroupAttributes = application.getAccountSchema().getGroupAttributes();
+    Attributes attributes = transaction.getAttributes();
+    List listOfAttributeRequest = attributes.get("request").getAttributeRequests();
+
+    for (AttributeRequest attributeRequest: listOfAttributeRequest) {
+      if (listOfGroupAttributes.contains(attributeRequest.getName())) {
+        List listOfEntitlements = new ArrayList();
+        if (attributeRequest.getValue()instanceof List) {
+          listOfEntitlements = attributeRequest.getValue();
+        } else if (attributeRequest.getValue()instanceof String) {
+          listOfEntitlements.add(attributeRequest.getValue());
+        }
+        for (String entitlement: Util.safeIterable(listOfEntitlements)) {
+          Filter filter = Filter.subquery("id", BundleProfileRelation.class, "bundleId", Filter.and(Filter.eq("value", entitlement), Filter.notnull("sourceBundleId")));
+          qo.add(filter);
+          List listOfBR_entName = context.getObjects(Bundle.class, qo);
+          List listOfBundleObjOnIden = new ArrayList();
+          listOfBundleObjOnIden = identity.getAssignedRoles();
+          List listOfBR_IdenNames = ObjectUtil.getObjectNames(listOfBundleObjOnIden);
+
+          if (Util.nullSafeSize(listOfBR_entName) > 0 @and Util.nullSafeSize(listOfBR_IdenNames) > 0) {
+
+            for (String brName: listOfBR_entName) {
+              if(listOfBR_IdenNames.contains(brName)){
+                found = true;
+              }
+            }
+            if(!found){
+              finalList.add(row[1]+":"+row[1]+":"+entitlement);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return finalList;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  /* //String getBundlesQuery = "sql:select name from identityiq8_4.spt_bundle where id in ( select  bundle_id from identityiq8_4.spt_bundle_profile_relation where value = '" + entitlement + "' and source_bundle_id is not null)";
+  QueryOptions qo = new QueryOptions();
+
+  Filter filter = Filter.subquery("name", BundleProfileRelation.class, "bundleId", Filter.eq("value","CN=AccountsReceivable,OU=Groups,OU=Demo,DC=Eshiam,DC=com"));
+  qo.add(filter);
+  List listOfObjects = context.getObjects(Bundle.class,qo);
+  return listOfObjects;*/
+
+
+
+  //return context.decrypt("1:ACP:xWM7lqHb6bwEgfugaUM27OzEPbD/wa8d8vY9W/zp/5I=");
+  //return context.encrypt("iiqdevah");
+
+  String entitlement = "CN=AccountsReceivable,OU=Groups,OU=Demo,DC=Eshiam,DC=com";
+  List roleList = new ArrayList();
+  Filter subqueryFilter = Filter.and(Filter.eq("value",entitlement),Filter.notnull("sourceBundleId"));
+  //Filter filter = Filter.subquery("id", BundleProfileRelation.class, "bundleId" ,subqueryFilter);
+  Filter filter = Filter.subquery("id",BundleProfileRelation.class, "bundleId",subqueryFilter);
+  QueryOptions qo = new QueryOptions();
+  qo.addFilter(filter);
+
+  log.error(" Filter :::::  "+filter);
+  Iterator bundles = context.search(Bundle.class, qo);
+  while (bundles.hasNext()) {
+    Bundle b = (Bundle) bundles.next();
+    roleList.add(b.getName());
+  }
+  return roleList;
+
+
+
+
+
+
+
+
+  /*String getBundlesQuery = "sql:select name from identityiq.spt_bundle where"+ 
+                           " id in ( select  bundle_id from identityiq.spt_bundle_profile_relation where value = '" + entitlement + "' and source_bundle_id is not null)";*/
+
+
+  Identity newIdentity=context.getObjectByName(Identity.class,"Valemoni Laxmikanth");
+  Date createddate=newIdentity.getCreated();
+
+  try {
+    Date currentdate = new Date();
+    if (!currentdate.before(createddate)) { 
+      log.error("Current date is greater than or equal to created date."+"--createddate--"+createddate+"   ---currentdate--"+currentdate);
+      return true;
+    } else
+
+    {
+      log.error("Current date is less than created date."+"--createddate--"+createddate+"   ---currentdate--"+currentdate);
+      return false;
+    }
+
+  } catch (Exception e) {
+    e.printStackTrace();
+    log.error("-----dates are invalid--");
+
+  }
+
+
+
+
+
+
+
+
+  /* if(sCurrentDate.equalsIgnoreCase(ed))
+  {
+    log.error("identityDate is matched to currentdate");
+    if(currentdate.getHours() <= 18 && (currentdate.getHours()  <= 23 && currentdate.getMinutes() <=  59 && currentdate.getSeconds() <= 59))
+    {     
+      return true;
+    }
+    else
+    {
+      return false;
+    }
+  }
+  else
+  {
+    return false;
+  }*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  /*QueryOptions qo=new QueryOptions();
+Filter f1=Filter.eq("links.application.name","JDBCProvisioning");
+  qo.add(f1);
+
+  List identities=context.getObjects(Identity.class,qo);
+  if(identities!=null){
+    log.error("----identities---"+identities.size());
+  }
+  return "nnn";*/
+
+
+  ]]></Source>
+</Rule>

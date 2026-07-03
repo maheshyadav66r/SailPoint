@@ -1,0 +1,125 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE WorkItemArchive PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<WorkItemArchive archived="1738586890317" completer="The Administrator" handler="sailpoint.api.Workflower" level="Normal" name="0000000528" ownerName="spadmin" renderer="workflow.xhtml" requester="spadmin" state="Finished" type="Form" workItemId="c0a800fc94cb1e358194cbda63442051">
+  <Attributes>
+    <Map>
+      <entry key="Question:0:distinguishedName" value="CN=Mahesh Nattali,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+      <entry key="Question:1:givenName" value="Mahesh"/>
+      <entry key="distinguishedName" value="CN=Mahesh Nattali,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+      <entry key="givenName" value="Mahesh"/>
+      <entry key="identityDisplayName" value="Mahesh Nattali"/>
+      <entry key="identityName" value="Mahesh Nattali"/>
+      <entry key="launcher" value="spadmin"/>
+      <entry key="workItemDisableNotification">
+        <value>
+          <Boolean>true</Boolean>
+        </value>
+      </entry>
+      <entry key="workItemForm">
+        <value>
+          <Form name="Identity Update" targetUser="spadmin" type="Workflow">
+            <Attributes>
+              <Map>
+                <entry key="pageTitle" value="provision_identity_update_title"/>
+                <entry key="pageTitleParam" value="$(identityName)"/>
+              </Map>
+            </Attributes>
+            <Section type="text">
+              <Field displayName="provision_identity_update_description"/>
+            </Section>
+            <Section label="provision_request_information" type="datatable">
+              <Attributes>
+                <Map>
+                  <entry key="hideNulls" value="true"/>
+                </Map>
+              </Attributes>
+              <Field displayName="provision_requester">
+                <Script>
+                  <Source><![CDATA[
+          import sailpoint.object.Identity;
+
+          Identity launchIdentity = context.getObject(Identity.class, launcher);
+
+          return launchIdentity == null ? launcher : launchIdentity.getDisplayableName();
+        ]]></Source>
+                </Script>
+              </Field>
+              <Field displayName="provision_requested_roles">
+                <Script>
+                  <Source><![CDATA[return newRoles;]]></Source>
+                </Script>
+              </Field>
+            </Section>
+            <Section columns="3" label="provision_target_identity" type="datatable">
+              <Attributes>
+                <Map>
+                  <entry key="hideNulls" value="true"/>
+                </Map>
+              </Attributes>
+              <Field columnSpan="1" displayName="provision_first_name">
+                <Script>
+                  <Source><![CDATA[(identity != null) ? identity.getFirstname() : null]]></Source>
+                </Script>
+              </Field>
+              <Field columnSpan="1" displayName="provision_last_name">
+                <Script>
+                  <Source><![CDATA[(identity != null) ? identity.getLastname() : null]]></Source>
+                </Script>
+              </Field>
+              <Field columnSpan="1" displayName="provision_account_id">
+                <Script>
+                  <Source><![CDATA[(identity != null) ? identity.getDisplayableName() : null]]></Source>
+                </Script>
+              </Field>
+              <Field columnSpan="3" displayName="provision_assigned_roles">
+                <Script>
+                  <Source><![CDATA[
+          import java.util.ArrayList;
+          import java.util.List;
+          import sailpoint.object.Bundle;
+          import sailpoint.tools.Util;
+
+          String names = null;
+
+          if (identity != null) {
+              List<String> roleNames = new ArrayList<String>();
+
+              for (Bundle bundle : Util.iterate(identity.getAssignedRoles())) {
+                  roleNames.add(bundle.getDisplayableName());
+              }
+
+              names = Util.listToCsv(roleNames);
+          }
+
+          return names;
+      ]]></Source>
+                </Script>
+              </Field>
+            </Section>
+            <Section label="Account" name="Account">
+              <Field application="ActiveDirectory" displayName="con_prov_policy_ad_distinguishedName" helpKey="help_con_prov_policy_ad_distinguishedName" name="Question:0:distinguishedName" priority="10" required="true" template="Account" type="string" value="CN=Mahesh Nattali,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+            </Section>
+            <Section label="General" name="General">
+              <Field application="ActiveDirectory" displayName="con_prov_policy_ad_givenName" helpKey="help_con_prov_policy_ad_givenName" name="Question:1:givenName" priority="10" required="true" template="Account" type="string" value="Mahesh">
+                <AllowedValuesDefinition>
+                  <Script>
+                    <Source><![CDATA[return identity.getFirstname();]]></Source>
+                  </Script>
+                </AllowedValuesDefinition>
+              </Field>
+            </Section>
+            <Button action="next" label="button_ok"/>
+            <Button action="cancel" label="button_cancel"/>
+            <Button action="cancel" label="button_return" readOnly="true"/>
+          </Form>
+        </value>
+      </entry>
+      <entry key="workItemPriority">
+        <value>
+          <WorkItemLevel>Normal</WorkItemLevel>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Description>Complete provisioning form for Mahesh Nattali</Description>
+</WorkItemArchive>

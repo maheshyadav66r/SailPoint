@@ -1,0 +1,174 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1716180715758" completionStatus="Warning" launched="1716180710579" launcher="spadmin" name="Update Identity Alan Bradley AccessRequest - 4" targetClass="Identity" targetName="Alan Bradley" type="LCM">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000041"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Alan Bradley">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000041"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="IIQ" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800fb8f7b1606818f868b2f060bd0"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="RoleAdd"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="assignedRoles" op="Add" value="IT InheritedRoles"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000041"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <ProvisioningTargets>
+                  <ProvisioningTarget role="IT InheritedRoles">
+                    <AccountSelection applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" selection="cn=Alan.Bradley,ou=People,dc=my-domain,dc=com">
+                      <AccountInfo displayName="Alan.Bradley" nativeIdentity="cn=Alan.Bradley,ou=People,dc=my-domain,dc=com"/>
+                    </AccountSelection>
+                    <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ActiveDirectory" selection="CN=Alan Bradley,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                      <AccountInfo displayName="Alan Bradley" nativeIdentity="CN=Alan Bradley,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+                    </AccountSelection>
+                  </ProvisioningTarget>
+                </ProvisioningTargets>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan targetIntegration="IIQ" trackingId="1d90df721cc142c4a41360843133ac1e">
+              <AccountRequest application="IIQ" op="Modify" targetIntegration="IIQ">
+                <Attributes>
+                  <Map>
+                    <entry key="attachmentConfigList"/>
+                    <entry key="attachments"/>
+                    <entry key="flow" value="AccessRequest"/>
+                    <entry key="id" value="c0a800fb8f7b1606818f868b2f060bd0"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="operation" value="RoleAdd"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="assignedRoles" op="Add" value="IT InheritedRoles"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000041"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+            <ProvisioningPlan nativeIdentity="Alan Bradley" targetIntegration="LDAPApplication" trackingId="3ca0d73ed68e4e76935283964275ffad">
+              <AccountRequest application="LDAPApplication" nativeIdentity="cn=Alan.Bradley,ou=People,dc=my-domain,dc=com" op="Modify" targetIntegration="LDAPApplication">
+                <AttributeRequest name="groups" op="Add">
+                  <ProvisioningResult status="committed">
+                    <Warnings>
+                      <Message key="Entitlement 'cn=WebApplicationAccess,ou=Group,dc=my-domain,dc=com' already exists for user or at least one user should be a member of this group.. Cannot re-add/remove entitlement[LDAP: error code 20 - modify/add: uniqueMember: value #0 already exists]" type="Warn"/>
+                    </Warnings>
+                  </ProvisioningResult>
+                  <Value>
+                    <List>
+                      <String>cn=WebApplicationAccess,ou=Group,dc=my-domain,dc=com</String>
+                      <String>cn=Contractors,ou=Group,dc=my-domain,dc=com</String>
+                      <String>cn=Managers,ou=Group,dc=my-domain,dc=com</String>
+                    </List>
+                  </Value>
+                </AttributeRequest>
+                <ProvisioningResult status="committed"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000041"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+              <ProvisioningResult status="committed"/>
+            </ProvisioningPlan>
+            <ProvisioningPlan nativeIdentity="Alan Bradley" targetIntegration="ActiveDirectory" trackingId="1a5d91e00bb941f193d167d08a094a64">
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Alan Bradley,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify" targetIntegration="ActiveDirectory">
+                <AttributeRequest name="memberOf" op="Add">
+                  <Value>
+                    <List>
+                      <String>CN=DEV_All,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                      <String>CN=DEV_EastCoast,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                      <String>CN=Compensation,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                      <String>CN=Corporate-VPN,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                    </List>
+                  </Value>
+                </AttributeRequest>
+                <ProvisioningResult status="committed"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000041"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+            <ProvisioningTarget role="IT InheritedRoles">
+              <AccountSelection applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" selection="cn=Alan.Bradley,ou=People,dc=my-domain,dc=com">
+                <AccountInfo displayName="Alan.Bradley" nativeIdentity="cn=Alan.Bradley,ou=People,dc=my-domain,dc=com"/>
+              </AccountSelection>
+              <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ActiveDirectory" selection="CN=Alan Bradley,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="Alan Bradley" nativeIdentity="CN=Alan Bradley,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+            </ProvisioningTarget>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a81d898f9414e7818f945776e50011"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="end"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="Entitlement 'cn=WebApplicationAccess,ou=Group,dc=my-domain,dc=com' already exists for user or at least one user should be a member of this group.. Cannot re-add/remove entitlement[LDAP: error code 20 - modify/add: uniqueMember: value #0 already exists]" type="Warn"/>
+  </Messages>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

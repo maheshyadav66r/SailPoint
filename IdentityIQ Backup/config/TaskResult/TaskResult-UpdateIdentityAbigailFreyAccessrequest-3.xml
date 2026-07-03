@@ -1,0 +1,146 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1765359023904" completionStatus="Success" launched="1765359022473" launcher="spadmin" name="Update Identity Abigail Frey AccessRequest - 3" targetClass="Identity" targetName="Abigail Frey" type="LCM">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000980"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Abigail Frey">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000980"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="IIQ" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a8001697a21be78197afc4213a2a33"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="RoleAdd"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="assignedRoles" op="Add" value="activeDirectoryITRole"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000980"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <ProvisioningTargets>
+                  <ProvisioningTarget role="activeDirectoryITRole">
+                    <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=Abigail Frey,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                      <AccountInfo displayName="CN=Abigail Frey,OU=People,OU=Demo,DC=Eshiam,DC=com" nativeIdentity="CN=Abigail Frey,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+                    </AccountSelection>
+                  </ProvisioningTarget>
+                  <ProvisioningTarget retain="true" role="remidiateBusinessRole">
+                    <AccountSelection applicationId="c0a81ac792e61ed78192f6e9f5530482" applicationName="Duplicate_Ent" doCreate="true"/>
+                    <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=Abigail Frey,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                      <AccountInfo displayName="CN=Abigail Frey,OU=People,OU=Demo,DC=Eshiam,DC=com" nativeIdentity="CN=Abigail Frey,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+                    </AccountSelection>
+                    <AccountSelection applicationId="c0a800fb954110f0819541ab1dfd00b1" applicationName="IntConApplication" doCreate="true" selection="EMP01663"/>
+                  </ProvisioningTarget>
+                </ProvisioningTargets>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan targetIntegration="IIQ" trackingId="2742e9cb617043cd923d04ff43264f50">
+              <AccountRequest application="IIQ" op="Modify" targetIntegration="IIQ">
+                <Attributes>
+                  <Map>
+                    <entry key="attachmentConfigList"/>
+                    <entry key="attachments"/>
+                    <entry key="flow" value="AccessRequest"/>
+                    <entry key="id" value="c0a8001697a21be78197afc4213a2a33"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="operation" value="RoleAdd"/>
+                    <entry key="provisioningTransactionId" value="c0a800fb9aee1618819b0798f59913e0"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="assignedRoles" op="Add" value="activeDirectoryITRole"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000980"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+            <ProvisioningPlan nativeIdentity="Abigail Frey" targetIntegration="ActiveDirectory" trackingId="cf456cf9cb35418badb81c5128d6c723">
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Abigail Frey,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify" targetIntegration="ActiveDirectory">
+                <Attributes>
+                  <Map>
+                    <entry key="provisioningTransactionId" value="c0a800fb9aee1618819b0798f58013df"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="memberOf" op="Add" value="CN=AuditMgmt,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                <ProvisioningResult status="committed"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000980"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+            <ProvisioningTarget role="activeDirectoryITRole">
+              <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=Abigail Frey,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="CN=Abigail Frey,OU=People,OU=Demo,DC=Eshiam,DC=com" nativeIdentity="CN=Abigail Frey,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+            </ProvisioningTarget>
+            <ProvisioningTarget retain="true" role="remidiateBusinessRole">
+              <AccountSelection applicationId="c0a81ac792e61ed78192f6e9f5530482" applicationName="Duplicate_Ent" doCreate="true"/>
+              <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=Abigail Frey,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="CN=Abigail Frey,OU=People,OU=Demo,DC=Eshiam,DC=com" nativeIdentity="CN=Abigail Frey,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+              <AccountSelection applicationId="c0a800fb954110f0819541ab1dfd00b1" applicationName="IntConApplication" doCreate="true" selection="EMP01663"/>
+            </ProvisioningTarget>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a800fb9aee1618819b0798f2d613d6"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="end"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

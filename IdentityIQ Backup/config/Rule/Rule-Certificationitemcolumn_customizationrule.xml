@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="certificationItemColumn_CustomizationRule" type="CertificationItemCustomization">
+  <Description>
+    A CertificationEntity customization rule is run when a certification is
+    generated to allow the CertificationEntity to be customized.  For example,
+    default values can be calculated for the custom fields.
+  </Description>
+  <Signature>
+    <Inputs>
+      <Argument name="context">
+        <Description>
+          A sailpoint.api.SailPointContext to use.
+        </Description>
+      </Argument>
+      <Argument name="certification">
+        <Description>
+          The sailpoint.object.Certification to which the item is being added.
+        </Description>
+      </Argument>
+      <Argument name="certifiable">
+        <Description>
+          The sailpoint.object.Certifiable item for which the item is being
+          created.
+        </Description>
+      </Argument>
+      <Argument name="certifiableEntity">
+        <Description>
+          The sailpoint.object.AbstractCertifiableEntity from which the
+          certifiable was retrieved.
+        </Description>
+      </Argument>
+      <Argument name="certContext">
+        <Description>
+          The sailpoint.api.CertificationContext that is being used to build the
+          certification.
+        </Description>
+      </Argument>
+      <Argument name="state">
+        <Description>
+          A Map that can be used to store and share data between executions of this rule during a single certification generation process; rules executed in the same certification generation share this state map, allowing data to be passed between them
+        </Description>
+      </Argument>
+      <Argument name="item">
+        <Description>
+          The sailpoint.object.CertificationItem to be customized.
+        </Description>
+      </Argument>
+    </Inputs>
+  </Signature>
+  <Source><![CDATA[
+  import sailpoint.object.*;
+  import sailpoint.api.*;
+  import sailpoint.tools.Util;
+  
+
+  CertificationItem item = (CertificationItem) certContext.get("certificationItem");
+  if(item!=null @and item.getTargetId()!=null){
+    List entitles = new ArrayList();
+    Profile prof = context.getObjectById(Profile.class,item.getTargetId());
+    if(prof!=null @and prof.getConstraints()!=null){
+      List constrs = prof.getConstraints();
+      if(constrs!=null){
+        for(Filter filt : constrs){
+          if(filt.getValue() instanceof String){
+            Filter filter = Filter.and(Filter.eq("application.name",prof.getApplication().getName()),Filter.eq("value",filt.getValue()));
+            ManagedAttribute group = context.getUniqueObject(ManagedAttribute.class,filter);
+            if(group!=null){
+              if(group.getDisplayName()!=null) entitles.add(group.getDisplayName()); 
+              else entitles.add(filt.getValue());
+              context.decache(group);
+            }
+          }
+          else if(filt.getValue() instanceof List){
+            Filter filter = Filter.and(Filter.eq("application.name",prof.getApplication().getName()),Filter.in("value",filt.getValue()));
+            QueryOptions qo = new QueryOptions();
+            qo.add(filter);
+            List groups = context.getObjects(ManagedAttribute.class,qo);
+            if(groups!=null){
+              for(ManagedAttribute group : groups){
+                if(group!=null){
+                  if(group.getDisplayName()!=null) entitles.add(group.getDisplayName()); 
+                  else entitles.add(filt.getValue());
+                  context.decache(group); 
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    item.setCustom1(Util.listToCsv(entitles));
+  }
+  return item;  
+  ]]></Source>
+</Rule>

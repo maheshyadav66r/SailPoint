@@ -1,0 +1,137 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1750941110296" completionStatus="Warning" launched="1750941108947" launcher="spadmin" name="Update Identity Adrian Costa AccessRequest" targetClass="Identity" targetName="Adrian Costa" type="LCM">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000733"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Adrian Costa">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan trackingId="12b985e6b20644a59941d160b6b8b038">
+                <AccountRequest application="WebServiceApplication-Eshiam" op="Modify" trackingId="16c5233e69974e60a266075b6055f3b9">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a8001697a21be78197ac13381c19df"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="Add"/>
+                      <entry key="requester" value="spadmin"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest displayValue="WS_GROUP_100" name="groups" op="Add" trackingId="16c5233e69974e60a266075b6055f3b9" value="WS_GROUP_100">
+                    <Attributes>
+                      <Map>
+                        <entry key="assignment" value="true"/>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000733"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <ProvisioningTargets>
+                  <ProvisioningTarget application="WebServiceApplication-Eshiam" attribute="groups" value="WS_GROUP_100">
+                    <AccountSelection applicationId="c0a8001697a21be78197ac11254918ef" applicationName="WebServiceApplication-Eshiam" implicitCreate="true"/>
+                  </ProvisioningTarget>
+                </ProvisioningTargets>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Adrian Costa" targetIntegration="WebServiceApplication-Eshiam" trackingId="779b94b7e9e8423f8ed0502cbb5f899f">
+              <AccountRequest application="WebServiceApplication-Eshiam" op="Create" targetIntegration="WebServiceApplication-Eshiam" trackingId="16c5233e69974e60a266075b6055f3b9">
+                <Attributes>
+                  <Map>
+                    <entry key="attachmentConfigList"/>
+                    <entry key="attachments"/>
+                    <entry key="flow" value="AccessRequest"/>
+                    <entry key="id" value="c0a8001697a21be78197ac13381c19df"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="operation" value="Add"/>
+                    <entry key="provisioningTransactionId" value="c0a8001697a21be78197ac390ead1b81"/>
+                    <entry key="requester" value="spadmin"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest displayValue="WS_GROUP_100" name="groups" op="Add" trackingId="16c5233e69974e60a266075b6055f3b9" value="WS_GROUP_100">
+                  <Attributes>
+                    <Map>
+                      <entry key="assignment" value="true"/>
+                    </Map>
+                  </Attributes>
+                </AttributeRequest>
+                <AttributeRequest name="user_email" op="Add" value="adrian.costa@example.com"/>
+                <AttributeRequest name="manager_id" op="Add" value="1045"/>
+                <AttributeRequest name="location" op="Set" value="India"/>
+                <AttributeRequest name="user_name" op="Add" value="Adrian Costa"/>
+                <AttributeRequest name="department" op="Set" value="Sales"/>
+                <AttributeRequest name="user_status" op="Add" value="ACTIVE"/>
+                <AttributeRequest name="job_title" op="Add" value="Engineer"/>
+                <AttributeRequest name="user_id" op="Add" value="EMP01309"/>
+                <ProvisioningResult status="committed">
+                  <Warnings>
+                    <Message key="Native identity is neither present in the plan nor in the response" type="Warn"/>
+                  </Warnings>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000733"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+              <ProvisioningResult status="committed"/>
+            </ProvisioningPlan>
+            <ProvisioningTarget application="WebServiceApplication-Eshiam" attribute="groups" value="WS_GROUP_100">
+              <AccountSelection applicationId="c0a8001697a21be78197ac11254918ef" applicationName="WebServiceApplication-Eshiam" implicitCreate="true"/>
+            </ProvisioningTarget>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a8001697a21be78197ac390be21b6e"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="end"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="Native identity is neither present in the plan nor in the response" type="Warn"/>
+  </Messages>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

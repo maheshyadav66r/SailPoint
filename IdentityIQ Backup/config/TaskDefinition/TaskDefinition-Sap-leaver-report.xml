@@ -1,0 +1,97 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskDefinition PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskDefinition executor="sailpoint.reporting.LiveReportExecutor" name="SAP-Leaver-Report" progressMode="Percentage" resultAction="Rename" template="true" type="LiveReport">
+  <Attributes>
+    <Map>
+      <entry key="report">
+        <value>
+          <LiveReport title="SAP LEAVER REPORT">
+            <DataSource objectType="Link" type="Filter">
+              <Join joinProperty="Identity.id" property="identity.id"/>
+              <QueryParameters>
+                <Parameter argument="applications">
+                  <QueryScript>
+                    <Source><![CDATA[
+                      import sailpoint.object.*;
+                      import sailpoint.tools.Util;
+
+                      if (value != null) {
+                      QueryOptions auditQO = new QueryOptions();
+                      auditQO.addFilter(Filter.eq("action", "identityLifecycleEvent"));
+                      auditQO.addFilter(Filter.eq("string1", "HR Source Lifecycle Event - Leaver"));       //Replace  HR Source Lifecycle Event - Leaver = LEAVER FEATURE and string1 = string1
+
+                      Iterator it = context.search(AuditEvent.class, auditQO, "target");
+                      List identityNames = new ArrayList();
+
+                      while (it.hasNext()) {
+                      Object[] row = (Object[]) it.next();
+                      String target = (String) row[0];
+
+                      if (target != null && target.startsWith("Identity:")) {
+                      identityNames.add(target.substring(9)); 
+                      }
+                      }
+                      Util.flushIterator(it);
+
+                      if (!identityNames.isEmpty()) {
+                      log.error("applications input value : "+value);
+                      Filter filter = Filter.and(Filter.eq("identity.department","EngineeringCoach"),Filter.eq("application.id", value),Filter.in("identity.name", identityNames));        //Replace Inventory = ITS  and department = VPU 
+                      queryOptions.addFilter(filter);
+                      } else {
+                      queryOptions.addFilter(Filter.isnull("id"));
+                      }
+                      }
+
+                      return queryOptions;
+                    ]]></Source>
+                  </QueryScript>
+                </Parameter>
+              </QueryParameters>
+            </DataSource>
+            <Columns>
+              <ReportColumnConfig field="IdentityName" header="UPI" property="identity.name" sortable="true" width="110"/>
+              <ReportColumnConfig field="ApplicationAccount" header="Application" property="application.name" sortable="true" width="110"/>
+              <ReportColumnConfig field="vpu" header="VPU" property="identity.employeeId" sortable="true" width="110"/>
+              <ReportColumnConfig field="eventname" header="Event" property="identity.name" sortable="true" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                   import sailpoint.object.*;
+                    
+                    Filter filter = Filter.and(Filter.eq("target", "Identity:"+value),Filter.eq("action", "identityLifecycleEvent"),Filter.eq("string1", "HR Source Lifecycle Event - Leaver"));
+
+                    AuditEvent event = context.getUniqueObject(AuditEvent.class,filter);
+
+                    String eventname = event!=null?event.getString1():"";
+                    return eventname;
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="eventdate" header="Date" property="identity.name" sortable="true" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                   import sailpoint.object.*;
+                    
+                    Filter filter = Filter.and(Filter.eq("target", "Identity:"+value),Filter.eq("action", "identityLifecycleEvent"),Filter.eq("string1", "HR Source Lifecycle Event - Leaver"));
+
+                    AuditEvent event = context.getUniqueObject(AuditEvent.class,filter);
+
+                    Date eventDate = event!=null?event.getCreated():null;
+                    return eventDate;
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+            </Columns>
+          </LiveReport>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Description>A detailed view of privileged users currently detected by IdentityIQ.</Description>
+  <Signature>
+    <Inputs>
+      <Argument name="applications" type="Application">
+        <Description>rept_input_user_report_apps</Description>
+      </Argument>
+    </Inputs>
+  </Signature>
+</TaskDefinition>

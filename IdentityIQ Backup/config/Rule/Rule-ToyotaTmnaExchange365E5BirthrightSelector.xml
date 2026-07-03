@@ -1,0 +1,154 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Toyota TMNA Exchange 365 E5 Birthright Selector" type="IdentitySelector">
+  <Description>Selects the users who get Office 365 E5 Role as Birthright excluding reclaimed licenses</Description>
+  <Source><![CDATA[
+    import sailpoint.api.SailPointContext;
+    import sailpoint.object.Identity;
+    import sailpoint.object.Custom;
+    import sailpoint.tools.Util;
+    import sailpoint.object.CustomGlobal;
+    import sailpoint.api.IdentityService;
+    import sailpoint.object.Application;
+    import org.apache.log4j.Logger;
+    import org.apache.log4j.Level;
+    import org.apache.commons.logging.LogFactory;
+    import sailpoint.object.Link;
+    
+    
+    Logger plog = Logger.getLogger( "rule.ToyotaTMNAExchange365E5BirthrightSelector" );
+    
+    public Map getExchangeEligibilityConfiguration( SailPointContext context ) {
+      Map exchangeBirthrightConfiguration = new HashMap();
+      exchangeBirthrightConfiguration = CustomGlobal.get( "exchangeBirthrightConfiguration" );
+      
+      if ( exchangeBirthrightConfiguration == null || exchangeBirthrightConfiguration.isEmpty() ) {
+        Custom exchangeConfigObject = context.getObjectByName( Custom.class, "Toyota TMNA Exchange 365 Birthright Configuration" );
+        if ( exchangeConfigObject != null ) {
+          exchangeBirthrightConfiguration = exchangeConfigObject.get( "exchangeBirthrightConfiguration" );
+          CustomGlobal.put( "exchangeBirthrightConfiguration", exchangeBirthrightConfiguration );
+        } else {
+          toyotaLogger( context, "TEBS::001::Missing Custom Object:: Toyota TMNA Exchange 365 Birthright Configuration" );
+        }
+      }
+      
+      return exchangeBirthrightConfiguration;
+    }
+    
+    {
+      Boolean assignMailbox = false;
+      String appNameADNA = "Active Directory - NA";
+      Map configuration = new HashMap();
+      configuration = getExchangeEligibilityConfiguration( context );
+      String identityJobCode = identity.getAttribute("job_code");
+      
+      
+      if ( identity != null && !identity.isInactive() ) {
+        if ( configuration != null && !configuration.isEmpty() ) {
+          String excludedUsers = configuration.get( "reclaimedMailboxWorkgroup" );
+          
+          Identity excludedWorkgroup = context.getObjectByName( Identity.class, excludedUsers );
+          List excludeJobCodes = configuration.get("excludeJobCodes");
+          
+          // Can't have a mailbox if they are in the excluded users workgroup
+          if ( excludedWorkgroup != null && identity.isInWorkGroup( excludedWorkgroup ) || (identityJobCode!=null && excludeJobCodes!=null && excludeJobCodes.contains(identityJobCode)) ) {
+            if ( plog.isTraceEnabled() ) {
+              plog.trace( "TEBS::002:Identity: " + identity.getName() + " has no mailbox due to " + excludedUsers + " membership or may be with excluded Jobcode "+identityJobCode);
+            }
+            assignMailbox = false;
+          }
+          else {
+            // user is not overridden with the excluded Workgroup.  Complete the remaining logic
+            String status = identity.getAttribute( "status" );
+            List allowedStatus = configuration.get( "allowedStatus" );
+            
+            // Only assign to users who have a status of A, L, or S
+            if ( Util.isNotNullOrEmpty( status ) && allowedStatus.contains( status ) ) {
+              String identityType = identity.getType();
+              
+              // Only assign to users who are employees or contractors
+              if ( identityType !=null && ( Util.nullSafeCaseInsensitiveEq( identityType, "employee" ) || Util.nullSafeCaseInsensitiveEq( identityType, "contractor" ) ) ) {
+                String companyCode = identity.getAttribute( "companyCode" );
+                String costCenter = identity.getAttribute( "costCenter" );
+                List corporateAssociates = configuration.get( "corporateAssociates" );
+                List plantAssociates = configuration.get( "plantAssociates" );
+                
+                // Work through company specific requirements
+                if ( corporateAssociates.contains( companyCode ) ) {
+                  // Corporate associates get a mailbox
+                  if ( plog.isTraceEnabled() ) {
+                    plog.trace( "TEBS::003:Identity: " + identity.getName() + " has been assigned a mailbox." );
+                  }
+                  assignMailbox = true;
+                } else if ( plantAssociates.contains( companyCode ) ) {
+                  // Salaried plant Associates get a mailbox
+                  String payRateType = identity.getAttribute( "PayRateType" );
+                  
+                  // only pay rate type "S" get mailboxes
+                  if ( Util.nullSafeCaseInsensitiveEq( payRateType, "S" ) ) {
+                    if ( plog.isTraceEnabled() ) {
+                      plog.trace( "TEBS::004:Identity: " + identity.getName() + " has been assigned a mailbox." );
+                    }
+                    assignMailbox = true;
+                  } else {
+                    // Not pay rate type "S"
+                    if ( plog.isTraceEnabled() ) {
+                      plog.trace( "TEBS::005:Identity: " + identity.getName() + " has no mailbox due to Identity payRateType: " + payRateType );
+                    }
+                    assignMailbox = false;
+                  }
+                } else if (Util.isNotNullOrEmpty(costCenter) && costCenter.startsWith("REW")) {
+                  if ( plog.isTraceEnabled() ) {
+                    plog.trace( "TEBS::006:Identity: " + identity.getName() + " has been assigned a mailbox." );
+                  }
+                  assignMailbox = true;
+                } else {
+                  // not in a company that gets a mailbox
+                  if ( plog.isTraceEnabled() ) {
+                    plog.trace( "TEBS::007:Identity: " + identity.getName() + " has no mailbox due to Identity companyCode: " + companyCode );
+                  }
+                  assignMailbox = false;
+                }
+              } else {
+                if ( plog.isTraceEnabled() ) {
+                  plog.trace( "TEBS::008:Identity: " + identity.getName() + " has no mailbox due to Identity Type: " + identityType );
+                }
+              }
+            } else {
+              if ( plog.isTraceEnabled() ) {
+                plog.trace( "TEBS::009:Identity: " + identity.getName() + " has no mailbox due to Status: " + status );
+              }
+            }
+          }
+        } else {
+          toyotaLogger( context, "TEBS::010:Unable to get Exchange Birthright Configuration for Identity: " + identity.getName() );
+        }
+      } else {
+        if ( plog.isTraceEnabled() ) {
+          plog.trace("TEBS::011:Identity is inactive to determine the email eligibility" );
+        }
+      }
+      
+      // Check for existence of AD only if the a Mailbox would be assigned
+      if ( assignMailbox ) {
+        // Check if identity has an AD NA account. Role not to be assigned until account is created.
+        IdentityService identityService = new IdentityService(context);
+        Application appADNA = context.getObjectByName(Application.class, appNameADNA);
+        List adNALinks = identityService.getLinks(identity,appADNA);
+        
+        Boolean adNAExists = false;
+        if ( adNALinks != null && !adNALinks.isEmpty() ) {
+          adNAExists = true;
+        }
+        
+        if ( !( adNAExists ) ) {
+          assignMailbox = false;
+        }
+        if ( !adNAExists ) {
+          toyotaLogger( context, "TEBS::012:Cannot Assign Exchange Birthright for Identity: " + identity.getName() + " missing AD Account" );
+        }
+      }
+      return assignMailbox;
+    }
+  ]]></Source>
+</Rule>

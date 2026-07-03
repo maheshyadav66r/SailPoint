@@ -1,0 +1,115 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="WebServiceBeforeOperationRule1045" type="WebServiceBeforeOperationRule">
+  <Description>The Web Services connector will call this rule before performing ANY defined operation. This rule can be used to add/update values in the endpoint object before performing the operation and/or add persistent values to the application's data.
+    (See information about what to return for more information)</Description>
+  <Signature returnType="Object">
+    <Inputs>
+      <Argument name="log" type="org.apache.commons.logging.Log">
+        <Description>
+          The log object associated with the SailPointContext.
+        </Description>
+      </Argument>
+      <Argument name="context" type="sailpoint.api.SailPointContext">
+        <Description>
+          A sailpoint.api.SailPointContext object that can be used to query the database if necessary.
+        </Description>
+      </Argument>
+      <Argument name="application">
+        <Description>The application associated with the operation being processed.</Description>
+      </Argument>
+      <Argument name="requestEndPoint">
+        <Description>The current request information containing the header, body, context url, method type, response attribute map, 
+          and response code. This object can be modified directly and returned by the rule to update the endpoint information that is
+          used by the current operation.
+        </Description>
+      </Argument>
+      <Argument name="oldResponseMap">
+        <Description>Earlier response object </Description>
+      </Argument>
+      <Argument name="restClient">
+        <Description>REST Client Object</Description>
+      </Argument>
+      <Argument name="provisioningPlan">
+        <Description>A ProvisioningPlan object containing the payload of the http request. A provisioning plan has an account request which defines the operation to be performed on the account.
+          An account request can contain multiple attribute requests and each attribute request represents an operation on a single account attribute.
+        </Description>
+      </Argument>
+      <Argument name="partition">
+        <Description>If applicable, a Partition object with the current aggregation's partitioning information.
+        </Description>
+      </Argument>
+    </Inputs>
+    <Returns>
+      <Argument name="Map">
+        <Description>An updated or unmodified 'requestEndPoint' object. If application object modifications are desired, create a map containing keys 'updatedEndPoint' and 'connectorStateMap' and use it as the return value;
+          Within the new map, the 'updatedEndPoint' can be set to an updated or unmodified 'requestEndPoint' object. The 'connectorStateMap' will be saved as persistent values in the application definition.
+        </Description>
+      </Argument>
+    </Returns>
+  </Signature>
+  <Source><![CDATA[
+  import sailpoint.object.*;
+  import sailpoint.api.*;
+  import java.time.LocalDate;
+  import java.util.Date;
+  import java.text.SimpleDateFormat;
+  import java.time.Instant;
+  import java.time.temporal.ChronoUnit;
+  import java.util.TimeZone;
+  import sailpoint.tools.Util;
+  import org.apache.log4j.Logger; 
+  import org.apache.log4j.Level;
+  import org.apache.commons.logging.LogFactory;
+
+  Logger wboLog = Logger.getLogger("rule.eshiam.WebServiceBeforeOp1045");
+  wboLog.trace("EWBO-001: Executing  rule.eshiam.WebServiceBeforeOp1045");
+
+  wboLog.trace("EWBO-002: requestEndPoint .."+requestEndPoint);
+
+  // Get or create request body
+  Map requestBody = requestEndPoint.getBody();
+  if (requestBody == null) {
+    requestBody = new HashMap();
+  }
+
+  String jSonBody = "";
+  String operationType = requestEndPoint.getOperationType();
+
+  Date now = new Date();
+  SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+  sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+  // Format current system date in UTC
+  String currentDate = sdf.format(new Date(now.getTime()))+"Z";
+  String acctAggregationEnd = sdf.format(application.getAttributeValue("acctAggregationEnd"))+"Z";
+  String futureDate =  sdf.format(new Date(now.getTime()+10*24*60*60*1000L))+"Z";
+  String terminationDate =  sdf.format(new Date(now.getTime()-180*24*60*60*1000L))+"Z";
+
+
+  // Get or create jsonBody
+  if (requestBody != null) {
+    jSonBody =requestBody.get("jsonBody");
+  }
+
+  // Convert lastAggregationDate into the ISO UTC format
+  String acctAggregationEnd = sdf.format(lastAggregationDate);
+  if(acctAggregationEnd == null){
+    acctAggregationEnd = sdf.format(new Date(now.getTime()-1*60*60*1000))+"Z";
+  }
+ // wboLog.trace("EWBO-003: terminationDate  futureDate  acctAggregationEnd  currentDate ..  "+terminationDate+"   "+futureDate+"    "+acctAggregationEnd+"    "+currentDate);
+  // Replace placeholders in JSON body
+  jSonBody =  jSonBody.replaceAll("currentDate", currentDate);
+  jSonBody =  jSonBody.replaceAll("lastAggregationDate", acctAggregationEnd);
+  jSonBody =  jSonBody.replaceAll("terminationDate", terminationDate);
+  jSonBody = jSonBody.replaceAll("hireDate", futureDate);
+
+  // Update request body with modified JSON
+  requestBody.put("jsonBody", jSonBody);
+  requestEndPoint.setBody(requestBody);
+
+  wboLog.trace("EWBO-004: requestEndPoint at the end of rule .."+requestEndPoint);
+
+  return requestEndPoint;
+  ]]></Source>
+</Rule>

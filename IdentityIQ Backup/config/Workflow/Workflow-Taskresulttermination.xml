@@ -1,0 +1,92 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow explicitTransitions="true" name="TaskResultTermination">
+  <Variable input="true" name="launcher"/>
+  <Variable name="formModel"/>
+  <Step icon="Start" name="Start" posX="20" posY="41">
+    <Script>
+      <Source><![CDATA[
+        log.error("entered into the start step ");
+      ]]></Source>
+    </Script>
+    <Transition to="Initializer"/>
+  </Step>
+  <Step icon="Default" name="Initializer" posX="270" posY="31" resultVariable="formModel">
+    <Script>
+      <Source><![CDATA[ 
+        import sailpoint.object.Identity;
+        import java.util.HashMap;
+        import sailpoint.transformer.IdentityTransformer;
+        HashMap model = new HashMap();
+        IdentityTransformer transformer = new IdentityTransformer(context);
+        model.put(IdentityTransformer.ATTR_TRANSFORMER_CLASS, transformer.getClass().getName());
+        model.put(IdentityTransformer.ATTR_TRANSFORMER_OPTIONS, "");
+        return model;
+      ]]></Source>
+    </Script>
+    <Transition to="ApprovalStep"/>
+  </Step>
+  <Step icon="Approval" name="ApprovalStep" posX="556" posY="37">
+    <Approval name="SecodaryIdRegistrationForm" owner="script:return launcher;" return="formModel" send="launcher,formModel">
+      <Form name="SecodaryIdRegistrationForm">
+        <Attributes>
+          <Map>
+            <entry key="pageTitle" value="SecodaryIdRegistrationForm"/>
+            <entry key="title" value="SecodaryIdRegistrationFormTitle"/>
+          </Map>
+        </Attributes>
+        <Section name="IdType">
+          <Field displayName="SecondaryIdType" name="secondaryIdType" required="true" type="string">
+            <AllowedValuesDefinition>
+              <Value>
+                <List>
+                  <String>ADAdmin</String>
+                  <String>CloudAdmin</String>
+                  <String>WireLessAdmin</String>
+                </List>
+              </Value>
+            </AllowedValuesDefinition>
+          </Field>
+          <Field displayName="PrimaryAccount" name="primaryAccount" required="true" type="Identity">
+            <Attributes>
+              <Map>
+                <entry key="hidden">
+                  <value>
+                    <Script>
+                      <Source><![CDATA[
+                        if((primaryAccount!=null) @and(primaryAccount.equals("ADAdmin") @or primaryAccount.equals("CloudAdmin")))
+                        return false;
+                        return true;
+                      ]]></Source>
+                    </Script>
+                  </value>
+                </entry>
+              </Map>
+            </Attributes>
+          </Field>
+        </Section>
+        <Button action="next" label="Submit"/>
+        <Button action="back" label="Cancel"/>
+      </Form>
+    </Approval>
+    <Transition to="terminatorStep"/>
+  </Step>
+  <Step icon="Default" name="terminatorStep" posX="270" posY="31" resultVariable="formModel">
+    <Script>
+      <Source><![CDATA[ 
+        import sailpoint.object.*;
+        import sailpoint.api.*;
+
+       /* WorkflowCase workflowCase=wfcontext.getWorkflowCase();
+        TaskResult taskResult=workflowCase.getTaskResult();
+        TaskManager taskManager=new TaskManager(context);
+        boolean flag=taskManager.terminate(taskResult);
+        log.error("--taskresult flag result--"+flag);
+        //workflowCase.setTerminated(true);*/
+
+      ]]></Source>
+    </Script>
+    <Transition to="Stop"/>
+  </Step>
+  <Step icon="Stop" name="Stop" posX="790" posY="40"/>
+</Workflow>

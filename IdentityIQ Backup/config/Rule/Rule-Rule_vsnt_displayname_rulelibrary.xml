@@ -1,0 +1,123 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Rule_VSNT_DisplayName_RuleLibrary">
+  <Source><![CDATA[
+ 
+  import sailpoint.object.Identity;
+  import org.apache.log4j.Level;
+  import org.apache.log4j.Logger;
+
+  Logger logger = Logger.getLogger("com.nbcuni.rule.Rule_VSNT_DisplayName_RuleLibrary");
+
+  /**
+   * This method checks whether the identity name is in display name format 
+   * @param name
+   * @return boolean
+   */ 
+  public boolean checkIdentityNameFormat(String name)
+  {
+    if(name != null && name.contains("(") && name.contains(")"))
+    {
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * This method returns the SSO ID from the formatted displayname 
+   * @param idenName
+   * @return String
+   */ 
+  public String getSSOFromIdentityName(String idenName)
+  {
+    logger.debug("Starting getSSOFromIdentityName method");
+    String ssoId = "";
+    boolean idenNameFormat = checkIdentityNameFormat(idenName);
+    
+    if(idenNameFormat) {
+      if(idenName != null) {
+        ssoId = idenName.substring(idenName.lastIndexOf("(")+1,idenName.lastIndexOf(")"));
+        logger.debug("Sso Id of the identity"+ssoId);
+        return ssoId;
+      }
+    }
+    logger.debug("Exiting getSSOFromIdentityName method");
+    return idenName;
+  }
+
+  /**
+   * This method creates formatted displayname 
+   * @param userIdentity
+   * @return String
+   */ 
+  public String createIdentityDisplayName(Identity userIdentity)
+  {
+    logger.debug("Starting createIdentityDisplayName method");
+    String displayName = "";
+    if(userIdentity != null)
+    {
+      if((userIdentity.getLastname() != null) && (userIdentity.getFirstname() != null) && (userIdentity.getName() != null))
+      {
+        displayName = userIdentity.getLastname()+", "+userIdentity.getFirstname()+" ("+userIdentity.getName()+")"; 
+      }
+      else if((userIdentity.getLastname() != null) && (userIdentity.getFirstname() == null) && (userIdentity.getName() != null))
+      {
+        displayName = userIdentity.getLastname()+" ("+userIdentity.getName()+")"; 
+      }
+      else if((userIdentity.getLastname() == null) && (userIdentity.getFirstname() != null) && (userIdentity.getName() != null))
+      {
+        displayName = userIdentity.getFirstname()+" ("+userIdentity.getName()+")"; 
+      }
+      else if((userIdentity.getLastname() != null) && (userIdentity.getFirstname() != null) && (userIdentity.getName() == null))
+      {
+        displayName = userIdentity.getLastname()+", "+userIdentity.getFirstname(); 
+      }
+      else 
+      {
+        displayName = userIdentity.getName();
+      }
+    }
+    logger.debug("Display name : "+displayName);
+    logger.debug("Exiting createIdentityDisplayName method");
+    return displayName;
+  }
+  
+   /**
+   * This method is for creation of formatted displayname 
+   * @param firstname
+   * @param lastname
+   * @param ssoId
+   * @return String
+   */ 
+   public String createFormattedDisplayName(String firstname, String lastname, String ssoId)
+  {
+    logger.debug("Starting createFormattedDisplayName method");
+    String displayName = "";
+    
+      if(lastname != null && firstname != null && ssoId != null)
+      {
+        displayName = lastname+", "+firstname+" ("+ssoId+")";
+      }
+      else if(lastname != null && firstname == null && ssoId != null)
+      {
+        displayName = lastname+" ("+ssoId+")";
+      }
+      else if(lastname != null && firstname != null && ssoId == null)
+      {
+        displayName = lastname+", "+firstname; 
+      }
+      else if(lastname == null && firstname != null && ssoId != null)
+      {
+        displayName = firstname+" ("+ssoId+")";
+      }
+      else 
+      {
+        displayName = ssoId;
+      }
+    logger.debug("Display name : "+displayName);
+    logger.debug("Exiting createFormattedDisplayName method");
+    return displayName;
+  }
+  
+  ]]></Source>
+</Rule>

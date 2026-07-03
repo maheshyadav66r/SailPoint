@@ -1,0 +1,109 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1750935072256" completionStatus="Warning" launched="1750935070347" launcher="spadmin" name="Update Identity Aaron Rivera AccountsRequest" targetClass="Identity" targetName="Aaron Rivera" type="LCM">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000726"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Aaron Rivera">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan trackingId="4b622ca24c9a45d78d3027664b7ea4fb">
+                <AccountRequest application="WebServiceApplication-Eshiam" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="flow" value="AccountsRequest"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="Create"/>
+                      <entry key="requester" value="spadmin"/>
+                    </Map>
+                  </Attributes>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000726"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Aaron Rivera" targetIntegration="WebServiceApplication-Eshiam" trackingId="4f9d7f9b99d04e93b0f096b39603f15f">
+              <AccountRequest application="WebServiceApplication-Eshiam" op="Create" targetIntegration="WebServiceApplication-Eshiam">
+                <Attributes>
+                  <Map>
+                    <entry key="flow" value="AccountsRequest"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="operation" value="Create"/>
+                    <entry key="provisioningTransactionId" value="c0a8001697a21be78197abdcebf417fd"/>
+                    <entry key="requester" value="spadmin"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="user_id" op="Add" value="EMP01481"/>
+                <AttributeRequest name="user_email" op="Add" value="aaron.rivera@example.com"/>
+                <AttributeRequest name="manager_id" op="Add" value="1045"/>
+                <AttributeRequest name="location" op="Set" value="India"/>
+                <AttributeRequest name="user_name" op="Add" value="Aaron Rivera"/>
+                <AttributeRequest name="department" op="Set" value="HR"/>
+                <AttributeRequest name="user_status" op="Add" value="ACTIVE"/>
+                <AttributeRequest name="job_title" op="Add" value="Engineer"/>
+                <ProvisioningResult status="committed">
+                  <Warnings>
+                    <Message key="Native identity is neither present in the plan nor in the response" type="Warn"/>
+                  </Warnings>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000726"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+              <ProvisioningResult status="committed"/>
+            </ProvisioningPlan>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a8001697a21be78197abdce7ce17ec"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="end"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="Native identity is neither present in the plan nor in the response" type="Warn"/>
+  </Messages>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

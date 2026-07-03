@@ -1,0 +1,113 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Validation_Plan_Compilation" type="Validation">
+  <Source><![CDATA[
+  import sailpoint.object.*;
+  import sailpoint.api.*;
+  import sailpoint.object.ProvisioningPlan.AttributeRequest;
+  import sailpoint.object.ProvisioningPlan.AccountRequest;
+  import org.apache.commons.logging.Log;
+  //Logger logs=Logger.getLogger("secondaryIdCreation.eshiam.assam");
+
+
+   return context.encrypt("identityiqahmssql");
+
+//1:ACP:8QIGdI+xPK/Q/xZKSHAaEpGY/lrgiXeuHFaTSdx56NA=  identityiqmssql
+  //1:ACP:sSBLavbZSFEp6S6Nxfpt0DZHvimKKnOfN4DOuHTVR7Xi3TbndzOVXyEOjlmarrO+    identityiqPluginmssql
+  //
+  
+  
+  List roles = new ArrayList();
+  roles.add("BusinessRoleAccountingHtask");
+  roles.add("remidiateBusinessRole");
+  roles.add("role Owner Approval Test1");
+  // roles.add("BusinessRoleHTask");
+  // context = SailPointFactory.createContext();
+
+  String identityName = "Aaron Stanley";
+  Identity identity = context.getObjectByName(Identity.class, identityName);
+  ProvisioningPlan plan = new ProvisioningPlan();
+  plan.setIdentity(identity);
+
+  plan.add(ProvisioningPlan.APP_IIQ, identityName, "assignedRoles", ProvisioningPlan.Operation.Add, roles);
+  plan.setSource(Source.Rule);
+
+  Provisioner provisioner = new Provisioner(context);
+  ProvisioningProject proj = provisioner.compile(plan);
+  provisioner.execute(proj);
+
+  return " Role Assigned";
+
+
+
+
+
+
+
+
+  Identity identity = context.getObjectByName(Identity.class,"Abigail Frey");
+  ProvisioningPlan plan=new ProvisioningPlan();
+  plan.setIdentity(identity);
+  AccountRequest accountRequest =new AccountRequest();
+
+  accountRequest.setOp(ProvisioningPlan.ObjectOperation.Modify);
+  accountRequest.setApplication("ActiveDirectory");
+  accountRequest.setNativeIdentity("CN="+identity.getDisplayName()+",OU=People,OU=Demo,DC=Eshiam,DC=com");
+  accountRequest.add(new AttributeRequest("memberOf", ProvisioningPlan.Operation.Add, "CN=DataComm,OU=Groups,OU=Demo,DC=Eshiam,DC=com"));
+  //accountRequest.add(new AttributeRequest("memberOf", ProvisioningPlan.Operation.Remove, "CN=DataArchive,OU=Groups,OU=Demo,DC=Eshiam,DC=com"));
+
+  plan.add(accountRequest);
+
+  Provisioner provisioner=new Provisioner(context);
+  //provisioner.execute(plan);
+  //ProvisioningProject proj= provisioner.compile(plan);
+  provisioner.execute(plan);
+  log.error(" plan in rule ....."+plan.toXml());
+
+
+
+  //Create WorkflowLaunch and set values
+  WorkflowLaunch wflaunch = new WorkflowLaunch();
+
+  String  workflowName = "LCM Provisioning";
+  HashMap launchArgsMap = new HashMap();
+  launchArgsMap.put("identityName","Abigail Frey");
+  launchArgsMap.put("plan",plan);
+
+  Workflow wf = (Workflow) context.getObjectByName(Workflow.class, workflowName);
+
+  wflaunch.setWorkflowName(wf.getName());
+  wflaunch.setWorkflowRef(wf.getName());
+  wflaunch.setVariables(launchArgsMap);
+
+  //Create Workflower and launch workflow from WorkflowLaunch
+  Workflower workflower = new Workflower(context);
+  WorkflowLaunch launch = workflower.launch(wflaunch);
+
+  return launch;
+
+  //log.error(" project in rule ....."+proj.toXml());
+  return plan;
+
+  Provisioner provisioner=new Provisioner(context);
+  ProvisioningProject proj= provisioner.compile(plan);
+
+  ProvisioningPlan plan2=proj.getPlan("ActiveDirectory");
+
+  AccountRequest accReq=plan2.getAccountRequest("ActiveDirectory");
+  //String nativeId=accReq.getNativeIdentity();
+
+  accReq.setNativeIdentity("CN="+"ADM-"+identity.getDisplayName()+",OU=People,OU=Demo,DC=Eshiam,DC=com");
+
+  accReq.getAttributeRequest("sAMAccountName").setValue("ADM-"+identity.getDisplayName());
+  ProvisioningPlan finalPlan = new ProvisioningPlan();
+  finalPlan.setIdentity(identity);
+  finalPlan.add(accReq);
+
+  provisioner.execute(finalPlan);
+
+  return finalPlan;
+
+  //return plan2.toXml();
+  ]]></Source>
+</Rule>

@@ -1,0 +1,580 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE IdentityRequest PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<IdentityRequest completionStatus="Incomplete" endDate="1720009850518" executionStatus="Completed" name="0000000281" priority="Normal" requesterDisplayName="The Administrator" requesterId="c0a81d898f331ca3818f33fcf64800ff" source="LCM" state="End" targetClass="sailpoint.object.Identity" targetDisplayName="Vijay Shankar" verified="1720066378828">
+  <Attributes>
+    <Map>
+      <entry key="approvalSummaries">
+        <value>
+          <List>
+            <ApprovalSummary completer="Aaron Nichols" endDate="1720009846459" owner="Aaron Nichols" request="Owner Approval - Account Changes for User: Vijay Shankar" startDate="1720004940284" state="Finished" workItemId="c0a8005390741d9d81907848905505fc" workItemType="Approval">
+              <ApprovalSet>
+                <ApprovalItem application="ActiveDirectory" approver="Aaron Nichols" name="memberOf" operation="Add" state="Finished" value="CN=All_Users,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachments"/>
+                    </Map>
+                  </Attributes>
+                </ApprovalItem>
+              </ApprovalSet>
+            </ApprovalSummary>
+          </List>
+        </value>
+      </entry>
+      <entry key="messages">
+        <value>
+          <List>
+            <Message key="Exception occurred while executing the RPCRequest: Errors returned from IQService. &quot;The object already exists. The object already exists. 00002071: UpdErr: DSID-03050371, problem 6005 (ENTRY_EXISTS), data 0 00002071: UpdErr: DSID-03050371, problem 6005 (ENTRY_EXISTS), data 0 . HRESULT:[0x80071392] For identity: CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com&quot;" type="Error"/>
+          </List>
+        </value>
+      </entry>
+      <entry key="provisionedProject">
+        <value>
+          <ProvisioningProject identity="Vijay Shankar">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000281"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <Filtered>
+              <AccountRequest application="LDAPApplication" nativeIdentity="cn=Vijay.Shankar,ou=People,dc=my-domain,dc=com" op="Modify">
+                <AttributeRequest name="groups" op="Add" value="cn=Users,ou=Group,dc=my-domain,dc=com">
+                  <Attributes>
+                    <Map>
+                      <entry key="reason">
+                        <value>
+                          <FilterReason>Exists</FilterReason>
+                        </value>
+                      </entry>
+                    </Map>
+                  </Attributes>
+                </AttributeRequest>
+              </AccountRequest>
+            </Filtered>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="ActiveDirectory" op="Create">
+                  <AttributeRequest name="memberOf" op="Add" value="CN=All_Users,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                  <AttributeRequest name="userAccountControl" op="Add" value="514"/>
+                  <AttributeRequest name="IIQDisabled">
+                    <Value>
+                      <Boolean>true</Boolean>
+                    </Value>
+                  </AttributeRequest>
+                </AccountRequest>
+                <AccountRequest application="LDAPApplication" nativeIdentity="cn=Vijay.Shankar,ou=People,dc=my-domain,dc=com" op="Modify">
+                  <AttributeRequest name="groups" op="Add" value="cn=Users,ou=Group,dc=my-domain,dc=com"/>
+                  <AttributeRequest name="businessCategory" value="Inactive"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000281"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Vijay Shankar" targetIntegration="ActiveDirectory" trackingId="5a756506335848d3b9c2f4ff821ddf7a">
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create">
+                <Attributes>
+                  <Map>
+                    <entry key="provisioningTransactionId" value="c0a800fb90781e3081907893779300a4"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="memberOf" op="Add" value="CN=All_Users,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                <AttributeRequest name="userAccountControl" op="Add" value="514"/>
+                <AttributeRequest name="IIQDisabled" op="Set">
+                  <Value>
+                    <Boolean>true</Boolean>
+                  </Value>
+                </AttributeRequest>
+                <AttributeRequest name="objectType" op="Set" value="User"/>
+                <AttributeRequest name="sAMAccountName" op="Set" value="VShank2"/>
+                <AttributeRequest name="password" op="Set">
+                  <Attributes>
+                    <Map>
+                      <entry key="secret" value="true"/>
+                    </Map>
+                  </Attributes>
+                </AttributeRequest>
+                <AttributeRequest name="Email" op="Add" value="VShank2@eshiam.com"/>
+                <AttributeRequest name="givenName" op="Set" value="Vijay"/>
+                <AttributeRequest name="sn" op="Set" value="Shankar"/>
+                <AttributeRequest name="msNPAllowDialin" op="Set" value="Not Set"/>
+                <AttributeRequest name="msExchHideFromAddressLists" op="Set">
+                  <Value>
+                    <Boolean/>
+                  </Value>
+                </AttributeRequest>
+                <ProvisioningResult status="failed">
+                  <Errors>
+                    <Message key="Exception occurred while executing the RPCRequest: Errors returned from IQService. &quot;The object already exists. The object already exists. 00002071: UpdErr: DSID-03050371, problem 6005 (ENTRY_EXISTS), data 0 00002071: UpdErr: DSID-03050371, problem 6005 (ENTRY_EXISTS), data 0 . HRESULT:[0x80071392] For identity: CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com&quot;" type="Error"/>
+                  </Errors>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000281"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+            </ProvisioningPlan>
+            <ProvisioningPlan nativeIdentity="Vijay Shankar" targetIntegration="LDAPApplication" trackingId="fe3f9ca59e404e78aeaed7ad673b03c1">
+              <AccountRequest application="LDAPApplication" nativeIdentity="cn=Vijay.Shankar,ou=People,dc=my-domain,dc=com" op="Modify" targetIntegration="LDAPApplication">
+                <AttributeRequest name="businessCategory" op="Set" value="Inactive"/>
+                <ProvisioningResult status="committed"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000281"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <ProvisioningResult status="committed"/>
+            </ProvisioningPlan>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="taskResultId" value="c0a8005390741d9d819078488ce805ee"/>
+    </Map>
+  </Attributes>
+  <RequestItems>
+    <IdentityRequestItem application="ActiveDirectory" approvalState="Finished" approverName="Aaron Nichols" name="memberOf" nativeIdentity="CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Add" ownerName="Aaron Nichols" provisioningEngine="ActiveDirectory" provisioningState="Failed" value="CN=All_Users,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <Attributes>
+        <Map>
+          <entry key="errors">
+            <value>
+              <List>
+                <Message key="Exception occurred while executing the RPCRequest: Errors returned from IQService. &quot;The object already exists. The object already exists. 00002071: UpdErr: DSID-03050371, problem 6005 (ENTRY_EXISTS), data 0 00002071: UpdErr: DSID-03050371, problem 6005 (ENTRY_EXISTS), data 0 . HRESULT:[0x80071392] For identity: CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com&quot;" type="Error"/>
+              </List>
+            </value>
+          </entry>
+          <entry key="identityEntitlementId" value="c0a800fb90781e3081907893768b00a1"/>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="8cedcd05061f4a2d9226f20441641299">
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="provisioningTransactionId" value="c0a800fb90781e3081907893779300a4"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="memberOf" op="Add" trackingId="8cedcd05061f4a2d9226f20441641299" value="CN=All_Users,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+      <Owner>
+        <Reference class="sailpoint.object.Identity" name="Aaron Nichols"/>
+      </Owner>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="ActiveDirectory" approvalState="Finished" name="userAccountControl" nativeIdentity="CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Add" ownerName="spadmin" provisioningEngine="ActiveDirectory" provisioningState="Failed" value="514">
+      <Attributes>
+        <Map>
+          <entry key="errors">
+            <value>
+              <List>
+                <Message key="Exception occurred while executing the RPCRequest: Errors returned from IQService. &quot;The object already exists. The object already exists. 00002071: UpdErr: DSID-03050371, problem 6005 (ENTRY_EXISTS), data 0 00002071: UpdErr: DSID-03050371, problem 6005 (ENTRY_EXISTS), data 0 . HRESULT:[0x80071392] For identity: CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com&quot;" type="Error"/>
+              </List>
+            </value>
+          </entry>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="9dbcec90cb354be09c06ae640a9fab5a">
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="provisioningTransactionId" value="c0a800fb90781e3081907893779300a4"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="userAccountControl" op="Add" trackingId="9dbcec90cb354be09c06ae640a9fab5a" value="514"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+      <Owner>
+        <Reference class="sailpoint.object.Identity" name="spadmin"/>
+      </Owner>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="LDAPApplication" approvalState="Finished" compilationStatus="Filtered" name="groups" nativeIdentity="cn=Vijay.Shankar,ou=People,dc=my-domain,dc=com" operation="Add" ownerName="spadmin" provisioningState="Finished" value="cn=Users,ou=Group,dc=my-domain,dc=com">
+      <Attributes>
+        <Map>
+          <entry key="identityEntitlementId" value="c0a8005390741d9d819078569ab90627"/>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="1c1c026f8f114fd99c7f8d49722c6a63">
+                <AccountRequest application="LDAPApplication" op="Modify">
+                  <AttributeRequest name="groups" op="Add" trackingId="1c1c026f8f114fd99c7f8d49722c6a63" value="cn=Users,ou=Group,dc=my-domain,dc=com"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+      <Owner>
+        <Reference class="sailpoint.object.Identity" name="spadmin"/>
+      </Owner>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="ActiveDirectory" approvalState="Finished" compilationStatus="Expansion" expansionCause="ProvisioningPolicy" name="objectType" nativeIdentity="CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Set" provisioningEngine="ActiveDirectory" provisioningState="Failed" value="User">
+      <Attributes>
+        <Map>
+          <entry key="errors">
+            <value>
+              <List>
+                <Message key="Exception occurred while executing the RPCRequest: Errors returned from IQService. &quot;The object already exists. The object already exists. 00002071: UpdErr: DSID-03050371, problem 6005 (ENTRY_EXISTS), data 0 00002071: UpdErr: DSID-03050371, problem 6005 (ENTRY_EXISTS), data 0 . HRESULT:[0x80071392] For identity: CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com&quot;" type="Error"/>
+              </List>
+            </value>
+          </entry>
+          <entry key="expansionInfo" value="ActiveDirectory"/>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="f3c743f85d77419886c68237562103df">
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="provisioningTransactionId" value="c0a800fb90781e3081907893779300a4"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="objectType" op="Set" trackingId="f3c743f85d77419886c68237562103df" value="User"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="ActiveDirectory" approvalState="Finished" compilationStatus="Expansion" expansionCause="ProvisioningPolicy" name="sAMAccountName" nativeIdentity="CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Set" provisioningEngine="ActiveDirectory" provisioningState="Failed" value="VShank2">
+      <Attributes>
+        <Map>
+          <entry key="errors">
+            <value>
+              <List>
+                <Message key="Exception occurred while executing the RPCRequest: Errors returned from IQService. &quot;The object already exists. The object already exists. 00002071: UpdErr: DSID-03050371, problem 6005 (ENTRY_EXISTS), data 0 00002071: UpdErr: DSID-03050371, problem 6005 (ENTRY_EXISTS), data 0 . HRESULT:[0x80071392] For identity: CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com&quot;" type="Error"/>
+              </List>
+            </value>
+          </entry>
+          <entry key="expansionInfo" value="ActiveDirectory"/>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="1b8689f7b4c44d9090cec6fb5942837e">
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="provisioningTransactionId" value="c0a800fb90781e3081907893779300a4"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="sAMAccountName" op="Set" trackingId="1b8689f7b4c44d9090cec6fb5942837e" value="VShank2"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="ActiveDirectory" approvalState="Finished" compilationStatus="Expansion" name="IIQDisabled" nativeIdentity="CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Set" ownerName="spadmin" provisioningEngine="ActiveDirectory" provisioningState="Failed" value="true">
+      <Attributes>
+        <Map>
+          <entry key="errors">
+            <value>
+              <List>
+                <Message key="Exception occurred while executing the RPCRequest: Errors returned from IQService. &quot;The object already exists. The object already exists. 00002071: UpdErr: DSID-03050371, problem 6005 (ENTRY_EXISTS), data 0 00002071: UpdErr: DSID-03050371, problem 6005 (ENTRY_EXISTS), data 0 . HRESULT:[0x80071392] For identity: CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com&quot;" type="Error"/>
+              </List>
+            </value>
+          </entry>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="26322bd90b3b446fa8eaea0ca8552698">
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="provisioningTransactionId" value="c0a800fb90781e3081907893779300a4"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="IIQDisabled" op="Set" trackingId="26322bd90b3b446fa8eaea0ca8552698" value="true"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+      <Owner>
+        <Reference class="sailpoint.object.Identity" name="spadmin"/>
+      </Owner>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="ActiveDirectory" approvalState="Finished" compilationStatus="Expansion" expansionCause="ProvisioningPolicy" name="Email" nativeIdentity="CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Add" provisioningEngine="ActiveDirectory" provisioningState="Failed" value="VShank2@eshiam.com">
+      <Attributes>
+        <Map>
+          <entry key="errors">
+            <value>
+              <List>
+                <Message key="Exception occurred while executing the RPCRequest: Errors returned from IQService. &quot;The object already exists. The object already exists. 00002071: UpdErr: DSID-03050371, problem 6005 (ENTRY_EXISTS), data 0 00002071: UpdErr: DSID-03050371, problem 6005 (ENTRY_EXISTS), data 0 . HRESULT:[0x80071392] For identity: CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com&quot;" type="Error"/>
+              </List>
+            </value>
+          </entry>
+          <entry key="expansionInfo" value="ActiveDirectory"/>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="acdf7d98498147f38cfa2fe81275f16d">
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="provisioningTransactionId" value="c0a800fb90781e3081907893779300a4"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="Email" op="Add" trackingId="acdf7d98498147f38cfa2fe81275f16d" value="VShank2@eshiam.com"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="ActiveDirectory" approvalState="Finished" compilationStatus="Expansion" expansionCause="ProvisioningPolicy" name="givenName" nativeIdentity="CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Set" provisioningEngine="ActiveDirectory" provisioningState="Failed" value="Vijay">
+      <Attributes>
+        <Map>
+          <entry key="errors">
+            <value>
+              <List>
+                <Message key="Exception occurred while executing the RPCRequest: Errors returned from IQService. &quot;The object already exists. The object already exists. 00002071: UpdErr: DSID-03050371, problem 6005 (ENTRY_EXISTS), data 0 00002071: UpdErr: DSID-03050371, problem 6005 (ENTRY_EXISTS), data 0 . HRESULT:[0x80071392] For identity: CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com&quot;" type="Error"/>
+              </List>
+            </value>
+          </entry>
+          <entry key="expansionInfo" value="ActiveDirectory"/>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="f0e6116c064b45b8b51a7fca3b16d1dd">
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="provisioningTransactionId" value="c0a800fb90781e3081907893779300a4"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="givenName" op="Set" trackingId="f0e6116c064b45b8b51a7fca3b16d1dd" value="Vijay"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="ActiveDirectory" approvalState="Finished" compilationStatus="Expansion" expansionCause="ProvisioningPolicy" name="sn" nativeIdentity="CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Set" provisioningEngine="ActiveDirectory" provisioningState="Failed" value="Shankar">
+      <Attributes>
+        <Map>
+          <entry key="errors">
+            <value>
+              <List>
+                <Message key="Exception occurred while executing the RPCRequest: Errors returned from IQService. &quot;The object already exists. The object already exists. 00002071: UpdErr: DSID-03050371, problem 6005 (ENTRY_EXISTS), data 0 00002071: UpdErr: DSID-03050371, problem 6005 (ENTRY_EXISTS), data 0 . HRESULT:[0x80071392] For identity: CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com&quot;" type="Error"/>
+              </List>
+            </value>
+          </entry>
+          <entry key="expansionInfo" value="ActiveDirectory"/>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="be03c4ade6474b698de2958147c46ed2">
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="provisioningTransactionId" value="c0a800fb90781e3081907893779300a4"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="sn" op="Set" trackingId="be03c4ade6474b698de2958147c46ed2" value="Shankar"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="ActiveDirectory" approvalState="Finished" compilationStatus="Expansion" expansionCause="ProvisioningPolicy" name="msNPAllowDialin" nativeIdentity="CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Set" provisioningEngine="ActiveDirectory" provisioningState="Failed" value="Not Set">
+      <Attributes>
+        <Map>
+          <entry key="errors">
+            <value>
+              <List>
+                <Message key="Exception occurred while executing the RPCRequest: Errors returned from IQService. &quot;The object already exists. The object already exists. 00002071: UpdErr: DSID-03050371, problem 6005 (ENTRY_EXISTS), data 0 00002071: UpdErr: DSID-03050371, problem 6005 (ENTRY_EXISTS), data 0 . HRESULT:[0x80071392] For identity: CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com&quot;" type="Error"/>
+              </List>
+            </value>
+          </entry>
+          <entry key="expansionInfo" value="ActiveDirectory"/>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="7549a541dbec42e890a42fa85f584cfd">
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="provisioningTransactionId" value="c0a800fb90781e3081907893779300a4"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="msNPAllowDialin" op="Set" trackingId="7549a541dbec42e890a42fa85f584cfd" value="Not Set"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="ActiveDirectory" approvalState="Finished" compilationStatus="Expansion" name="msExchHideFromAddressLists" nativeIdentity="CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Set" provisioningEngine="ActiveDirectory" provisioningState="Failed" value="false">
+      <Attributes>
+        <Map>
+          <entry key="errors">
+            <value>
+              <List>
+                <Message key="Exception occurred while executing the RPCRequest: Errors returned from IQService. &quot;The object already exists. The object already exists. 00002071: UpdErr: DSID-03050371, problem 6005 (ENTRY_EXISTS), data 0 00002071: UpdErr: DSID-03050371, problem 6005 (ENTRY_EXISTS), data 0 . HRESULT:[0x80071392] For identity: CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com&quot;" type="Error"/>
+              </List>
+            </value>
+          </entry>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="2dae79af5d5f4e77974fd318f572c695">
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="provisioningTransactionId" value="c0a800fb90781e3081907893779300a4"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="msExchHideFromAddressLists" op="Set" trackingId="2dae79af5d5f4e77974fd318f572c695" value="false"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="ActiveDirectory" nativeIdentity="CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" operation="Create" provisioningEngine="ActiveDirectory" provisioningState="Failed">
+      <Attributes>
+        <Map>
+          <entry key="errors">
+            <value>
+              <List>
+                <Message key="Exception occurred while executing the RPCRequest: Errors returned from IQService. &quot;The object already exists. The object already exists. 00002071: UpdErr: DSID-03050371, problem 6005 (ENTRY_EXISTS), data 0 00002071: UpdErr: DSID-03050371, problem 6005 (ENTRY_EXISTS), data 0 . HRESULT:[0x80071392] For identity: CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com&quot;" type="Error"/>
+              </List>
+            </value>
+          </entry>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="89a4e62e320240088a40ddffc4a50a27">
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Vijay Shankar,OU=DefaultUsers,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="provisioningTransactionId" value="c0a800fb90781e3081907893779300a4"/>
+                    </Map>
+                  </Attributes>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+          <entry key="provisioningTransactionId" value="c0a800fb90781e3081907893779300a4"/>
+        </Map>
+      </Attributes>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="LDAPApplication" approvalState="Finished" compilationStatus="Expansion" name="businessCategory" nativeIdentity="cn=Vijay.Shankar,ou=People,dc=my-domain,dc=com" operation="Set" ownerName="spadmin" provisioningEngine="LDAPApplication" provisioningState="Finished" value="Inactive">
+      <Attributes>
+        <Map>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="211ddfef277c41509e1e67a41b5941e4">
+                <AccountRequest application="LDAPApplication" nativeIdentity="cn=Vijay.Shankar,ou=People,dc=my-domain,dc=com" op="Modify" targetIntegration="LDAPApplication">
+                  <AttributeRequest name="businessCategory" op="Set" trackingId="211ddfef277c41509e1e67a41b5941e4" value="Inactive"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+      <Owner>
+        <Reference class="sailpoint.object.Identity" name="spadmin"/>
+      </Owner>
+    </IdentityRequestItem>
+  </RequestItems>
+</IdentityRequest>

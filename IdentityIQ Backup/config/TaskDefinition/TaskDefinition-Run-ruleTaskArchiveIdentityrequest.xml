@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskDefinition PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskDefinition name="Run-Rule Task Archive IdentityRequest" resultAction="Delete" subType="task_item_type_generic" type="Generic">
+  <Attributes>
+    <Map>
+      <entry key="TaskDefinition.runLengthAverage" value="4"/>
+      <entry key="TaskDefinition.runLengthTotal" value="458"/>
+      <entry key="TaskDefinition.runs" value="111"/>
+      <entry key="TaskSchedule.host"/>
+      <entry key="delete" value="false"/>
+      <entry key="endDate" value="11/11/2025 10:26:0 AM IST"/>
+      <entry key="ruleName" value="Archive_IdentityRequest_Rule"/>
+      <entry key="startDate" value="11/1/2025 10:26:0 AM IST"/>
+      <entry key="taskCompletionEmailNotify" value="Disabled"/>
+      <entry key="taskCompletionEmailRecipients"/>
+      <entry key="taskCompletionEmailTemplate"/>
+    </Map>
+  </Attributes>
+  <Description>A task that can prune identity requests by running a runrule task..</Description>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+  <Parent>
+    <Reference class="sailpoint.object.TaskDefinition" name="Run Rule"/>
+  </Parent>
+  <Signature>
+    <Inputs>
+      <Argument name="startDate" type="date">
+        <Prompt>Start Date</Prompt>
+      </Argument>
+      <Argument name="endDate" type="date">
+        <Prompt>EndDate</Prompt>
+      </Argument>
+      <Argument name="delete" type="boolean">
+        <Prompt>Delete</Prompt>
+      </Argument>
+    </Inputs>
+    <Returns>
+      <Argument name="Total IdentityRequest Inserted" type="int">
+        <Prompt>Total number of IdentityRequests requests archived</Prompt>
+      </Argument>
+      <Argument name="Delete After Archive" type="string">
+        <Prompt>Indicates whether delete checkbox was selected (true/false)</Prompt>
+      </Argument>
+      <Argument name="Start Date" type="string">
+        <Prompt>Archive start date used for filtering</Prompt>
+      </Argument>
+      <Argument name="End Date" type="string">
+        <Prompt>Archive end date used for filtering</Prompt>
+      </Argument>
+    </Returns>
+  </Signature>
+</TaskDefinition>

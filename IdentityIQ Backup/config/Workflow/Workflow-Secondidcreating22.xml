@@ -1,0 +1,217 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow explicitTransitions="true" name="SecondIdCreating22">
+  <Variable input="true" name="launcher"/>
+  <Variable name="formModel"/>
+  <Description>This Task is creating an admin account in an application based on the action selected by the user.</Description>
+  <Step icon="Start" name="Start" posX="41" posY="56">
+    <Transition to="Initialize"/>
+  </Step>
+  <Step icon="Default" name="Initialize" posX="188" posY="55" resultVariable="formModel">
+    <Description>Intializing the formModel object in this step.</Description>
+    <Script>
+      <Source><![CDATA[
+        import sailpoint.object.Identity;
+        import java.util.HashMap;
+        import sailpoint.transformer.IdentityTransformer;
+
+        HashMap model = new HashMap();
+        IdentityTransformer transformer = new IdentityTransformer(context);
+        model.put(IdentityTransformer.ATTR_TRANSFORMER_CLASS, transformer.getClass().getName());
+        model.put(IdentityTransformer.ATTR_TRANSFORMER_OPTIONS, "");
+        return model;
+      ]]></Source>
+    </Script>
+    <Transition to="DataCollection"/>
+  </Step>
+  <Step icon="Approval" name="DataCollection" posX="360" posY="55">
+    <Approval name="AccountSectionForm" owner="$(launcher)" return="formModel" send="formModel">
+      <Arg name="workItemType" value="Form"/>
+      <Arg name="workItemFormBasePath" value="formModel"/>
+      <Form name="AccountSectionForm">
+        <Attributes>
+          <Map>
+            <entry key="pageTitle" value="AccountSectionForm"/>
+          </Map>
+        </Attributes>
+        <Description>Selecting which type of account is required for the user.</Description>
+        <Section name="Selection Section">
+          <Field displayName="SecondaryIdType" helpKey="Select account type" name="secondaryIdType" postBack="true" required="true" type="string">
+            <AllowedValuesDefinition>
+              <Value>
+                <List>
+                  <String>ADAdmin</String>
+                  <String>CloudAdmin</String>
+                  <String>WireLessAdmin</String>
+                </List>
+              </Value>
+            </AllowedValuesDefinition>
+          </Field>
+        </Section>
+        <Section name="Admin Type Section">
+          <Attributes>
+            <Map>
+              <entry key="hidden">
+                <value>
+                  <Script>
+                    <Source><![CDATA[
+                      if("Admin".equalsIgnoreCase(accountType)){
+                      return false;
+                      }
+                      return true;
+                    ]]></Source>
+                  </Script>
+                </value>
+              </entry>
+            </Map>
+          </Attributes>
+          <Field displayName="Select Application" displayType="radio" name="aApplicationName" postBack="true" required="true" type="string">
+            <AllowedValuesDefinition>
+              <Value>
+                <List>
+                  <String>ActiveDirectory</String>
+                  <String>IntegrationConfig</String>
+                  <String>JDBCApplication</String>
+                </List>
+              </Value>
+            </AllowedValuesDefinition>
+          </Field>
+          <Field displayName="Select Identity" name="aIdentity" required="true" type="sailpoint.object.Identity">
+            <ValidationScript>
+              <Source><![CDATA[
+                import sailpoint.object.Identity;
+                import sailpoint.api.IdentityService;
+                import sailpoint.object.Link;
+                import sailpoint.object.Application;
+                import sailpoint.object.Filter;
+
+                Filter f = Filter.or(Filter.eq("id",value),Filter.eq("name",value));
+
+                Identity ideObject = context.getUniqueObject(Identity.class,f);
+
+                Application appObject = context.getObjectByName(Application.class,formModel.get("aApplicationName"));
+
+                IdentityService service = new IdentityService(context);
+
+                List links = service.getLinks(ideObject,appObject);
+
+                if(links != null @and links.size() > 0){
+
+                for(Link link:links){
+
+                if(link.getDisplayName().equals(ideObject.getName()+"adm")){
+
+                return "This identity already have Admin account in this "+formModel.get("aApplicationName");
+                }
+                }
+                return null;
+                }
+                else{
+                return "this user do not have account in this "+formModel.get("aApplicationName");
+                }
+              ]]></Source>
+            </ValidationScript>
+          </Field>
+        </Section>
+        <Section name="Cloud Admin Section">
+          <Attributes>
+            <Map>
+              <entry key="hidden">
+                <value>
+                  <Script>
+                    <Source><![CDATA[if("Cloud Admin".equalsIgnoreCase(accountType)){
+                      return false;
+                      }
+                      return true;]]></Source>
+                  </Script>
+                </value>
+              </entry>
+            </Map>
+          </Attributes>
+          <Field displayName="Application" displayOnly="true" name="caApplicationName" type="string">
+            <Attributes>
+              <Map>
+                <entry key="readOnly" value="true"/>
+              </Map>
+            </Attributes>
+            <Script>
+              <Source><![CDATA[return "ActiveDirectory";]]></Source>
+            </Script>
+          </Field>
+          <Field displayName="Select Identity" name="caIdentity" required="true" type="sailpoint.object.Identity">
+            <ValidationScript>
+              <Source><![CDATA[
+                import sailpoint.object.Identity;
+                import sailpoint.api.IdentityService;
+                import sailpoint.object.Link;
+                import sailpoint.object.Application;
+                import sailpoint.object.Filter;
+
+                Filter f = Filter.or(Filter.eq("id",value),Filter.eq("name",value));
+
+                Identity ideObject = context.getUniqueObject(Identity.class,f);
+
+                Application appObject = context.getObjectByName(Application.class,formModel.get("caApplicationName"));
+
+                IdentityService service = new IdentityService(context);
+
+                List links = service.getLinks(ideObject,appObject);
+
+                if(links != null @and links.size() > 0){
+
+                for(Link link:links){
+
+                if(link.getDisplayName().equals(ideObject.getName()+"cadm")){
+
+                return "This identity already have Admin account in this "+formModel.get("caApplicationName");
+                }
+                }
+                return null;
+                }
+                else{
+                return "this user do not have account in this "+formModel.get("caApplicationName");
+                }
+              ]]></Source>
+            </ValidationScript>
+          </Field>
+        </Section>
+        <Section name="Wireless Section">
+          <Attributes>
+            <Map>
+              <entry key="hidden">
+                <value>
+                  <Script>
+                    <Source><![CDATA[if("Wireless".equalsIgnoreCase(accountType)){
+                      return false;
+                      }
+                      return true;]]></Source>
+                  </Script>
+                </value>
+              </entry>
+            </Map>
+          </Attributes>
+          <Field displayName="Requester" name="requester" required="true" type="sailpoint.object.Identity"/>
+          <Field displayName="FirstName" name="firstName" type="string"/>
+          <Field displayName="LastName" helpKey="Add &quot;WirelessAdmin&quot; to the LastName" name="lastName" type="string"/>
+        </Section>
+        <Button action="next" label="Submit"/>
+        <Button action="cancel" label="Cancel"/>
+      </Form>
+    </Approval>
+    <Description>Taking the data from the requester throough a form.</Description>
+    <Transition to="PlanBuilding"/>
+  </Step>
+  <Step icon="Provision" name="PlanBuilding" posX="512" posY="56" resultVariable="formModel">
+    <Arg name="formModel" value="ref:formModel"/>
+    <Description>Building a provisioning plan based on the inputs given by the Requester.</Description>
+    <Script>
+      <Source><![CDATA[import sailpoint.object.ProvisioningPlan;
+
+        log.error("successful ga vachesa mowa");
+        log.error(formModel);
+      ]]></Source>
+    </Script>
+    <Transition to="Stop"/>
+  </Step>
+  <Step icon="Stop" name="Stop" posX="658" posY="57"/>
+</Workflow>

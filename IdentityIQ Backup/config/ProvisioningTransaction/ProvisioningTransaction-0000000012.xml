@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningTransaction PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningTransaction accountDisplayName="Aiden markram" applicationName="LDAPApplication" identityDisplayName="Aiden markram" identityName="Aiden markram" integration="LDAPApplication" name="0000000012" nativeIdentity="cn=Albert.Woods,ou=People,dc=my-domain,dc=com" operation="Create" source="LCM" status="Failed" type="Auto">
+  <Attributes>
+    <Map>
+      <entry key="accessRequestId" value="0000000042"/>
+      <entry key="planResult">
+        <value>
+          <ProvisioningResult status="failed">
+            <Errors>
+              <Message key="sailpoint.connector.ObjectAlreadyExistsException: [ ObjectAlreadyExistsException ] &#10; [ Possible suggestions ] Ensure that account or group does not exist. &#10; [ Error details ] [LDAP: error code 68 - Entry Already Exists]" type="Error"/>
+            </Errors>
+          </ProvisioningResult>
+        </value>
+      </entry>
+      <entry key="request">
+        <value>
+          <AccountRequest application="LDAPApplication" assignmentIds="87ea15095f664b49b16d8b3fe01b43c6" nativeIdentity="cn=Albert.Woods,ou=People,dc=my-domain,dc=com" op="Create">
+            <Attributes>
+              <Map>
+                <entry key="provisioningTransactionId" value="c0a81d898f9414e7818f945f31dc0050"/>
+              </Map>
+            </Attributes>
+            <AttributeRequest name="groups" op="Add">
+              <Value>
+                <List>
+                  <String>cn=WebApplicationAccess,ou=Group,dc=my-domain,dc=com</String>
+                  <String>cn=Contractors,ou=Group,dc=my-domain,dc=com</String>
+                  <String>cn=Managers,ou=Group,dc=my-domain,dc=com</String>
+                </List>
+              </Value>
+            </AttributeRequest>
+            <AttributeRequest name="password" op="Set">
+              <Attributes>
+                <Map>
+                  <entry key="secret" value="true"/>
+                </Map>
+              </Attributes>
+            </AttributeRequest>
+            <AttributeRequest name="cn" op="Set" value="Aiden markram"/>
+            <AttributeRequest name="sn" op="Set" value="markram"/>
+            <ProvisioningResult status="failed">
+              <Errors>
+                <Message key="sailpoint.connector.ObjectAlreadyExistsException: [ ObjectAlreadyExistsException ] &#10; [ Possible suggestions ] Ensure that account or group does not exist. &#10; [ Error details ] [LDAP: error code 68 - Entry Already Exists]" type="Error"/>
+              </Errors>
+            </ProvisioningResult>
+          </AccountRequest>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+</ProvisioningTransaction>

@@ -1,0 +1,261 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow explicitTransitions="true" libraries="Identity,IdentityRequest" name="Certification Trigger for Attribute Change" type="IdentityLifecycle">
+  <Variable name="provisioningPlan"/>
+  <Variable input="true" name="identityName"/>
+  <Variable initializer="script:(identityDisplayName != void) ? identityDisplayName : resolveDisplayName(identityName)" name="identityDisplayName"/>
+  <Variable input="true" name="item"/>
+  <Variable name="myApprovalSet"/>
+  <Variable initializer="Attribute Change" name="flow"/>
+  <Variable input="true" name="trigger"/>
+  <Variable name="identityRequest"/>
+  <Variable name="identityRequestId">
+    <Description>
+      The id of the IdentityRequest created.
+    </Description>
+  </Variable>
+  <Variable input="true" name="event"/>
+  <Variable initializer="script: return trigger.getAttributeName()" name="attribute"/>
+  <Variable initializer="true" name="trace"/>
+  <Variable initializer="manager,owner" name="approvalScheme"/>
+  <Variable initializer="serial" name="approvalMode"/>
+  <Step icon="Start" name="Start" posX="17" posY="91">
+    <Transition to="buildPlan"/>
+  </Step>
+  <Step icon="Default" name="buildPlan" posX="121" posY="91" resultVariable="provisioningPlan">
+    <Script>
+      <Source><![CDATA[
+        import sailpoint.object.ProvisioningPlan;
+        import sailpoint.object.Identity;
+        import sailpoint.tools.Util;
+        import sailpoint.object.ProvisioningPlan.Operation;
+        import sailpoint.object.ProvisioningPlan.AttributeRequest;
+        import sailpoint.object.ProvisioningPlan.AccountRequest;
+        import sailpoint.object.ProvisioningPlan.AccountRequest.Operation;
+        import sailpoint.api.IdentityService;
+        import sailpoint.object.Application;
+        import sailpoint.object.Link;
+
+        Identity identityObj = null;
+        ProvisioningPlan plan = null;
+        Application adApp = null;
+        IdentityService idService = null;
+        String adNativeIdentity;
+
+        try{
+        idService = new IdentityService(context);
+        adApp = context.getObjectByName(Application.class, "ActiveDirectory");
+
+        if(Util.isNotNullOrEmpty(identityName)){
+        identityObj = context.getObjectByName(Identity.class ,identityName);
+        }
+        if (adApp != null) {
+        List links =  idService.getLinks(identityObj, adApp);
+        for(Link link : links){
+        String nativeIdentity = link.getNativeIdentity();
+        if(Util.isNotNullOrEmpty(nativeIdentity) && !nativeIdentity.contains("ADM")){
+        adNativeIdentity = nativeIdentity;
+        break;
+        }
+        }
+        }
+        plan = new ProvisioningPlan();
+        plan.setIdentity(identityObj);
+        AccountRequest accReq = new AccountRequest();
+        accReq.setNativeIdentity(adNativeIdentity);
+        accReq.setOperation(ProvisioningPlan.AccountRequest.Operation.Modify);
+        if("department".equalsIgnoreCase(event.getNewObject().getAttribute(trigger.getAttributeName()))){
+        accReq.add(new AttributeRequest("department" ,ProvisioningPlan.Operation.Set ,event.getNewObject().getAttribute(trigger.getAttributeName())));
+        }
+        plan.add(accReq);
+        }catch(Exception e){
+        log.error("Exception in buildPlan Step "+e.getMessage());
+        }finally{
+        context.decache(identityObj);
+        context.decache(adApp);
+        }
+
+        log.error(" Args from wfcontext in build paln step : "+wfcontext.getArguments().getMap());
+
+        log.error(" plan in buildpaln step : "+plan.toXml());
+        return plan;
+      ]]></Source>
+    </Script>
+    <Transition to="buildProject"/>
+  </Step>
+  <Step action="compileProvisioningProject" icon="Default" name="buildProject" posX="254" posY="92" resultVariable="project">
+    <Arg name="plan" value="ref:provisioningPlan"/>
+    <Transition to="build ApprovalSet"/>
+  </Step>
+  <Step name="build ApprovalSet" posX="400" posY="92" resultVariable="myApprovalSet">
+    <Script>
+      <Source><![CDATA[
+        import java.util.Calendar;
+        import sailpoint.api.IdentityService;
+        import sailpoint.object.Application;
+        import sailpoint.object.ApprovalItem;
+        import sailpoint.object.ApprovalSet;
+        import sailpoint.object.Attributes;
+        import sailpoint.object.Identity;
+        import sailpoint.object.ProvisioningPlan;
+        import sailpoint.object.WorkItem;
+        import sailpoint.tools.GeneralException;
+
+        ApprovalSet set = new ApprovalSet();
+        ApprovalItem approvalItem =new ApprovalItem();
+        approvalItem.setApplication("ActiveDirectory");
+        approvalItem.setNativeIdentity(provisioningPlan.getAccountRequests().get(0).getNativeIdentity());
+        approvalItem.setOperation("Set");
+        approvalItem.setValue("department", event.getNewObject().getAttribute(attribute));
+        set.add(approvalItem);
+        log.error(" Approval Set in Build Approval Set Step : "+set.toXml());
+
+        return set;
+      ]]></Source>
+    </Script>
+    <Transition to="create IdentityRequest"/>
+  </Step>
+  <Step action="call:createIdentityRequest" icon="Default" name="create IdentityRequest" posX="553" posY="92" resultVariable="identityRequest">
+    <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+    <Arg name="approvalSet" value="ref:myApprovalSet"/>
+    <Arg name="project" value="ref:project"/>
+    <Arg name="workItemPriority" value="WorkItem.level.Normal"/>
+    <Arg name="source" value="IdentityRefresh"/>
+    <Arg name="flow" value="Attribute Change"/>
+    <Transition to="send Approval"/>
+    <Transition to="Approval"/>
+  </Step>
+  <Step icon="Approval" name="Approval" posX="743" posY="88">
+    <Approval mode="ref:approvalMode" owner="call:buildCommonApprovals" renderer="lcmWorkItemRenderer.xhtml" send="identityDisplayName,identityName,approvalSet,flow,policyViolations,identityRequestId">
+      <AfterScript>
+        <Source><![CDATA[
+          import sailpoint.workflow.IdentityRequestLibrary;
+
+          if ( item == null ) 
+          return;
+
+          //log.error(" ApprovaSet in provision approval subprocess -approval step AfterScript.."+approvalSet.toXml());
+          assimilateWorkItemApprovalSet(wfcontext, item, approvalSet);          
+          auditDecisions(item);  
+          IdentityRequestLibrary.assimilateWorkItemApprovalSetToIdentityRequest(wfcontext, approvalSet);
+        ]]></Source>
+      </AfterScript>
+      <Arg name="launcher" value="ref:launcher"/>
+      <Arg name="workItemDescription" value="$(attribute) attribute Change Event for $(identityName)"/>
+      <Arg name="workItemIdentityRequestId">
+        <Script>
+          <Source><![CDATA[
+            return identityRequest.getName();
+          ]]></Source>
+        </Script>
+      </Arg>
+      <Arg name="approvalMode" value="ref:approvalMode"/>
+      <Arg name="approvalScheme" value="ref:approvalScheme"/>
+      <Arg name="workItemRequester" value="$(launcher)"/>
+      <InterceptorScript>
+        <Source><![CDATA[
+
+          import sailpoint.object.Workflow.Approval;
+          import sailpoint.object.ApprovalItem;
+          import sailpoint.object.ApprovalSet;
+          import sailpoint.object.Workflow;
+          import sailpoint.object.WorkItem;
+          import sailpoint.tools.Util;
+          import java.util.Iterator;
+          import java.util.ArrayList;
+          import java.lang.Boolean;
+
+
+
+          if (Workflow.INTERCEPTOR_PRE_ASSIMILATION.equals(method)) {
+          // promote completion state to Rejected if all items are rejected
+          ApprovalSet aset = item.getApprovalSet();
+          if (aset != null) {
+          List items = aset.getItems();
+          if (items != null) {
+          int rejectCount = 0;
+          for (ApprovalItem item : items) {
+          // note that isRejected can't be used since that
+          // assumes no answer means rejected
+          if (item.getState() == WorkItem.State.Rejected) {
+          rejectCount++;
+          }
+          }
+          if (rejectCount == items.size()) {
+          item.setState(WorkItem.State.Rejected);
+          }
+          }
+          }
+          } else if (Workflow.INTERCEPTOR_START_APPROVAL.equals(method)) {
+
+          ApprovalSet currentSet = approval.getApprovalSet();
+
+          if (currentSet != null && !Util.isEmpty(currentSet.getItems())) {
+          //If filterRejects is true, filter any rejected items in the master ApprovalSet from the currentSet
+          if (Boolean.valueOf(filterRejects)) {
+          filterRejectsFromApprovalSet(approvalSet, currentSet);
+          }
+
+          //We've filtered all items from the approval set
+          if (Util.isEmpty(currentSet.getItems())) {
+          //Complete the approval if it contains no ApprovalItems
+          approval.setComplete(true);
+          } else {
+
+          if (Boolean.valueOf(setPreviousApprovalDecisions)) {
+          // If setPreviousApprovalDecisions is enabled, set the decision
+          // on the items to that of the global item.
+          setPreviousDecisionsOnApprovalSet(approvalSet, currentSet);
+          }
+          }
+          }
+
+          } else if (Workflow.INTERCEPTOR_END_APPROVAL.equals(method)) {
+          // Owner children approvals need to propagate the rejection state if all children are rejected
+          Approval parentApp = approval.getParent();
+          // Never relay the state to the root approval
+          // If we don't have an approvalSet, must be a container approval
+          if (parentApp != null && approval.getApprovalSet() == null) {
+          boolean completeAndRejected = false;
+          for (Approval child : Util.safeIterable(approval.getChildren())) {
+          if (child.isComplete() && child.getState() == WorkItem.State.Rejected) {
+          completeAndRejected = true;
+          } else {
+          completeAndRejected = false;
+          break;
+          }
+          }
+          //If all children complete and rejected, set the status on the parent approval
+          if (completeAndRejected) {
+          approval.setState(WorkItem.State.Rejected);
+          }
+          }
+          } else if (Workflow.INTERCEPTOR_OPEN_WORK_ITEM.equals(method)) {
+          import sailpoint.workflow.IdentityRequestLibrary;
+
+          //Sync IdentityRequestItems with the WorkItem
+          IdentityRequestLibrary.assimilateWorkItemApprovalSetToIdentityRequest(wfcontext, item.getApprovalSet(), false);
+          }
+
+        ]]></Source>
+      </InterceptorScript>
+    </Approval>
+    <Transition to="Process Approval Decisions" when="script:(step.getApproval() != null &amp;&amp; step.getApproval().containsApprovalItems())"/>
+    <Transition to="end"/>
+  </Step>
+  <Step action="call:processApprovalDecisions" icon="Task" name="Process Approval Decisions" posX="892" posY="164" resultVariable="project">
+    <Arg name="disableAudit" value="true"/>
+    <Arg name="approvalSet" value="ref:myApprovalSet"/>
+    <Arg name="recompilePlan" value="true"/>
+    <Arg name="project" value="ref:project"/>
+    <Arg name="plan" value="ref:plan"/>
+    <Transition to="Provision"/>
+  </Step>
+  <Step icon="Default" name="Provision" posX="1109" posY="195">
+    <WorkflowRef>
+      <Reference class="sailpoint.object.Workflow" name="Provision with retries"/>
+    </WorkflowRef>
+    <Transition to="end"/>
+  </Step>
+  <Step icon="Stop" name="end" posX="1276" posY="96"/>
+</Workflow>

@@ -1,0 +1,146 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="BanqueMisr-Rule-ConnectorAfterCreate-EnableMailBox" type="ConnectorAfterCreate">
+  <Attributes>
+    <Map>
+      <entry key="ObjectOrientedScript" value="true"/>
+      <entry key="disabled" value="false"/>
+      <entry key="extension" value=".ps1"/>
+      <entry key="password"/>
+      <entry key="program" value="powershell.exe"/>
+      <entry key="timeout" value="5000"/>
+      <entry key="user"/>
+    </Map>
+  </Attributes>
+  <Description>
+    An IdentityIQ Server-Side rule that is executed AFTER the connector's provisioning method is called. 
+    This rule is called after accounts have been created on the underlying AD domain.
+  </Description>
+  <Signature>
+    <Inputs>
+      <Argument name="log">
+        <Description>
+          The log object associated with the SailPointContext.
+        </Description>
+      </Argument>
+      <Argument name="context">
+        <Description>
+          A sailpoint.api.SailPointContext object that can be used to query the database if necessary.
+        </Description>
+      </Argument>
+      <Argument name="plan">
+        <Description>
+          The ProvisioningPlan object on its way to the Connector.
+        </Description>
+      </Argument>
+      <Argument name="application">
+        <Description>
+          The application object that references this before/after script.
+        </Description>
+      </Argument>
+    </Inputs>
+  </Signature>
+  <Source><![CDATA[
+  try{
+    $logFile = "C:\ExchangeLogs\ConnectorAfterCreate.log"
+      Function writeToLog() {
+      param([string]$message)
+        Add-Content ($(Get-Date -format "yyyy-MM-dd HH:mm:ss") + "::$message") -Path $logFile
+      }
+    
+    writeToLog("Running AfterCreate Script:: CPC_ConnectorAfterCreate_AD_Rule");
+    Add-type -path C:\IQService\utils.dll
+      $requestString = $env:Request;
+    $sReader = New-Object System.IO.StringReader([System.String]$requestString);
+    $sResult = New-Object System.IO.StringReader([System.String]$env:Result);
+    ##Form the xml reader object###
+      $xmlReader = [System.xml.XmlTextReader]([sailpoint.utils.xml.XmlUtil]::getReader($sReader));
+    #writeToLog("XML Reader Object :: $xmlReader");
+    $xmlReader_Result =([sailpoint.utils.xml.XmlUtil]::getReader($sResult));
+    ###Create SailPoint Request object
+      $requestObject = New-Object Sailpoint.Utils.objects.AccountRequest($xmlReader);
+    $resultObject = New-Object Sailpoint.Utils.objects.ServiceResult($xmlReader_Result);
+    $requestXML = $requestObject.toxml();
+    $resultXML = $resultObject.toxml();
+    #writeToLog("Request Object :: $requestXML");
+    #writeToLog("Result Object  :: $resultXML");
+
+    ##Done for inclusion in Log File  
+      $objectType = ""
+      $useremail = ""
+      if($resultObject.Errors.count -eq 0){
+        foreach ($attribute in $requestObject.AttributeRequests){
+          if($attribute.Name -eq "objectType"){
+            $objectType = $attribute.value
+            }
+          if($attribute.Name -eq "sAMAccountName"){
+            $samAccountName = $attribute.value
+            }
+          if($attribute.Name -eq "userPrincipalName"){
+            $upn = $attribute.value
+            }
+          if($attribute.Name -eq "mail"){
+            $user = $attribute.value
+            }
+          if($attribute.Name -eq "employeeType"){
+            $employeeType = $attribute.value
+            }
+        }
+        $dn = $requestObject.NativeIdentity;
+        $op= $requestObject.Operation
+          #writeToLog("Request attributes ---- dn: $dn, op : $op, sAMAccountName: $sAMAccountName, upn: $upn, mail: $mail, objectType:  $objectType ");
+        if(($objectType -eq "User")){
+          writeToLog("//********************* Main Entry Point *******************************//");
+          $sApplication = New-Object System.IO.StringReader([System.String]$env:Application);
+          $xmlReader_Application = [System.xml.XmlTextReader]([sailpoint.utils.xml.XmlUtil]::getReader($sApplication));
+         
+            
+            $username = ""
+            $pwdText = ""
+            
+            Try {
+            
+              $secpasswd = ConvertTo-SecureString $pwdText -AsPlainText -Force
+              $credObject = New-Object System.Management.Automation.PSCredential($username, $secpasswd)		
+              $uri = ""
+              #writeToLog("URI value: $uri")
+              $session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri $uri -Credential $credObject -Authentication basic -AllowRedirection -ErrorAction Stop
+              #writeToLog("Importing session :: $session")  
+
+           		Import-PSSession $session -AllowClobber -DisableNameChecking -ErrorAction Stop
+             
+							Set-ADUser $user -Add @{extensionAttribute2="NEW_POLICY"}; Start-Sleep -Seconds 30;
+              #writeToLog("Importing session completed")
+              set-adserversettings -viewentireforest $true
+              writeToLog("Setting complete forest search completed")
+             Enable-Mailbox -Identity $user -Database "IAM-DB" | Set-Mailbox -RecipientLimits 50 -IssueWarningQuota 503316480 -ProhibitSendQuota 524288000 -ProhibitSendReceiveQuota 536870912 -UseDatabaseQuotaDefaults $false; Start-Sleep-Seconds 60;
+
+            } 
+          catch {
+            writeToLog("Cannot create mailbox features for user: $dn on server: exchangeServer . Error:  $_.FullyQualifiedErrorId $_.Exception.Message")
+            }
+          finally {
+            if($session){
+              #writeToLog(":::::Finally:::")
+                Remove-PSSession -ID $session.ID
+              }
+          }
+        } 
+        else {
+          #writeToLog("Skipping mailbox creation. After Create script triggered")
+          } 
+      } 
+    else {
+      foreach ($errorMsg in $resultObject.Errors){
+        #writeToLog("Errors from Service Result :::`n`r $errorMsg ");	
+      }
+    }
+  }
+  catch {
+    writeToLog("Exception occured while cretaing connection: Error:  $_.FullyQualifiedErrorId $_.Exception.Message")
+      writeToLog("Exception occured while cretaing connection: Error:  $Error[0].Exception.StackTrace")
+    }
+  #writeToLog("Executing After Create Script completed");
+  #writeToLog("//*********************End of Script *******************************//");
+]]></Source>
+</Rule>

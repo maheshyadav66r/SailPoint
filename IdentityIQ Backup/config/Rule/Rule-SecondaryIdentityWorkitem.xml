@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Secondary Identity WorkItem" type="WorkItemForward">
+  <Description>A rule used to examine a WorkItem and determine whether or not it needs to be forwarded to a new owner for further analysis or action.  The default forwarding rule in the system configuratin will be called every time a WorkItem is opened, and whenever it is forwarded in the user interface.</Description>
+  <Signature returnType="Object">
+    <Inputs>
+      <Argument name="log" type="org.apache.commons.logging.Log">
+        <Description>
+          The log object associated with the SailPointContext.
+        </Description>
+      </Argument>
+      <Argument name="context" type="sailpoint.api.SailPointContext">
+        <Description>
+          A sailpoint.api.SailPointContext object that can be used to query the database if necessary.
+        </Description>
+      </Argument>
+      <Argument name="item">
+        <Description>
+          The WorkItem being opened or forwarded.
+        </Description>
+      </Argument>
+      <Argument name="owner">
+        <Description>
+          The Identity that currently owns the work item.
+        </Description>
+      </Argument>
+    </Inputs>
+    <Returns>
+      <Argument name="newOwner">
+        <Description>
+          An Identity that should own the work item.  Alternatively, this can
+          be a String that is the name or id of the Identity.
+        </Description>
+      </Argument>
+    </Returns>
+  </Signature>
+  <Source><![CDATA[import sailpoint.object.Identity;
+//log.error(" Certification WorkItem in Global WI Forwarding Rule : "+item.toXml());
+
+//log.error(" Certification owner in Global WI Forwarding Rule : "+owner);
+
+return context.getObjectByName(Identity.class , "Mahesh.Nattali");]]></Source>
+</Rule>

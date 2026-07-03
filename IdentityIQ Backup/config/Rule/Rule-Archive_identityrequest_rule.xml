@@ -1,0 +1,410 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Archive_IdentityRequest_Rule">
+  <Source><![CDATA[
+  import sailpoint.object.IdentityRequest;
+  import sailpoint.object.IdentityRequestItem;
+  import sailpoint.object.Filter;
+  import sailpoint.object.QueryOptions;
+  import sailpoint.object.Attributes;
+  import sailpoint.object.Identity;
+  import sailpoint.object.WorkItem;
+  import sailpoint.object.ApprovalItem;
+  import sailpoint.object.ExpansionItem;
+  import sailpoint.object.Plugin;
+  import sailpoint.object.Attributes;
+  import sailpoint.api.SailPointContext;
+  import sailpoint.api.Terminator;
+  import sailpoint.tools.xml.XMLObjectFactory;
+  import java.sql.Connection;
+  import java.sql.DriverManager;
+  import java.sql.PreparedStatement;
+  import java.sql.ResultSet;
+  import java.sql.Timestamp;
+  import java.sql.ResultSetMetaData;
+  import java.sql.SQLException;
+  import java.util.*;
+  import sailpoint.plugin.PluginBaseHelper;
+  import java.text.SimpleDateFormat;
+  import java.lang.reflect.Method;
+  import sailpoint.plugin.Setting;
+
+  int countParent = 0;
+  int countChild = 0;
+  
+  String MYSQL_INSERT_IDENTITY_REQUEST = "INSERT INTO archive_identity_request (" +
+    "id, created, modified, significant_modified, owner, assigned_scope_path, name, state, type, source, " +
+    "target_id, target_display_name, target_class, requester_display_name, requester_id, end_date, verified, " +
+    "priority, completion_status, execution_status, has_messages, external_ticket_id, attributes, assigned_scope, created_at" +
+    ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+  
+  String MYSQL_INSERT_IDEN_REQ_ITEM = "INSERT INTO archive_identity_request_item (" +
+    "id, created, modified, significant_modified, owner, start_date, end_date, attributes, name, value, " +
+    "annotation, display_name, native_identity, instance, application, owner_name, approver_name, operation, " +
+    "retries, provisioning_engine, approval_state, provisioning_state, compilation_status, expansion_cause, " +
+    "identity_request_id, idx, created_at" +
+    ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+  
+  String MYSQL_COUNT_BY_ID = "SELECT COUNT(*) FROM archive_identity_request WHERE id = ?";
+  String MYSQL_COUNT_ITEM_BY_ID = "SELECT COUNT(*) FROM archive_identity_request_item WHERE id = ?";
+  
+  String POSTGRES_INSERT_IDENTITY_REQUEST = "INSERT INTO " + "%s" + ".archive_identity_request (" +
+    "id, created, modified, significant_modified, owner, assigned_scope_path, name, state, type, source, " +
+    "target_id, target_display_name, target_class, requester_display_name, requester_id, end_date, verified, " +
+    "priority, completion_status, execution_status, has_messages, external_ticket_id, attributes, assigned_scope, created_at" +
+    ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+  
+  String POSTGRES_INSERT_IDEN_REQ_ITEM = "INSERT INTO " + "%s" + ".archive_identity_request_item (" +
+    "id, created, modified, significant_modified, owner, start_date, end_date, attributes, name, value, " +
+    "annotation, display_name, native_identity, instance, application, owner_name, approver_name, operation, " +
+    "retries, provisioning_engine, approval_state, provisioning_state, compilation_status, expansion_cause, " +
+    "identity_request_id, idx, created_at" +
+    ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+  
+  String POSTGRES_COUNT_BY_ID = "SELECT COUNT(*) FROM " + "%s" + ".archive_identity_request WHERE id = ?";
+  String POSTGRES_COUNT_ITEM_BY_ID = "SELECT COUNT(*) FROM " + "%s" + ".archive_identity_request_item WHERE id = ?";
+  
+  String ORACLE_INSERT_IDENTITY_REQUEST = "INSERT INTO  " + "%s" + ".ARCHIVE_IDENTITY_REQUEST (" +
+    "ID, CREATED, MODIFIED, SIGNIFICANT_MODIFIED, OWNER, ASSIGNED_SCOPE_PATH, NAME, STATE, TYPE, SOURCE, " +
+    "TARGET_ID, TARGET_DISPLAY_NAME, TARGET_CLASS, REQUESTER_DISPLAY_NAME, REQUESTER_ID, END_DATE, VERIFIED, " +
+    "PRIORITY, COMPLETION_STATUS, EXECUTION_STATUS, HAS_MESSAGES, EXTERNAL_TICKET_ID, ATTRIBUTES, ASSIGNED_SCOPE, CREATED_AT" +
+    ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+  
+  String ORACLE_INSERT_IDEN_REQ_ITEM = "INSERT INTO " + "%s" + ".ARCHIVE_IDENTITY_REQUEST_ITEM (" +
+    "ID, CREATED, MODIFIED, SIGNIFICANT_MODIFIED, OWNER, START_DATE, END_DATE, ATTRIBUTES, NAME, VALUE, " +
+    "ANNOTATION, DISPLAY_NAME, NATIVE_IDENTITY, INSTANCE, APPLICATION, OWNER_NAME, APPROVER_NAME, OPERATION, " +
+    "RETRIES, PROVISIONING_ENGINE, APPROVAL_STATE, PROVISIONING_STATE, COMPILATION_STATUS, EXPANSION_CAUSE, " +
+    "IDENTITY_REQUEST_ID, IDX, CREATED_AT" +
+    ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+  
+  String ORACLE_COUNT_BY_ID = "SELECT COUNT(*) FROM " + "%s" + ".ARCHIVE_IDENTITY_REQUEST WHERE ID = ?";
+  String ORACLE_COUNT_ITEM_BY_ID = "SELECT COUNT(*) FROM " + "%s" + ".ARCHIVE_IDENTITY_REQUEST_ITEM WHERE ID = ?";
+  
+  String insertIdenReq = "";
+  String insertIdenReqItem = "";
+  String countIdenReq = "";
+  String countIdenReqItem = "";
+  
+  Plugin plugin = context.getObjectByName(Plugin.class, "AccessRequestArchivalPlugin");
+  Setting urlSetting = plugin.getSetting("url");
+  Setting userSetting = plugin.getSetting("user");
+  Setting passwordSetting = plugin.getSetting("password");
+  Setting databaseSetting = plugin.getSetting("database");
+
+  String url = urlSetting.getValue();
+  String user = userSetting.getValue();
+  String password = passwordSetting.getValue();
+
+  String schema = "";
+  if("PostgreSQL".equalsIgnoreCase(databaseSetting.getValue())){
+    
+    Setting schemaSetting = plugin.getSetting("schema");
+    schema = schemaSetting.getValue();
+    insertIdenReq = String.format(POSTGRES_INSERT_IDENTITY_REQUEST, schema);
+    insertIdenReqItem = String.format(POSTGRES_INSERT_IDEN_REQ_ITEM, schema);
+    countIdenReq = String.format(POSTGRES_COUNT_BY_ID, schema);
+    countIdenReqItem = String.format(POSTGRES_COUNT_ITEM_BY_ID, schema);
+    
+  } else if("Oracle".equalsIgnoreCase(databaseSetting.getValue())){
+    
+    schema = user;
+    insertIdenReq = String.format(ORACLE_INSERT_IDENTITY_REQUEST, schema);
+    insertIdenReqItem = String.format(ORACLE_INSERT_IDEN_REQ_ITEM, schema);
+    countIdenReq = String.format(ORACLE_COUNT_BY_ID, schema);
+    countIdenReqItem = String.format(ORACLE_COUNT_ITEM_BY_ID, schema);
+    
+  } else if("MySQL".equalsIgnoreCase(databaseSetting.getValue())){
+    
+    insertIdenReq = String.format(MYSQL_INSERT_IDENTITY_REQUEST, schema);
+    insertIdenReqItem = String.format(MYSQL_INSERT_IDEN_REQ_ITEM, schema);
+    countIdenReq = String.format(MYSQL_COUNT_BY_ID, schema);
+    countIdenReqItem = String.format(MYSQL_COUNT_ITEM_BY_ID, schema);
+    
+  }
+
+  log.error(url + user + password);
+
+  public Date parseDate(String dateStr) {
+    try {
+      SimpleDateFormat inputFormat = new SimpleDateFormat("M/d/yyyy h:m:s a z");
+      return inputFormat.parse(dateStr);
+    } catch (Exception e) {
+      log.error("Invalid Date: " + dateStr, e);
+      return null;
+    }
+  }
+
+  public String formatDate(Date date) {
+    SimpleDateFormat outputFormat = new SimpleDateFormat("EEEE, MMMM dd, yyyy h:mm:ss.SSS a");
+    return outputFormat.format(date);
+  }
+
+  String startDateStr = (String) config.get("startDate");
+  String endDateStr = (String) config.get("endDate");
+
+
+  Date startDate = parseDate(startDateStr);
+  Date endDate   = parseDate(endDateStr);
+
+  log.error("startDate ---- "+ startDate);
+  log.error("endDate ---- "+ endDate);
+
+  String boln = config.get("delete");
+
+  Connection conn = null;
+  PreparedStatement pstmtidenreq = null;
+  PreparedStatement pstmtidenreqitem = null;
+
+  log.error(insertIdenReq);
+  
+  Setting driverClassSetting = plugin.getSetting("driverClass");
+  String driverClassString = driverClassSetting.getValue();
+  Class clazz = Class.forName(driverClassString);
+  try {
+
+    conn = DriverManager.getConnection(url, user, password);
+    pstmtidenreq = conn.prepareStatement(insertIdenReq);
+    pstmtidenreqitem = conn.prepareStatement(insertIdenReqItem);
+
+    Timestamp archiveTimestamp = new Timestamp(System.currentTimeMillis());
+
+    Filter filter = Filter.and(Filter.ge("created", startDate),
+                               Filter.le("created", endDate),
+                               Filter.ne("executionStatus", "Executing"));
+    QueryOptions qps = new QueryOptions();
+    qps.addFilter(filter);
+
+    Iterator itr = context.search(IdentityRequest.class, qps);
+
+    while (itr != null && itr.hasNext()) {
+      IdentityRequest idenReq = (IdentityRequest) itr.next();
+
+      Identity identity = idenReq.getOwner();
+      String reqOwner = (identity != null) ? identity.getId() : null;
+      IdentityRequest.CompletionStatus idenReqComStatus =  idenReq.getCompletionStatus();
+      IdentityRequest.ExecutionStatus idenReqExStatus = idenReq.getExecutionStatus();
+      Object idenReqPriority = idenReq.getPriority();
+
+      Attributes attrs = idenReq.getAttributes();
+      XMLObjectFactory factory = XMLObjectFactory.getInstance();
+      String xml = factory.toXml(attrs, false);
+
+      // Check if parent already exists
+      String checkParentQuery = countIdenReq;
+      PreparedStatement pstmtCheckParent = conn.prepareStatement(checkParentQuery);
+      pstmtCheckParent.setString(1, idenReq.getId());
+      ResultSet rsParent = pstmtCheckParent.executeQuery();
+      boolean parentExists = false;
+      if (rsParent.next()) {
+        parentExists = rsParent.getInt(1) > 0;
+      }
+      rsParent.close();
+      pstmtCheckParent.close();
+
+      if (parentExists) {
+        log.error("Skipping insert for parent ID: " + idenReq.getId() + " (already exists).");
+      } else {
+        pstmtidenreq.setString(1, idenReq.getId());
+        // pstmtidenreq.setLong(2, idenReq.getCreated().getTime());
+        // pstmtidenreq.setLong(3, idenReq.getModified().getTime());
+        //  pstmtidenreq.setLong(4, idenReq.getSignificantModified().getTime());
+        Long reqTimeValue = idenReq.getCreated() != null ? idenReq.getCreated().getTime() : null;
+        pstmtidenreq.setObject(2, reqTimeValue);
+
+        Long reqModiTimeValue = idenReq.getModified() != null ? idenReq.getModified().getTime() : null;
+        pstmtidenreq.setObject(3, reqModiTimeValue);
+
+        Long reqSignTimeValue = null;
+        try{
+          Method method = idenReq.getClass().getMethod("getSignificantModified");
+          Date sig = (Date) method.invoke(idenReq);
+          if (sig != null) {
+            reqSignTimeValue = sig.getTime();
+          }
+        } catch (NoSuchMethodException e) {
+          log.info("Exception Handled: Optional method getSignificantModified() is not present on {}. " + "Proceeding without significant modification timestamp.", idenReq.getClass().getSimpleName());
+
+        } catch (InvocationTargetException e) {
+          log.error("Exception Handled: Execution of getSignificantModified() on {} failed. " + "Underlying method threw an exception.", idenReq.getClass().getSimpleName(), e.getMessage());
+
+        } catch (IllegalAccessException e) {
+          log.error("Exception Handled: Access to method getSignificantModified() on {} is restricted. " + "Unable to retrieve significant modification timestamp.", idenReq.getClass().getSimpleName(),e.getMessage());
+
+        } catch (Exception e) {
+          log.error("Exception Handled: Unexpected issue encountered while retrieving significant modification timestamp from {}.", idenReq.getClass().getSimpleName(), e.getMessage());
+        }
+        pstmtidenreq.setObject(4, reqSignTimeValue);
+
+        pstmtidenreq.setString(5, null);
+        pstmtidenreq.setString(6, idenReq.getAssignedScopePath() != null ? idenReq.getAssignedScopePath() : null);
+        pstmtidenreq.setString(7, idenReq.getName());
+        pstmtidenreq.setString(8, idenReq.getState());
+        pstmtidenreq.setString(9, idenReq.getType());
+        pstmtidenreq.setString(10, idenReq.getSource());
+        pstmtidenreq.setString(11, idenReq.getTargetId());
+        pstmtidenreq.setString(12, idenReq.getTargetDisplayName());
+        pstmtidenreq.setString(13, idenReq.getTargetClass());
+        pstmtidenreq.setString(14, idenReq.getRequesterDisplayName());
+        pstmtidenreq.setString(15, idenReq.getRequesterId());
+
+        if (idenReq.getEndDate() != null)
+          pstmtidenreq.setLong(16, idenReq.getEndDate().getTime());
+        else
+          pstmtidenreq.setNull(16, java.sql.Types.BIGINT);
+
+        if (idenReq.getVerified() != null)
+          pstmtidenreq.setLong(17, idenReq.getVerified().getTime());
+        else
+          pstmtidenreq.setNull(17, java.sql.Types.BIGINT);
+        pstmtidenreq.setString(18, idenReqPriority != null ? idenReqPriority.toString() : null);
+        pstmtidenreq.setString(19, idenReqComStatus != null ? idenReqComStatus.toString() : null);
+        pstmtidenreq.setString(20, idenReqExStatus != null ? idenReqExStatus.toString() : null);
+        pstmtidenreq.setBoolean(21, idenReq.getHasMessages());
+        pstmtidenreq.setString(22, idenReq.getExternalTicketId() != null ? idenReq.getExternalTicketId() : null);
+        pstmtidenreq.setString(23, xml);
+        pstmtidenreq.setString(24, idenReq.getAssignedScope() != null ? idenReq.getAssignedScope().toString() : null);
+        pstmtidenreq.setTimestamp(25, archiveTimestamp);
+
+        pstmtidenreq.executeUpdate();
+
+        log.error("Inserted parent ID: " + idenReq.getId());
+        countParent++;
+      }
+
+      // Process child items
+      List items = idenReq.getItems();
+      if (items != null) {
+        int idx = 0;
+        for (IdentityRequestItem item : items) {
+
+          WorkItem.State appState = item.getApprovalState();
+          ApprovalItem.ProvisioningState proState = item.getProvisioningState();
+          IdentityRequestItem.CompilationStatus itemComStatus = item.getCompilationStatus();
+          ExpansionItem.Cause itemExpanCause = item.getExpansionCause();
+
+
+          Attributes itemAttrs = item.getAttributes();
+          XMLObjectFactory factory = XMLObjectFactory.getInstance();
+          String itemXml = factory.toXml(itemAttrs, false);
+
+          // Check if child already exists
+          String checkChildQuery = countIdenReqItem;
+          PreparedStatement pstmtCheckChild = conn.prepareStatement(checkChildQuery);
+          pstmtCheckChild.setString(1, item.getId());
+          ResultSet rsChild = pstmtCheckChild.executeQuery();
+          boolean childExists = false;
+          if (rsChild.next()) {
+            childExists = rsChild.getInt(1) > 0;
+          }
+          rsChild.close();
+          pstmtCheckChild.close();
+
+          if (childExists) {
+            log.error("Skipping insert for child ID: " + item.getId() + " (already exists).");
+            continue;
+          }
+          pstmtidenreqitem.setString(1, item.getId());
+          // pstmtidenreqitem.setLong(2, item.getCreated().getTime());
+          // pstmtidenreqitem.setLong(3, item.getModified().getTime());
+          //  pstmtidenreqitem.setLong(4, item.getSignificantModified().getTime());
+
+          Long timeValue = item.getCreated() != null ? item.getCreated().getTime() : null;
+          pstmtidenreqitem.setObject(2, timeValue);
+
+          Long modifiedTimeValue = item.getModified() != null ? item.getModified().getTime() : null;
+          pstmtidenreqitem.setObject(3, modifiedTimeValue);
+
+          Long significantTimeValue = null;
+          try{
+            Method method = item.getClass().getMethod("getSignificantModified");
+            Date sig = (Date) method.invoke(item);
+            if (sig != null) {
+              significantTimeValue = sig.getTime();
+            }
+          } catch (NoSuchMethodException e) {
+            log.info("Exception Handled: Optional method getSignificantModified() is not present on {}. " + "Proceeding without significant modification timestamp.", item.getClass().getSimpleName());
+
+          } catch (InvocationTargetException e) {
+            log.error("Exception Handled: Execution of getSignificantModified() on {} failed. " + "Underlying method threw an exception.", item.getClass().getSimpleName(), e.getMessage());
+
+          } catch (IllegalAccessException e) {
+            log.error("Exception Handled: Access to method getSignificantModified() on {} is restricted. " + "Unable to retrieve significant modification timestamp.", item.getClass().getSimpleName(),e.getMessage());
+
+          } catch (Exception e) {
+            log.error("Exception Handled: Unexpected issue encountered while retrieving significant modification timestamp from {}.", item.getClass().getSimpleName(), e.getMessage());
+          }
+          pstmtidenreqitem.setObject(4, significantTimeValue);
+          pstmtidenreqitem.setString(5, reqOwner);
+          pstmtidenreqitem.setNull(6, java.sql.Types.BIGINT);
+          pstmtidenreqitem.setNull(7, java.sql.Types.BIGINT);
+          pstmtidenreqitem.setString(8, itemXml);
+          pstmtidenreqitem.setString(9, item.getName() != null ? item.getName() : null);
+          pstmtidenreqitem.setString(10, item.getValue() != null ? item.getValue() : null);
+          pstmtidenreqitem.setString(11, item.getAnnotation() != null ? item.getAnnotation() : null );
+          pstmtidenreqitem.setString(12, item.getDisplayName() != null ? item.getDisplayName() : null );
+          pstmtidenreqitem.setString(13, item.getNativeIdentity() != null ? item.getNativeIdentity() : null );
+          pstmtidenreqitem.setString(14, item.getInstance() != null ? item.getInstance() : null);
+          pstmtidenreqitem.setString(15, item.getApplication());
+          pstmtidenreqitem.setString(16, item.getOwnerName() != null ? item.getOwnerName() : null );
+          pstmtidenreqitem.setString(17, item.getApproverName() != null ? item.getApproverName() : null );
+          pstmtidenreqitem.setString(18, item.getOperation());
+
+          if (item.getRetries() != null)
+            pstmtidenreqitem.setInt(19, item.getRetries());
+          else
+            pstmtidenreqitem.setNull(19, java.sql.Types.INTEGER);
+
+          pstmtidenreqitem.setString(20, item.getProvisioningEngine() != null ? item.getProvisioningEngine() : null);
+          pstmtidenreqitem.setString(21, appState != null ? appState.toString() : null);
+          pstmtidenreqitem.setString(22, proState != null ? proState.toString() : null);
+          pstmtidenreqitem.setString(23, itemComStatus != null ? itemComStatus.toString() : null);
+          pstmtidenreqitem.setString(24, itemExpanCause != null ? itemExpanCause.toString() : null);
+          pstmtidenreqitem.setString(25, idenReq.getId());
+          pstmtidenreqitem.setInt(26, idx);
+          pstmtidenreqitem.setTimestamp(27, archiveTimestamp);
+          pstmtidenreqitem.executeUpdate();
+          log.error("Inserted child ID: " + item.getId());
+          idx++;
+          countChild++;
+        }
+      }
+    }
+
+    if ("true".equalsIgnoreCase(boln)) {
+      log.error("Delete flag true. Deleting original IdentityRequests...");
+      Terminator terminator = new Terminator(context);
+      for (IdentityRequest req : context.search(IdentityRequest.class, qps)) {
+        terminator.deleteObject(req);
+        log.error("Deleted request: " + req.getId());
+      }
+      context.commitTransaction();
+    }
+
+  } catch (Exception e) {
+    log.error("Error in IdentityRequest DB insert process", e);
+    log.error(e.getMessage());
+    context.rollbackTransaction();
+  } finally {
+    try {
+      if (pstmtidenreq != null) pstmtidenreq.close();
+      if (pstmtidenreqitem != null) pstmtidenreqitem.close();
+      if (conn != null) conn.close();
+    } catch (Exception ex) {
+      log.error("Error closing DB resources", ex);
+    }
+  }
+
+  log.error("Total parent inserted: " + countParent);
+  log.error("Total child inserted: " + countChild);
+
+
+  if (taskResult != null) {
+    taskResult.setAttribute("Total IdentityRequest Inserted", String.valueOf(countParent));
+    taskResult.setAttribute("Delete After Archive", boln);
+    taskResult.setAttribute("Start Date", String.valueOf(startDate));
+    taskResult.setAttribute("End Date", String.valueOf(endDate));
+
+  }
+
+  ]]></Source>
+</Rule>

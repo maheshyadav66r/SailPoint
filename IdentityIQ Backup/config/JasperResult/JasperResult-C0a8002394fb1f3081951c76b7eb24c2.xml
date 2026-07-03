@@ -1,0 +1,163 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE JasperResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<JasperResult handlerPageCount="-1" pageCount="-1" pagesPerBucket="-1">
+  <Attributes>
+    <Map>
+      <entry key="csvRowsPerBucket">
+        <value>
+          <Integer>1000</Integer>
+        </value>
+      </entry>
+      <entry key="header">
+        <value>
+          <LiveReportSummary title="Demo EventTriggersForIdentities">
+            <Values>
+              <LiveReportSummaryValue label="Creator" name="creator">
+                <Value>
+                  <String>spadmin</String>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="Creation Date" name="date">
+                <Value>
+                  <String>2/19/25, 9:58 AM</String>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="event" name="event">
+                <Value>
+                  <String>HR Source Joiner event</String>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="fromDate" name="fromDate">
+                <Value>
+                  <String>2/19/24</String>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="toDate" name="toDate">
+                <Value>
+                  <String>2/17/25</String>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="Department" name="department">
+                <Value>
+                  <String>Engineering</String>
+                </Value>
+              </LiveReportSummaryValue>
+            </Values>
+          </LiveReportSummary>
+        </value>
+      </entry>
+      <entry key="reportDefinition">
+        <value>
+          <LiveReport title="Demo EventTriggersForIdentities">
+            <DataSource objectType="sailpoint.object.AuditEvent" type="Filter">
+              <QueryParameters>
+                <Parameter argument="event">
+                  <QueryScript>
+                    <Source><![CDATA[
+                      import sailpoint.object.*;
+
+                      //log.error("event value--"+value);
+
+                      queryOptions.addFilter(Filter.eq("action",context.getObjectById(IdentityTrigger.class,value).getName()));
+                      queryOptions.addFilter(Filter.ge("created",arguments.get("fromDate")));
+                      queryOptions.addFilter(Filter.le("created",arguments.get("toDate")));
+
+                      if(arguments.get("department")!=null)
+                      {
+                      
+                      Filter filter1 = Filter.eq("department",arguments.get("department"));
+                      QueryOptions qo = new QueryOptions();
+                      qo.add(filter1);
+                      Iterator itr = context.search(Identity.class,qo,"name");
+                      List idList = new ArrayList();
+                      while(itr.hasNext())
+                      {
+                      
+                      idList.add(itr.next()[0]);
+                      
+                      }
+                      queryOptions.addFilter(Filter.in("target",idList));
+                      
+                      log.error("idList==="+idList);
+                      }
+
+                     // log.error(" queryOptions==="+queryOptions);
+                      return queryOptions;
+                    ]]></Source>
+                  </QueryScript>
+                </Parameter>
+              </QueryParameters>
+            </DataSource>
+            <ReportForm>
+              <Reference class="sailpoint.object.Form" name="Report Form Skeleton"/>
+            </ReportForm>
+            <Columns>
+              <ReportColumnConfig field="identity" header="IdentityName" property="target" width="183"/>
+              <ReportColumnConfig field="application" header="Application" property="application" width="183"/>
+              <ReportColumnConfig field="department" header="Department" property="target" width="183">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.*;
+                    import sailpoint.api.*;
+
+                    Identity identity=context.getObjectByName(Identity.class,value);
+
+                    if(identity!=null)
+
+                    log.error("--department in identity--"+identity.getAttribute("department"));
+                    return identity.getAttribute("department");
+                    return "";
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="attribute" header="GroupAttribute" property="attributeName" width="183"/>
+            </Columns>
+            <ReportHeader title="Demo EventTriggersForIdentities">
+              <Values>
+                <LiveReportSummaryValue label="Creator" name="creator">
+                  <Value>
+                    <String>spadmin</String>
+                  </Value>
+                </LiveReportSummaryValue>
+                <LiveReportSummaryValue label="Creation Date" name="date">
+                  <Value>
+                    <String>2/19/25, 9:58 AM</String>
+                  </Value>
+                </LiveReportSummaryValue>
+                <LiveReportSummaryValue label="event" name="event">
+                  <Value>
+                    <String>HR Source Joiner event</String>
+                  </Value>
+                </LiveReportSummaryValue>
+                <LiveReportSummaryValue label="fromDate" name="fromDate">
+                  <Value>
+                    <String>2/19/24</String>
+                  </Value>
+                </LiveReportSummaryValue>
+                <LiveReportSummaryValue label="toDate" name="toDate">
+                  <Value>
+                    <String>2/17/25</String>
+                  </Value>
+                </LiveReportSummaryValue>
+                <LiveReportSummaryValue label="Department" name="department">
+                  <Value>
+                    <String>Engineering</String>
+                  </Value>
+                </LiveReportSummaryValue>
+              </Values>
+            </ReportHeader>
+          </LiveReport>
+        </value>
+      </entry>
+      <entry key="reportRowCount">
+        <value>
+          <Integer>44</Integer>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Files>
+    <Reference class="sailpoint.object.PersistedFile" name="AV10.pdf"/>
+    <Reference class="sailpoint.object.PersistedFile" name="AV10.csv"/>
+  </Files>
+</JasperResult>

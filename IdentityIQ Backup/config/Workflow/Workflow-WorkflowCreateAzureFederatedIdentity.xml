@@ -1,0 +1,195 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow name="Workflow Create Azure Federated Identity">
+  <Variable initializer="true" name="transient"/>
+  <Variable name="selectedIdentityId"/>
+  <Variable name="identityName"/>
+  <Variable initializer="String:true" name="trace"/>
+  <Variable name="project"/>
+  <Variable name="plan"/>
+  <Step name="Start">
+    <Transition to="selectIdentity"/>
+  </Step>
+  <Step name="selectIdentity">
+    <Approval mode="serial" owner="ref:launcher" return="selectedIdentityId" send="selectedIdentityId,launcher">
+      <Arg name="workItemType" value="Form"/>
+      <Form>
+        <Section label="Select the identity">
+          <Field displayName="Select or Enter an Identity" filterString="workgroup == false" name="selectedIdentityId" type="Identity"/>
+        </Section>
+        <Button action="next" label="OK"/>
+        <Button action="cancel" label="Cancel"/>
+      </Form>
+    </Approval>
+    <Transition to="CreateADProvisioningPlan"/>
+  </Step>
+  <Step name="CreateADProvisioningPlan" resultVariable="plan">
+    <Description>
+      This step creates the provisioning plan. The attributes are computed from the provisioning policy. 
+    </Description>
+    <Script>
+      <Source><![CDATA[
+
+        import sailpoint.object.*;
+        import sailpoint.api.*;
+        import sailpoint.object.ProvisioningPlan.AttributeRequest;
+        import sailpoint.object.ProvisioningPlan.AccountRequest;
+        import sailpoint.object.ProvisioningPlan.Operation;
+        import sailpoint.tools.Util;
+        import sailpoint.tools.GeneralException;
+        import sailpoint.object.Filter;
+
+        Filter filter=Filter.or(Filter.eq("name",selectedIdentityId),Filter.eq("id",selectedIdentityId));
+        
+        Identity identity = context.getUniqueObject(Identity.class, filter);
+        identityName = identity.getName();
+
+        ProvisioningPlan plan = new ProvisioningPlan();
+        plan.setIdentity(identity);
+        AccountRequest acctReq = new AccountRequest(AccountRequest.Operation.Create, "ActiveDirectory", null, null);
+        plan.add(acctReq);
+
+        log.error(" plan variable in CreateADProvisioningPlan step...."+plan.toXml());
+        return plan;
+
+      ]]></Source>
+    </Script>
+    <Transition to="Compile AD Project"/>
+  </Step>
+  <Step action="compileProvisioningProject" name="Compile AD Project" resultVariable="project">
+    <Arg name="identityName" value="ref:identityName"/>
+    <Arg name="plan" value="ref:plan"/>
+    <Arg name="requester" value="spadmin"/>
+    <Arg name="source" value="LCM"/>
+    <Arg name="optimisticProvisioning" value="false"/>
+    <Arg name="requireCreateTemplates" value="false"/>
+    <Arg name="noApplicationTemplates" value="ref:noApplicationTemplates"/>
+    <Transition to="Provision to AD"/>
+  </Step>
+  <Step action="call:provisionProject" name="Provision to AD">
+    <Arg name="project" value="ref:project"/>
+    <Arg name="background" value="false"/>
+    <Transition to="CreateAzureProvisioningPlan"/>
+  </Step>
+  <Step name="CreateAzureProvisioningPlan" resultVariable="plan">
+    <Description>
+      This step creates the provisioning plan and also computes the immutableID. The other attributes are computed from the provisioning policy. 
+    </Description>
+    <Script>
+      <Source><![CDATA[
+
+
+
+        import sailpoint.object.*;
+        import sailpoint.api.*;
+        import sailpoint.object.ProvisioningPlan.AttributeRequest;
+        import sailpoint.object.ProvisioningPlan.AccountRequest;
+        import sailpoint.object.ProvisioningPlan.Operation;
+        import sailpoint.tools.Util;
+        import sailpoint.tools.GeneralException;
+        import java.io.UnsupportedEncodingException;
+        import java.nio.ByteBuffer;
+        import java.util.UUID;
+        import org.apache.commons.codec.DecoderException;
+        import org.apache.commons.codec.binary.Base64;
+        import org.apache.commons.codec.binary.Hex;
+        import sailpoint.object.Link;
+        import sailpoint.object.Attributes;
+
+
+        // Convert the hex string to Base64
+        public String getImmutableID(String objectGUID) throws UnsupportedEncodingException{
+        String immutableID = "";
+
+        if(objectGUID.startsWith("{") && objectGUID.endsWith("}")){
+        immutableID = objectGUID.replace("{", "").replace("}", "");
+        }
+        UUID uuidObject = UUID.fromString(immutableID.trim());
+        byte[] base64EncByte=Base64.encodeBase64(UuidToGuidByteArray(uuidObject));
+        immutableID = new String(base64EncByte,"UTF-8");
+
+        return immutableID;
+        }
+
+
+        // Convert the bindable string that is obtained from AD to the hex string that can
+        // be used to convert to Base64
+        public byte[] UuidToGuidByteArray(UUID uuid)
+        {
+        ByteBuffer bytebuffObj = ByteBuffer.wrap(new byte[16]);
+        bytebuffObj.putLong(uuid.getMostSignificantBits());
+        bytebuffObj.putLong(uuid.getLeastSignificantBits());
+
+
+        byte[] guidFormatObj = bytebuffObj.array();
+        byte swap;
+
+
+        swap = guidFormatObj[0];
+        guidFormatObj[0] = guidFormatObj[3];
+        guidFormatObj[3] = swap;
+        swap = guidFormatObj[1];
+        guidFormatObj[1] = guidFormatObj[2];
+        guidFormatObj[2] = swap;
+        swap = guidFormatObj[4];
+        guidFormatObj[4] = guidFormatObj[5];
+        guidFormatObj[5] = swap;
+        swap = guidFormatObj[6];
+        guidFormatObj[6] = guidFormatObj[7];
+        guidFormatObj[7] = swap;
+
+
+        return guidFormatObj;
+        }
+
+
+        Filter filter=Filter.or(Filter.eq("name",selectedIdentityId),Filter.eq("id",selectedIdentityId));
+        Identity identity = context.getUniqueObject(Identity.class, filter);
+
+
+        List linkList = identity.getLinks();
+        Link acmeADlink = null;
+        for (int i=0; i<linkList.size();i++){
+        acmeADlink = (Link)linkList.get(i);
+        if (acmeADlink.getApplicationName().trim().equalsIgnoreCase("ActiveDirectory")){
+        break; 
+        }
+        }
+
+        String objectguid = acmeADlink.getAttributes().getString("objectguid");
+        String immutableID = getImmutableID(objectguid);
+
+        identityName = identity.getName();
+
+        ProvisioningPlan plan = new ProvisioningPlan();
+        plan.setIdentity(identity);
+        AccountRequest acctReq = new AccountRequest(AccountRequest.Operation.Create, "Azure Active Directory", null, null);
+        AttributeRequest attributeRequest = new AttributeRequest("immutableId",ProvisioningPlan.Operation.Add,immutableID);
+        acctReq.add(attributeRequest);
+        plan.add(acctReq);
+        
+        log.error(" plan variable in CreateAzureProvisioningPlan step...."+plan.toXml());
+
+        return plan;
+
+      ]]></Source>
+    </Script>
+    <Transition to="Compile Azure Project"/>
+  </Step>
+  <Step action="compileProvisioningProject" name="Compile Azure Project" resultVariable="project">
+    <Arg name="identityName" value="ref:identityName"/>
+    <Arg name="plan" value="ref:plan"/>
+    <Arg name="requester" value="spadmin"/>
+    <Arg name="source" value="LCM"/>
+    <Arg name="optimisticProvisioning" value="false"/>
+    <Arg name="requireCreateTemplates" value="false"/>
+    <Arg name="noApplicationTemplates" value="ref:noApplicationTemplates"/>
+    <Transition to="ProvisionAzure"/>
+  </Step>
+  <Step action="call:provisionProject" name="ProvisionAzure">
+    <Arg name="project" value="ref:project"/>
+    <Arg name="background" value="false"/>
+    <Transition to="end"/>
+  </Step>
+  <Step name="end"/>
+</Workflow>

@@ -1,0 +1,126 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE JasperResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<JasperResult handlerPageCount="-1" pageCount="-1" pagesPerBucket="-1">
+  <Attributes>
+    <Map>
+      <entry key="csvRowsPerBucket">
+        <value>
+          <Integer>1000</Integer>
+        </value>
+      </entry>
+      <entry key="header">
+        <value>
+          <LiveReportSummary title="Demo EventTriggersForIdentities">
+            <Values>
+              <LiveReportSummaryValue label="Creator" name="creator">
+                <Value>
+                  <String>spadmin</String>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="Creation Date" name="date">
+                <Value>
+                  <String>4/15/25, 2:03 PM</String>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="fromDate" name="fromDate">
+                <Value>
+                  <String>4/14/25</String>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="toDate" name="toDate">
+                <Value>
+                  <String>4/23/25</String>
+                </Value>
+              </LiveReportSummaryValue>
+            </Values>
+          </LiveReportSummary>
+        </value>
+      </entry>
+      <entry key="reportDefinition">
+        <value>
+          <LiveReport title="Demo EventTriggersForIdentities">
+            <DataSource objectType="sailpoint.object.AuditEvent" type="Filter">
+              <QueryParameters>
+                <Parameter argument="fromDate">
+                  <QueryScript>
+                    <Source><![CDATA[
+                      import sailpoint.object.*;
+
+
+                      log.error("event value--"+value);
+
+
+                      queryOptions.addFilter(Filter.eq("action","Password Expiration Notification"));
+                      queryOptions.addFilter(Filter.ge("created",arguments.get("fromDate")));
+                      queryOptions.addFilter(Filter.le("created",arguments.get("toDate")));
+
+
+                      return queryOptions;
+                    ]]></Source>
+                  </QueryScript>
+                </Parameter>
+              </QueryParameters>
+            </DataSource>
+            <ReportForm>
+              <Reference class="sailpoint.object.Form" name="Report Form Skeleton"/>
+            </ReportForm>
+            <Columns>
+              <ReportColumnConfig field="userName" header="UserName" property="target" width="146">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.*;
+                    import sailpoint.api.*;
+                    log.error("---type  "+value);
+
+                    Identity identity=context.getObjectByName(Identity.class,value);
+
+                    if(identity.getType()!=null @and identity.getType().equalsIgnoreCase("employee"))
+                    return identity.getDisplayName();
+                    
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="email" header="Email" property="attributeValue" width="146"/>
+              <ReportColumnConfig field="notificationDate" header="NotificationDate" property="created" width="146"/>
+              <ReportColumnConfig field="expiryDate" header="ExpiryDate" property="attributes.Expires On" width="146"/>
+              <ReportColumnConfig field="interval" header="Interval" property="attributes.Interval" width="146"/>
+            </Columns>
+            <ReportHeader title="Demo EventTriggersForIdentities">
+              <Values>
+                <LiveReportSummaryValue label="Creator" name="creator">
+                  <Value>
+                    <String>spadmin</String>
+                  </Value>
+                </LiveReportSummaryValue>
+                <LiveReportSummaryValue label="Creation Date" name="date">
+                  <Value>
+                    <String>4/15/25, 2:03 PM</String>
+                  </Value>
+                </LiveReportSummaryValue>
+                <LiveReportSummaryValue label="fromDate" name="fromDate">
+                  <Value>
+                    <String>4/14/25</String>
+                  </Value>
+                </LiveReportSummaryValue>
+                <LiveReportSummaryValue label="toDate" name="toDate">
+                  <Value>
+                    <String>4/23/25</String>
+                  </Value>
+                </LiveReportSummaryValue>
+              </Values>
+            </ReportHeader>
+          </LiveReport>
+        </value>
+      </entry>
+      <entry key="reportRowCount">
+        <value>
+          <Integer>4</Integer>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Files>
+    <Reference class="sailpoint.object.PersistedFile" name="PasswordExp.pdf"/>
+    <Reference class="sailpoint.object.PersistedFile" name="PasswordExp.csv"/>
+  </Files>
+</JasperResult>

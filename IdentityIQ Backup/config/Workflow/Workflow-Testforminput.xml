@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow explicitTransitions="true" name="TestFormInput">
+  <Step icon="Start" name="Start" posX="31" posY="76">
+    <Transition to="GatherInput"/>
+  </Step>
+  <Step icon="Default" name="GatherInput" posX="676" posY="102">
+    <Approval name="IdentityData" owner="$(launcher)" return="identityData" send="">
+      <Form name="IdentityData">
+        <Attributes>
+          <Map>
+            <entry key="pageTitle" value="IdentityData"/>
+          </Map>
+        </Attributes>
+        <Section label="InputSection" name="InputSection">
+          <Field displayName="IdentityData" name="identityData" type="sailpoint.object.Identity"/>
+        </Section>
+      </Form>
+    </Approval>
+    <Transition to="Stop"/>
+  </Step>
+  <Step icon="Stop" name="Stop" posX="973" posY="75"/>
+</Workflow>

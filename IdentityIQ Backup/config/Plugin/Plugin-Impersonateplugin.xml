@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Plugin PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Plugin certificationLevel="None" displayName="Impersonate" installDate="1715078382960" minSystemVersion="7.3" name="impersonateplugin" rightRequired="" version="0.5.4.4">
+  <Attributes>
+    <Map>
+      <entry key="fullPage">
+        <value>
+          <FullPage title="Impersonate Plugin Settings"/>
+        </value>
+      </entry>
+      <entry key="minUpgradableVersion" value="0.5.0.0"/>
+      <entry key="restResources">
+        <value>
+          <List>
+            <String>sailpoint.plugin.impersonateplugin.rest.ImpersonateResource</String>
+          </List>
+        </value>
+      </entry>
+      <entry key="settings">
+        <value>
+          <List>
+            <Setting dataType="boolean" defaultValue="false" helpText="Reset the original account id when switching users. This is to support electronic signatures." label="Reset Original Account Id" name="resetOriginalAccountId"/>
+          </List>
+        </value>
+      </entry>
+      <entry key="snippets">
+        <value>
+          <List>
+            <Snippet regexPattern=".*" rightRequired="">
+              <Scripts>
+                <String>ui/js/headerInject.js</String>
+              </Scripts>
+              <StyleSheets>
+                <String>ui/css/plugin.css</String>
+              </StyleSheets>
+            </Snippet>
+            <Snippet regexPattern=".*/systemSetup/index\..*" rightRequired="ImpersonatePluginConfigurationRight">
+              <Scripts>
+                <String>ui/js/headerInjectGlobalSettings.js</String>
+              </Scripts>
+            </Snippet>
+          </List>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <File>
+    <Reference class="sailpoint.object.PersistedFile" name="impersonateplugin.0.5.4.4.zip"/>
+  </File>
+</Plugin>

@@ -1,0 +1,310 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1777031169609" completionStatus="Error" launched="1777031153748" launcher="spadmin" name="Update Identity Adam Harvey AccessRequest - 2" targetClass="Identity" targetName="Adam Harvey" type="LCM">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000001082"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Adam Harvey">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000001082"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <Filtered>
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Adam Harvey,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+                <Attributes>
+                  <Map>
+                    <entry key="logged" value="true"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="memberOf" op="Add">
+                  <Attributes>
+                    <Map>
+                      <entry key="reason">
+                        <value>
+                          <FilterReason>Exists</FilterReason>
+                        </value>
+                      </entry>
+                    </Map>
+                  </Attributes>
+                  <Value>
+                    <List>
+                      <String>CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                    </List>
+                  </Value>
+                </AttributeRequest>
+                <AttributeRequest name="memberOf" op="Add">
+                  <Attributes>
+                    <Map>
+                      <entry key="reason">
+                        <value>
+                          <FilterReason>Exists</FilterReason>
+                        </value>
+                      </entry>
+                    </Map>
+                  </Attributes>
+                  <Value>
+                    <List>
+                      <String>CN=AuditMgmt,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                    </List>
+                  </Value>
+                </AttributeRequest>
+                <AttributeRequest name="memberOf" op="Add">
+                  <Attributes>
+                    <Map>
+                      <entry key="reason">
+                        <value>
+                          <FilterReason>Exists</FilterReason>
+                        </value>
+                      </entry>
+                    </Map>
+                  </Attributes>
+                  <Value>
+                    <List>
+                      <String>CN=ENG_EastCoast,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                      <String>CN=ENG_All,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                    </List>
+                  </Value>
+                </AttributeRequest>
+              </AccountRequest>
+            </Filtered>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="IIQ" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800fb94691e9b8194ac0f8e9c397f"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="RoleAdd"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="assignedRoles" op="Add" value="ad_business_role"/>
+                </AccountRequest>
+                <AccountRequest application="IIQ" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a81d89907c11f58190819da77003ab"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="RoleAdd"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="assignedRoles" op="Add" value="EngineeringBranch"/>
+                </AccountRequest>
+                <AccountRequest application="IIQ" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a81d89912c1c5a819144f9ffd21525"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="RoleAdd"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="assignedRoles" op="Add" value="BusinessRoleHTask"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000001082"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <ProvisioningTargets>
+                  <ProvisioningTarget role="ad_business_role">
+                    <AccountSelection applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" doCreate="true"/>
+                    <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=Adam Harvey,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                      <AccountInfo displayName="Adam Harvey" nativeIdentity="CN=Adam Harvey,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+                    </AccountSelection>
+                    <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ADX" doCreate="true"/>
+                  </ProvisioningTarget>
+                  <ProvisioningTarget role="EngineeringBranch">
+                    <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=Adam Harvey,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                      <AccountInfo displayName="Adam Harvey" nativeIdentity="CN=Adam Harvey,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+                    </AccountSelection>
+                    <AccountSelection applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" doCreate="true"/>
+                  </ProvisioningTarget>
+                  <ProvisioningTarget role="BusinessRoleHTask"/>
+                </ProvisioningTargets>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan targetIntegration="IIQ" trackingId="f74af4731fbe41ed9e9034f5bd963726">
+              <AccountRequest application="IIQ" op="Modify" targetIntegration="IIQ">
+                <Attributes>
+                  <Map>
+                    <entry key="attachmentConfigList"/>
+                    <entry key="attachments"/>
+                    <entry key="flow" value="AccessRequest"/>
+                    <entry key="id" value="c0a81d89912c1c5a819144f9ffd21525"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="operation" value="RoleAdd"/>
+                    <entry key="provisioningTransactionId" value="c0a801289dbd1d3c819dbf4fc1e326be"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="assignedRoles" op="Add" value="ad_business_role"/>
+                <AttributeRequest name="assignedRoles" op="Add" value="EngineeringBranch"/>
+                <AttributeRequest name="assignedRoles" op="Add" value="BusinessRoleHTask"/>
+                <AttributeRequest name="Capabilities" op="Add">
+                  <Value>
+                    <List>
+                      <String>Auditor</String>
+                      <String>SyslogAdministrator</String>
+                    </List>
+                  </Value>
+                </AttributeRequest>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000001082"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+            <ProvisioningPlan nativeIdentity="Adam Harvey" targetIntegration="LDAPApplication" trackingId="9a0b9f2f20b442888e529892049be908">
+              <AccountRequest application="LDAPApplication" assignmentIds="6cfce4b49a8a486c8bb5dd9f44c5050e,655fa4aa27ac44f28e87f1af39615b2f" nativeIdentity="cn=Adam.Harvey,ou=People,dc=my-domain,dc=com" op="Create" targetIntegration="LDAPApplication">
+                <Attributes>
+                  <Map>
+                    <entry key="provisioningTransactionId" value="c0a801289dbd1d3c819dbf4f96de26b7"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="groups" op="Add">
+                  <ProvisioningResult status="committed"/>
+                  <Value>
+                    <List>
+                      <String>cn=WebApplicationAccess,ou=Group,dc=my-domain,dc=com</String>
+                      <String>cn=Contractors,ou=Group,dc=my-domain,dc=com</String>
+                      <String>cn=Managers,ou=Group,dc=my-domain,dc=com</String>
+                      <String>cn=Employees,ou=Group,dc=my-domain,dc=com</String>
+                    </List>
+                  </Value>
+                </AttributeRequest>
+                <AttributeRequest name="password" op="Set">
+                  <Attributes>
+                    <Map>
+                      <entry key="secret" value="true"/>
+                    </Map>
+                  </Attributes>
+                </AttributeRequest>
+                <AttributeRequest name="sn" op="Set" value="Harvey"/>
+                <AttributeRequest name="mail" op="Set" value="adam.harvey@eshiam.com"/>
+                <ProvisioningResult status="committed"/>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000001082"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+              <ProvisioningResult status="committed"/>
+            </ProvisioningPlan>
+            <ProvisioningPlan nativeIdentity="Adam Harvey" targetIntegration="ADX" trackingId="f5fdbd9ef6b84b45ba0e9272f9be0347">
+              <AccountRequest application="ADX" assignmentIds="6cfce4b49a8a486c8bb5dd9f44c5050e" nativeIdentity="CN=Adam Harvey,OU=XPeople,OU=Demo,DC=Eshiam,DC=com" op="Create" targetIntegration="ADX">
+                <Attributes>
+                  <Map>
+                    <entry key="provisioningTransactionId" value="c0a801289dbd1d3c819dbf4fc16826bc"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="memberOf" op="Add">
+                  <ProvisioningResult status="failed"/>
+                  <Value>
+                    <List>
+                      <String>CN=Compensation,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                      <String>CN=DBAs,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                      <String>CN=XG06,OU=XGroups,OU=Demo,DC=Eshiam,DC=com</String>
+                    </List>
+                  </Value>
+                </AttributeRequest>
+                <AttributeRequest name="sAMAccountName" op="Set" value="XAdam Harvey"/>
+                <AttributeRequest name="givenName" op="Set" value="Adam"/>
+                <AttributeRequest name="sn" op="Set" value="Harvey"/>
+                <AttributeRequest name="mail" op="Set" value="adam.harvey@eshiam.com"/>
+                <AttributeRequest name="password" op="Set"/>
+                <ProvisioningResult status="committed">
+                  <Errors>
+                    <Message key="Account created but some attributes are not updated properly." type="Error"/>
+                  </Errors>
+                  <Warnings>
+                    <Message key="Failed while connecting to group CN=XG06,OU=XGroups,OU=Demo,DC=Eshiam,DC=com. Failed to connect to the server for CN=XG06,OU=XGroups,OU=Demo,DC=Eshiam,DC=com:There is no such object on the server. There is no such object on the server. 0000208D: NameErr: DSID-03100238, problem 2001 (NO_OBJECT), data 0, best match of: &#9;'OU=XGroups,OU=Demo,DC=Eshiam,DC=com' 0000208D: NameErr: DSID-03100238, problem 2001 (NO_OBJECT), data 0, best match of: &#9;'OU=XGroups,OU=Demo,DC=Eshiam,DC=com' . HRESULT:[0x80072030]Failed to connect to the server for CN=XG06,OU=XGroups,OU=Demo,DC=Eshiam,DC=com:There is no such object on the server. There is no such object on the server. 0000208D: NameErr: DSID-03100238, problem 2001 (NO_OBJECT), data 0, best match of: &#9;'OU=XGroups,OU=Demo,DC=Eshiam,DC=com' 0000208D: NameErr: DSID-03100238, problem 2001 (NO_OBJECT), data 0, best match of: &#9;'OU=XGroups,OU=Demo,DC=Eshiam,DC=com' . HRESULT:[0x80072030]" type="Warn"/>
+                  </Warnings>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000001082"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+            <ProvisioningTarget role="ad_business_role">
+              <AccountSelection applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" doCreate="true"/>
+              <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=Adam Harvey,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="Adam Harvey" nativeIdentity="CN=Adam Harvey,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+              <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ADX" doCreate="true"/>
+            </ProvisioningTarget>
+            <ProvisioningTarget role="EngineeringBranch">
+              <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=Adam Harvey,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="Adam Harvey" nativeIdentity="CN=Adam Harvey,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+              <AccountSelection applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" doCreate="true"/>
+            </ProvisioningTarget>
+            <ProvisioningTarget role="BusinessRoleHTask"/>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a801289dbd1d3c819dbf4f8b28268a"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="end"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="Failed while connecting to group CN=XG06,OU=XGroups,OU=Demo,DC=Eshiam,DC=com. Failed to connect to the server for CN=XG06,OU=XGroups,OU=Demo,DC=Eshiam,DC=com:There is no such object on the server. There is no such object on the server. 0000208D: NameErr: DSID-03100238, problem 2001 (NO_OBJECT), data 0, best match of: &#9;'OU=XGroups,OU=Demo,DC=Eshiam,DC=com' 0000208D: NameErr: DSID-03100238, problem 2001 (NO_OBJECT), data 0, best match of: &#9;'OU=XGroups,OU=Demo,DC=Eshiam,DC=com' . HRESULT:[0x80072030]Failed to connect to the server for CN=XG06,OU=XGroups,OU=Demo,DC=Eshiam,DC=com:There is no such object on the server. There is no such object on the server. 0000208D: NameErr: DSID-03100238, problem 2001 (NO_OBJECT), data 0, best match of: &#9;'OU=XGroups,OU=Demo,DC=Eshiam,DC=com' 0000208D: NameErr: DSID-03100238, problem 2001 (NO_OBJECT), data 0, best match of: &#9;'OU=XGroups,OU=Demo,DC=Eshiam,DC=com' . HRESULT:[0x80072030]" type="Warn"/>
+    <Message key="Account created but some attributes are not updated properly." type="Error"/>
+  </Messages>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

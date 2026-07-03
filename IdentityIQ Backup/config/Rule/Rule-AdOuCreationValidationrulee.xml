@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="AD OU Creation ValidationRulee" type="Validation">
+  <Source><![CDATA[
+  import javax.naming.*;
+  import javax.naming.directory.*;
+  import sailpoint.object.*;
+
+  String url = "ldap://"+"192.168.164.129"+":389";
+  String initialContext = "com.sun.jndi.ldap.LdapCtxFactory";
+  String user = "ESHIAM\\Administrator";
+  String adminPwd = context.decrypt("1:ACP:xaE0/rMtic/nqwKKdgQHg2V5a63pKC2mcMizzDBbFKg=");
+  String ouName = "IIQUsers";
+
+
+
+  // 1. Set up connection environment using Hashtable 
+  Hashtable env = new Hashtable();
+  env.put(Context.INITIAL_CONTEXT_FACTORY, initialContext);
+  env.put(Context.PROVIDER_URL, url);
+  env.put(Context.SECURITY_AUTHENTICATION, "simple");
+  env.put(Context.SECURITY_PRINCIPAL, user); 
+  env.put(Context.SECURITY_CREDENTIALS, adminPwd);
+
+  DirContext dirContext = null;
+
+  try {
+    // 2. Initialize context with the Hashtable
+    dirContext = new InitialDirContext(env);
+
+    // 3. Define attributes for the new OU. Set the specific OU name 
+    javax.naming.directory.Attributes ldapAttrs = new javax.naming.directory.BasicAttributes(true);
+    ldapAttrs.put(objClass);
+    ldapAttrs.put("OU", ouName);      
+
+    //Tell AD what type of object to create
+    javax.naming.directory.Attribute objClass = new javax.naming.directory.BasicAttribute("objectClass");
+    objClass.add("top");
+    objClass.add("organizationalUnit");
+
+    // 4. Specify the full Distinguished Name (DN)
+    String newOuDn ="OU=" + ouName + ",OU=People,OU=Demo,DC=Eshiam,DC=com";
+
+    // 5. Create the subcontext (the actual OU creation)
+    dirContext.createSubcontext(newOuDn, ldapAttrs);
+
+  } catch (Exception e) {
+    if (log != null) 
+      log.error("Failed to create OU: " + e.getMessage());
+    throw e;
+  } finally {
+    // 6. Always close the context to prevent resource leaks
+    if (dirContext != null) {
+      try {
+        dirContext.close();
+      } catch (Exception ignore) {}
+    }
+  }
+
+  return "mmmmm";
+
+  ]]></Source>
+</Rule>

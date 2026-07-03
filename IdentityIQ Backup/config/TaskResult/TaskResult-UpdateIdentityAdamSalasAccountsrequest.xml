@@ -1,0 +1,111 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1744807341085" completionStatus="Error" launched="1744807337888" launcher="spadmin" name="Update Identity Adam Salas AccountsRequest" targetClass="Identity" targetName="Adam Salas" type="LCM">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000634"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Adam Salas">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000634"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="ActiTimeApplication" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="flow" value="AccountsRequest"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="Create"/>
+                    </Map>
+                  </Attributes>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000634"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Adam Salas" targetIntegration="ActiTimeApplication" trackingId="127bfaa78c3c4ff1b1c2dabbfaa126cd">
+              <AccountRequest application="ActiTimeApplication" op="Create">
+                <Attributes>
+                  <Map>
+                    <entry key="flow" value="AccountsRequest"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="operation" value="Create"/>
+                    <entry key="provisioningTransactionId" value="c0a8000a961b152a81963e9f29e92c9a"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="username" op="Set" value="Adam Salas"/>
+                <AttributeRequest name="fullName" op="Set" value="Adam Salas"/>
+                <AttributeRequest name="firstName" op="Set" value="Adam"/>
+                <AttributeRequest name="lastName" op="Set" value="Salas"/>
+                <AttributeRequest name="email" op="Set" value="adam.salas@example.com"/>
+                <AttributeRequest name="password" op="Set"/>
+                <AttributeRequest name="active" op="Set">
+                  <Value>
+                    <Boolean>true</Boolean>
+                  </Value>
+                </AttributeRequest>
+                <ProvisioningResult status="failed">
+                  <Errors>
+                    <Message key="Exception occurred while performing 'Create' operation on identity 'null':  Error: BeanShell script error: bsh.EvalError: Sourced file: inline evaluation of: ``log.error(&quot;  processedResponseObject--&quot;+processedResponseObject.toXml());    log . . . '' : Error in method invocation: Method toXml() not found in class'java.util.ArrayList' : at Line: 1 : in file: inline evaluation of: ``log.error(&quot;  processedResponseObject--&quot;+processedResponseObject.toXml());    log . . . '' : processedResponseObject .toXml ( ) &#10; BSF info: CreateAccount AfterRule at line: 0 column: columnNo" type="Error"/>
+                  </Errors>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000634"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+              <ProvisioningResult status="failed"/>
+            </ProvisioningPlan>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a8000a961b152a81963e9f210d2c7e"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="end"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="Exception occurred while performing 'Create' operation on identity 'null':  Error: BeanShell script error: bsh.EvalError: Sourced file: inline evaluation of: ``log.error(&quot;  processedResponseObject--&quot;+processedResponseObject.toXml());    log . . . '' : Error in method invocation: Method toXml() not found in class'java.util.ArrayList' : at Line: 1 : in file: inline evaluation of: ``log.error(&quot;  processedResponseObject--&quot;+processedResponseObject.toXml());    log . . . '' : processedResponseObject .toXml ( ) &#10; BSF info: CreateAccount AfterRule at line: 0 column: columnNo" type="Error"/>
+  </Messages>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

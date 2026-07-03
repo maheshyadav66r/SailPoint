@@ -1,0 +1,1021 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Rule_VSNT_Workflow_FormValidation_RuleLibrary" type="Validation">
+  <Description>This rule is used to validate the Field values on a provisioning plan.</Description>
+  <ReferencedRules>
+    <Reference class="sailpoint.object.Rule" name="Rule_VSNT_Workflow_RuleLibrary"/>
+  </ReferencedRules>
+  <Signature returnType="Object">
+    <Inputs>
+      <Argument name="log">
+        <Description>
+          The log object associated with the SailPointContext.
+        </Description>
+      </Argument>
+      <Argument name="context">
+        <Description>
+          A sailpoint.api.SailPointContext object that can be used to query the database if necessary.
+        </Description>
+      </Argument>
+      <Argument name="identity">
+        <Description>
+          The Identity object being provisioned.
+        </Description>
+      </Argument>
+      <Argument name="app">
+        <Description>
+          The Application object being processed.
+        </Description>
+      </Argument>
+      <Argument name="form">
+        <Description>
+          The Form object being processed.
+        </Description>
+      </Argument>
+      <Argument name="field">
+        <Description>
+          The Field object being validated.
+        </Description>
+      </Argument>
+      <Argument name="value">
+        <Description>
+          The Object representing the field value.
+        </Description>
+      </Argument>
+      <Argument name="link" type="Link">
+        <Description>
+          The sailpoint.object.Link that is being acted upon. If the link is not applicable,
+          this value will be null.
+        </Description>
+      </Argument>
+    </Inputs>
+    <Returns>
+      <Argument name="value">
+        <Description>
+          An Object (possibly a Collection) of messages resulting from the
+          validation rule.
+        </Description>
+      </Argument>
+    </Returns>
+  </Signature>
+  <Source><![CDATA[import java.util.ArrayList;
+  import java.util.List;
+  import java.util.Date;
+  import java.util.HashMap;
+  import java.util.Iterator;
+  import java.text.ParseException;
+  import java.text.SimpleDateFormat;
+  import java.util.Calendar;
+  import java.util.Locale;
+  import java.util.Map;
+  import sailpoint.tools.Util;
+  import org.apache.log4j.Level;
+  import org.apache.log4j.Logger;
+
+  import java.time.LocalDate; 
+  import sailpoint.object.Field;
+  import sailpoint.object.Filter;
+  import sailpoint.object.Identity;
+  import sailpoint.object.QueryOptions;
+
+  import org.apache.commons.collections.IteratorUtils;
+  import java.util.Iterator;
+  import java.util.regex.Pattern;
+  import java.util.regex.Matcher;
+  import sailpoint.object.Link;
+  import java.lang.StringBuilder;
+  import sailpoint.object.ManagedAttribute;
+  import sailpoint.object.Filter.MatchMode;
+
+
+  String loggerClass="rule.Rule_RuleLibrary_Wrapper_FormValidation";
+  Logger logger = Logger.getLogger(loggerClass);  
+
+  //logger.setLevel(Level.ALL);
+
+  List messages = null;
+  String regEx=null;
+  SimpleDateFormat globalDateFormat = new SimpleDateFormat("dd-MMM-yyyy");
+  SimpleDateFormat formatforDateCheck = new SimpleDateFormat("yyyy-MM-dd");
+
+  public boolean checkRegEx(String attrValue, String regex){
+    return (!attrValue.matches(regex))? true:false;
+  }
+
+  public boolean checkLength(String attrValue, int size){
+    return (attrValue !=null && attrValue.length()>size)? true:false;
+  }
+
+
+  public boolean checkEmailExists(String email){
+    logger.info("started checkEmailExists : "+email);
+
+    QueryOptions qo = new QueryOptions();
+    qo.addFilter(Filter.and(Filter.eq("email", email)));
+    qo.addFilter(Filter.and(Filter.eq("inactive", false)));
+    Iterator iter  = context.search(Identity.class,qo);
+    if (iter.hasNext())  {
+      logger.info("end method : checkEmailExists true");
+
+      return true;
+    }
+    logger.info("end method : checkEmailExists false");
+
+    return false;
+
+  }
+
+
+  if(field.getName().equals("businessPhone")){
+    logger.info("Starting length and RegEx Validation for "+field.getName());
+    messages = new ArrayList();
+
+
+
+    if(Util.isNotNullOrEmpty(formModel.get(field.getName()+"Code"))){
+      if(value==null)
+        messages.add(getCustomMessages(formModel, "emptyValidation"));
+    }
+
+    if(value!=null){
+      regEx="^\\d+$";
+      regExUSCanadaRegion="(\\(\\d{1,3}\\)\\s)[-]?\\d{3}[-]?\\d{4}$";
+
+      if (checkRegEx(value,regEx) && formModel.get("businessPhoneCode")!=null && !(formModel.get("businessPhoneCode").equals("Canada(+1)") || formModel.get("businessPhoneCode").equals("United States(+1)"))){
+        messages.add(field.getName()+" "+getCustomMessages(formModel, "phoneNumberValidation"));
+      }
+      if (checkRegEx(value,regExUSCanadaRegion) && formModel.get("businessPhoneCode")!=null && (formModel.get("businessPhoneCode").equals("Canada(+1)") || formModel.get("businessPhoneCode").equals("United States(+1)"))){ 
+        messages.add(field.getName()+" "+getCustomMessages(formModel, "phoneNumberValidation"));
+      }
+      if(field.getName().equals("businessPhone")){
+        value = getCountryCode(formModel, (String)formModel.get("businessPhoneCode")) +" "+ value;
+        formModel.put("finalBusinessPhone", value);
+
+      }
+    }
+
+  }
+
+  if(field.getName().equals("mobilePhone")){
+    logger.info("Starting length and RegEx Validation for "+field.getName());
+    messages = new ArrayList();
+
+
+
+    if(Util.isNotNullOrEmpty(formModel.get(field.getName()+"Code"))){
+      if(value==null)
+        messages.add(getCustomMessages(formModel, "emptyValidation"));
+    }
+
+    if(value!=null){
+      regEx="^\\d+$";
+      regExUSCanadaRegion="(\\(\\d{1,3}\\)\\s)[-]?\\d{3}[-]?\\d{4}$";
+
+      if (checkRegEx(value,regEx) && formModel.get("mobilePhoneCode")!=null && !(formModel.get("mobilePhoneCode").equals("Canada(+1)") || formModel.get("mobilePhoneCode").equals("United States(+1)"))){
+        messages.add(field.getName()+" "+getCustomMessages(formModel, "phoneNumberValidation"));
+      }
+      if (checkRegEx(value,regExUSCanadaRegion) && formModel.get("mobilePhoneCode")!=null && (formModel.get("mobilePhoneCode").equals("Canada(+1)") || formModel.get("mobilePhoneCode").equals("United States(+1)"))){ 
+        messages.add(field.getName()+" "+getCustomMessages(formModel, "phoneNumberValidation"));
+      }
+      if(field.getName().equals("mobilePhone")){
+        value = getCountryCode(formModel, (String)formModel.get("mobilePhoneCode")) +" "+ value;
+        formModel.put("finalMobilePhone", value);
+
+      }
+
+    }
+  }
+
+  if(field.getName().equals("fax")){
+    logger.info("Starting length and RegEx Validation for "+field.getName());
+    messages = new ArrayList();
+
+
+
+    if(Util.isNotNullOrEmpty(formModel.get(field.getName()+"Code"))){
+      if(value==null)
+        messages.add(getCustomMessages(formModel, "emptyValidation"));
+    }
+
+    if(value!=null){
+      regEx="^\\d+$";
+      regExUSCanadaRegion="(\\(\\d{1,3}\\)\\s)[-]?\\d{3}[-]?\\d{4}$";
+
+      if (checkRegEx(value,regEx) && formModel.get("fax")!=null && !(formModel.get("faxCode").equals("Canada(+1)") || formModel.get("faxCode").equals("United States(+1)"))){
+        messages.add(field.getName()+" "+getCustomMessages(formModel, "phoneNumberValidation"));
+      }
+      if (checkRegEx(value,regExUSCanadaRegion) && formModel.get("fax")!=null && (formModel.get("faxCode").equals("Canada(+1)") || formModel.get("faxCode").equals("United States(+1)"))){ 
+        messages.add(field.getName()+" "+getCustomMessages(formModel, "phoneNumberValidation"));
+      }
+
+
+      if(field.getName().equals("fax")){
+
+        value = getCountryCode(formModel, (String)formModel.get("faxCode")) +" "+ value;
+        formModel.put("finalFax", value);
+      }
+
+
+    }
+  }
+
+  if(field.getName().equals("otherPhone")){
+    logger.info("Starting length and RegEx Validation for "+field.getName());
+    messages = new ArrayList();
+
+
+
+    if(Util.isNotNullOrEmpty(formModel.get(field.getName()+"Code"))){
+      if(value==null)
+        messages.add(getCustomMessages(formModel, "emptyValidation"));
+    }
+
+    if(value!=null){
+      regEx="^\\d+$";
+      regExUSCanadaRegion="(\\(\\d{1,3}\\)\\s)[-]?\\d{3}[-]?\\d{4}$";
+
+      if (checkRegEx(value,regEx) && formModel.get("otherPhone")!=null && !(formModel.get("otherPhoneCode").equals("Canada(+1)") || formModel.get("otherPhoneCode").equals("United States(+1)"))){
+        messages.add(field.getName()+" "+getCustomMessages(formModel, "phoneNumberValidation"));
+      }
+      if (checkRegEx(value,regExUSCanadaRegion) && formModel.get("otherPhone")!=null && (formModel.get("otherPhoneCode").equals("Canada(+1)") || formModel.get("otherPhoneCode").equals("United States(+1)"))){ 
+        messages.add(field.getName()+" "+getCustomMessages(formModel, "phoneNumberValidation"));
+      }
+
+
+      if(field.getName().equals("otherPhone")){
+
+        value = getCountryCode(formModel, (String)formModel.get("otherPhoneCode")) +" "+value;
+        formModel.put("finalOtherPhone", value);
+
+
+      }
+
+    }
+  }
+
+  else if(field.getName().equals("businessPhoneCode") || field.getName().equals("mobilePhoneCode") || field.getName().equals("faxCode") || field.getName().equals("otherPhoneCode")){
+    messages = new ArrayList();
+
+
+    if(Util.isNotNullOrEmpty((String) formModel.get(field.getName().substring(0, field.getName().length()-4)))){
+      if(value==null)
+        messages.add(getCustomMessages(formModel, "emptyValidation"));
+    }
+
+  }
+
+  else if(field.getName().equals("alternateEmail") ){
+
+    messages = new ArrayList();
+    if(Util.isNotNullOrEmpty(value)){
+      //regex for words numbers and symbols followed by @ at the end followed by words and .
+      regEx="^[\\w-\\+.]+(\\.[\\w]+)*@[\\w-]+(\\.[\\w]+)*(\\.[a-z]{2,})$";
+      //check proper email formatting
+      if (checkRegEx(value,regEx))
+        messages.add(field.getDisplayName()+" "+getCustomMessages(formModel, "validEmail"));
+      //check if email already present in the sailpoint iiq
+      if(checkEmailExists(value))
+        messages.add(getCustomMessages(formModel, "emailExists"));
+    }
+
+
+  }
+
+  else if(field.getName().equals("firstName") || field.getName().equals("lastName")){
+    logger.info("Starting length and RegEx Validation for "+field.getName());
+    messages = new ArrayList();
+    //regex for checking "A-Z\", \"a-z\"), Spaces (), and hyphens (\"- \") as input
+    regEx="^[0-9a-zA-Z- ]*$";
+    if (checkRegEx(value,regEx))
+      messages.add((String.format(getCustomMessages(formModel, "nameValidation"), field.getDisplayName())));
+
+  }
+
+  else if(field.getName().equals("middleName")){
+    messages = new ArrayList();
+    if (checkLength(value,40)){
+      messages.add((String.format(getCustomMessages(formModel, "middleNameLengthValidation"), field.getDisplayName())));
+    }
+  }
+
+
+  else if(field.getName().equals("middleName")){
+    messages = new ArrayList();
+    if (checkLength(value,40)){
+      messages.add((String.format(getCustomMessages(formModel, "middleNameLengthValidation"), field.getDisplayName())));
+    }
+  }
+
+  else if(field.getName().equals("startDate")){
+    messages = new ArrayList();
+
+    SimpleDateFormat formatter2=new SimpleDateFormat("dd-MMM-yyyy");  
+    Date correctDateWithZone = getTimezoneCorrectedDate(formModel.get("startDate"),formModel.get("timeZone"));
+    formModel.put("finalStartDate",formatter2.format(correctDateWithZone));
+    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+    LocalDate startDate = LocalDate.parse(formatter.format(value));
+    String currentDate = formatter.format(new Date());
+
+
+    if(startDate.isBefore(LocalDate.parse(currentDate).minusDays(1))){
+      messages.add(getCustomMessages(formModel, "startDateCheck"));
+    }
+
+  }
+
+  else if(field.getName().equals("endDate")){
+    messages = new ArrayList();
+    SimpleDateFormat formatter2=new SimpleDateFormat("dd-MMM-yyyy");
+    Date correctDateWithZone = getTimezoneCorrectedDate(formModel.get("endDate"),formModel.get("timeZone"));
+    formModel.put("finalEndDate",formatter2.format(correctDateWithZone));
+
+    if (value.before(formModel.get("startDate"))){
+
+      messages.add(getCustomMessages(formModel, "endDateCheck"));
+    }
+
+
+
+
+    else{
+
+      //check if end date if atleast a month from start date
+
+
+      SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+      Date correctStartDateWithZone = getTimezoneCorrectedDate(formModel.get("startDate"),formModel.get("timeZone"));
+      formModel.put("correctStartDate",correctStartDateWithZone);
+      String startDate = formatter.format(formModel.get("correctStartDate"));
+      logger.debug("strat date "+startDate);
+      LocalDate newStartDate = LocalDate.parse(startDate).plusMonths(6);
+      logger.debug("new strat date "+newStartDate.toString());
+      LocalDate endDate = LocalDate.parse(formatter.format((Date)value));
+      logger.debug("end date "+endDate.toString());
+
+      if(endDate.isAfter(newStartDate)){
+        messages.add(getCustomMessages(formModel, "sixMonthValidation"));
+      }
+      else if(endDate.isBefore(LocalDate.parse(startDate).plusMonths(1))){
+        messages.add(getCustomMessages(formModel, "oneMonthValidation"));
+      }
+
+
+    }
+
+  }
+  else if(field.getName().equals("email") ){
+    if(form.getField("email").getValue() == null) {
+      logger.info("Starting RegEx Validation for "+field.getName());
+      messages = new ArrayList();
+      messages.add("Without an email form can not submit");
+    }
+  }  
+
+  /* My Direct reports and PSG Extend end date - End date validation */
+  else if(field.getName().equals("extendEndDate")){
+    messages = new ArrayList();
+    SimpleDateFormat formatter2=new SimpleDateFormat("dd-MMM-yyyy");
+    // Check if extendBy is nulland extendendDate has a value
+    if(value != null  && formModel.get("extendBy") == null) {
+      long prevDay = System.currentTimeMillis() - 1000*60*60*24;
+      Date yesterdayDate = new Date(prevDay);
+      // check if end date is poast date
+      if(value.before(yesterdayDate))
+      {
+        messages.add("Effective end date cannot be a past date");
+      }
+
+      else{
+
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        LocalDate newStartDate = LocalDate.parse(formatter.format(new Date())).plusMonths(6);
+        newStartDate = newStartDate.minusDays(1);
+        LocalDate endDate = LocalDate.parse(formatter.format((Date)value));
+
+        // check if end date is not more than 6 months from current date
+        if(endDate.isAfter(newStartDate)){
+          messages.add("End Date should be at most 6 months from current date");
+        }
+      }
+    } else if(value != null) {
+      messages.add("Please select only one option between Extend End Date or Extend by");
+    } 
+    else if(value == null  && formModel.get("extendBy") == null) {
+      messages.add("Please select at least one option from Extend End Date or Extend by");
+    }
+
+  }
+
+
+  /* PSG Create - Phone number validation */
+
+  else if(field.getName().equals("officePhone") || field.getName().equals("mPhone") || field.getName().equals("primaryPhone")){
+    logger.info("Starting length and RegEx Validation for "+field.getName());
+    messages = new ArrayList();
+    if(value!=null){
+      //to match country code ex. +91 followed by space and 10digits
+      Pattern p = Pattern.compile(
+        "^(\\+\\d{1,3}( )?)\\s\\d{10}$");
+      Matcher m = p.matcher(value);
+
+      if(!m.matches()) {
+        messages.add("Invalid Number");
+      }
+      else {
+
+      }
+
+
+    }
+
+  }
+
+
+
+  else if(field.getName().equals("personalEmail") ){
+
+
+    messages = new ArrayList();
+    if(Util.isNotNullOrEmpty(value)){
+      //regex for words numbers and symbols followed by @ at the end followed by words and .
+      regEx="^[\\w-\\+]+(\\.[\\w]+)*@[\\w-]+(\\.[\\w]+)*(\\.[a-z]{2,})$";
+      //check proper email formatting
+      if (checkRegEx(value,regEx))
+        messages.add(field.getDisplayName()+" "+getCustomMessages(formModel, "validEmail"));
+      //check if email already present in the sailpoint iiq
+      if(checkEmailExists(value))
+        messages.add(getCustomMessages(formModel, "emailExists"));
+    }
+  }
+
+  /*Changes for Affiliate Account*/
+  else if(Util.nullSafeCaseInsensitiveEq(field.getName(),"affiliateStartDate")){
+    messages = new ArrayList();
+    try {
+      String timeZoneId = formModel.get("timeZone");
+      Date correctDateWithZone = getTimezoneCorrectedDate(formModel.get("affiliateStartDate"), timeZoneId);
+      formModel.put("finalStartDate",globalDateFormat.format(correctDateWithZone));
+      Date newStartDate = getTimezoneCorrectedDate(value, timeZoneId);
+      LocalDate startDate = LocalDate.parse(formatforDateCheck.format(newStartDate));
+      Date newCurrentDate = getTimezoneCorrectedDate(Calendar.getInstance().getTime(), timeZoneId);
+      LocalDate currentDate = LocalDate.parse(formatforDateCheck.format(newCurrentDate));
+
+
+      if(startDate.isBefore(currentDate)){
+        messages.add(getCustomMessages(formModel, "startDateCheck"));
+      }
+
+    }
+    catch (Exception e) {
+      logger.error("Exception occured in affiliateStartDate"+e);
+    }
+  }
+
+  else if(Util.nullSafeCaseInsensitiveEq(field.getName(),"affiliateEndDate")){
+    messages = new ArrayList();
+    try {
+      String timeZoneId = formModel.get("timeZone");
+      Date correctDateWithZone = getTimezoneCorrectedDate(formModel.get("affiliateEndDate"), timeZoneId);
+      formModel.put("finalEndDate",globalDateFormat.format(correctDateWithZone));
+
+      if (value.before(formModel.get("affiliateStartDate"))){
+
+        messages.add(getCustomMessages(formModel, "endDateCheck"));
+      }
+
+
+      else{
+
+        //check if end date if atleast a month from start date
+
+        Date correctStartDateWithZone = getTimezoneCorrectedDate(formModel.get("affiliateStartDate"), timeZoneId);
+        formModel.put("correctStartDate",correctStartDateWithZone);
+        String startDate = formatforDateCheck.format(formModel.get("correctStartDate"));
+        LocalDate newStartDate = LocalDate.parse(startDate).plusMonths(12);
+        Date newEndDate = getTimezoneCorrectedDate(value, timeZoneId);
+        LocalDate endDate = LocalDate.parse(formatforDateCheck.format(newEndDate));
+
+        if(endDate.isAfter(newStartDate)){
+          messages.add(getCustomMessages(formModel, "twelveMonthValidation"));
+        }
+        else if(endDate.isBefore(LocalDate.parse(startDate).plusMonths(1))){
+          messages.add(getCustomMessages(formModel, "oneMonthValidation"));
+        }
+
+      }
+
+    }
+    catch (Exception e) {
+      logger.error("Exception occured in affiliateEndDate"+e);
+    }
+
+  }
+
+  else if(Util.nullSafeCaseInsensitiveEq(field.getName(),"phoneNumber")){
+    messages = new ArrayList();
+    if(Util.isNotNullOrEmpty(value)){
+
+      Pattern pattern = Pattern.compile("^[0-9]{1,14}$");
+      Matcher match = pattern.matcher(value);
+      if (!match.matches())
+      {
+        messages.add(getCustomMessages(formModel, "14DigitPhoneNumberValidation"));
+      }
+    }
+
+  }
+  /*End changes for Affiliate Account*/
+
+  else if(field.getName().equals("startDatePSG")){
+    messages = new ArrayList();
+    Date correctDateWithZone = getTimezoneCorrectedDate(value,formModel.get("timeZone"));
+    //putting formatted final start date in formModel to pass to subworkflow
+    formModel.put("finalStartDate", globalDateFormat.format(correctDateWithZone));
+
+    Date correctStartDateWithZone = getTimezoneCorrectedDate(value,formModel.get("timeZone"));
+
+    LocalDate startDate = LocalDate.parse(formatforDateCheck.format(correctStartDateWithZone));
+    Date newCurrentDate = getTimezoneCorrectedDate(Calendar.getInstance().getTime(),formModel.get("timeZone"));
+    LocalDate currentDate = LocalDate.parse(formatforDateCheck.format(newCurrentDate));
+    //do start date validations only if the field is editable then check start date cannot be a past date
+    if(startDate.isBefore(currentDate)){
+      if(field.isReadOnly()){
+        formModel.put("correctStartDate",newCurrentDate);
+      }else{
+        formModel.put("correctStartDate",newCurrentDate);
+        messages.add(getCustomMessages(formModel, "startDateCheck"));
+      }
+
+    }
+    //putting correct start date in formModel for end date validations from start date
+    else if(startDate.isAfter(currentDate) || startDate.equals(currentDate)){
+      formModel.put("correctStartDate",correctStartDateWithZone);
+    }
+
+  }
+
+  else if(field.getName().equals("endDatePSG")){
+    messages = new ArrayList();
+
+    Date correctDateWithZone = getTimezoneCorrectedDate(value,formModel.get("timeZone"));
+    formModel.put("finalEndDate",globalDateFormat.format(correctDateWithZone));
+    //check is end date is not prior to start date
+    if (value.before(formModel.get("startDatePSG"))){
+
+      messages.add(getCustomMessages(formModel, "endDateCheck"));
+    }
+
+
+    else{
+
+      //check if end date if atleast a month from start date and at most 6 mothns from start date is start is current date or in the future
+      //check if end date if atleast a month from current date and at most 6 mothns from current date if PSG User has already started
+
+      SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+
+      String startDate = formatforDateCheck.format(formModel.get("correctStartDate"));
+      LocalDate newStartDate = LocalDate.parse(startDate).plusMonths(6);
+      Date newEndDate = getTimezoneCorrectedDate(value,formModel.get("timeZone"));
+      LocalDate endDate = LocalDate.parse(formatforDateCheck.format(newEndDate));
+
+      if(endDate.isAfter(newStartDate) && form.getField("startDatePSG").isReadOnly()){
+        messages.add(getCustomMessages(formModel, "sixMonthValidationCurrentDate"));
+      }
+      else if(endDate.isAfter(newStartDate)){
+        messages.add(getCustomMessages(formModel, "sixMonthValidation"));
+      }
+
+    }
+
+  }
+
+  else if(field.getName().equals("country")){
+
+    Map countries = new HashMap();
+    for (String iso : Locale.getISOCountries()) {
+      Locale l = new Locale("", iso);
+      countries.put(l.getDisplayCountry(), iso);
+    }
+    //getting the country code from the country name and putting in formModel to pass to subworkflow
+    String countryCode = countries.get(formModel.get("country"));
+    formModel.put("countryCode",countryCode);
+  }
+
+
+  if(messages!=null && messages.size() > 0){
+
+    logger.debug("Returning Validation error for field : "+field.getDisplayName() + " with error message::" +messages);
+  }
+
+
+
+
+  /*Changes for create generic mail box*/
+  else if(Util.nullSafeCaseInsensitiveEq(field.getName(), "genericMailBoxEmail")){
+
+    messages = new ArrayList();
+    if(Util.isNotNullOrEmpty(value)){
+      //regex for words numbers and symbols followed by @ at the end followed by words and .
+      regEx="^[\\w-\\+]+(\\.[\\w]+)*@[\\w-]+(\\.[\\w]+)*(\\.[a-z]{2,})$";
+      //check proper email formatting
+      if (checkRegEx(value,regEx))
+        messages.add(field.getDisplayName()+" "+getCustomMessages(formModel, "validEmail"));
+      //check if email already present in the sailpoint iiq
+      if(checkEmailExists(value))
+        messages.add(getCustomMessages(formModel, "emailExists"));
+    }
+  }
+
+
+  else if(Util.nullSafeCaseInsensitiveEq(field.getName(),"genericMailBoxStartDate")){
+    messages = new ArrayList();
+    try {
+      String timeZoneId = formModel.get("timeZone");
+      Date correctDateWithZone = getTimezoneCorrectedDate(formModel.get("genericMailBoxStartDate"), timeZoneId);
+      formModel.put("finalStartDate",globalDateFormat.format(correctDateWithZone));
+      Date newStartDate = getTimezoneCorrectedDate(value, timeZoneId);
+      LocalDate startDate = LocalDate.parse(formatforDateCheck.format(newStartDate));
+      Date newCurrentDate = getTimezoneCorrectedDate(Calendar.getInstance().getTime(), timeZoneId);
+      LocalDate currentDate = LocalDate.parse(formatforDateCheck.format(newCurrentDate));
+
+
+      if(startDate.isBefore(currentDate)){
+        messages.add(getCustomMessages(formModel, "startDateCheck"));
+      }
+
+    }
+    catch (Exception e) {
+      logger.error("Exception occured in genericMailBoxStartDate"+e);
+    }
+  }
+
+  else if(Util.nullSafeCaseInsensitiveEq(field.getName(),"genericMailBoxEndDate")){
+    messages = new ArrayList();
+    try {
+      String timeZoneId = formModel.get("timeZone");
+      Date correctDateWithZone = getTimezoneCorrectedDate(formModel.get("genericMailBoxEndDate"), timeZoneId);
+      formModel.put("finalEndDate",globalDateFormat.format(correctDateWithZone));
+
+      if (value.before(formModel.get("genericMailBoxStartDate"))){
+
+        messages.add(getCustomMessages(formModel, "endDateCheck"));
+      }
+
+
+      else{
+
+        //check if end date if atleast a month from start date
+
+        Date correctStartDateWithZone = getTimezoneCorrectedDate(formModel.get("genericMailBoxStartDate"), timeZoneId);
+        formModel.put("correctStartDate",correctStartDateWithZone);
+        String startDate = formatforDateCheck.format(formModel.get("correctStartDate"));
+        LocalDate newStartDate = LocalDate.parse(startDate).plusMonths(12);
+        Date newEndDate = getTimezoneCorrectedDate(value, timeZoneId);
+        LocalDate endDate = LocalDate.parse(formatforDateCheck.format(newEndDate));
+
+        if(endDate.isAfter(newStartDate)){
+          messages.add(getCustomMessages(formModel, "twelveMonthValidation"));
+        }
+        else if(endDate.isBefore(LocalDate.parse(startDate).plusMonths(1))){
+          messages.add(getCustomMessages(formModel, "oneMonthValidation"));
+        }
+
+      }
+
+    }
+    catch (Exception e) {
+      logger.error("Exception occured in genericMailBoxEndDate"+e);
+    }
+
+  }
+
+
+  else if(Util.nullSafeCaseInsensitiveEq(field.getName(), "genericMailBoxDisplayName")){
+    messages = new ArrayList();
+    try{
+      String lName = (String) formModel.get("lastName");
+      String fName = (String) formModel.get("firstName");
+      StringBuilder str = new StringBuilder(lName);
+      str.append(", ").append(fName);
+      String displayName = str.toString();
+      Filter filter = Filter.and(Filter.eq("application.name","Application_VSNT_LDAP_NDI"),Filter.eq("displayName", displayName));
+      Link link =  context.getUniqueObject(Link.class, filter);
+      if (link != null)
+      {
+        messages.add(getCustomMessages(formModel, "genericMailBoxDisplayNameCheck"));
+        context.decache(link);
+      }
+    }
+    catch (Exception e) {
+      logger.error("Exception occured in genericMailBoxDisplayName"+e);
+    }
+  }
+
+  /*End changes for create generic mail box*/
+
+  else if(field.getName().equals("country")){
+
+    Map countries = new HashMap();
+    for (String iso : Locale.getISOCountries()) {
+      Locale l = new Locale("", iso);
+      countries.put(l.getDisplayCountry(), iso);
+    }
+
+    String countryCode = countries.get(formModel.get("country"));
+    formModel.put("countryCode",countryCode);
+  }
+
+  /* Changes for Resource Mailbox */
+  else if(Util.nullSafeCaseInsensitiveEq(field.getName(), "prohibitSendAt")){
+    messages = new ArrayList();
+
+    if (Util.isNotNullOrEmpty(value)){
+      try{
+        Pattern pattern = Pattern.compile("^[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)$");
+        Matcher match = pattern.matcher(value);
+        if (!match.matches()) 
+        {
+          messages.add("Please enter the value between 0 to 9984");
+        }
+        else if (Float.parseFloat(value) < 0 || Float.parseFloat(value) >9984)
+        {
+          messages.add("Please enter the value between 0 to 9984");
+        }
+
+      }
+
+      catch (Exception e)
+      {
+        logger.error("prohibitSendAt validation"+e);
+      }
+    }
+  }
+
+  else if(Util.nullSafeCaseInsensitiveEq(field.getName(), "issueWarningAt")){
+    messages = new ArrayList();
+    if (Util.isNotNullOrEmpty(value)){
+      try{
+        Pattern pattern = Pattern.compile("^[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)$");
+        Matcher match = pattern.matcher(value);
+        if (!match.matches()) 
+        {
+          messages.add("Please enter the value between 0 to 10240 and value should be greater than to Prohibit send");
+
+        }
+        else if(Float.parseFloat(value) < 0 || Float.parseFloat(value) >10240 || Float.parseFloat(value) < Float.parseFloat(formModel.get("prohibitSendAt")))
+        {
+          messages.add("Please enter the value between 0 to 10240 and value should be greater than to Prohibit send");
+
+        }
+      }
+      catch (Exception e)
+      {
+        logger.error("issueWarningAt validation"+e);
+      }
+    }
+  }
+
+  else if(Util.nullSafeCaseInsensitiveEq(field.getName(), "prohibitReceiveAt")){
+    messages = new ArrayList();
+    if (Util.isNotNullOrEmpty(value)){
+      try{
+        Pattern pattern = Pattern.compile("^[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)$");
+        Matcher match = pattern.matcher(value);
+        if (!match.matches()) 
+        {
+          messages.add("Please enter the value between 0 to 9728 and value should be less than or equal to Prohibit send");
+
+        }
+        else if(Float.parseFloat(value) < 0 || Float.parseFloat(value) >9728 || Float.parseFloat(value) > Float.parseFloat(formModel.get("prohibitSendAt")))
+        {
+          messages.add("Please enter the value between 0 to 9728 and value should be less than or equal to Prohibit send");
+
+        }
+      }
+      catch (Exception e)
+      {
+        logger.error("prohibitReceiveAt validation"+e);
+      } 
+    }
+  }
+
+
+  else if(Util.nullSafeCaseInsensitiveEq(field.getName(),"resourceMailBoxEndDate")){
+    messages = new ArrayList();
+    if (value!=null){
+      try {
+        String timeZoneId = formModel.get("timeZone");
+        Date correctDateWithZone = getTimezoneCorrectedDate(formModel.get("resourceMailBoxEndDate"), timeZoneId);
+        formModel.put("finalEndDate",globalDateFormat.format(correctDateWithZone));
+        Date newEndDate = getTimezoneCorrectedDate(value, timeZoneId);
+        LocalDate endDate = LocalDate.parse(formatforDateCheck.format(newEndDate));
+        Date newCurrentDate = getTimezoneCorrectedDate(Calendar.getInstance().getTime(), timeZoneId);
+        LocalDate currentDate = LocalDate.parse(formatforDateCheck.format(newCurrentDate));
+        if(endDate.isBefore(currentDate)){
+          messages.add("Effective end date cannot be a past date.");
+        }
+
+      }
+      catch (Exception e) {
+        logger.error("Exception occured in resourceMailBoxEndDate"+e);
+      }
+    }
+  }
+
+  else if(Util.nullSafeCaseInsensitiveEq(field.getName(),"resourceMailBoxDisplayName"))
+  {
+    messages = new ArrayList();
+    if (Util.isNotNullOrEmpty(value)) {
+      try {
+        Filter filter =
+          Filter.and(Filter.eq("application.name", "NDI"), Filter.eq("displayName", value),
+                     Filter.like("value", "ou=mailresources,dc=tfayd,dc=com", Filter.MatchMode.END));
+        ManagedAttribute entitlement = context.getUniqueObject(ManagedAttribute.class, filter);
+        if (entitlement != null) {
+          messages.add("Display Name already Exist.");
+        }
+
+      } catch (Exception e) {
+        logger.error("Exception occured in resourceMailBoxDisplayName" + e);
+      }
+    }
+  }
+
+  else if(Util.nullSafeCaseInsensitiveEq(field.getName(), "resourceMailBoxEmail")){
+
+    messages = new ArrayList();
+    if(Util.isNotNullOrEmpty(value)){
+      //regex for words numbers and symbols followed by @ at the end followed by words and .
+      regEx="^[\\w-\\+]+(\\.[\\w]+)*@[\\w-]+(\\.[\\w]+)*(\\.[a-z]{2,})$";
+      //check proper email formatting
+      if (checkRegEx(value,regEx))
+        messages.add(field.getDisplayName()+" "+getCustomMessages(formModel, "validEmail"));
+      //check if email already present in the sailpoint iiq
+      if(checkEmailExists(value))
+        messages.add(getCustomMessages(formModel, "emailExists"));
+    }
+  }
+
+  else if(Util.nullSafeCaseInsensitiveEq(field.getName(), "resourceAlternateEmail")){
+    messages = new ArrayList();
+    if(value!=null){
+      try{
+        for (String email : value){
+          regEx="^[\\w-\\+]+(\\.[\\w]+)*@[\\w-]+(\\.[\\w]+)*(\\.[a-z]{2,})$";
+          if (checkRegEx(email,regEx))
+            messages.add(field.getDisplayName()+" "+getCustomMessages(formModel, "validEmail"));
+          if(checkEmailExists(email))
+            messages.add(getCustomMessages(formModel, "emailExists"));
+        }
+      }
+
+      catch (Exception e){
+        logger.error("resourceAlternateEmail validation"+e);
+      }
+    }
+  }
+
+  else if(Util.nullSafeCaseInsensitiveEq(field.getName(), "telephone")){
+
+    messages = new ArrayList();
+    if(Util.isNotNullOrEmpty(value)){
+      //regex for only numbers
+      regEx="[0-9]+";
+      //check proper telephone formatting
+      if (checkRegEx(value,regEx))
+        messages.add(getCustomMessages(formModel, "telephone"));
+    }
+  }
+
+  /* Changes end for Resource Mailbox */
+
+  /* New Test Account - date validation */
+
+  else if(field.getName().equals("testAccountStartDate")){
+    messages = new ArrayList();
+
+    SimpleDateFormat formatter2=new SimpleDateFormat("dd-MMM-yyyy");  
+    Date correctDateWithZone = getTimezoneCorrectedDate(formModel.get("testAccountStartDate"),formModel.get("timeZone"));
+    formModel.put("finalStartDateTestAccount",formatter2.format(correctDateWithZone));
+    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+    LocalDate startDate = LocalDate.parse(formatter.format(value));
+    String currentDate = formatter.format(new Date());
+
+
+    if(startDate.isBefore(LocalDate.parse(currentDate).minusDays(1))){
+      messages.add(getCustomMessages(formModel, "startDateCheck"));
+    }
+
+  }
+
+
+  else if(field.getName().equals("testAccountEndDate")){
+    messages = new ArrayList();
+    SimpleDateFormat formatter2=new SimpleDateFormat("dd-MMM-yyyy");
+    Date correctDateWithZone = getTimezoneCorrectedDate(formModel.get("testAccountEndDate"),formModel.get("timeZone"));
+    formModel.put("finalEndDateTestAccount",formatter2.format(correctDateWithZone));
+    if (value.before(formModel.get("testAccountStartDate"))){
+
+      // Get values from Custom Object
+      String message = null;
+      try{
+        if(Util.isNotNullOrEmpty(getMap("Custom_VSNT_Workflow_Configuration").get("customMessages").get("endDateCheck"))){
+          message = getMap("Custom_VSNT_Workflow_Configuration").get("customMessages").get("endDateCheck");
+        }
+      }
+      catch(Exception e){
+        logger.error("Exception in getting direct Reportees for revoke",e);
+        throw e;
+      }
+      messages.add(message);
+    }
+    else {
+      SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+      Date correctStartDateWithZone = getTimezoneCorrectedDate(formModel.get("testAccountStartDate"),formModel.get("timeZone"));
+      formModel.put("correctStartDate",correctStartDateWithZone);
+
+      String startDate = formatter.format(formModel.get("correctStartDate"));
+      logger.debug("strat date "+startDate);
+      LocalDate newStartDate = LocalDate.parse(startDate).plusMonths(2);
+      logger.debug("new strat date "+newStartDate.toString());
+      LocalDate endDate = LocalDate.parse(formatter.format((Date)value));
+      logger.debug("end date "+endDate.toString());
+
+      if(endDate.isAfter(newStartDate.minusDays(1))){
+        messages.add(getCustomMessages(formModel, "twoMonthValidation"));
+      }
+
+    }
+
+  }
+
+  else if(field.getName().equals("firstNameTestUser") || field.getName().equals("lastNameTestUser")){
+    logger.info("Starting length and RegEx Validation for "+field.getName());
+    messages = new ArrayList();
+    //regex for checking "A-Z\", \"a-z\"), Spaces (), and hyphens (\"- \") as input
+    regEx="^[0-9a-zA-Z- ]*$";
+    if (checkRegEx(value,regEx))
+      messages.add((String.format(getCustomMessages(formModel, "nameValidation"), field.getDisplayName())));
+    if (checkLength(value,26)){
+      if(field.getName().equals("firstNameTestUser"))
+        messages.add("Please enter First name within 26 characters.");
+      if(field.getName().equals("lastNameTestUser"))
+        messages.add("Please enter Last name within 26 characters.");
+
+    }
+  }
+
+  else if(Util.nullSafeCaseInsensitiveEq(field.getName(), "testAccountRequestOwner")){
+    messages = new ArrayList();
+    Identity identity =context.getObjectByName(Identity.class,formModel.get("testAccountRequestOwner"));
+    if(identity !=null) {
+      formModel.put("managerId",identity.getName());
+    } else {
+      messages.add("Selected owner is Invalid");
+    }
+  }
+  else if(Util.nullSafeCaseInsensitiveEq(field.getName(), "declarationAndAgreement")){
+
+    messages = new ArrayList();
+    log.error("value : "+value);
+    if(value.equals("Disagree")) {
+      messages.add(getCustomMessages(formModel, "disagreementText"));
+    }
+  }
+  else if(Util.nullSafeCaseInsensitiveEq(field.getName(), "validateFirstLastNameLength")){
+    messages = new ArrayList();
+    if(form.getField("nickName").getValue() != null){
+      if(form.getField("lastName").getValue() != null){
+        String nickName = form.getField("nickName").getValue();
+        String lastName = form.getField("lastName").getValue();
+        String dispName = (lastName + ", "+ nickName+ " (Contractor-VSNTniversal)") ;
+        if(dispName.length() > 64){
+          messages.add("The combined length of the Last Name, Nick Name and suffix (Contractor-VSNTniversal) is " +dispName.length()+ " should not exceed 64 characters. Please ensure that you enter a valid Nick name or last name.");
+        }
+      }
+    }else{
+      if(form.getField("firstName").getValue() != null && form.getField("lastName").getValue() != null){
+        String firstName = form.getField("firstName").getValue();
+        String lastName = form.getField("lastName").getValue();
+        String fullName = (lastName + ", "+ firstName+ " (Contractor-VSNTniversal)") ;
+        if(fullName.length() > 64){
+          messages.add("The combined length of the first name, last name and suffix (Contractor-VSNTniversal) is " +fullName.length()+ " should not exceed 64 characters. Please ensure that you enter a valid first name or last name.");
+        }
+      }
+    }
+  }else if(Util.nullSafeCaseInsensitiveEq(field.getName(), "displayName")){
+    if(formModel.get("fullName")!=null && formModel.get("stationCallLetter")!=null ){
+      messages = new ArrayList();
+      String fullName = (String) formModel.get("fullName");
+      String stationCallLetterText = (String) formModel.get("stationCallLetter");
+      StringBuilder str = new StringBuilder(fullName);
+      str.append(" (").append(stationCallLetterText).append(", Non-VSNTniversal)");
+      String dispName = str.toString();
+      if(dispName.length() > 64){
+        messages.add("The combined length of the Last Name, First Name, StationCallLetter and suffix (Non-VSNTniversal) is " +dispName.length()+ " should not exceed 64 characters. Please ensure that you enter the combination of Last Name, First Name, StationCallLetter and suffix (Non-VSNTniversal) less than 64 character.");
+      }
+    }
+  }
+
+  return messages;]]></Source>
+</Rule>

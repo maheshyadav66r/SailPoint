@@ -1,0 +1,110 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1748786768424" completionStatus="Error" launched="1748786604962" launcher="spadmin" name="QuickLink Launch for identity spadmin - 511" type="Workflow">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000676"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Aaron Nunez">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000676"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Aaron Nunez-ADM,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create">
+                  <AttributeRequest name="sAMAccountName" op="Set" value="Aaron Nunez-ADM"/>
+                  <AttributeRequest name="givenName" op="Set" value="Aaron"/>
+                  <AttributeRequest name="sn" op="Set"/>
+                  <AttributeRequest name="mail" op="Set" value="aaron.nunez@eshiam.com"/>
+                  <AttributeRequest name="password" op="Set"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000676"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Aaron Nunez" targetIntegration="ActiveDirectory" trackingId="1171f24b47c24ebc99315627c119ca4c">
+              <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Aaron Nunez-ADM,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create">
+                <Attributes>
+                  <Map>
+                    <entry key="provisioningTransactionId" value="a9feffec971a1a0781972bd06721101c"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest name="sAMAccountName" op="Set">
+                  <Value>
+                    <List>
+                      <String>Aaron Nunez-ADM</String>
+                      <String>Aaron Nunez</String>
+                    </List>
+                  </Value>
+                </AttributeRequest>
+                <AttributeRequest name="givenName" op="Set" value="Aaron"/>
+                <AttributeRequest name="mail" op="Set" value="aaron.nunez@eshiam.com"/>
+                <AttributeRequest name="password" op="Set"/>
+                <AttributeRequest name="sn" op="Set" value="Nunez"/>
+                <ProvisioningResult status="failed">
+                  <Errors>
+                    <Message key="Exception occurred while executing the RPCRequest: Errors returned from IQService. Unable to cast object of type 'System.Collections.ArrayList' to type 'System.String'.Unable to cast object of type 'System.Collections.ArrayList' to type 'System.String'.. HRESULT:[0x80004002]" type="Error"/>
+                  </Errors>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000676"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="a9feffec971a1a0781972bcdeeec0ff1"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="Stop">
+            <Interactions>
+              <ApprovalSummary completer="The Administrator" endDate="1748786764206" owner="spadmin" request="SecodaryIdRegistrationForm" startDate="1748786606010" state="Finished" workItemId="a9feffec971a1a0781972bcdef630ff2" workItemType="Form"/>
+            </Interactions>
+          </WorkflowSummary>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="Exception occurred while executing the RPCRequest: Errors returned from IQService. Unable to cast object of type 'System.Collections.ArrayList' to type 'System.String'.Unable to cast object of type 'System.Collections.ArrayList' to type 'System.String'.. HRESULT:[0x80004002]" type="Error"/>
+  </Messages>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

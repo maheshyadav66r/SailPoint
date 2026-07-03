@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskDefinition PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskDefinition name="Missing RoleTargets" resultAction="Delete" subType="task_item_type_generic" type="Generic">
+  <Attributes>
+    <Map>
+      <entry key="TaskDefinition.runLengthAverage" value="6"/>
+      <entry key="TaskDefinition.runLengthTotal" value="127"/>
+      <entry key="TaskDefinition.runs" value="19"/>
+      <entry key="TaskSchedule.host"/>
+      <entry key="ruleConfig" value="&quot;identities&quot;,&quot;Aaron Nichols,Aaron Wade&quot;"/>
+      <entry key="ruleName" value="Validation RoleAssignment Check"/>
+      <entry key="taskCompletionEmailNotify" value="Disabled"/>
+      <entry key="taskCompletionEmailRecipients"/>
+      <entry key="taskCompletionEmailTemplate"/>
+    </Map>
+  </Attributes>
+  <Description>A task that can be used to run an arbitrary rule.</Description>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+  <Parent>
+    <Reference class="sailpoint.object.TaskDefinition" name="Run Rule"/>
+  </Parent>
+  <Signature>
+    <Inputs>
+      <Argument helpKey="help_task_run_rule_rule" name="ruleName" required="true" type="Rule">
+        <Prompt>label_rule</Prompt>
+      </Argument>
+      <Argument helpKey="help_task_run_rule_ruleconfig" name="ruleConfig" type="string">
+        <Prompt>label_rule_config</Prompt>
+      </Argument>
+    </Inputs>
+    <Returns>
+      <Argument name="Accounts Red From File" type="int"/>
+      <Argument name="Accounts Updated in AD" type="int"/>
+    </Returns>
+  </Signature>
+</TaskDefinition>

@@ -1,0 +1,221 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Validation RoleAssignment Rule" type="Validation">
+  <Source><![CDATA[
+
+   import sailpoint.object.Custom;
+  import sailpoint.api.SailPointFactory;
+  import sailpoint.object.Filter;
+  import sailpoint.object.Identity;
+  import sailpoint.object.IdentityEntitlement;
+  import sailpoint.object.QueryOptions;
+  import sailpoint.tools.GeneralException;
+  import java.time.LocalDateTime;
+  import java.time.format.DateTimeFormatter;
+  import sailpoint.object.Bundle;
+  import sailpoint.object.Custom;
+  import sailpoint.api.SailPointFactory;
+  import sailpoint.object.Filter;
+  import sailpoint.object.Identity;
+  import sailpoint.object.IdentityEntitlement;
+  import sailpoint.object.QueryOptions;
+  import sailpoint.tools.GeneralException;
+  import sailpoint.tools.Util;
+  import java.util.Iterator;
+  import java.util.Arrays;
+  import java.io.File;
+  import java.io.FileWriter;
+  import java.io.BufferedWriter;
+  import java.text.SimpleDateFormat;
+  import java.util.Date;
+  import java.io.File;
+
+
+  
+  
+   Iterator iterator = null;
+  //BufferedWriter writer = null;
+  List roleDivisions = null;
+  
+  
+   String inputData = "Medium,High";
+    // String inputData = (String) config.get("roleCriticality");      //Replace roleCriticality with roleDivision
+    roleDivisions = new ArrayList();
+    /*if(roleDivisions.isEmpty() || roleDivisions.size()<1) {
+      //roleDivisions.add("Medium");
+      //roleDivisions.add("High");
+      roleDivisions.add(inputData);
+    }*/
+
+    if (!Util.isNullOrEmpty(inputData)) {
+      if (inputData.contains(",")) {
+        roleDivisions = Arrays.asList(inputData.split(","));
+      } else {
+        roleDivisions.add(inputData);
+      }
+    }
+
+
+  Filter roleFilters = Filter.and(Filter.in("roleCriticality", roleDivisions),Filter.eq("type", "business"));
+  // Filter roleFilters = Filter.and(Filter.eq("type", "business"),Filter.eq("name", "ad_business_role"));
+  QueryOptions options = new QueryOptions();
+  options.addFilter(roleFilters);
+
+  String properties = "name,requirements.name,owner.name";
+  iterator = context.search(Bundle.class, options, properties);
+
+
+  while (iterator.hasNext()) {
+
+    Object[] row = (Object[]) iterator.next();
+
+      log.error(" List ::::: "+row[0]+"   BRName  :: "+row[1]);
+
+    //String businessRole = Util.otos(row[0]);
+
+   /* if(row[1] instanceof String){
+      log.error(" String  : "+row[1]);
+      String functionalRole = Util.otos(row[1]);
+    }
+    if(row[1] instanceof List){
+      log.error(" List : "+row[1]);
+      List functionalRole =(List) Util.otos(row[1]);
+    }*/
+   // String owner = Util.otos(row[2]);
+
+    
+    /*List wgs = new ArrayList();
+      List names = new ArrayList();
+      QueryOptions qo = new QueryOptions();
+      //qo.addFilter(Filter.eq("workgroups.name", owner));
+      qo.addFilter(Filter.eq("workgroups.name", owner));
+      Iterator entIter = context.search(Identity.class, qo);
+      while(entIter.hasNext()){							
+        Identity wg = (Identity)entIter.next();
+        wgs.add(wg.getName());
+        names.add(wg.getDisplayName());
+      }*/
+   // String workGroupMembers = Util.listToCsv(wgs);
+   // String  workGroupMembersNames = Util.listToCsv(names);
+
+
+  }
+
+
+return "Requirments";
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  try {
+
+    String inputData = (String) config.get("roleCriticality");      //Replace roleCriticality with roleDivision
+    roleDivisions = new ArrayList();
+
+    if (!Util.isNullOrEmpty(inputData)) {
+      if (inputData.contains(",")) {
+        roleDivisions = Arrays.asList(inputData.split(","));
+      } else {
+        roleDivisions.add(inputData);
+      }
+    }
+
+
+
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+    String fileName = "Role Membership Report by RoleDivision_" + sdf.format(new Date()) +".csv";
+    File file = new File("D:\\tmp\\" + fileName);
+
+    //Filter baseFilter = Filter.and(Filter.in("name", Arrays.asList("detectedRoles","assignedRoles")),Filter.notnull("value"));
+    //Filter subqueryFilter = Filter.subquery("value", Bundle.class, "name", 	Filter.ignoreCase(Filter.in("Bundle.roleCriticality",roleDivisions)));
+    // Filter joinFilter = Filter.join("value", "Bundle.name");
+
+
+    Filter   roleFilters = Filter.and(Filter.in("roleCriticality", roleDivisions),Filter.or(Filter.eq("type", "it"),(Filter.eq("type", "business"))));
+    QueryOptions options = new QueryOptions();
+    options.addFilter(Filter.and(roleFilters,subqueryFilter,joinFilter));
+
+    String properties = "name,requirements.name,owner.name";
+    iterator = context.search(Bundle.class, options, properties);
+    writer = new BufferedWriter(new FileWriter(file));
+    writer.write("Business Role,Functional Role,owner,Workgroup Members,Workgroup Members Name");
+    writer.newLine();
+
+    String businessRole = "";
+    String functionalRole = "";
+    String owner = "";
+    String workGroupMembers = "";
+    String workGroupMembersNames = "";
+    Identity identityObj = null;
+
+    while (iterator.hasNext()) {
+
+      Object[] row = (Object[]) iterator.next();
+
+      businessRole = Util.otos(row[0]);
+      functionalRole = Util.otos(row[1]);
+      owner = Util.otos(row[2]);
+
+
+      List wgs = new ArrayList();
+      List names = new ArrayList();
+      QueryOptions qo = new QueryOptions();
+      qo.addFilter(Filter.eq("workgroups.name", owner));
+      Iterator entIter = context.search(Identity.class, qo);
+      while(entIter.hasNext()){							
+        Identity wg = (Identity)entIter.next();
+        wgs.add(wg.getName());
+        names.add(wg.getDisplayName());
+      }
+      workGroupMembers = Util.listToCsv(wgs);
+      workGroupMembersNames = Util.listToCsv(names);
+
+      /*  Bundle bundle = context.getObjectByName(Bundle.class, businessRole);
+      if (bundle != null) {
+        roleDescription = bundle.getDescription("en_US");
+        Map sysDescriptions = (Map) bundle.getAttribute("sysDescriptions");
+        if (sysDescriptions != null) {
+          roleDescription = Util.otos(sysDescriptions.get("en_US"));
+        }
+        roleDivision =  bundle.getAttribute("roleLevel");                     // bundle.getAttribute("RoleDivision");
+        roleLogicalAppName = bundle.getAttribute("roleCriticality");          // bundle.getAttribute("appName");
+      }*/
+
+      writer.write(businessRole + "," +functionalRole + "," +owner + "," +workGroupMembers + "," +workGroupMembersNames);
+      writer.newLine();
+    }
+    writer.flush();
+
+
+
+
+
+
+
+
+  }catch(Exception e){
+
+
+
+  }finally{
+
+  }
+  ]]></Source>
+</Rule>

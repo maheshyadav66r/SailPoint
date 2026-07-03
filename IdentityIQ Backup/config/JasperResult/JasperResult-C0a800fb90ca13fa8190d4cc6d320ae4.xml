@@ -1,0 +1,355 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE JasperResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<JasperResult handlerPageCount="-1" pageCount="-1" pagesPerBucket="-1">
+  <Attributes>
+    <Map>
+      <entry key="csvRowsPerBucket">
+        <value>
+          <Integer>1000</Integer>
+        </value>
+      </entry>
+      <entry key="header">
+        <value>
+          <LiveReportSummary title="Identity Entitlements Report">
+            <Values>
+              <LiveReportSummaryValue label="Creator" name="creator">
+                <Value>
+                  <String>spadmin</String>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="Creation Date" name="date">
+                <Value>
+                  <String>7/21/24, 3:48 PM</String>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="Identities" name="identity">
+                <Value>
+                  <String>Aaron Nichols, Adam Kennedy, Alan Bradley</String>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="Applications" name="application">
+                <Value>
+                  <String>HR-Application, HR-ApplicationTarget</String>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="Attributes" name="attribute">
+                <Value>
+                  <String>memberOf, groups</String>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="Entitlements" name="entitlementValue">
+                <Value>
+                  <String>AccountsReceivable, BenefitCommittee, Admins, AccountingGeneral</String>
+                </Value>
+              </LiveReportSummaryValue>
+            </Values>
+          </LiveReportSummary>
+        </value>
+      </entry>
+      <entry key="reportDefinition">
+        <value>
+          <LiveReport title="Identity Entitlements Report">
+            <DataSource objectType="IdentityEntitlement" type="Filter">
+              <QueryParameters>
+                <Parameter argument="identity" property="identity.id"/>
+                <Parameter argument="application" property="application.id"/>
+                <Parameter argument="attribute" property="name"/>
+                <Parameter argument="entitlementValue" property="value"/>
+                <Parameter argument="accountId" property="nativeIdentity"/>
+                <Parameter argument="instance" property="instance"/>
+                <Parameter argument="source" property="source"/>
+                <Parameter argument="aggregationState" property="aggregationState">
+                  <QueryScript>
+                    <Source><![CDATA[
+                            import sailpoint.object.Filter;
+                            import sailpoint.object.IdentityEntitlement.AggregationState;
+                            import sailpoint.tools.Util;
+                            
+                            // "null" indicates include all
+                            if ( Util.getString((String)value) != null ) {
+                                if ( Util.nullSafeEq("Connected", (String)value) ) {
+                                    queryOptions.addFilter(Filter.eq("aggregationState", AggregationState.Connected));                                   
+                                } else {
+                                    queryOptions.addFilter(Filter.eq("aggregationState", AggregationState.Disconnected));
+                                }
+                            }
+                            return queryOptions;
+                          ]]></Source>
+                  </QueryScript>
+                </Parameter>
+                <Parameter argument="type" property="type">
+                  <QueryScript>
+                    <Source><![CDATA[
+                            import sailpoint.object.Filter;
+                            import sailpoint.object.IdentityEntitlement.AggregationState;
+                            import sailpoint.tools.Util;
+                            
+                            // "null" indicates include all
+                            if ( Util.getString((String)value) != null ) {
+                                queryOptions.addFilter(Filter.eq("type", value));                                   
+                            }
+                            return queryOptions;
+                          ]]></Source>
+                  </QueryScript>
+                </Parameter>
+                <Parameter argument="allowed" property="allowed" valueClass="boolean"/>
+                <Parameter argument="assigned" property="assigned" valueClass="boolean"/>
+                <Parameter argument="grantedByRole" property="grantedByRole" valueClass="boolean"/>
+                <Parameter argument="assigner" property="assigner"/>
+                <Parameter argument="pendingRequest" property="pendingRequestItem">
+                  <QueryScript>
+                    <Source><![CDATA[
+                            import sailpoint.object.*;
+                            import sailpoint.tools.*;
+
+                            // "null" indicates no value
+                            if ( Util.getString((String)value) != null ) {
+                                boolean bool = Util.otob(value);
+                                if ( !bool ) 
+                                    queryOptions.addFilter(Filter.isnull(property));
+                                else 
+                                    queryOptions.addFilter(Filter.notnull(property));
+                                    
+                            }
+                            return queryOptions;
+                          ]]></Source>
+                  </QueryScript>
+                </Parameter>
+                <Parameter argument="currentRequest" property="requestItem">
+                  <QueryScript>
+                    <Source><![CDATA[
+                            import sailpoint.object.*;
+                            import sailpoint.tools.*;
+
+                            // "null" indicates no value
+                            if ( Util.getString((String)value) != null ) {
+                                boolean bool = Util.otob(value);
+                                if ( !bool ) 
+                                    queryOptions.addFilter(Filter.isnull(property));
+                                else 
+                                    queryOptions.addFilter(Filter.notnull(property));
+                                    
+                            }
+                            return queryOptions;
+                          ]]></Source>
+                  </QueryScript>
+                </Parameter>
+                <Parameter argument="pendingCertification" property="pendingCertificationItem">
+                  <QueryScript>
+                    <Source><![CDATA[
+                            import sailpoint.object.*;
+                            import sailpoint.tools.*;
+
+                            // "null" indicates no value
+                            if ( Util.getString((String)value) != null ) {
+                                boolean bool = Util.otob(value);
+                                if ( !bool ) 
+                                    queryOptions.addFilter(Filter.isnull(property));
+                                else 
+                                    queryOptions.addFilter(Filter.notnull(property));
+                                    
+                            }
+                            return queryOptions;
+                          ]]></Source>
+                  </QueryScript>
+                </Parameter>
+                <Parameter argument="certified" property="certificationItem">
+                  <QueryScript>
+                    <Source><![CDATA[
+                            import sailpoint.object.*;
+                            import sailpoint.tools.*;
+
+                            // "null" indicates no value
+                            if ( Util.getString((String)value) != null ) {
+                                boolean bool = Util.otob(value);
+                                if ( !bool ) 
+                                    queryOptions.addFilter(Filter.isnull(property));
+                                else 
+                                    queryOptions.addFilter(Filter.notnull(property));
+                                    
+                            }
+                            return queryOptions;
+                          ]]></Source>
+                  </QueryScript>
+                </Parameter>
+              </QueryParameters>
+            </DataSource>
+            <ReportForm>
+              <Reference class="sailpoint.object.Form" name="Report Form Skeleton"/>
+            </ReportForm>
+            <Columns>
+              <ReportColumnConfig field="identity" header="Identity" property="identity.displayName" sortable="true" width="110"/>
+              <ReportColumnConfig field="application" header="Application" property="application.name" sortable="true" width="110"/>
+              <ReportColumnConfig field="attribute" header="Attribute" property="name" sortable="true" width="110"/>
+              <ReportColumnConfig field="value" header="Entitlement" property="value" sortable="true" width="110"/>
+              <ReportColumnConfig field="displayValue" header="Display Value" property="application.id" scriptArguments="name,value,type" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                          
+                            import sailpoint.api.Explanator;
+                            import sailpoint.api.Explanator.Explanation;
+                            import sailpoint.api.ObjectUtil;
+                            import sailpoint.object.ManagedAttribute.Type;
+                            import sailpoint.object.Bundle;
+                            import sailpoint.object.ProvisioningPlan;
+                            import sailpoint.service.classification.ClassificationService;
+                            import sailpoint.tools.Util;
+
+                            String appId = (String) value;
+                            // aka attribute
+                            String name = (String) scriptArgs.get("name");
+                            String val = (String) scriptArgs.get("value");
+                            Type type = (Type) scriptArgs.get("type");
+
+                            if (type != null && type == Type.Entitlement && appId != null && name != null) {
+                              Explanation exp = Explanator.get(appId, name, val, type.name());
+
+                              if (exp != null) {
+                                return exp.getDisplayValue();
+                              }
+                            }
+
+                            return null;
+                            
+                        ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="accountId" header="Account Name" property="nativeIdentity" skipLocalization="true" sortable="true" width="110"/>
+              <ReportColumnConfig field="accountDisplayName" header="Account Display Name" property="displayName" skipLocalization="true" sortable="true" width="110"/>
+              <ReportColumnConfig field="instance" header="Instance" property="instance" sortable="true" width="110"/>
+              <ReportColumnConfig field="source" header="Source" property="source" sortable="true" width="110"/>
+              <ReportColumnConfig field="aggregationState" header="Exists on account" property="aggregationState" width="110"/>
+              <ReportColumnConfig field="type" header="Entitlement Type" property="type" sortable="true" width="110"/>
+              <ReportColumnConfig field="allowed" header="Allowed" property="allowed" sortable="true" width="110"/>
+              <ReportColumnConfig field="assigned" header="Assigned" property="assigned" sortable="true" width="110"/>
+              <ReportColumnConfig field="grantedByRole" header="Granted by a role" property="grantedByRole" sortable="true" width="110"/>
+              <ReportColumnConfig field="assigner" header="Assigned By" property="assigner" sortable="true" width="110"/>
+              <ReportColumnConfig field="lastCertName" header="Last Certification" property="certificationItem.parent.certification.name" sortable="true" width="110"/>
+              <ReportColumnConfig field="lastCertDate" header="Last Certification Date" property="certificationItem.modified" sortable="true" width="110"/>
+              <ReportColumnConfig field="lastRequestId" header="Request ID" property="requestItem.identityRequest.name" sortable="true" width="110"/>
+              <ReportColumnConfig field="classificationNames" header="Classifications" property="application.id" scriptArguments="name,value,type" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                            
+                            import sailpoint.api.Explanator;
+                            import sailpoint.api.Explanator.Explanation;
+                            import sailpoint.api.ObjectUtil;
+                            import sailpoint.object.ManagedAttribute.Type;
+                            import sailpoint.object.Bundle;
+                            import sailpoint.object.ProvisioningPlan;
+                            import sailpoint.service.classification.ClassificationService;
+                            import sailpoint.tools.Util;
+
+                            String appId = (String) value;
+                            // aka attribute
+                            String name = (String) scriptArgs.get("name");
+                            String val = (String) scriptArgs.get("value");
+                            Type type = (Type) scriptArgs.get("type");
+
+                            // Check if it is representing a role
+                            if (ProvisioningPlan.ATT_IIQ_DETECTED_ROLES.equals(name) ||
+                                    ProvisioningPlan.ATT_IIQ_ASSIGNED_ROLES.equals(name)) {
+
+                                String classifiableId = ObjectUtil.getId(context, Bundle.class, val);
+                                if (classifiableId != null) {
+                                    ClassificationService service = new ClassificationService(context);
+                                    return Util.listToCsv(service.getClassificationNames(Bundle.class, classifiableId));
+                                }
+                            }
+                            // Otherwise it is an entitlement
+                            else {
+                                if (appId != null && name != null && type != null) {
+                                    Explanation exp = type == Type.Permission ?
+                                                      Explanator.get(appId, name) :
+                                                      Explanator.get(appId, name, val);
+
+                                    if (exp != null) {
+                                        return Util.listToCsv(exp.getClassificationDisplayableNames());
+                                    }
+                                }
+                            }
+
+                            return null;
+                            
+                        ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="elevatedAccess" header="Elevated Access" property="application.id" scriptArguments="name,value,type" sortable="true" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                          
+                            import sailpoint.api.Explanator;
+                            import sailpoint.api.Explanator.Explanation;
+                            import sailpoint.api.ObjectUtil;
+                            import sailpoint.object.ManagedAttribute.Type;
+                            import sailpoint.object.Bundle;
+                            import sailpoint.object.ProvisioningPlan;
+                            import sailpoint.service.classification.ClassificationService;
+                            import sailpoint.tools.Util;
+
+                            String appId = (String) value;
+                            // aka attribute
+                            String name = (String) scriptArgs.get("name");
+                            String val = (String) scriptArgs.get("value");
+                            Type type = (Type) scriptArgs.get("type");
+
+                            if (type != null && type == Type.Entitlement && appId != null && name != null) {
+                              Explanation exp = Explanator.get(appId, name, val, type.name());
+                              return exp == null ? null : exp.isIiqElevatedAccess();
+                            }
+
+                            return null;
+                            
+                        ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+            </Columns>
+            <ReportHeader title="Identity Entitlements Report">
+              <Values>
+                <LiveReportSummaryValue label="Creator" name="creator">
+                  <Value>
+                    <String>spadmin</String>
+                  </Value>
+                </LiveReportSummaryValue>
+                <LiveReportSummaryValue label="Creation Date" name="date">
+                  <Value>
+                    <String>7/21/24, 3:48 PM</String>
+                  </Value>
+                </LiveReportSummaryValue>
+                <LiveReportSummaryValue label="Identities" name="identity">
+                  <Value>
+                    <String>Aaron Nichols, Adam Kennedy, Alan Bradley</String>
+                  </Value>
+                </LiveReportSummaryValue>
+                <LiveReportSummaryValue label="Applications" name="application">
+                  <Value>
+                    <String>HR-Application, HR-ApplicationTarget</String>
+                  </Value>
+                </LiveReportSummaryValue>
+                <LiveReportSummaryValue label="Attributes" name="attribute">
+                  <Value>
+                    <String>memberOf, groups</String>
+                  </Value>
+                </LiveReportSummaryValue>
+                <LiveReportSummaryValue label="Entitlements" name="entitlementValue">
+                  <Value>
+                    <String>AccountsReceivable, BenefitCommittee, Admins, AccountingGeneral</String>
+                  </Value>
+                </LiveReportSummaryValue>
+              </Values>
+            </ReportHeader>
+          </LiveReport>
+        </value>
+      </entry>
+      <entry key="reportRowCount">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Files>
+    <Reference class="sailpoint.object.PersistedFile" name="Demo Entitlements.pdf"/>
+    <Reference class="sailpoint.object.PersistedFile" name="Demo Entitlements.csv"/>
+  </Files>
+</JasperResult>

@@ -1,0 +1,107 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow explicitTransitions="true" name="dummyWorkflow" type="">
+  <Variable initializer="false" name="trace"/>
+  <Variable name="plan"/>
+  <Variable name="attributess"/>
+  <Variable input="true" name="event"/>
+  <Variable input="true" name="trigger"/>
+  <Variable name="json">
+    <Script>
+      <Source><![CDATA[
+        import org.json.JSONObject;
+
+        return new JSONObject(attributess);
+      ]]></Source>
+    </Script>
+  </Variable>
+  <Variable name="identityName">
+    <Script>
+      <Source><![CDATA[
+        import org.json.JSONObject;
+
+        log.error("--fetchIdentity--"+ fetchIdentity(json).getDisplayName());
+        return fetchIdentity(json).getDisplayName();
+      ]]></Source>
+    </Script>
+  </Variable>
+  <Variable name="firstNmae">
+    <Script>
+      <Source><![CDATA[
+        import org.json.JSONObject;
+        //JSONObject json=new JSONObject(attributess);
+
+        log.error("--json object--"+json);
+        log.error("---firstname --"+json.get("firstName"));
+        log.error("---ln --"+json.get("lastName"));
+        log.error("---dept --"+json.get("department"));
+        return json.get("firstName");
+      ]]></Source>
+    </Script>
+  </Variable>
+  <Variable name="identity">
+    <Script>
+      <Source><![CDATA[
+        import sailpoint.object.Identity;
+
+        for(int i=0;i<this.variables.length;i++){
+        log.error("wf postman vvv  "+this.variables[i]);
+        }
+        Identity identity=null;
+        identity=context.getObjectByName(Identity.class, identityName);
+        return identity;
+      ]]></Source>
+    </Script>
+  </Variable>
+  <RuleLibraries>
+    <Reference class="sailpoint.object.Rule" name="AdminAccountCreationInDirectoriesRuleLibrary"/>
+  </RuleLibraries>
+  <Step icon="Start" name="Start" posX="109" posY="100">
+    <Transition to="Create ProvisioningPlan Step"/>
+  </Step>
+  <Step icon="Default" name="Create ProvisioningPlan Step" posX="319" posY="100" resultVariable="plan">
+    <Script>
+      <Source><![CDATA[
+        import sailpoint.object.*;
+        import sailpoint.api.*;
+
+        log.error("deummyStep-  triggered--");
+        String applicatioName="ActiveDirectory";
+        ProvisioningPlan plan =new ProvisioningPlan();
+        AccountRequest accReq=new AccountRequest();
+
+
+        List links=identity.getLinks();
+        for(Link link:links){
+        if(null!=link){
+        if(link.getApplicationName().equalsIgnoreCase(applicatioName)){
+        plan.setIdentity(identity);
+
+        accReq.setApplication(applicatioName);
+        accReq.setNativeIdentity(link.getNativeIdentity());
+        accReq.setOperation(ProvisioningPlan.AccountRequest.Operation.Create);
+
+        List privilages=link.getAttribute("memberOf");
+        for(String str:privilages){
+        log.error(str);
+        }
+        if(privilages!=null){
+        accReq.add(new AttributeRequest("memberOf", ProvisioningPlan.Operation.Add,privilages));
+        plan.add(accReq);
+        }
+        }
+        }
+        }
+
+        log.error("--dummy wf exected--");
+
+        Provisioner pro = new Provisioner(context);
+        pro.execute(plan);
+        return plan;
+
+      ]]></Source>
+    </Script>
+    <Transition to="Stop"/>
+  </Step>
+  <Step icon="Stop" name="Stop" posX="677" posY="98"/>
+</Workflow>

@@ -1,0 +1,140 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskDefinition PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskDefinition executor="sailpoint.reporting.LiveReportExecutor" name="SAP-Leaver-Report2" progressMode="Percentage" resultAction="Rename" template="true" type="LiveReport">
+  <Attributes>
+    <Map>
+      <entry key="report">
+        <value>
+          <LiveReport title="ALL Leaver Reports">
+            <DataSource objectType="IdentityRequest" type="Filter">
+              <QueryParameters>
+                <Parameter>
+                  <QueryScript>
+                    <Source><![CDATA[
+
+                      import sailpoint.object.QueryOptions;
+                      import sailpoint.object.Filter;
+                      import sailpoint.object.IdentityRequest;
+                      import sailpoint.object.Identity;
+
+
+
+                      List requestTypes = new ArrayList();
+                      // requestTypes.add("WBLeaver");
+                      // requestTypes.add("IFCLeaver");
+
+                      requestTypes.add("Lifecycle");
+                      //requestTypes.add("AccessRequest");
+
+                      // Filter LeaverFilters = Filter.and(Filter.in("type" ,requestTypes) ,Filter.subquery("targetId", Identity.class, "id", Filter.ignoreCase(Filter.eq("correlated", false))));
+                      Filter LeaverFilters = Filter.in("type" ,requestTypes);
+                      QueryOptions qo = new QueryOptions();
+                      qo.add(LeaverFilters);
+                      return qo;
+
+                    ]]></Source>
+                  </QueryScript>
+                </Parameter>
+              </QueryParameters>
+            </DataSource>
+            <Columns>
+              <ReportColumnConfig field="UPI" header="RequesteeUPI" property="IdentityRequest.targetId" valueClass="java.lang.String" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.Identity;
+
+
+                    String name= null;
+                    if(null != value)
+                    {
+                    Identity id = context.getObjectById(Identity.class, value);
+                    if(null != id)
+                    {
+                    name= id.getName();
+                    }
+                    }
+                    return name;
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="First Name" header="First Name" property="IdentityRequest.targetId" valueClass="java.lang.String" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.Identity;
+
+                    String firstName= null;
+                    if(null != value)
+                    {
+
+                    Identity id = context.getObjectById(Identity.class, value);
+                    if(null != id)
+                    {
+                    firstName = id.getFirstname()!=null?id.getFirstname():id.getAttribute("firstname");
+
+                    }
+                    }
+                    return firstName;
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="Last Name" header="Last Name" property="IdentityRequest.targetId" valueClass="java.lang.String" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.Identity;
+
+                    String lastname= null;
+                    if(null != value)
+                    {
+                    Identity id = context.getObjectById(Identity.class, value);
+                    if(null != id)
+                    {
+                    lastname = id.getLastname()!=null?id.getLastname():id.getAttribute("lastname");
+                    }
+                    }
+                    return lastname;
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="EventName" header="EventName" property="IdentityRequest.targetId" valueClass="java.lang.String" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.Filter;
+                    import sailpoint.object.AuditEvent;
+                    import sailpoint.object.*;
+
+
+
+
+                    String name= null;
+                    if(null != value)
+                    {
+                    Identity id = context.getObjectById(Identity.class, value);
+                    if(null != id)
+                    {
+                    name= id.getName();
+                    }
+                    }
+                   
+                    Filter filter = Filter.and(Filter.eq("target", "Identity:"+name),Filter.eq("action", "identityLifecycleEvent"),Filter.eq("string1", "LEAVER FEATURE"));
+                   
+                    log.error(" name : "+name+"    "+filter);
+                    
+                    //Filter filter = Filter.and(Filter.eq("target", "Identity:"+name),Filter.eq("action", "identityLifecycleEvent"));
+                    AuditEvent event = context.getUniqueObject(AuditEvent.class,filter);
+                    log.error(" event : "+event.toXml());
+                    
+                    String eventname = event!=null?event.getString1():"";
+
+                    return eventname;
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="LeaverDate" header="LeaverDate" property="IdentityRequest.created" sortable="true" valueClass="java.lang.String" width="110"/>
+            </Columns>
+          </LiveReport>
+        </value>
+      </entry>
+      <entry key="reportTitle" value="rept_lcm_entitlement_request_status_title"/>
+    </Map>
+  </Attributes>
+</TaskDefinition>

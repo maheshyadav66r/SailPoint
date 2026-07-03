@@ -1,0 +1,107 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Validation TaskDefinition Running" type="Validation">
+  <Source><![CDATA[
+  import sailpoint.object.*;
+  import sailpoint.api.*;
+  import sailpoint.object.Filter.LeafFilter;
+  import sailpoint.object.TaskResult;
+  import sailpoint.api.TaskManager;
+  import sailpoint.tools.GeneralException;
+
+
+
+
+  TaskResult result = null;
+  try {
+    TaskManager tm = new TaskManager(context);
+    result = tm.runWithResult(context.getObjectByName(TaskDefinition.class,"Report-IdentityRequestItemData"), new HashMap());
+  } catch (Exception e) {
+    log.error("Exception processing request for Identity Refresh run from rule");
+    throw new GeneralException(e);
+  }
+
+  log.error(" Result Data : "+result.toXml());
+  return result.toXml();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  return context.getUserName();
+
+
+
+  Filter f1 = Filter.and(Filter.eq("name","buyerITRole"),Filter.eq("type","it"));
+  Bundle bundle = context.getUniqueObject(Bundle.class,f1);
+
+  List classifications = new ArrayList();
+
+  if( bundle != null ){
+
+    List profiles = bundle.getProfiles();
+
+    if(profiles != null){
+
+      for(Profile profile : profiles){
+
+        List  constraints = profile.getConstraints();
+        Application  application = profile.getApplication();
+
+
+        if(constraints == null  @or  application == null){
+          continue;
+        }
+
+        for(Filter filter : constraints){
+
+          if(filter instanceof sailpoint.object.Filter.LeafFilter){
+
+            LeafFilter lf = (LeafFilter)filter;
+
+            String  attrName = (String) lf.getProperty();
+            String  attrValue = (String) lf.getValue().get(0);
+
+            Filter filter = Filter.and(Filter.eq("attribute",attrName) , Filter.eq("value",attrValue) , Filter.eq("application.name",application.getName()));
+            ManagedAttribute entitlement = context.getUniqueObject(ManagedAttribute.class,filter);
+
+            List clsfns = entitlement.getClassifications();
+            classifications.addAll(clsfns); 
+
+            bundle.setClassifications(classifications);
+
+            context.saveObject(bundle);
+            context.commitTransaction();
+
+          }
+        }
+      }
+    }
+  }
+
+  return "mahesh";
+
+  // log.error(" classifications....  "+classifications.get(0).toXml());
+  //return context.decrypt("1:ACP:kiiFlXS6DFbwxvYUcvt/ONTUvE2L2fDkrFI4+6BHwHU=");
+  // log.error(" .....16 classification list....."+classifications);
+  //  log.error( "   bundle after setting ent classification   ..."+bundle.toXml());
+
+  ]]></Source>
+</Rule>

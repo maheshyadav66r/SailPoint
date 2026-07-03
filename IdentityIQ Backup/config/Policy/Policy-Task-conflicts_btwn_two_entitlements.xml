@@ -1,0 +1,61 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Policy PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Policy certificationActions="Remediated,Mitigated,Delegated" configPage="entitlementPolicy.xhtml" executor="sailpoint.policy.EntitlementSODPolicyExecutor" name="Task-conflicts_btwn_two_entitlements" state="Active" type="EntitlementSOD" typeKey="policy_type_entitlement_sod" violationOwnerType="Identity">
+  <PolicyAlert escalationStyle="none">
+    <NotificationEmailTemplateRef>
+      <Reference class="sailpoint.object.EmailTemplate" name="Alert Notification"/>
+    </NotificationEmailTemplateRef>
+    <Owners>
+      <Reference class="sailpoint.object.Identity" name="Laxman Aligina"/>
+    </Owners>
+  </PolicyAlert>
+  <Attributes>
+    <Map>
+      <entry key="sysDescriptions">
+        <value>
+          <Map>
+            <entry key="en_US" value="Ploicy Level Description Entitlement_conflict"/>
+          </Map>
+        </value>
+      </entry>
+      <entry key="taskResultId" value="c0a81d8992c311298192c370b5a700cd"/>
+      <entry key="violationRule" value="violation formatting rule check"/>
+    </Map>
+  </Attributes>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="Mahesh Nattali"/>
+  </Owner>
+  <ViolationOwner>
+    <Reference class="sailpoint.object.Identity" name="Naveen Rasali"/>
+  </ViolationOwner>
+  <GenericConstraints>
+    <GenericConstraint disabled="true" name="Entitlement_conflict_rule_check1" violationOwnerType="None">
+      <Attributes>
+        <Map>
+          <entry key="taskResultId" value="c0a81d8992c311298192dc1244ba116f"/>
+        </Map>
+      </Attributes>
+      <CompensatingControl>acc to compensiation it should not have such entlmnts</CompensatingControl>
+      <Description>Description of Entitlement_conflict_rule_check1</Description>
+      <RemediationAdvice>Correction Advice:as of now  continue</RemediationAdvice>
+      <IdentitySelector>
+        <MatchExpression and="true">
+          <MatchTerm name="memberOf" type="Entitlement" value="CN=campusAccess,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+            <ApplicationRef>
+              <Reference class="sailpoint.object.Application" name="ADX"/>
+            </ApplicationRef>
+          </MatchTerm>
+        </MatchExpression>
+      </IdentitySelector>
+      <IdentitySelector>
+        <MatchExpression>
+          <MatchTerm name="memberOf" type="Entitlement" value="CN=Compensation,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+            <ApplicationRef>
+              <Reference class="sailpoint.object.Application" name="ADX"/>
+            </ApplicationRef>
+          </MatchTerm>
+        </MatchExpression>
+      </IdentitySelector>
+    </GenericConstraint>
+  </GenericConstraints>
+</Policy>

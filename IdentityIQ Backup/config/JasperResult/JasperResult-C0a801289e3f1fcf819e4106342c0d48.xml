@@ -1,0 +1,468 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE JasperResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<JasperResult handlerPageCount="-1" pageCount="-1" pagesPerBucket="-1">
+  <Attributes>
+    <Map>
+      <entry key="csvRowsPerBucket">
+        <value>
+          <Integer>1000</Integer>
+        </value>
+      </entry>
+      <entry key="header">
+        <value>
+          <LiveReportSummary title="ALL Leaver Reports">
+            <Values>
+              <LiveReportSummaryValue label="Creator" name="creator">
+                <Value>
+                  <String>spadmin</String>
+                </Value>
+              </LiveReportSummaryValue>
+              <LiveReportSummaryValue label="Creation Date" name="date">
+                <Value>
+                  <String>5/19/26, 9:46 PM</String>
+                </Value>
+              </LiveReportSummaryValue>
+            </Values>
+          </LiveReportSummary>
+        </value>
+      </entry>
+      <entry key="reportDefinition">
+        <value>
+          <LiveReport title="ALL Leaver Reports">
+            <DataSource objectType="IdentityRequest" type="Filter">
+              <QueryParameters>
+                <Parameter>
+                  <QueryScript>
+                    <Source><![CDATA[
+
+                      import sailpoint.object.QueryOptions;
+                      import sailpoint.object.Filter;
+                      import sailpoint.object.IdentityRequest;
+                      import sailpoint.object.Identity;
+                      import java.util.Calendar;
+                      import java.util.Date;
+                      import org.apache.commons.logging.Log;
+                      import org.apache.log4j.Logger;
+                      import org.apache.log4j.Level;
+
+
+
+                      List requestTypes = new ArrayList();
+                     // requestTypes.add("WBLeaver");
+                     // requestTypes.add("IFCLeaver");
+
+                      requestTypes.add("Lifecycle");
+                      requestTypes.add("AccessRequest");
+                      
+                      Calendar calendar = Calendar.getInstance();
+                      calendar.set(Calendar.HOUR_OF_DAY, 0);
+                      calendar.set(Calendar.HOUR_OF_DAY, 0);
+                      calendar.set(Calendar.MINUTE, 0);
+                      calendar.set(Calendar.SECOND, 0);
+                      calendar.set(Calendar.MILLISECOND, 0);
+
+                      calendar.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+                      long lastSundayEpoch = calendar.getTimeInMillis();
+                      Date lastSundayDate = new Date(lastSundayEpoch);
+                      calendar.add(Calendar.WEEK_OF_YEAR, -100);
+                      long previousLastSundayEpoch = calendar.getTimeInMillis();
+                      Date previousLastSundayDate = new Date(previousLastSundayEpoch);
+
+                      Filter LeaverFilters = Filter.and(Filter.in("type" ,requestTypes) ,Filter.and( Filter.ge("created",previousLastSundayDate) ,Filter.le("created",lastSundayDate)),Filter.subquery("targetId", Identity.class, "id", Filter.ignoreCase(Filter.eq("correlated", false))));
+                      QueryOptions qo = new QueryOptions();
+                      qo.add(LeaverFilters);
+                      return qo;
+
+                    ]]></Source>
+                  </QueryScript>
+                </Parameter>
+              </QueryParameters>
+            </DataSource>
+            <ReportForm>
+              <Reference class="sailpoint.object.Form" name="Report Form Skeleton"/>
+            </ReportForm>
+            <Columns>
+              <ReportColumnConfig field="requestId" header="Access Request ID" property="IdentityRequest.name" sortable="true" valueClass="java.lang.String" width="110"/>
+              <ReportColumnConfig field="IdentityName" header="RequesteeUPI" property="IdentityRequest.targetId" valueClass="java.lang.String" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.Identity;
+                    import sailpoint.api.SailPointContext;
+                    import org.apache.commons.logging.Log;
+                    import org.apache.log4j.Logger;
+                    import org.apache.log4j.Level;
+                    Logger log = Logger.getLogger("LeaverReport-StatusReport");
+
+                    log.debug("############### input value1 = " +value);
+                    String name= null;
+                    log.debug("############### input value2 = " +value);
+                    if(null != value)
+                    {
+                    Identity id = context.getObjectById(Identity.class, value);
+                    log.debug(value+" identity id= "+id);
+                    if(null != request)
+                    {
+                    if(null != id)
+                    {
+                    name= id.getName();
+                    log.debug(value+" RequesteeUPI= "+name);
+                    }
+                    }
+                    }
+                    log.debug(value+" RequesteeUPI Final= "+name);
+                    return name;
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="First Name" header="First Name" property="IdentityRequest.targetId" valueClass="java.lang.String" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.Identity;
+                    import sailpoint.api.SailPointContext;
+                    import sailpoint.object.Application;
+                    import sailpoint.api.IdentityService;
+                    import sailpoint.object.Link;
+                    import org.apache.commons.logging.Log;
+                    import org.apache.log4j.Logger;
+                    import org.apache.log4j.Level;
+                    Logger log = Logger.getLogger("LeaverReport-StatusReport");
+
+                    log.debug(value+" inside First Name= "+value);
+                    String firstName= null;
+                    if(null != value)
+                    {
+
+                    Identity id = context.getObjectById(Identity.class, value);
+                    if(null != id)
+                    {
+                    firstName = id.getAttribute("firstname");
+                    log.debug(value+" First Name= "+firstName);
+
+                    if(null == firstName)
+                    {
+                     Application appObject = context.getObjectByName(Application.class, "ActiveDirectory");
+                   // Application appObject = context.getObjectByName(Application.class, "CDIR_Common-Directory");
+                    if(null != appObject)
+                    {
+
+                    IdentityService is = new IdentityService(context);	
+                    List cidrCommAccounts = is.getLinks(id,appObject);
+                    if (null != cidrCommAccounts)
+                    {
+                    for (Link cdirLink : cidrCommAccounts)
+                    {
+                    firstName =(String)cdirLink.getAttribute("givenName");
+                    //firstName =(String)cdirLink.getAttribute("FIRST_NAME");
+                    log.debug(value+" insideFor= "+firstName);
+                    }
+                    }
+
+                    }
+
+
+                    }
+                    }
+                    }
+                    log.debug(value+" FinalFirst Name= "+firstName);
+                    return firstName;
+
+
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="Last Name" header="Last Name" property="IdentityRequest.targetId" valueClass="java.lang.String" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.Identity;
+                    import sailpoint.api.SailPointContext;
+                    import sailpoint.object.Application;
+                    import sailpoint.api.IdentityService;
+                    import sailpoint.object.Link;
+                    import org.apache.commons.logging.Log;
+                    import org.apache.log4j.Logger;
+                    import org.apache.log4j.Level;
+                    Logger log = Logger.getLogger("LeaverReport-StatusReport");
+
+                    log.debug(value+" inside Last Name Type= "+value);
+                    String lastName= null;
+                    if(null != value)
+                    {
+
+                    Identity id = context.getObjectById(Identity.class, value);
+                    if(null != id)
+                    {
+                    lastName = id.getAttribute("lastname");
+                    log.debug(value+" Last Name= "+lastName);
+
+                    if(null == lastName)
+                    {
+                    Application appObject = context.getObjectByName(Application.class, "ActiveDirectory");
+                    if(null != appObject)
+                    {
+
+                    IdentityService is = new IdentityService(context);	
+                    List cidrCommAccounts = is.getLinks(id,appObject);
+                    if (null != cidrCommAccounts)
+                    {
+                    for (Link cdirLink : cidrCommAccounts)
+                    {
+                   lastName =(String)cdirLink.getAttribute("sn");
+                    //lastName =(String)cdirLink.getAttribute("LAST_NAME");
+                    log.debug(value+" insideFor= "+lastName);
+                    }
+                    }
+
+                    }
+
+
+                    }
+                    }
+                    }
+                    log.debug(value+" FinalLast Name= "+lastName);
+                    return lastName;
+
+
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="Email" header="Email" property="IdentityRequest.targetId" valueClass="java.lang.String" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.Identity;
+                    import sailpoint.api.SailPointContext;
+                    import sailpoint.object.Application;
+                    import sailpoint.api.IdentityService;
+                    import sailpoint.object.Link;
+                    import org.apache.commons.logging.Log;
+                    import org.apache.log4j.Logger;
+                    import org.apache.log4j.Level;
+                    Logger log = Logger.getLogger("LeaverReport-StatusReport");
+
+                    log.debug(value+" inside Email= "+value);
+                    String email= null;
+                    if(null != value)
+                    {
+
+                    Identity id = context.getObjectById(Identity.class, value);
+                    if(null != id)
+                    {
+                    email = id.getAttribute("email");
+                    log.debug(value+" Email= "+email);
+
+                    if(null == email)
+                    {
+                    Application appObject = context.getObjectByName(Application.class, "ActiveDirectory");
+                    if(null != appObject)
+                    {
+
+                    IdentityService is = new IdentityService(context);	
+                    List cidrCommAccounts = is.getLinks(id,appObject);
+                    if (null != cidrCommAccounts)
+                    {
+                    for (Link cdirLink : cidrCommAccounts)
+                    {
+                    email =(String)cdirLink.getAttribute("mail");
+                    log.debug(value+" insideFor= "+email);
+                    }
+                    }
+
+                    }
+
+
+                    }
+                    }
+                    }
+                    log.debug(value+" FinalEmail= "+email);
+                    return email;
+
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="Short Name" header="Short Name" property="IdentityRequest.targetId" valueClass="java.lang.String" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.Identity;
+                    import sailpoint.api.SailPointContext;
+                    import sailpoint.object.Application;
+                    import sailpoint.api.IdentityService;
+                    import sailpoint.object.Link;
+                    import org.apache.commons.logging.Log;
+                    import org.apache.log4j.Logger;
+                    import org.apache.log4j.Level;
+                    Logger log = Logger.getLogger("LeaverReport-StatusReport");
+
+                    log.debug(value+" inside Short Name= "+value);
+                    String shortName= null;
+                    if(null != value)
+                    {
+
+                    Identity id = context.getObjectById(Identity.class, value);
+                    if(null != id)
+                    {
+                    shortName = id.getAttribute("SHORT_NAME");
+                    log.debug(value+" Short Name= "+shortName);
+
+                    if(null == shortName)
+                    {
+                    Application appObject = context.getObjectByName(Application.class, "ActiveDirectory");
+                    if(null != appObject)
+                    {
+
+                    IdentityService is = new IdentityService(context);	
+                    List cidrCommAccounts = is.getLinks(id,appObject);
+                    if (null != cidrCommAccounts)
+                    {
+                    for (Link cdirLink : cidrCommAccounts)
+                    {
+                    shortName =(String)cdirLink.getAttribute("distinguishedName");
+                    log.debug(value+" insideFor= "+shortName);
+                    }
+                    }
+
+                    }
+
+
+                    }
+                    }
+                    }
+                    log.debug(value+" FinalShort Name= "+shortName);
+                    return shortName;                
+
+
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="Department" header="Department" property="IdentityRequest.targetId" valueClass="java.lang.String" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.Identity;
+                    import sailpoint.api.SailPointContext;
+                    import sailpoint.object.Application;
+                    import sailpoint.api.IdentityService;
+                    import sailpoint.object.Link;
+                    import org.apache.commons.logging.Log;
+                    import org.apache.log4j.Logger;
+                    import org.apache.log4j.Level;
+                    Logger log = Logger.getLogger("LeaverReport-StatusReport");
+
+                    log.debug(value+" inside Appointment Type= "+value);
+                    String department= null;
+                    if(null != value)
+                    {
+
+                    Identity id = context.getObjectById(Identity.class, value);
+                    if(null != id)
+                    {
+                    department = id.getAttribute("Department");
+                    log.debug(value+" Department= "+department);
+
+                    if(null == department)
+                    {
+                    Application appObject = context.getObjectByName(Application.class, "ActiveDirectory");
+                    if(null != appObject)
+                    {
+
+                    IdentityService is = new IdentityService(context);	
+                    List cidrCommAccounts = is.getLinks(id,appObject);
+                    if (null != cidrCommAccounts)
+                    {
+                    for (Link cdirLink : cidrCommAccounts)
+                    {
+                    department =(String)cdirLink.getAttribute("sAMAccountName");
+                    log.debug(value+" insideFor= "+department);
+                    }
+                    }
+
+                    }
+
+
+                    }
+                    }
+                    }
+                    log.debug(value+" FinalDepartment= "+department);
+                    return department;                
+
+
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="ORG_CODE" header="Org Code" property="IdentityRequest.targetId" sortable="true" valueClass="java.lang.String" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.Identity;
+                    import sailpoint.api.SailPointContext;
+                    import sailpoint.object.Application;
+                    import sailpoint.api.IdentityService;
+                    import sailpoint.object.Link;
+                    import org.apache.commons.logging.Log;
+                    import org.apache.log4j.Logger;
+                    import org.apache.log4j.Level;
+                    Logger log = Logger.getLogger("LeaverReport-StatusReport");
+
+                    log.debug(value+" inside Appointment Type= "+value);
+                    String org_code= null;
+                    if(null != value)
+                    {
+
+                    Identity id = context.getObjectById(Identity.class, value);
+                    if(null != id)
+                    {
+                    org_code = id.getAttribute("department");
+                    log.debug(value+" ORG_CODE= "+org_code);
+
+
+                    }
+                    }
+                    log.debug(value+" FinalORG_CODE= "+org_code);
+                    return org_code;                  
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+              <ReportColumnConfig field="LeaverDate" header="LeaverDate" property="IdentityRequest.created" sortable="true" valueClass="java.lang.String" width="110">
+                <RenderScript>
+                  <Source><![CDATA[
+                    import sailpoint.object.IdentityRequestItem;
+                    import sailpoint.object.IdentityRequest;
+                    import sailpoint.object.Link;
+                    import sailpoint.object.Filter;
+                    import sailpoint.tools.Util;
+                    import org.apache.commons.logging.Log;
+                    import org.apache.log4j.Logger;
+                    import org.apache.log4j.Level;
+                    Logger log = Logger.getLogger("LeaverReport-StatusReport");
+
+                    log.debug(value+" inside created= "+value);
+                    return value;
+                  ]]></Source>
+                </RenderScript>
+              </ReportColumnConfig>
+            </Columns>
+            <ReportHeader title="ALL Leaver Reports">
+              <Values>
+                <LiveReportSummaryValue label="Creator" name="creator">
+                  <Value>
+                    <String>spadmin</String>
+                  </Value>
+                </LiveReportSummaryValue>
+                <LiveReportSummaryValue label="Creation Date" name="date">
+                  <Value>
+                    <String>5/19/26, 9:46 PM</String>
+                  </Value>
+                </LiveReportSummaryValue>
+              </Values>
+            </ReportHeader>
+          </LiveReport>
+        </value>
+      </entry>
+      <entry key="reportRowCount">
+        <value>
+          <Integer>17</Integer>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Files>
+    <Reference class="sailpoint.object.PersistedFile" name="WBG1.pdf"/>
+    <Reference class="sailpoint.object.PersistedFile" name="WBG1.csv"/>
+  </Files>
+</JasperResult>

@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Bundle PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Bundle name="FinanceBusinessRole" riskScoreWeight="150" type="business">
+  <Attributes>
+    <Map>
+      <entry key="accountSelectorRules"/>
+      <entry key="allowDuplicateAccounts" value="false"/>
+      <entry key="allowMultipleAssignments" value="false"/>
+      <entry key="mergeTemplates" value="false"/>
+      <entry key="sysDescriptions">
+        <value>
+          <Map>
+            <entry key="en_US"/>
+          </Map>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Inheritance>
+    <Reference class="sailpoint.object.Bundle" name="IT2LDAP-Finance"/>
+    <Reference class="sailpoint.object.Bundle" name="IT2AD-Finance"/>
+  </Inheritance>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+  <Selector>
+    <IdentitySelector>
+      <MatchExpression>
+        <MatchTerm name="Department" type="Entitlement" value="Finance">
+          <ApplicationRef>
+            <Reference class="sailpoint.object.Application" name="SRH application"/>
+          </ApplicationRef>
+        </MatchTerm>
+      </MatchExpression>
+    </IdentitySelector>
+  </Selector>
+  <RoleIndex assignedCount="2" entitlementCountInheritance="2" lastAssigned="1756458271854"/>
+</Bundle>

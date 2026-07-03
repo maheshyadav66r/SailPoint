@@ -1,0 +1,635 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE IdentityRequest PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<IdentityRequest completionStatus="Failure" endDate="1761751117661" executionStatus="Completed" name="0000000972" priority="Normal" requesterDisplayName="The Administrator" requesterId="c0a81d898f331ca3818f33fcf64800ff" source="LCM" state="End" targetClass="Identity" targetDisplayName="Aaron Nichols" type="AccessRequest" verified="1761796804356">
+  <Attributes>
+    <Map>
+      <entry key="messages">
+        <value>
+          <List>
+            <Message key="sailpoint.connector.ConnectorException: Exception occurred.  Error message - HTTP not ended OK.  Response Code - 400 Error - Invalid value specified for property 'mailNickname' of resource 'User'." type="Error"/>
+          </List>
+        </value>
+      </entry>
+      <entry key="provisionedProject">
+        <value>
+          <ProvisioningProject identity="Aaron Nichols">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000972"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="Azure Active Directory" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800fb9a2e13ed819a305f9f0d064d"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="EntitlementAdd"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest displayValue="Attribute Definition Reader" name="roles" op="Add" value="1d336d2c-4ae8-42ef-9711-b3604ce3fc2c">
+                    <Attributes>
+                      <Map>
+                        <entry key="assignment" value="true"/>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000972"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <ProvisioningTargets>
+                  <ProvisioningTarget application="Azure Active Directory" attribute="roles" value="1d336d2c-4ae8-42ef-9711-b3604ce3fc2c">
+                    <AccountSelection applicationId="c0a8001697a21be78197afdb21542aef" applicationName="Azure Active Directory" implicitCreate="true"/>
+                  </ProvisioningTarget>
+                  <ProvisioningTarget retain="true" role="roleForACCSelection">
+                    <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" roleName="roleForACCSelection" selection="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                      <AccountInfo displayName="Aaron Nichols" nativeIdentity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+                    </AccountSelection>
+                  </ProvisioningTarget>
+                  <ProvisioningTarget retain="true" role="BusinessRoleAccountingHtask">
+                    <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ADX" selection="CN=Aaron Nichols,OU=XPeople,OU=Demo,DC=Eshiam,DC=com">
+                      <AccountInfo displayName="ESHIAM\XAaron Nichols" nativeIdentity="CN=Aaron Nichols,OU=XPeople,OU=Demo,DC=Eshiam,DC=com"/>
+                    </AccountSelection>
+                  </ProvisioningTarget>
+                  <ProvisioningTarget retain="true" role="EngineeringBranch">
+                    <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                      <AccountInfo displayName="Aaron Nichols" nativeIdentity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+                    </AccountSelection>
+                    <AccountSelection applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" selection="cn=Aaron.Nichols-CADM,ou=People,dc=my-domain,dc=com">
+                      <AccountInfo displayName="Aaron.Nichols-CADM" nativeIdentity="cn=Aaron.Nichols-CADM,ou=People,dc=my-domain,dc=com"/>
+                    </AccountSelection>
+                  </ProvisioningTarget>
+                </ProvisioningTargets>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Aaron Nichols" targetIntegration="Azure Active Directory" trackingId="c986a220ebed46fc94f25086d5da40ff">
+              <AccountRequest application="Azure Active Directory" op="Create">
+                <Attributes>
+                  <Map>
+                    <entry key="attachmentConfigList"/>
+                    <entry key="attachments"/>
+                    <entry key="flow" value="AccessRequest"/>
+                    <entry key="id" value="c0a800fb9a2e13ed819a305f9f0d064d"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="operation" value="EntitlementAdd"/>
+                    <entry key="provisioningTransactionId" value="c0a800fb9a2e13ed819a308cac12075f"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest displayValue="Attribute Definition Reader" name="roles" op="Add" value="1d336d2c-4ae8-42ef-9711-b3604ce3fc2c">
+                  <Attributes>
+                    <Map>
+                      <entry key="assignment" value="true"/>
+                    </Map>
+                  </Attributes>
+                </AttributeRequest>
+                <AttributeRequest name="accountType" op="Add" value="User"/>
+                <AttributeRequest name="userPrincipalName" op="Set" value="AaronNichols@EshiamSoftwarepvtltd574.onmicrosoft.com"/>
+                <AttributeRequest name="password" op="Set">
+                  <Attributes>
+                    <Map>
+                      <entry key="secret" value="true"/>
+                    </Map>
+                  </Attributes>
+                </AttributeRequest>
+                <AttributeRequest name="displayName" op="Set" value="Aaron Nichols"/>
+                <AttributeRequest name="mailNickname" op="Set" value="Aaron.Nichols@eshiam.com"/>
+                <AttributeRequest name="accountEnabled" op="Set">
+                  <Value>
+                    <Boolean>true</Boolean>
+                  </Value>
+                </AttributeRequest>
+                <AttributeRequest name="department" op="Set" value="Engineeringchange1133"/>
+                <AttributeRequest name="givenName" op="Set" value="Aaron"/>
+                <AttributeRequest name="surname" op="Set" value="Nichols"/>
+                <ProvisioningResult status="failed">
+                  <Errors>
+                    <Message key="sailpoint.connector.ConnectorException: Exception occurred.  Error message - HTTP not ended OK.  Response Code - 400 Error - Invalid value specified for property 'mailNickname' of resource 'User'." type="Error"/>
+                  </Errors>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000972"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <ProvisioningResult status="failed">
+                <Errors>
+                  <Message key="sailpoint.connector.ConnectorException: Exception occurred.  Error message - HTTP not ended OK.  Response Code - 400 Error - Invalid value specified for property 'mailNickname' of resource 'User'." type="Error"/>
+                </Errors>
+              </ProvisioningResult>
+            </ProvisioningPlan>
+            <ProvisioningTarget application="Azure Active Directory" attribute="roles" value="1d336d2c-4ae8-42ef-9711-b3604ce3fc2c">
+              <AccountSelection applicationId="c0a8001697a21be78197afdb21542aef" applicationName="Azure Active Directory" implicitCreate="true"/>
+            </ProvisioningTarget>
+            <ProvisioningTarget retain="true" role="roleForACCSelection">
+              <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" roleName="roleForACCSelection" selection="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="Aaron Nichols" nativeIdentity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+            </ProvisioningTarget>
+            <ProvisioningTarget retain="true" role="BusinessRoleAccountingHtask">
+              <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ADX" selection="CN=Aaron Nichols,OU=XPeople,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="ESHIAM\XAaron Nichols" nativeIdentity="CN=Aaron Nichols,OU=XPeople,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+            </ProvisioningTarget>
+            <ProvisioningTarget retain="true" role="EngineeringBranch">
+              <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="Aaron Nichols" nativeIdentity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+              <AccountSelection applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" selection="cn=Aaron.Nichols-CADM,ou=People,dc=my-domain,dc=com">
+                <AccountInfo displayName="Aaron.Nichols-CADM" nativeIdentity="cn=Aaron.Nichols-CADM,ou=People,dc=my-domain,dc=com"/>
+              </AccountSelection>
+            </ProvisioningTarget>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="taskResultId" value="c0a800fb9a2e13ed819a308ca37c074a"/>
+    </Map>
+  </Attributes>
+  <RequestItems>
+    <IdentityRequestItem application="Azure Active Directory" approvalState="Finished" name="roles" operation="Add" ownerName="spadmin" provisioningEngine="Azure Active Directory" provisioningState="Failed" value="1d336d2c-4ae8-42ef-9711-b3604ce3fc2c">
+      <Attributes>
+        <Map>
+          <entry key="assignmentId" value="f14b35a1c5154c8381b673620ec39bff"/>
+          <entry key="attachmentConfigList"/>
+          <entry key="attachments"/>
+          <entry key="errors">
+            <value>
+              <List>
+                <Message key="sailpoint.connector.ConnectorException: Exception occurred.  Error message - HTTP not ended OK.  Response Code - 400 Error - Invalid value specified for property 'mailNickname' of resource 'User'." type="Error"/>
+              </List>
+            </value>
+          </entry>
+          <entry key="flow" value="AccessRequest"/>
+          <entry key="id" value="c0a800fb9a2e13ed819a305f9f0d064d"/>
+          <entry key="identityEntitlementId" value="c0a800fb9a2e13ed819a308ca6540759"/>
+          <entry key="interface" value="LCM"/>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="operation" value="EntitlementAdd"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="fcff3fe4c40948c5b3e1da25e8ad3a2f">
+                <AccountRequest application="Azure Active Directory" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800fb9a2e13ed819a305f9f0d064d"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="EntitlementAdd"/>
+                      <entry key="provisioningTransactionId" value="c0a800fb9a2e13ed819a308cac12075f"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest displayValue="Attribute Definition Reader" name="roles" op="Add" trackingId="fcff3fe4c40948c5b3e1da25e8ad3a2f" value="1d336d2c-4ae8-42ef-9711-b3604ce3fc2c">
+                    <Attributes>
+                      <Map>
+                        <entry key="assignment" value="true"/>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+      <Owner>
+        <Reference class="sailpoint.object.Identity" name="spadmin"/>
+      </Owner>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="Azure Active Directory" approvalState="Finished" compilationStatus="Expansion" expansionCause="ProvisioningPolicy" name="accountType" operation="Add" provisioningEngine="Azure Active Directory" provisioningState="Failed" value="User">
+      <Attributes>
+        <Map>
+          <entry key="attachmentConfigList"/>
+          <entry key="attachments"/>
+          <entry key="errors">
+            <value>
+              <List>
+                <Message key="sailpoint.connector.ConnectorException: Exception occurred.  Error message - HTTP not ended OK.  Response Code - 400 Error - Invalid value specified for property 'mailNickname' of resource 'User'." type="Error"/>
+              </List>
+            </value>
+          </entry>
+          <entry key="expansionInfo" value="Azure Active Directory"/>
+          <entry key="flow" value="AccessRequest"/>
+          <entry key="id" value="c0a800fb9a2e13ed819a305f9f0d064d"/>
+          <entry key="interface" value="LCM"/>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="operation" value="EntitlementAdd"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="1adfdc2a14a240ea96f4f8b30ff04ddd">
+                <AccountRequest application="Azure Active Directory" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800fb9a2e13ed819a305f9f0d064d"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="EntitlementAdd"/>
+                      <entry key="provisioningTransactionId" value="c0a800fb9a2e13ed819a308cac12075f"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="accountType" op="Add" trackingId="1adfdc2a14a240ea96f4f8b30ff04ddd" value="User"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="Azure Active Directory" approvalState="Finished" compilationStatus="Expansion" expansionCause="ProvisioningPolicy" name="userPrincipalName" operation="Set" provisioningEngine="Azure Active Directory" provisioningState="Failed" value="AaronNichols@EshiamSoftwarepvtltd574.onmicrosoft.com">
+      <Attributes>
+        <Map>
+          <entry key="attachmentConfigList"/>
+          <entry key="attachments"/>
+          <entry key="errors">
+            <value>
+              <List>
+                <Message key="sailpoint.connector.ConnectorException: Exception occurred.  Error message - HTTP not ended OK.  Response Code - 400 Error - Invalid value specified for property 'mailNickname' of resource 'User'." type="Error"/>
+              </List>
+            </value>
+          </entry>
+          <entry key="expansionInfo" value="Azure Active Directory"/>
+          <entry key="flow" value="AccessRequest"/>
+          <entry key="id" value="c0a800fb9a2e13ed819a305f9f0d064d"/>
+          <entry key="interface" value="LCM"/>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="operation" value="EntitlementAdd"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="f2b05aff1b2f4a2f92b1edcda7101550">
+                <AccountRequest application="Azure Active Directory" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800fb9a2e13ed819a305f9f0d064d"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="EntitlementAdd"/>
+                      <entry key="provisioningTransactionId" value="c0a800fb9a2e13ed819a308cac12075f"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="userPrincipalName" op="Set" trackingId="f2b05aff1b2f4a2f92b1edcda7101550" value="AaronNichols@EshiamSoftwarepvtltd574.onmicrosoft.com"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="Azure Active Directory" approvalState="Finished" compilationStatus="Expansion" expansionCause="ProvisioningPolicy" name="displayName" operation="Set" provisioningEngine="Azure Active Directory" provisioningState="Failed" value="Aaron Nichols">
+      <Attributes>
+        <Map>
+          <entry key="attachmentConfigList"/>
+          <entry key="attachments"/>
+          <entry key="errors">
+            <value>
+              <List>
+                <Message key="sailpoint.connector.ConnectorException: Exception occurred.  Error message - HTTP not ended OK.  Response Code - 400 Error - Invalid value specified for property 'mailNickname' of resource 'User'." type="Error"/>
+              </List>
+            </value>
+          </entry>
+          <entry key="expansionInfo" value="Azure Active Directory"/>
+          <entry key="flow" value="AccessRequest"/>
+          <entry key="id" value="c0a800fb9a2e13ed819a305f9f0d064d"/>
+          <entry key="interface" value="LCM"/>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="operation" value="EntitlementAdd"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="a5ebd474a5644e989aa7fd1c841f9eb9">
+                <AccountRequest application="Azure Active Directory" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800fb9a2e13ed819a305f9f0d064d"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="EntitlementAdd"/>
+                      <entry key="provisioningTransactionId" value="c0a800fb9a2e13ed819a308cac12075f"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="displayName" op="Set" trackingId="a5ebd474a5644e989aa7fd1c841f9eb9" value="Aaron Nichols"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="Azure Active Directory" approvalState="Finished" compilationStatus="Expansion" expansionCause="ProvisioningPolicy" name="mailNickname" operation="Set" provisioningEngine="Azure Active Directory" provisioningState="Failed" value="Aaron.Nichols@eshiam.com">
+      <Attributes>
+        <Map>
+          <entry key="attachmentConfigList"/>
+          <entry key="attachments"/>
+          <entry key="errors">
+            <value>
+              <List>
+                <Message key="sailpoint.connector.ConnectorException: Exception occurred.  Error message - HTTP not ended OK.  Response Code - 400 Error - Invalid value specified for property 'mailNickname' of resource 'User'." type="Error"/>
+              </List>
+            </value>
+          </entry>
+          <entry key="expansionInfo" value="Azure Active Directory"/>
+          <entry key="flow" value="AccessRequest"/>
+          <entry key="id" value="c0a800fb9a2e13ed819a305f9f0d064d"/>
+          <entry key="interface" value="LCM"/>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="operation" value="EntitlementAdd"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="e89e3c2dab7f4461af5919b26a26b0b5">
+                <AccountRequest application="Azure Active Directory" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800fb9a2e13ed819a305f9f0d064d"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="EntitlementAdd"/>
+                      <entry key="provisioningTransactionId" value="c0a800fb9a2e13ed819a308cac12075f"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="mailNickname" op="Set" trackingId="e89e3c2dab7f4461af5919b26a26b0b5" value="Aaron.Nichols@eshiam.com"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="Azure Active Directory" approvalState="Finished" compilationStatus="Expansion" name="accountEnabled" operation="Set" provisioningEngine="Azure Active Directory" provisioningState="Failed" value="true">
+      <Attributes>
+        <Map>
+          <entry key="attachmentConfigList"/>
+          <entry key="attachments"/>
+          <entry key="errors">
+            <value>
+              <List>
+                <Message key="sailpoint.connector.ConnectorException: Exception occurred.  Error message - HTTP not ended OK.  Response Code - 400 Error - Invalid value specified for property 'mailNickname' of resource 'User'." type="Error"/>
+              </List>
+            </value>
+          </entry>
+          <entry key="flow" value="AccessRequest"/>
+          <entry key="id" value="c0a800fb9a2e13ed819a305f9f0d064d"/>
+          <entry key="interface" value="LCM"/>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="operation" value="EntitlementAdd"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="a96da19591084a1c94cd31cb26f5c7f7">
+                <AccountRequest application="Azure Active Directory" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800fb9a2e13ed819a305f9f0d064d"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="EntitlementAdd"/>
+                      <entry key="provisioningTransactionId" value="c0a800fb9a2e13ed819a308cac12075f"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="accountEnabled" op="Set" trackingId="a96da19591084a1c94cd31cb26f5c7f7" value="true"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="Azure Active Directory" approvalState="Finished" compilationStatus="Expansion" expansionCause="ProvisioningPolicy" name="department" operation="Set" provisioningEngine="Azure Active Directory" provisioningState="Failed" value="Engineeringchange1133">
+      <Attributes>
+        <Map>
+          <entry key="attachmentConfigList"/>
+          <entry key="attachments"/>
+          <entry key="errors">
+            <value>
+              <List>
+                <Message key="sailpoint.connector.ConnectorException: Exception occurred.  Error message - HTTP not ended OK.  Response Code - 400 Error - Invalid value specified for property 'mailNickname' of resource 'User'." type="Error"/>
+              </List>
+            </value>
+          </entry>
+          <entry key="expansionInfo" value="Azure Active Directory"/>
+          <entry key="flow" value="AccessRequest"/>
+          <entry key="id" value="c0a800fb9a2e13ed819a305f9f0d064d"/>
+          <entry key="interface" value="LCM"/>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="operation" value="EntitlementAdd"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="a545c5f8986949ac81abda6ed97f6ac1">
+                <AccountRequest application="Azure Active Directory" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800fb9a2e13ed819a305f9f0d064d"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="EntitlementAdd"/>
+                      <entry key="provisioningTransactionId" value="c0a800fb9a2e13ed819a308cac12075f"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="department" op="Set" trackingId="a545c5f8986949ac81abda6ed97f6ac1" value="Engineeringchange1133"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="Azure Active Directory" approvalState="Finished" compilationStatus="Expansion" expansionCause="ProvisioningPolicy" name="givenName" operation="Set" provisioningEngine="Azure Active Directory" provisioningState="Failed" value="Aaron">
+      <Attributes>
+        <Map>
+          <entry key="attachmentConfigList"/>
+          <entry key="attachments"/>
+          <entry key="errors">
+            <value>
+              <List>
+                <Message key="sailpoint.connector.ConnectorException: Exception occurred.  Error message - HTTP not ended OK.  Response Code - 400 Error - Invalid value specified for property 'mailNickname' of resource 'User'." type="Error"/>
+              </List>
+            </value>
+          </entry>
+          <entry key="expansionInfo" value="Azure Active Directory"/>
+          <entry key="flow" value="AccessRequest"/>
+          <entry key="id" value="c0a800fb9a2e13ed819a305f9f0d064d"/>
+          <entry key="interface" value="LCM"/>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="operation" value="EntitlementAdd"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="da3cd250aab04acb96a5f212ea1ec227">
+                <AccountRequest application="Azure Active Directory" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800fb9a2e13ed819a305f9f0d064d"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="EntitlementAdd"/>
+                      <entry key="provisioningTransactionId" value="c0a800fb9a2e13ed819a308cac12075f"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="givenName" op="Set" trackingId="da3cd250aab04acb96a5f212ea1ec227" value="Aaron"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="Azure Active Directory" approvalState="Finished" compilationStatus="Expansion" expansionCause="ProvisioningPolicy" name="surname" operation="Set" provisioningEngine="Azure Active Directory" provisioningState="Failed" value="Nichols">
+      <Attributes>
+        <Map>
+          <entry key="attachmentConfigList"/>
+          <entry key="attachments"/>
+          <entry key="errors">
+            <value>
+              <List>
+                <Message key="sailpoint.connector.ConnectorException: Exception occurred.  Error message - HTTP not ended OK.  Response Code - 400 Error - Invalid value specified for property 'mailNickname' of resource 'User'." type="Error"/>
+              </List>
+            </value>
+          </entry>
+          <entry key="expansionInfo" value="Azure Active Directory"/>
+          <entry key="flow" value="AccessRequest"/>
+          <entry key="id" value="c0a800fb9a2e13ed819a305f9f0d064d"/>
+          <entry key="interface" value="LCM"/>
+          <entry key="managedAttributeType" value="Entitlement"/>
+          <entry key="operation" value="EntitlementAdd"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="4348743395ca45cb8f2fcd7055c0ad06">
+                <AccountRequest application="Azure Active Directory" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800fb9a2e13ed819a305f9f0d064d"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="EntitlementAdd"/>
+                      <entry key="provisioningTransactionId" value="c0a800fb9a2e13ed819a308cac12075f"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest name="surname" op="Set" trackingId="4348743395ca45cb8f2fcd7055c0ad06" value="Nichols"/>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+    </IdentityRequestItem>
+    <IdentityRequestItem application="Azure Active Directory" compilationStatus="Expansion" operation="Create" provisioningEngine="Azure Active Directory" provisioningState="Failed">
+      <Attributes>
+        <Map>
+          <entry key="attachmentConfigList"/>
+          <entry key="attachments"/>
+          <entry key="errors">
+            <value>
+              <List>
+                <Message key="sailpoint.connector.ConnectorException: Exception occurred.  Error message - HTTP not ended OK.  Response Code - 400 Error - Invalid value specified for property 'mailNickname' of resource 'User'." type="Error"/>
+              </List>
+            </value>
+          </entry>
+          <entry key="flow" value="AccessRequest"/>
+          <entry key="id" value="c0a800fb9a2e13ed819a305f9f0d064d"/>
+          <entry key="interface" value="LCM"/>
+          <entry key="operation" value="EntitlementAdd"/>
+          <entry key="provisioningPlan">
+            <value>
+              <ProvisioningPlan trackingId="1a40261ce296483383c6b17f4393715a">
+                <AccountRequest application="Azure Active Directory" op="Create">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800fb9a2e13ed819a305f9f0d064d"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="EntitlementAdd"/>
+                      <entry key="provisioningTransactionId" value="c0a800fb9a2e13ed819a308cac12075f"/>
+                    </Map>
+                  </Attributes>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+              </ProvisioningPlan>
+            </value>
+          </entry>
+        </Map>
+      </Attributes>
+    </IdentityRequestItem>
+  </RequestItems>
+</IdentityRequest>

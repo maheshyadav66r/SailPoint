@@ -1,0 +1,179 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskResult PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskResult completed="1761748542425" completionStatus="Error" launched="1761748535132" launcher="spadmin" name="Update Identity Aaron Allen AccessRequest - 11" targetClass="Identity" targetName="Aaron Allen" type="LCM">
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000969"/>
+      <entry key="project">
+        <value>
+          <ProvisioningProject identity="Aaron Allen">
+            <Attributes>
+              <Map>
+                <entry key="disableRetryRequest">
+                  <value>
+                    <Boolean>true</Boolean>
+                  </value>
+                </entry>
+                <entry key="identityRequestId" value="0000000969"/>
+                <entry key="optimisticProvisioning" value="false"/>
+                <entry key="requester" value="spadmin"/>
+                <entry key="source" value="LCM"/>
+              </Map>
+            </Attributes>
+            <MasterPlan>
+              <ProvisioningPlan>
+                <AccountRequest application="Azure Active Directory" op="Modify">
+                  <Attributes>
+                    <Map>
+                      <entry key="attachmentConfigList"/>
+                      <entry key="attachments"/>
+                      <entry key="flow" value="AccessRequest"/>
+                      <entry key="id" value="c0a800fb9a2e13ed819a305f85f60520"/>
+                      <entry key="interface" value="LCM"/>
+                      <entry key="operation" value="EntitlementAdd"/>
+                    </Map>
+                  </Attributes>
+                  <AttributeRequest displayValue="Access real-time enriched data in a meeting as an app [on] Microsoft Graph" name="appRoleAssignments" op="Add" value="eec7a794-d3cb-49e0-af76-b870309ad063:abafe00f-ea87-4c63-b8a8-0e7bb0a88144">
+                    <Attributes>
+                      <Map>
+                        <entry key="assignment" value="true"/>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                </AccountRequest>
+                <Attributes>
+                  <Map>
+                    <entry key="identityRequestId" value="0000000969"/>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="LCM"/>
+                  </Map>
+                </Attributes>
+                <ProvisioningTargets>
+                  <ProvisioningTarget application="Azure Active Directory" attribute="appRoleAssignments" value="eec7a794-d3cb-49e0-af76-b870309ad063:abafe00f-ea87-4c63-b8a8-0e7bb0a88144">
+                    <AccountSelection applicationId="c0a8001697a21be78197afdb21542aef" applicationName="Azure Active Directory" implicitCreate="true"/>
+                  </ProvisioningTarget>
+                  <ProvisioningTarget retain="true" role="roleForACCSelection">
+                    <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" roleName="roleForACCSelection" selection="CN=Aaron Allen-ADM,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                      <AccountInfo displayName="Aaron Allen-ADM" nativeIdentity="CN=Aaron Allen-ADM,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+                    </AccountSelection>
+                  </ProvisioningTarget>
+                  <ProvisioningTarget retain="true" role="IT-B-AD-Testcase1">
+                    <AccountSelection applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" selection="cn=Aaron.Allen,ou=People,dc=my-domain,dc=com">
+                      <AccountInfo displayName="[Aaron Allensuccess, Aaron.Allen]" nativeIdentity="cn=Aaron.Allen,ou=People,dc=my-domain,dc=com"/>
+                    </AccountSelection>
+                  </ProvisioningTarget>
+                  <ProvisioningTarget retain="true" role="IT-ORGLDAP-Y">
+                    <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=Aaron Allen,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                      <AccountInfo displayName="Aaron Allen" nativeIdentity="CN=Aaron Allen,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+                    </AccountSelection>
+                  </ProvisioningTarget>
+                </ProvisioningTargets>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </MasterPlan>
+            <ProvisioningPlan nativeIdentity="Aaron Allen" targetIntegration="Azure Active Directory" trackingId="e877a07b9d8142de9bbba4f38c54162e">
+              <AccountRequest application="Azure Active Directory" op="Create">
+                <Attributes>
+                  <Map>
+                    <entry key="attachmentConfigList"/>
+                    <entry key="attachments"/>
+                    <entry key="flow" value="AccessRequest"/>
+                    <entry key="id" value="c0a800fb9a2e13ed819a305f85f60520"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="operation" value="EntitlementAdd"/>
+                    <entry key="provisioningTransactionId" value="c0a800fb9a2e13ed819a30655f6c06aa"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest displayValue="Access real-time enriched data in a meeting as an app [on] Microsoft Graph" name="appRoleAssignments" op="Add" value="eec7a794-d3cb-49e0-af76-b870309ad063:abafe00f-ea87-4c63-b8a8-0e7bb0a88144">
+                  <Attributes>
+                    <Map>
+                      <entry key="assignment" value="true"/>
+                    </Map>
+                  </Attributes>
+                </AttributeRequest>
+                <AttributeRequest name="accountType" op="Add" value="User"/>
+                <AttributeRequest name="userPrincipalName" op="Set" value="Aaron@Allen.onmicrosoft.com"/>
+                <AttributeRequest name="password" op="Set">
+                  <Attributes>
+                    <Map>
+                      <entry key="secret" value="true"/>
+                    </Map>
+                  </Attributes>
+                </AttributeRequest>
+                <AttributeRequest name="displayName" op="Set" value="Aaron Allen"/>
+                <AttributeRequest name="mailNickname" op="Set" value="Aaron.Allen@eshiam.com"/>
+                <AttributeRequest name="accountEnabled" op="Set">
+                  <Value>
+                    <Boolean>true</Boolean>
+                  </Value>
+                </AttributeRequest>
+                <AttributeRequest name="department" op="Set" value="IT"/>
+                <ProvisioningResult status="failed">
+                  <Errors>
+                    <Message key="sailpoint.connector.ConnectorException: Exception occurred.  Error message - HTTP not ended OK.  Response Code - 400 Error - Invalid value specified for property 'mailNickname' of resource 'User'." type="Error"/>
+                  </Errors>
+                </ProvisioningResult>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000969"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" name="spadmin"/>
+              </Requesters>
+              <ProvisioningResult status="failed">
+                <Errors>
+                  <Message key="sailpoint.connector.ConnectorException: Exception occurred.  Error message - HTTP not ended OK.  Response Code - 400 Error - Invalid value specified for property 'mailNickname' of resource 'User'." type="Error"/>
+                </Errors>
+              </ProvisioningResult>
+            </ProvisioningPlan>
+            <ProvisioningTarget application="Azure Active Directory" attribute="appRoleAssignments" value="eec7a794-d3cb-49e0-af76-b870309ad063:abafe00f-ea87-4c63-b8a8-0e7bb0a88144">
+              <AccountSelection applicationId="c0a8001697a21be78197afdb21542aef" applicationName="Azure Active Directory" implicitCreate="true"/>
+            </ProvisioningTarget>
+            <ProvisioningTarget retain="true" role="roleForACCSelection">
+              <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" roleName="roleForACCSelection" selection="CN=Aaron Allen-ADM,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="Aaron Allen-ADM" nativeIdentity="CN=Aaron Allen-ADM,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+            </ProvisioningTarget>
+            <ProvisioningTarget retain="true" role="IT-B-AD-Testcase1">
+              <AccountSelection applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" selection="cn=Aaron.Allen,ou=People,dc=my-domain,dc=com">
+                <AccountInfo displayName="[Aaron Allensuccess, Aaron.Allen]" nativeIdentity="cn=Aaron.Allen,ou=People,dc=my-domain,dc=com"/>
+              </AccountSelection>
+            </ProvisioningTarget>
+            <ProvisioningTarget retain="true" role="IT-ORGLDAP-Y">
+              <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=Aaron Allen,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                <AccountInfo displayName="Aaron Allen" nativeIdentity="CN=Aaron Allen,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+              </AccountSelection>
+            </ProvisioningTarget>
+          </ProvisioningProject>
+        </value>
+      </entry>
+      <entry key="retries">
+        <value>
+          <Integer>0</Integer>
+        </value>
+      </entry>
+      <entry key="workflowCaseId" value="c0a800fb9a2e13ed819a306551960692"/>
+      <entry key="workflowProcessId"/>
+      <entry key="workflowSummary">
+        <value>
+          <WorkflowSummary step="end"/>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Definition>
+    <Reference class="sailpoint.object.TaskDefinition" name="Workflow Launcher"/>
+  </Definition>
+  <Messages>
+    <Message key="sailpoint.connector.ConnectorException: Exception occurred.  Error message - HTTP not ended OK.  Response Code - 400 Error - Invalid value specified for property 'mailNickname' of resource 'User'." type="Error"/>
+  </Messages>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+</TaskResult>

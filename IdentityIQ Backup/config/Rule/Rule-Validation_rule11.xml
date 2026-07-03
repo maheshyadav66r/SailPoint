@@ -1,0 +1,208 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Validation_Rule11" type="Validation">
+  <Source><![CDATA[
+  import sailpoint.object.*;
+  import sailpoint.api.*;
+  import sailpoint.tools.Util;
+  import sailpoint.object.WorkItem;
+
+
+
+
+  /*import sailpoint.object.*;
+  import sailpoint.api.*;
+
+  import java.io.*;
+
+  String fileLocation = "D:\\csv files\\IIQ Application Names.txt";
+  String line;
+
+  // In-memory storage
+  StringBuilder outputBuffer = new StringBuilder();
+
+  try {
+
+    BufferedReader br = new BufferedReader(new FileReader(new File(fileLocation)));
+
+    // Header
+    outputBuffer.append("ApplicationName , Type").append("\n");
+
+    while ((line = br.readLine()) != null) {
+
+      if (!line.contains(",")) {
+
+        String appName = line.trim();
+        Application appObject = context.getObjectByName(Application.class, appName);
+
+        if (appObject == null) {
+          log.error("Application not found: " + appName);
+          return ;
+        }
+
+        String type = appObject.getType();
+
+        outputBuffer
+          .append(appName)
+          .append(" , ")
+          .append(type)
+          .append("\n");
+      }
+    }
+
+    br.close();
+
+  } catch (Exception e) {
+    log.error("Error while processing applications", e.toString());
+  }
+
+  String finalData = outputBuffer.toString();
+  log.error("  ::::::FINAL DATA:\n    ::::::" + finalData);
+
+  return finalData;*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  Identity baxpadminIden = context.getObjectByName(Identity.class,"spadmin");
+
+
+  WorkItem  workItem = context.getObjectByName(WorkItem.class,"0000001629");
+  workItem.setOwner(baxpadminIden);
+  workItem.setCompletionComments("Rejected by the SailPoint(accessgovernance) system, as the request  .....passed the due date of 4 weeks. If needed, please resubmit the request and follow up with your manager and group/system owner for approval.");
+  // workItem.setCompleter("spadmin");
+  workItem.setState(WorkItem.State.Canceled);
+
+  Workflower workflower = new Workflower(context);
+  //workflower.process(workItem, true);
+
+  WorkItemArchive wia =workflower.archive(workItem);
+  wia.setState(WorkItem.State.Finished);
+  
+  Terminator terminator = new Terminator(context);
+  terminator.deleteObject(workItem);
+
+  //context.saveObject(workItem);
+  // context.commitTransaction();
+
+  //IdentityRequest identityRequest = context.getObjectByName(IdentityRequest.class,workItem.getIdentityRequestId());
+  // String executionStatus = identityRequest.getExecutionStatus();
+  // identityRequest.setExecutionStatus(IdentityRequest.ExecutionStatus.Terminated);
+
+  return wia;
+
+
+
+  Application application = context.getObjectByName(Application.class,"ActiveDirectory");
+  String employeeNumber = "CN=Cindy Little-ADM,OU=People,OU=Demo,DC=Eshiam,DC=com";
+
+
+  String query = "from Link l "
+    + "where l.application.id = '" + application.getId() + "' "
+    + "and l.getAttribute('distinguishedName') = '" + employeeNumber + "'";
+
+  QueryOptions qo = new QueryOptions();
+  qo.setQuery(query);
+  qo.setResultLimit(1);
+
+
+  List idList = context.getObjects(Link.class, qo);
+  log.error("  identities list  :  "+idList);
+  return idList.get(0);
+
+
+
+
+
+
+  /*  Filter app = Filter.eq("links.application.name", "ActiveDirectory");
+
+  Filter openDjMail = Filter.eq("mail","abdul.samad@eshiam.com");   
+  Filter f= Filter.and(app,openDjMail);
+
+  QueryOptions qo2 = new QueryOptions();
+
+  qo2.addFilter(f);
+
+  List idList2 = context.getObjects(Identity.class, qo2);
+
+  //Link link = context.getUniqueObject(Link.class,f);
+  // Identity identity = context.getUniqueObject(Identity.class,f);
+
+  return idList2.size();
+
+
+  Filter f= Filter.and(Filter.eq("links.application.name","ActiveDirectory"),Filter.eq("attributes.mail","abdul.samad@eshiam.com"));
+
+
+
+  Identity identity = context.getUniqueObject(Identity.class,f);
+  return identity;*/
+
+
+
+  ManagedAttribute ma = context.getUniqueObject(ManagedAttribute.class,f);
+
+  String gname;
+
+  if(ma != null){
+
+    log.error("ma in mmmm.."+ma);
+    Attributes args = ma.getAttributes();
+
+    if(agrs != null && void != agrs){
+
+      log.error("agrs in block.."+args);
+
+      gname = Util.getString(agrs,"Security");
+    }
+    else
+      log.error("agrs in  else block.."+args);
+  }
+  log.error("gname in after all.."+gname);
+  return ma;
+
+  Application application = context.getObjectByName(Application.class,"ActiveDirectory");
+
+  List listOfIdentities = context.getObjects(Identity.class);
+  if(listOfIdentities.size()>0){
+    IdentityService identityService = new IdentityService(context);
+    for(Identity identity : listOfIdentities){
+      List listOfLinks = identityService.getLinks(identity,application);
+      if(listOfLinks != null @and listOfLinks.size() @gt 1){
+        log.error(identity.getName());
+      }
+      else
+      {
+        log.error("no double links ");
+      }
+    }
+  }
+
+  /* import sailpoint.object.*;
+  import sailpoint.api.*;
+  import sailpoint.tools.Util;
+
+QueryOptions qo=new QueryOptions();
+Filter f1=Filter.eq("links.application.name","JDBCProvisioning");
+  qo.add(f1);
+
+  List identities=context.getObjects(Identity.class,qo);
+  if(identities!=null){
+    log.error("----identities---"+identities.size());
+  }
+  return context.decrypt("1:ACP:kiiFlXS6DFbwxvYUcvt/ONTUvE2L2fDkrFI4+6BHwHU=");
+
+  */
+  ]]></Source>
+</Rule>
