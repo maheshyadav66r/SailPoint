@@ -1,0 +1,202 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Workflow PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Workflow explicitTransitions="true" name="HMHS Secondary ID Creation Integration">
+  <Variable name="attributes"/>
+  <Variable initializer="true" name="trace"/>
+  <Variable name="errorMessages"/>
+  <Variable initializer="AccountsRequest" name="flow"/>
+  <Variable input="true" name="secondaryIdType">
+    <Script>
+      <Source><![CDATA[
+        import org.json.JSONObject; 
+        JSONObject json = new JSONObject(attributes);
+        return json.get("secondaryIdType");
+      ]]></Source>
+    </Script>
+  </Variable>
+  <Variable input="true" name="identityName">
+    <Script>
+      <Source><![CDATA[
+        import org.json.JSONObject;
+        JSONObject json = new JSONObject(attributes);
+        if(!secondaryIdType.equals("Wireless ID")){
+        return fetchIdentity(json.get("primaryIdentity")).getName();
+        }
+      ]]></Source>
+    </Script>
+  </Variable>
+  <Variable name="identity"/>
+  <Variable input="true" name="identityDisplayName">
+    <Script>
+      <Source><![CDATA[
+        import org.json.JSONObject;
+        import sailpoint.object.Identity;
+        JSONObject json = new JSONObject(attributes);
+        if(!secondaryIdType.equals("Wireless ID")){
+        Identity identity = fetchIdentity(json.get("primaryIdentity"));
+        return identity.getDisplayName();
+        } else {
+        return json.get("firstName")+" "+json.get("lastName");
+        }
+      ]]></Source>
+    </Script>
+  </Variable>
+  <Variable name="plan"/>
+  <Variable name="identity_plan"/>
+  <Variable name="account_plan"/>
+  <RuleLibraries>
+    <Reference class="sailpoint.object.Rule" name="HMHS-FieldValueLibrary"/>
+    <Reference class="sailpoint.object.Rule" name="HMHS Secondary ID Creation Integration Rule Library"/>
+    <Reference class="sailpoint.object.Rule" name="HMHS Common Rule Library"/>
+  </RuleLibraries>
+  <Step icon="Start" name="Start" posX="28" posY="10">
+    <Transition to="Initialize"/>
+  </Step>
+  <Step name="Initialize">
+    <Script>
+      <Source><![CDATA[
+        import org.json.JSONObject;
+        JSONObject json = new JSONObject(attributes);
+        if(null != wfcontext && null != wfcontext.getWorkflowCase() && null != wfcontext.getWorkflowCase().getTaskResult()){
+        wfcontext.getWorkflowCase().getTaskResult().setName("HMHS - Secondary ID "+secondaryIdType+" Creation Requested for ("+identityDisplayName+") -"+ json.get("ritmNumber"));			
+        }
+      ]]></Source>
+    </Script>
+    <Transition to="Parse Data"/>
+  </Step>
+  <Step icon="Task" name="Parse Data">
+    <Transition to="Create Identity" when="secondaryIdType.equalsIgnoreCase(&quot;Wireless ID&quot;)"/>
+    <Transition to="Build Plan"/>
+  </Step>
+  <Step action="script:buildProvisioningPlan()" name="Build Plan" resultVariable="account_plan">
+    <Transition to="LCM Provisioning"/>
+  </Step>
+  <Step action="script: createIdentityPlan()" name="Create Identity" posX="28" posY="10" resultVariable="identity_plan">
+    <Transition to="LCM Create and Update"/>
+  </Step>
+  <Step icon="Task" name="LCM Create and Update" posX="646" posY="110">
+    <Arg name="identityName">
+      <Script>
+        <Source><![CDATA[
+          return identity_plan.getIdentity().getName();
+        ]]></Source>
+      </Script>
+    </Arg>
+    <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+    <Arg name="plan" value="ref:identity_plan"/>
+    <Arg name="flow" value="ref:flow"/>
+    <Arg name="foregroundProvisioning" value="true"/>
+    <Arg name="approvalEmailTemplate"/>
+    <Arg name="approvalMode"/>
+    <Arg name="batchRequestItemId"/>
+    <Arg name="enableRetryRequest"/>
+    <Arg name="endOnManualWorkItems"/>
+    <Arg name="endOnProvisioningForms"/>
+    <Arg name="identityElectronicSignature"/>
+    <Arg name="identityEmailTemplate"/>
+    <Arg name="managerElectronicSignature"/>
+    <Arg name="managerEmailTemplate"/>
+    <Arg name="notificationScheme"/>
+    <Arg name="ownerElectronicSignature"/>
+    <Arg name="policiesToCheck"/>
+    <Arg name="policyScheme"/>
+    <Arg name="requesterEmailTemplate"/>
+    <Arg name="securityOfficerElectronicSignature"/>
+    <Arg name="securityOfficerEmailTemplate"/>
+    <Arg name="securityOfficerName"/>
+    <Arg name="source"/>
+    <Arg name="ticketManagementApplication"/>
+    <Arg name="userEmailTemplate"/>
+    <Arg name="workItemPriority"/>
+    <Arg name="approvalScheme" value="none"/>
+    <Arg name="fallbackApprover" value="spadmin"/>
+    <Description>
+      Call the LCM Create and Update workflow with the plan that was created.
+    </Description>
+    <WorkflowRef>
+      <Reference class="sailpoint.object.Workflow" name="LCM Create and Update"/>
+    </WorkflowRef>
+    <Transition to="Build Plan"/>
+  </Step>
+  <Step icon="Default" name="LCM Provisioning">
+    <Arg name="approvalEmailTemplate"/>
+    <Arg name="approvalMode"/>
+    <Arg name="batchRequestItemId"/>
+    <Arg name="enableRetryRequest"/>
+    <Arg name="endOnManualWorkItems"/>
+    <Arg name="endOnProvisioningForms"/>
+    <Arg name="identityElectronicSignature"/>
+    <Arg name="identityEmailTemplate"/>
+    <Arg name="managerElectronicSignature"/>
+    <Arg name="managerEmailTemplate"/>
+    <Arg name="notificationScheme"/>
+    <Arg name="ownerElectronicSignature"/>
+    <Arg name="policiesToCheck"/>
+    <Arg name="policyScheme"/>
+    <Arg name="requesterEmailTemplate"/>
+    <Arg name="securityOfficerElectronicSignature"/>
+    <Arg name="securityOfficerEmailTemplate"/>
+    <Arg name="securityOfficerName"/>
+    <Arg name="source"/>
+    <Arg name="ticketManagementApplication"/>
+    <Arg name="userEmailTemplate"/>
+    <Arg name="workItemPriority"/>
+    <Arg name="approvalScheme" value="none"/>
+    <Arg name="fallbackApprover" value="spadmin"/>
+    <Arg name="flow" value="ref:flow"/>
+    <Arg name="noCreateTemplates" value="true"/>
+    <Arg name="identityName">
+      <Script>
+        <Source><![CDATA[
+          if(secondaryIdType.equals("Wireless ID"))
+          return fetchIdentity(workflow.get("lid")).getName();
+          else
+          return identityName;
+        ]]></Source>
+      </Script>
+    </Arg>
+    <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+    <Arg name="plan" value="ref:account_plan"/>
+    <Arg name="autoVerifyIdentityRequest" value="true"/>
+    <Arg name="foregroundProvisioning" value="true"/>
+    <WorkflowRef>
+      <Reference class="sailpoint.object.Workflow" name="HMHS Catalog LCM Provisioning"/>
+    </WorkflowRef>
+    <Transition to="Send Email" when="secondaryIdType.equals(&quot;Wireless ID&quot;)"/>
+    <Transition to="Build Response"/>
+  </Step>
+  <Step icon="Email" name="Send Email" posX="98" posY="10">
+    <Arg name="plan" value="ref:account_plan"/>
+    <Script>
+      <Source><![CDATA[
+        import org.json.JSONObject; 
+        JSONObject json = new JSONObject(attributes);
+        if(null != wfcontext && null != wfcontext.getWorkflowCase() && null != wfcontext.getWorkflowCase().getTaskResult()){
+        TaskResult taskresult = wfcontext.getWorkflowCase().getTaskResult();
+        sendEmail(taskresult,json.get("requestor"));
+        }
+      ]]></Source>
+    </Script>
+    <Transition to="Build Response"/>
+  </Step>
+  <Step name="Build Response">
+    <Script>
+      <Source><![CDATA[
+        import org.json.JSONObject;
+        JSONObject json = new JSONObject(attributes);
+        if(null != wfcontext && null != wfcontext.getWorkflowCase() && null != wfcontext.getWorkflowCase().getTaskResult()){
+        TaskResult taskresult = wfcontext.getWorkflowCase().getTaskResult();
+        String message = getFinalMessageFromTaskresult(taskresult);
+        if(secondaryIdType.equalsIgnoreCase("Wireless ID")){
+        wfcontext.getWorkflowCase().addMessage("Secondary ID Wireless ("+workflow.get("lid")+") was processed successfully." + message);
+        } else {
+        String lid = (secondaryIdType.equalsIgnoreCase("Admin"))? "ADM"+json.get("primaryIdentity").substring(3) : "CADM"+json.get("primaryIdentity").substring(3) ;
+        wfcontext.getWorkflowCase().addMessage("Secondary ID "+secondaryIdType+" ("+lid+") was processed successfully." + message);
+        }
+        }
+      ]]></Source>
+    </Script>
+    <Transition to="Stop"/>
+  </Step>
+  <Step icon="Stop" name="Stop" posX="540" posY="10"/>
+</Workflow>

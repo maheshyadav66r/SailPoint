@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule name="GenerateUsername" type="AttributeGenerator">
+  <Description>Describe your rule here.</Description>
+  <Source><![CDATA[
+
+    import sailpoint.tools.GeneralException;
+    import sailpoint.object.*;
+    import java.util.ArrayList;
+    import java.util.List;
+    import org.apache.commons.lang.StringUtils;
+
+    public String generateUsername(String firstName, String lastName) {
+
+        firstName = StringUtils.trimToNull( firstName );
+        lastName = StringUtils.trimToNull( lastName );
+
+        String otherName = identity.getStringAttribute("preferredName");
+
+    // This will hold the final username;
+    String finalUsername = null;
+    log.debug( "AD Create User Name | Final first name and last name for user: " +firstName + " " +lastName );
+
+    // Working variable to generate username;
+    String tempUsername = null;
+
+    tempUsername = otherName + "." + lastName;
+
+    if (isUnique(tempUsername)){
+        return tempUsername;
+    }
+    else{
+        tempUsername = firstName + "." + lastName;
+        if(isUnique(tempUsername)){
+            return tempUsername;
+        }
+        else{
+            int counter = 1;
+            tempUsername = firstName + "." + lastName + counter;
+            for (i=0;i<99;i++){
+                if (isUnique(tempUsername)){
+                    return tempUsername;
+                }
+                else{
+                    counter = counter+1;
+                    tempUsername = firstName + "." + lastName + counter;
+                }
+            }
+        }
+    }
+
+   public boolean isUnique ( String username ) throws GeneralException {
+    return !idn.accountExistsByDisplayName(application.getName(), username);
+}
+return generateUsername( identity.getFirstname(), identity.getLastname() );
+}
+
+  ]]></Source>
+</Rule>
+
+
+
+

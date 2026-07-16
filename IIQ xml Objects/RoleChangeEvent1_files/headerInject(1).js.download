@@ -1,0 +1,347 @@
+//<script src="ui/js/jquery.min.js"></script>
+
+/*
+
+Other available values to build paths, etc. that are obtained from the server and set in the PluginFramework JS object
+
+PluginFramework.PluginBaseEndpointName = 'pluginFramework.basePluginEndpointName';
+PluginFramework.PluginEndpointRoot = 'pluginFramework.basePluginEndpointName/pluginFramework.basePluginEndpointName';
+PluginFramework.PluginFolderName = 'pluginFramework.pluginFolderName';
+PluginFramework.CurrentPluginUniqueName = 'pluginFramework.uniqueName';
+PluginFramework.CsrfToken = Ext.util.Cookies.get('CSRF-TOKEN');
+
+ */
+
+
+var jQueryClone = jQuery;
+var statusClass = '';
+var CsrfToken = Ext.util.Cookies.get('CSRF-TOKEN');
+var authRequirements = null;
+var lastTimeStamp = null;
+
+function auditUrl() {
+	var url = window.location;
+    jQueryClone.ajax({
+        method: "GET",
+        beforeSend: function (request) {
+            request.setRequestHeader("X-XSRF-TOKEN", CsrfToken);
+        },
+        url: SailPoint.CONTEXT_PATH + "/plugin/rest/impersonateplugin/audit/" + btoa(window.location)
+    })	
+}
+
+function unimpersonate() {
+    jQueryClone.ajax({
+        method: "GET",
+        beforeSend: function (request) {
+            request.setRequestHeader("X-XSRF-TOKEN", CsrfToken);
+        },
+        url: SailPoint.CONTEXT_PATH + "/plugin/rest/impersonateplugin/unimpersonate" 
+    })
+    .done(function (msg) {
+    	if (msg === "OK") {
+			location.replace(SailPoint.CONTEXT_PATH);
+			return;
+		} else {
+			alert("Error reverting impersonation");
+		}
+	});
+}
+
+
+function impersonate(name) {	
+	var params = "";
+	if (jQueryClone.inArray("AUTHENTICATION", authRequirements) >= 0) {
+		var password = document.getElementById('impersonatePassword').value
+		params += "/password/" + btoa(password);
+	}
+	if (jQueryClone.inArray("TOKEN", authRequirements) >= 0) {
+		var token = document.getElementById('impersonateToken').value
+		params += "/token/" + btoa(token);
+	}
+	
+    jQueryClone.ajax({
+        method: "GET",
+        beforeSend: function (request) {
+            request.setRequestHeader("X-XSRF-TOKEN", CsrfToken);
+        },
+        url: SailPoint.CONTEXT_PATH + "/plugin/rest/impersonateplugin/impersonate/" + encodeURIComponent(name) + params
+    })
+    .done(function (msg) {
+    	if (msg === "OK") {
+			location.replace(SailPoint.CONTEXT_PATH);
+			return;
+		} else {
+	    	if (msg === "NOT_AUTHORIZED") {
+	    		alert("Authorization failure");
+	    	} else {
+	    		alert("Error impersonating");
+	    	}
+		}
+	});
+}
+
+/**
+* https://snippets.webaware.com.au/snippets/safely-encode-dynamically-built-html-and-javascript/
+*
+* encode special HTML characters, so text is safe when building HTML dynamically
+* @param {String} text the text to encode
+* @return {String}
+*/
+var encodeHTML = (function() {
+
+    var encodeHTMLmap = {
+        "&" : "&amp;",
+        "'" : "&apos;",
+        '"' : "&quot;",
+        "<" : "&lt;",
+        ">" : "&gt;"
+    };
+
+    /**
+    * encode character as HTML entity
+    * @param {String} ch character to map to entity
+    * @return {String}
+    */
+    function encodeHTMLmapper(ch) {
+        return encodeHTMLmap[ch];
+    }
+
+    return function(text) {
+        // search for HTML special characters, convert to HTML entities
+        return text.replace(/[&"'<>]/g, encodeHTMLmapper);
+    };
+
+})();
+
+var encodeJavaScript = (function() {
+
+    var encodeJSmap = {
+        "&" : "&amp;",
+        "'" : "\\&apos;",
+        '"' : "&quot;",
+        "<" : "&lt;",
+        ">" : "&gt;"
+    };
+
+    /**
+    * encode character as JavaScript entity
+    * @param {String} ch character to map to entity
+    * @return {String}
+    */
+    function encodeJSmapper(ch) {
+        return encodeJSmap[ch];
+    }
+
+    return function(text) {
+        // search for JS special characters, convert to JS entities
+        return text.replace(/[&"'<>]/g, encodeJSmapper);
+    };
+
+})();
+
+function performLiveSearch(text) {
+	var resultDiv = document.getElementById('impersonateLiveSearch');
+	if (text == "") {
+		resultDiv.innerHTML = "";
+    } else {
+    	lastTimeStamp = new Date().getTime().toString();
+    	jQueryClone.ajax({
+	        method: "GET",
+    	    beforeSend: function (request) {
+        	    request.setRequestHeader("X-XSRF-TOKEN", CsrfToken);
+        	},
+        	url: SailPoint.CONTEXT_PATH + "/plugin/rest/impersonateplugin/search/" + encodeURIComponent(text) + "?_sts=" + lastTimeStamp
+    	})
+    	.done(function (msg) {
+    		var data = "";
+    		if (msg) {
+    			var dateTimeStamp = msg.timestamp;
+    			if (dateTimeStamp === lastTimeStamp && msg.values) {
+        			var resultSet = msg.values;
+	    			data += '<table id="impersonatorSearchResultTable" class="impersonatorSearchResult">';
+	    			var l = resultSet.length;
+	    			for (var i = 0; i < l; i++) {
+	    				var item = resultSet[i];
+	    				var name = item["name"];
+	    				var displayName = item["displayName"];
+	    				if (!(displayName)) {
+	    					displayName = name;
+	    				}
+	    				var email = item["email"];
+	    				var jssnippet = "javascript:selectImpersonation('" + encodeJavaScript(name) + "', '" + encodeJavaScript(displayName) + "');"; 
+	    				data += '<tr class="impersonatorSearchResult">';
+	    				data += '<td class="impersonatorSearchResult">';
+	    				data += '<i class="fa fa-user" aria-hidden="true"></i>&nbsp;';
+	    				data += '<a style=\"display: block;\" href=\"' + jssnippet + '" tabindex="' + i+1 + '" ><span class="impersonatorName">';
+	    				data += encodeHTML(displayName);
+	    				data += '</span><br/><span class="impersonatorDetails">';
+	    				data += encodeHTML(name);
+	    				data += '</span><br/><span class="impersonatorDetails">';
+	    				if (email) {
+	    					data += encodeHTML(email);
+	    				} else {
+	    					data += '<i>No email address</i>';
+	    				}
+	    				data += '</span></a>';
+	    				data += '</td>';
+	    				data += '</tr>';
+	    			}
+	    			data += '</table>';
+	    			resultDiv.innerHTML = data;
+	    		}
+    		}
+		});
+	}
+}
+
+function getRequirements() {
+	var reqs = function() {
+		var tmp = null;
+		jQueryClone.ajax({
+		    'async': false,
+		    'method': "GET",
+			'beforeSend': function (request) {
+				request.setRequestHeader("X-XSRF-TOKEN", CsrfToken);
+			},
+			'url': SailPoint.CONTEXT_PATH + "/plugin/rest/impersonateplugin/getRequirements",
+			'success': function (msg) {
+				tmp = msg._requirements;    
+			}
+		});
+		return tmp;
+	}();
+	return reqs;
+}
+
+function showModal() {
+	var modal = document.getElementById('impersonateSelectorModalBackground');
+	modal.style.display = "block";
+	var inputField = document.getElementById('impersonateSelectorInput');
+	inputField.value = "";
+	var resultDiv = document.getElementById('impersonateLiveSearch');
+	resultDiv.innerHTML = "";
+	inputField.focus();
+}
+
+function hideModal() {
+	var modal = document.getElementById('impersonateSelectorModalBackground');
+	modal.style.display = "none";
+}
+
+function go() {
+    jQueryClone.ajax({
+        method: "GET",
+        beforeSend: function (request) {
+            request.setRequestHeader("X-XSRF-TOKEN", CsrfToken);
+        },
+        url: SailPoint.CONTEXT_PATH + "/plugin/rest/impersonateplugin/getStatus"
+    })
+    .done(function (msg) {
+        impstatus = msg._status;
+	    if (impstatus === "impersonated") {
+			unimpersonate();
+	    } else if (impstatus === "notimpersonated") {
+			showModal();
+	    }
+    });
+}
+
+function selectImpersonation(name, displayName) {
+	document.getElementById("impersonateIdentity").value = name;
+	document.getElementById("impersonateSelectorInput").value = displayName;
+	var resultDiv = document.getElementById('impersonateLiveSearch');
+	resultDiv.innerHTML = "";    	
+}
+
+function confirmImpersonation() {
+	var name = document.getElementById('impersonateIdentity').value;
+	var displayName = document.getElementById('impersonateSelectorInput').value;
+	
+	if (!(typeof name === 'undefined' || name === null || name === "")) {
+		var confirmed = confirm("Do you want to impersonate " + displayName + "?");
+		if (confirmed == true) {
+			impersonate(name);
+		}
+	}
+}
+
+jQuery(document).ready(function(){
+	
+	var reqs = getRequirements();
+	authRequirements = reqs;
+	
+	var modal = '<div id="impersonateSelectorModalBackground" class="impersonateSelectorModalBackground">' + 
+		'	<div id="impersonateSelectorModalContent" class="impersonateSelectorModalContent">' + 
+		'		<span>Select the identity to impersonate:</span><br/>' +
+		'		<input type="text" id="impersonateSelectorInput" class="impersonateSelector"/><br>' +
+		'		<div id="impersonateLiveSearch"></div>';
+	if (jQueryClone.inArray("AUTHENTICATION", reqs) >= 0) {
+		modal = modal + 
+			'		<span>Your password:</span><br/>' +
+			'		<input type="password" id="impersonatePassword" class=""/><br>';
+	}
+	if (jQueryClone.inArray("TOKEN", reqs) >= 0) {
+		modal = modal + 
+			'		<span>Impersonation Token:</span><br/>' +
+			'		<input type="password" id="impersonateToken" class=""/><br>';
+	}
+	modal = modal + '		<div class="buttonRow">' +
+		'			<input type="hidden" id="impersonateIdentity"/>' +
+		'			<input id="impersonateGoButton" name="impersonateGoButton" value="Impersonate" class="primaryBtn" type="submit">' +
+		'			<input id="impersonateCancelButton" name="impersonateCancelButton" value="Cancel" class="secondaryBtn" type="submit">' +
+		'		</div>' +
+		'	</div>' +
+		'</div>';
+
+	var menuItem = 	'<li class="dropdown">' +
+		'	<a href="javascript:go()" tabindex="0" role="menuitem" data-snippet-debug="off">' +
+		'		<i id="impersonatePluginIcon" role="presenation" class="fa fa-shield fa-lg ' + statusClass + '"></i>' +
+		'	</a>' +
+		'</li>'
+
+	jQuery("ul.navbar-right li:first").before(modal + menuItem);
+	
+    jQueryClone.ajax({
+        method: "GET",
+        beforeSend: function (request) {
+            request.setRequestHeader("X-XSRF-TOKEN", CsrfToken);
+        },
+        url: SailPoint.CONTEXT_PATH + "/plugin/rest/impersonateplugin/getStatus"
+    })
+    .done(function (msg) {
+        impstatus = msg._status;
+        statusClass = impstatus;
+	    document.getElementById("impersonatePluginIcon").className = 'fa fa-shield fa-lg ' + statusClass;
+	    
+	    if (impstatus === "impersonated") {
+	    	auditUrl();
+	    }
+    });
+    	
+    jQuery("#impersonateCancelButton").click(function() {
+    	document.getElementById("impersonateIdentity").value = "";
+    	hideModal();
+    });
+
+    jQuery("#impersonateGoButton").click(function() {
+    	confirmImpersonation();
+    });
+        
+    jQuery("#impersonateSelectorInput").keyup(function(event) {
+    	var target = event.target;
+    	performLiveSearch(target.value);
+    });
+    
+    jQuery("#impersonateSelectorModalContent").keydown(function(event) {
+    	if (event.which == 27) {
+    		// Escape
+        	document.getElementById("impersonateIdentity").value = "";
+        	hideModal();
+    	}
+    	if (event.which == 13) {
+    		// Enter
+        	confirmImpersonation();
+    	}
+    });
+});

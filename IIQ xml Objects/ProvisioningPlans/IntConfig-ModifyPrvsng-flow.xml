@@ -1,0 +1,137 @@
+-------LCM Provisioning Start step-----<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan>
+  <AccountRequest application="IntConApplication" nativeIdentity="fq3" op="Modify">
+    <Attributes>
+      <Map>
+        <entry key="attachmentConfigList"/>
+        <entry key="attachments"/>
+        <entry key="id" value="c0a800fb954110f0819541b0da6100c4"/>
+      </Map>
+    </Attributes>
+    <AttributeRequest assignmentId="ad0577f1a82a4e649f3cb2e75a9fc729" displayValue="GroupName2" name="GroupId" op="Add" value="GIC2">
+      <Attributes>
+        <Map>
+          <entry key="assignment" value="true"/>
+        </Map>
+      </Attributes>
+    </AttributeRequest>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <ProvisioningTargets>
+    <ProvisioningTarget application="IntConApplication" assignmentId="ad0577f1a82a4e649f3cb2e75a9fc729" attribute="GroupId" value="GIC2">
+      <AccountSelection applicationId="c0a800fb954110f0819541ab1dfd00b1" applicationName="IntConApplication" selection="fq3">
+        <AccountInfo displayName="Abdul-Qawwee, Faiza" nativeIdentity="fq3"/>
+      </AccountSelection>
+    </ProvisioningTarget>
+  </ProvisioningTargets>
+</ProvisioningPlan>
+
+-------Identity Request Initialize----
+-------Identity Request violation review WF----
+-------Do Provisioning Forms WF------
+-------Approve and Provision Subprocess workflow----
+-------Provisioning Approval Subprocess Start step----
+  Provisioning Approval Subprocess   approvalset print--sailpoint.object.ApprovalSet@23ab669
+ Provisioning Approval Subprocess   approvalset toxml print--<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ApprovalSet PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ApprovalSet>
+  <ApprovalItem application="IntConApplication" assignmentId="ad0577f1a82a4e649f3cb2e75a9fc729" displayValue="GroupName2" id="ce01cf2a133b435eb58c9c16d86afa90" name="GroupId" nativeIdentity="fq3" operation="Add" value="GIC2">
+    <Attributes>
+      <Map>
+        <entry key="attachmentConfigList"/>
+        <entry key="attachments"/>
+        <entry key="flow" value="AccessRequest"/>
+        <entry key="id" value="c0a800fb954110f0819541b0da6100c4"/>
+        <entry key="interface" value="LCM"/>
+        <entry key="operation" value="EntitlementAdd"/>
+      </Map>
+    </Attributes>
+  </ApprovalItem>
+</ApprovalSet>
+
+-------Identity Request Provision workflow----
+-------Do Provisioning Forms WF------
+------Provision with retries workflow start step----
+ Start ProvisionIntegrMod - provision()
+plan : <?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan nativeIdentity="Abdul-Qawwee, Faiza" targetIntegration="ProvisionIntegrMod" trackingId="4c1082f2c6704dcfbe3e9af64baee46a">
+  <AccountRequest application="IntConApplication" nativeIdentity="fq3" op="Modify">
+    <Attributes>
+      <Map>
+        <entry key="attachmentConfigList"/>
+        <entry key="attachments"/>
+        <entry key="flow" value="AccessRequest"/>
+        <entry key="id" value="c0a800fb954110f0819541b0da6100c4"/>
+        <entry key="interface" value="LCM"/>
+        <entry key="operation" value="EntitlementAdd"/>
+      </Map>
+    </Attributes>
+    <AttributeRequest assignmentId="ad0577f1a82a4e649f3cb2e75a9fc729" displayValue="GroupName2" name="GroupId" op="Add" value="GIC2">
+      <Attributes>
+        <Map>
+          <entry key="assignment" value="true"/>
+        </Map>
+      </Attributes>
+    </AttributeRequest>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000617"/>
+      <entry key="requester" value="spadmin"/>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <Requesters>
+    <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+  </Requesters>
+</ProvisioningPlan>
+
+configMap : {ruleName=Rule-IntegrationConfig, operations=Create,Modify,Delete, roleSyncHistory=null}
+strRuleName :Rule-IntegrationConfig
+ruleObject : sailpoint.object.Rule@7871408d[id=c0a80004952c1cac81952c0d39c40001,name=Rule-IntegrationConfig]
+====Provisioning Plan in DelimitedIntegrationConfigRule=====<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan nativeIdentity="Abdul-Qawwee, Faiza" targetIntegration="ProvisionIntegrMod" trackingId="4c1082f2c6704dcfbe3e9af64baee46a">
+  <AccountRequest application="IntConApplication" nativeIdentity="fq3" op="Modify">
+    <Attributes>
+      <Map>
+        <entry key="attachmentConfigList"/>
+        <entry key="attachments"/>
+        <entry key="flow" value="AccessRequest"/>
+        <entry key="id" value="c0a800fb954110f0819541b0da6100c4"/>
+        <entry key="interface" value="LCM"/>
+        <entry key="operation" value="EntitlementAdd"/>
+      </Map>
+    </Attributes>
+    <AttributeRequest assignmentId="ad0577f1a82a4e649f3cb2e75a9fc729" displayValue="GroupName2" name="GroupId" op="Add" value="GIC2">
+      <Attributes>
+        <Map>
+          <entry key="assignment" value="true"/>
+        </Map>
+      </Attributes>
+    </AttributeRequest>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000617"/>
+      <entry key="requester" value="spadmin"/>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <Requesters>
+    <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+  </Requesters>
+</ProvisioningPlan>
+
+Modify ---------Line has been written successfully!!
+provResult : sailpoint.object.ProvisioningResult@3d7fccad
+ End ProvisionIntegrMod - provision()
+------Check Status of queued items workflow----
+-------Identity Request Notify WF----
+-------Identity Request Finalize WF----

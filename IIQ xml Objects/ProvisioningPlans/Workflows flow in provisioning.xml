@@ -1,0 +1,293 @@
+
+  for(int i=0;i @lt this.variables.length;i++){
+        log.error("Provisioning Approval Subprocess variable-: "+this.variables[i]);
+        }
+
+--ActiveDirectory provisioning flow of workflows with error 
+
+-------LCM Provisioning Start step-----
+-------Identity Request Initialize----
+-------Identity Request violation review WF----
+-------Do Provisioning Forms WF------
+-------Approve and Provision Subprocess workflow----
+-------Provisioning Approval Subprocess Start step----
+-------Identity Request Provision workflow----
+-------Do Provisioning Forms WF------
+------Provision with retries workflow start step----
+Exception occurred while executing the RPCRequest: Errors returned from IQService. "A device attached to the system is not functioning. A device attached to the system is not functioning. 00000523: SysErr: DSID-031A12C8, problem 22 (Invalid argument), data 0 00000523: SysErr: DSID-031A12C8, problem 22 (Invalid argument), data 0 . HRESULT:[0x8007001F]"
+------Check Status of queued items workflow----
+-------Identity Request Notify WF----
+-------Identity Request Finalize WF----
+
+===========================================================================================================================================================
+---ActiveDirectory provisioning flow of workflows with modify op----
+
+-------LCM Provisioning Start step-----<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan>
+  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=abdul samad,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+    <Attributes>
+      <Map>
+        <entry key="attachmentConfigList"/>
+        <entry key="attachments"/>
+        <entry key="id" value="c0a800fc94cb1e358194ccac8aaf2829"/>
+      </Map>
+    </Attributes>
+    <AttributeRequest assignmentId="2085d94b827c45a58d91e042c372c620" displayValue="AccountsPayable" name="memberOf" op="Add" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <Attributes>
+        <Map>
+          <entry key="assignment" value="true"/>
+        </Map>
+      </Attributes>
+    </AttributeRequest>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <ProvisioningTargets>
+    <ProvisioningTarget application="ActiveDirectory" assignmentId="2085d94b827c45a58d91e042c372c620" attribute="memberOf" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=abdul samad,OU=People,OU=Demo,DC=Eshiam,DC=com">
+        <AccountInfo displayName="abdul samad" nativeIdentity="CN=abdul samad,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+      </AccountSelection>
+    </ProvisioningTarget>
+  </ProvisioningTargets>
+</ProvisioningPlan>
+
+-------Identity Request Initialize----
+-------Identity Request violation review WF----
+-------Do Provisioning Forms WF------
+-------Approve and Provision Subprocess workflow----
+-------Provisioning Approval Subprocess Start step----
+-------Identity Request Provision workflow----
+-------Do Provisioning Forms WF------
+------Provision with retries workflow start step----
+------Check Status of queued items workflow----
+-------Identity Request Notify WF----
+-------Identity Request Finalize WF----
+
+
+===================================================================================================================================================================
+---ActiveDirectory provisioning flow of workflows with create op----
+
+-------LCM Provisioning Start step-----<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan>
+  <AccountRequest application="ActiveDirectory" op="Modify">
+    <Attributes>
+      <Map>
+        <entry key="attachmentConfigList"/>
+        <entry key="attachments"/>
+        <entry key="id" value="c0a8002394fb1f308194ff6478ff0a83"/>
+      </Map>
+    </Attributes>
+    <AttributeRequest assignmentId="25eb023f358f4171a407b305ce3d66fb" displayValue="AccountingGeneral" name="memberOf" op="Add" value="CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <Attributes>
+        <Map>
+          <entry key="assignment" value="true"/>
+        </Map>
+      </Attributes>
+    </AttributeRequest>
+  </AccountRequest>
+  <AccountRequest application="ActiveDirectory" op="Modify">
+    <Attributes>
+      <Map>
+        <entry key="attachmentConfigList"/>
+        <entry key="attachments"/>
+        <entry key="id" value="c0a800fc94cb1e358194ccac8aaf2829"/>
+      </Map>
+    </Attributes>
+    <AttributeRequest assignmentId="8d10265b091441a99d9f0a85e4d3465f" displayValue="AccountsPayable" name="memberOf" op="Add" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <Attributes>
+        <Map>
+          <entry key="assignment" value="true"/>
+        </Map>
+      </Attributes>
+    </AttributeRequest>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <ProvisioningTargets>
+    <ProvisioningTarget application="ActiveDirectory" assignmentId="25eb023f358f4171a407b305ce3d66fb" attribute="memberOf" value="CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" implicitCreate="true"/>
+    </ProvisioningTarget>
+    <ProvisioningTarget application="ActiveDirectory" assignmentId="8d10265b091441a99d9f0a85e4d3465f" attribute="memberOf" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" implicitCreate="true"/>
+    </ProvisioningTarget>
+  </ProvisioningTargets>
+</ProvisioningPlan>
+
+-------Identity Request Initialize----
+-------Identity Request violation review WF----
+-------Do Provisioning Forms WF------
+-------Approve and Provision Subprocess workflow----
+-------Provisioning Approval Subprocess Start step----Goes for approvals
+-------Identity Request Provision workflow----
+-------Do Provisioning Forms WF------
+------Provision with retries workflow start step----
+------Check Status of queued items workflow----
+-------Identity Request Notify WF----
+-------Identity Request Finalize WF----
+
+==============================================================================================================================================================
+Subprocess variables
+
+
+-------LCM Provisioning Start step-----<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan>
+  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=abdul samad,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+    <Attributes>
+      <Map>
+        <entry key="attachmentConfigList"/>
+        <entry key="attachments"/>
+        <entry key="id" value="c0a800fc94cb1e358194ccac8aec282a"/>
+      </Map>
+    </Attributes>
+    <AttributeRequest assignmentId="4a2a44049971462eac0dc1278eb99323" displayValue="AccountsReceivable" name="memberOf" op="Add" value="CN=AccountsReceivable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <Attributes>
+        <Map>
+          <entry key="assignment" value="true"/>
+        </Map>
+      </Attributes>
+    </AttributeRequest>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <ProvisioningTargets>
+    <ProvisioningTarget application="ActiveDirectory" assignmentId="4a2a44049971462eac0dc1278eb99323" attribute="memberOf" value="CN=AccountsReceivable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=abdul samad,OU=People,OU=Demo,DC=Eshiam,DC=com">
+        <AccountInfo displayName="abdul samad" nativeIdentity="CN=abdul samad,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+      </AccountSelection>
+    </ProvisioningTarget>
+  </ProvisioningTargets>
+</ProvisioningPlan>
+
+-------Identity Request Initialize----
+-------Identity Request violation review WF----
+-------Do Provisioning Forms WF------
+-------Approve and Provision Subprocess workflow----
+Approve and Provision Subprocess variable-: formTemplate
+Approve and Provision Subprocess variable-: handler
+Approve and Provision Subprocess variable-: enableRetryRequest
+Approve and Provision Subprocess variable-: securityOfficerElectronicSignature
+Approve and Provision Subprocess variable-: fallbackApprover
+Approve and Provision Subprocess variable-: endOnManualWorkItems
+Approve and Provision Subprocess variable-: sessionOwner
+Approve and Provision Subprocess variable-: userEmailTemplate
+Approve and Provision Subprocess variable-: project
+Approve and Provision Subprocess variable-: workItemComments
+Approve and Provision Subprocess variable-: identityRequestId
+Approve and Provision Subprocess variable-: approvalSplitPoint
+Approve and Provision Subprocess variable-: source
+Approve and Provision Subprocess variable-: foregroundProvisioning
+Approve and Provision Subprocess variable-: identityDisplayName
+Approve and Provision Subprocess variable-: ownerElectronicSignature
+Approve and Provision Subprocess variable-: batchRequestItemId
+Approve and Provision Subprocess variable-: saveUnmanagedPlan_WithProjectArgument
+Approve and Provision Subprocess variable-: context
+Approve and Provision Subprocess variable-: plan
+Approve and Provision Subprocess variable-: flow
+Approve and Provision Subprocess variable-: item
+Approve and Provision Subprocess variable-: wfcase
+Approve and Provision Subprocess variable-: identityName
+Approve and Provision Subprocess variable-: workflow
+Approve and Provision Subprocess variable-: approvalSet
+Approve and Provision Subprocess variable-: filterRejects
+Approve and Provision Subprocess variable-: ownerEmailTemplate
+Approve and Provision Subprocess variable-: splitProvisioning
+Approve and Provision Subprocess variable-: clearApprovalDecisions
+Approve and Provision Subprocess variable-: noTriggers
+Approve and Provision Subprocess variable-: bsf
+Approve and Provision Subprocess variable-: bsh
+Approve and Provision Subprocess variable-: requireCommentsForDenial
+Approve and Provision Subprocess variable-: requesterEmailTemplate
+Approve and Provision Subprocess variable-: approvalEmailTemplate
+Approve and Provision Subprocess variable-: ticketManagementApplication
+Approve and Provision Subprocess variable-: securityOfficerName
+Approve and Provision Subprocess variable-: approvingIdentities
+Approve and Provision Subprocess variable-: wfcontext
+Approve and Provision Subprocess variable-: managerEmailTemplate
+Approve and Provision Subprocess variable-: launcher
+Approve and Provision Subprocess variable-: approvalScheme
+Approve and Provision Subprocess variable-: log
+Approve and Provision Subprocess variable-: workItemPriority
+Approve and Provision Subprocess variable-: managerElectronicSignature
+Approve and Provision Subprocess variable-: approvalMode
+Approve and Provision Subprocess variable-: trace
+Approve and Provision Subprocess variable-: endOnProvisioningForms
+Approve and Provision Subprocess variable-: approvalAssignmentRule
+Approve and Provision Subprocess variable-: requireCommentsForApproval
+Approve and Provision Subprocess variable-: approval
+Approve and Provision Subprocess variable-: manualActionsEmailTemplate
+Approve and Provision Subprocess variable-: policyViolations
+Approve and Provision Subprocess variable-: policyScheme
+Approve and Provision Subprocess variable-: setPreviousApprovalDecisions
+Approve and Provision Subprocess variable-: step
+Approve and Provision Subprocess variable-: optimisticProvisioning
+Approve and Provision Subprocess variable-: securityOfficerEmailTemplate
+
+
+-------Provisioning Approval Subprocess Start step----
+Provisioning Approval Subprocess variable-: identityEmailTemplate
+Provisioning Approval Subprocess variable-: handler
+Provisioning Approval Subprocess variable-: securityOfficerElectronicSignature
+Provisioning Approval Subprocess variable-: fallbackApprover
+Provisioning Approval Subprocess variable-: sessionOwner
+Provisioning Approval Subprocess variable-: project
+Provisioning Approval Subprocess variable-: identityRequestId
+Provisioning Approval Subprocess variable-: workItemDescription
+Provisioning Approval Subprocess variable-: identityDisplayName
+Provisioning Approval Subprocess variable-: ownerElectronicSignature
+Provisioning Approval Subprocess variable-: dontUpdatePlan
+Provisioning Approval Subprocess variable-: context
+Provisioning Approval Subprocess variable-: plan
+Provisioning Approval Subprocess variable-: flow
+Provisioning Approval Subprocess variable-: item
+Provisioning Approval Subprocess variable-: identityElectronicSignature
+Provisioning Approval Subprocess variable-: wfcase
+Provisioning Approval Subprocess variable-: identityName
+Provisioning Approval Subprocess variable-: workflow
+Provisioning Approval Subprocess variable-: approvalSet
+Provisioning Approval Subprocess variable-: filterRejects
+Provisioning Approval Subprocess variable-: ownerEmailTemplate
+Provisioning Approval Subprocess variable-: workItemEscalationTemplate
+Provisioning Approval Subprocess variable-: clearApprovalDecisions
+Provisioning Approval Subprocess variable-: noTriggers
+Provisioning Approval Subprocess variable-: bsf
+Provisioning Approval Subprocess variable-: bsh
+Provisioning Approval Subprocess variable-: workItemMaxReminders
+Provisioning Approval Subprocess variable-: requireCommentsForDenial
+Provisioning Approval Subprocess variable-: approvingIdentities
+Provisioning Approval Subprocess variable-: workItemHoursTillEscalation
+Provisioning Approval Subprocess variable-: wfcontext
+Provisioning Approval Subprocess variable-: managerEmailTemplate
+Provisioning Approval Subprocess variable-: launcher
+Provisioning Approval Subprocess variable-: approvalScheme
+Provisioning Approval Subprocess variable-: log
+Provisioning Approval Subprocess variable-: workItemHoursBetweenReminders
+Provisioning Approval Subprocess variable-: workItemPriority
+Provisioning Approval Subprocess variable-: managerElectronicSignature
+Provisioning Approval Subprocess variable-: approvalMode
+Provisioning Approval Subprocess variable-: trace
+Provisioning Approval Subprocess variable-: workItemEscalationRule
+Provisioning Approval Subprocess variable-: requireCommentsForApproval
+Provisioning Approval Subprocess variable-: approval
+Provisioning Approval Subprocess variable-: policyViolations
+Provisioning Approval Subprocess variable-: workItemReminderTemplate
+Provisioning Approval Subprocess variable-: setPreviousApprovalDecisions
+Provisioning Approval Subprocess variable-: step
+Provisioning Approval Subprocess variable-: securityOfficerEmailTemplate
+-------Identity Request Provision workflow----
+-------Do Provisioning Forms WF------
+------Provision with retries workflow start step----
+------Check Status of queued items workflow----
+-------Identity Request Notify WF----
+-------Identity Request Finalize WF----

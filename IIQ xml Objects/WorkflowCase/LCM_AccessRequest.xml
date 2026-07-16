@@ -1,0 +1,2150 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE WorkflowCase PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<WorkflowCase created="1738586161759" id="c0a800fc94cb1e358194cbcf825f2032" launcher="spadmin" modified="1738586162213" name="Update Identity Mahesh Nattali AccessRequest - 2" significantModified="1738586162213" targetClass="Identity" targetId="c0a81d898fc9197a8190074e5ccf2bd6" targetName="Mahesh Nattali" type="LCM">
+  <Workflow configForm="Provisioning Workflow Config Form" currentStep="032df841a4434f00b8f419c15e56417a" handler="sailpoint.api.StandardWorkflowHandler" libraries="Identity,Role,PolicyViolation,LCM,BatchRequest" name="LCM Provisioning" significantModified="1735808354032" taskType="LCM" type="LCMProvisioning">
+    <Variable input="true" name="identityName"/>
+    <Variable initializer="false" input="true" name="endOnManualWorkItems"/>
+    <Variable initializer="false" input="true" name="endOnProvisioningForms"/>
+    <Variable initializer="script:(identityDisplayName != void) ? identityDisplayName : resolveDisplayName(identityName)" input="true" name="identityDisplayName"/>
+    <Variable input="true" name="plan"/>
+    <Variable input="true" name="flow"/>
+    <Variable editable="true" initializer="false" name="optimisticProvisioning"/>
+    <Variable editable="true" initializer="true" name="foregroundProvisioning"/>
+    <Variable input="true" name="batchRequestItemId"/>
+    <Variable editable="true" name="doRefresh"/>
+    <Variable initializer="user,requester" input="true" name="notificationScheme"/>
+    <Variable initializer="LCM User Notification" input="true" name="userEmailTemplate"/>
+    <Variable initializer="LCM Requester Notification" input="true" name="requesterEmailTemplate"/>
+    <Variable initializer="LCM Manager Notification" input="true" name="managerEmailTemplate"/>
+    <Variable input="true" name="securityOfficerEmailTemplate"/>
+    <Variable initializer="parallel" input="true" name="approvalMode"/>
+    <Variable initializer="owner" input="true" name="approvalScheme"/>
+    <Variable initializer="LCM Identity Update Approval" input="true" name="approvalEmailTemplate"/>
+    <Variable initializer="Normal" input="true" name="workItemPriority"/>
+    <Variable input="true" name="securityOfficerName"/>
+    <Variable initializer="spadmin" input="true" name="fallbackApprover"/>
+    <Variable initializer="fail" input="true" name="policyScheme"/>
+    <Variable initializer="false" input="true" name="enableRetryRequest"/>
+    <Variable input="true" name="policiesToCheck"/>
+    <Variable initializer="LCM" input="true" name="source"/>
+    <Variable initializer="false" name="trace"/>
+    <Variable name="approvalSet"/>
+    <Variable initializer="true" name="allowRequestsWithViolations"/>
+    <Variable initializer="true" name="requireViolationReviewComments"/>
+    <Variable name="project"/>
+    <Variable name="policyViolations"/>
+    <Variable name="identityRequestId" output="true"/>
+    <Variable name="violationReviewDecision"/>
+    <Variable name="workItemComments"/>
+    <Variable input="true" name="ticketManagementApplication"/>
+    <Variable name="ticketId"/>
+    <Variable input="true" name="managerElectronicSignature"/>
+    <Variable input="true" name="ownerElectronicSignature"/>
+    <Variable input="true" name="securityOfficerElectronicSignature"/>
+    <Variable input="true" name="approvingIdentities"/>
+    <Variable input="true" name="identityElectronicSignature"/>
+    <Variable input="true" name="identityEmailTemplate"/>
+    <Variable initializer="true" input="true" name="filterRejects"/>
+    <Variable initializer="false" input="true" name="setPreviousApprovalDecisions"/>
+    <Variable name="approvalSplitPoint"/>
+    <Variable name="splitPlans"/>
+    <Variable name="splitProjects"/>
+    <Variable name="splitApprovalSet"/>
+    <Variable name="splitWorkItemComments"/>
+    <Variable initializer="false" input="true" name="saveUnmanagedPlan_WithProjectArgument"/>
+    <Variable initializer="false" input="true" name="requireCommentsForApproval"/>
+    <Variable initializer="false" input="true" name="requireCommentsForDenial"/>
+    <RuleLibraries>
+      <Reference class="sailpoint.object.Rule" id="c0a81d898f331ca3818f33fd007a019d" name="LCM Workflow Library"/>
+    </RuleLibraries>
+    <Step complete="true" icon="Start" id="61e4ddb6206e463dac6308705f3c5ce1" name="Start" posX="25" posY="10">
+      <Script>
+        <Source>
+      log.error("-------LCM Provisioning Start step-----"+plan.toXml());
+      </Source>
+      </Script>
+      <Transition to="Initialize"/>
+    </Step>
+    <Step icon="Task" id="032df841a4434f00b8f419c15e56417a" name="Initialize" posX="134" posY="10">
+      <Arg name="flow" value="ref:flow"/>
+      <Arg name="formTemplate" value="Identity Update"/>
+      <Arg name="identityName" value="ref:identityName"/>
+      <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+      <Arg name="launcher" value="ref:launcher"/>
+      <Arg name="optimisticProvisioning" value="ref:optimisticProvisioning"/>
+      <Arg name="plan" value="ref:plan"/>
+      <Arg name="workItemPriority" value="ref:workItemPriority"/>
+      <Arg name="policiesToCheck" value="ref:policiesToCheck"/>
+      <Arg name="policyScheme" value="ref:policyScheme"/>
+      <Arg name="source" value="ref:source"/>
+      <Arg name="trace" value="ref:trace"/>
+      <Arg name="requireViolationReviewComments" value="ref:requireViolationReviewComments"/>
+      <Arg name="allowRequestsWithViolations" value="ref:allowRequestsWithViolations"/>
+      <Arg name="enableRetryRequest" value="ref:enableRetryRequest"/>
+      <Arg name="batchRequestItemId" value="ref:batchRequestItemId"/>
+      <Arg name="endOnProvisioningForms" value="ref:endOnProvisioningForms"/>
+      <Arg name="endOnManualWorkItems" value="ref:endOnManualWorkItems"/>
+      <Return name="project" to="project"/>
+      <Return name="approvalSet" to="approvalSet"/>
+      <Return name="policyViolations" to="policyViolations"/>
+      <Return name="identityRequestId" to="identityRequestId"/>
+      <Return name="violationReviewDecision" to="violationReviewDecision"/>
+      <Return merge="true" name="workItemComments" to="workItemComments"/>
+      <Script>
+        <Source>
+      log.error("-------LCM Provisioning Initialize step-----");
+      </Source>
+      </Script>
+      <WorkflowRef>
+        <Reference class="sailpoint.object.Workflow" id="c0a81d898f331ca3818f33fdbb3e0316" name="Identity Request Initialize"/>
+      </WorkflowRef>
+      <Transition to="Exit On Manual Work Items" when="script:(isTrue(endOnManualWorkItems) &amp;&amp; (project.getUnmanagedPlan() != null))"/>
+      <Transition to="Exit On Provisioning Form" when="script:(isTrue(endOnProvisioningForms) &amp;&amp; (project.hasQuestions()))"/>
+      <Transition to="Exit On Policy Violation" when="script:(&quot;cancel&quot;.equals(violationReviewDecision) || ((size(policyViolations) > 0 ) &amp;&amp; (policyScheme.equals(&quot;fail&quot;))))"/>
+      <Transition to="Create Ticket"/>
+      <WorkflowCase launcher="spadmin" name="Identity Request Initialize">
+        <Workflow currentStep="254f74d892274217873a3734cc70722a" libraries="Identity,IdentityRequest" name="Identity Request Initialize" significantModified="1735808110318" type="Subprocess">
+          <Variable input="true" name="identityName" required="true"/>
+          <Variable initializer="script:(identityDisplayName != void) ? identityDisplayName : resolveDisplayName(identityName)" input="true" name="identityDisplayName"/>
+          <Variable initializer="false" input="true" name="endOnManualWorkItems"/>
+          <Variable initializer="false" input="true" name="endOnProvisioningForms"/>
+          <Variable input="true" name="flow"/>
+          <Variable input="true" name="plan" required="true"/>
+          <Variable input="true" name="optimisticProvisioning" required="true"/>
+          <Variable input="true" name="asyncCacheRefresh"/>
+          <Variable input="true" name="policiesToCheck"/>
+          <Variable input="true" name="allowRequestsWithViolations"/>
+          <Variable input="true" name="requireViolationReviewComments"/>
+          <Variable initializer="Identity Update" input="true" name="formTemplate"/>
+          <Variable initializer="false" name="trace"/>
+          <Variable initializer="continue" input="true" name="policyScheme"/>
+          <Variable initializer="LCM" input="true" name="source"/>
+          <Variable input="true" name="workItemPriority"/>
+          <Variable initializer="false" input="true" name="enableRetryRequest"/>
+          <Variable name="project" output="true"/>
+          <Variable name="policyViolations" output="true"/>
+          <Variable name="approvalSet" output="true"/>
+          <Variable name="identityRequest"/>
+          <Variable name="identityRequestId"/>
+          <Variable name="violationReviewDecision" output="true"/>
+          <Variable initializer="script:( Util.otob(getConfiguration(&quot;lcmEnableApprovalRecommendations&quot;)))" input="true" name="enableApprovalRecommendations"/>
+          <Variable name="workItemComments"/>
+          <Step complete="true" icon="Start" id="e3a2f07d23eb45c39b446eb46940231c" name="Start" posX="25" posY="15">
+            <Script>
+              <Source>
+        log.error("-------Identity Request Initialize----");
+      </Source>
+            </Script>
+            <Transition to="Compile Project"/>
+          </Step>
+          <Step action="call:compileProvisioningProject" complete="true" icon="Task" id="47a9b31670fe460583f8cb4d8ca2ab13" name="Compile Project" posX="121" posY="15" resultVariable="project">
+            <Arg name="identityName" value="ref:identityName"/>
+            <Arg name="plan" value="ref:plan"/>
+            <Arg name="requester" value="ref:launcher"/>
+            <Arg name="source" value="ref:source"/>
+            <Arg name="optimisticProvisioning" value="ref:optimisticProvisioning"/>
+            <Arg name="disableRetryRequest" value="!ref:enableRetryRequest"/>
+            <Arg name="noApplicationTemplates">
+              <Script>
+                <Source>
+          boolean ignoreForms = false;
+          if ("ForgotPassword".equals(flow) || "ExpirePassword".equals(flow)) {
+          ignoreForms = true;
+          }
+          return ignoreForms;
+        </Source>
+              </Script>
+            </Arg>
+            <Arg name="noLocking">
+              <Script>
+                <Source>
+          boolean noLocking = false;
+          if ("Lifecycle".equals(flow)) {
+          noLocking = true;
+          }
+          return noLocking;
+        </Source>
+              </Script>
+            </Arg>
+            <Transition to="end" when="script:(isTrue(endOnManualWorkItems) &amp;&amp; (project.getUnmanagedPlan() != null))"/>
+            <Transition to="end" when="script:(isTrue(endOnProvisioningForms) &amp;&amp; (project.hasQuestions()))"/>
+            <Transition to="Build Approval Set" when="script:isNull(approvalSet)"/>
+            <Transition to="Rebuild Approval Set"/>
+          </Step>
+          <Step action="call:buildApprovalSet" complete="true" condition="script:isNull(approvalSet)" id="416fe4dcdb2e4acfa4c1dc2e92bd2e76" name="Build Approval Set" posX="260" posY="92" resultVariable="approvalSet">
+            <Arg name="plan" value="ref:plan"/>
+            <Return name="approvalSet" to="approvalSet"/>
+            <Transition to="Check Policies"/>
+          </Step>
+          <Step complete="true" condition="script:(!policyScheme.equals(&quot;none&quot;))" id="88ed896fbfc84e059233d76cd7fdaeae" name="Check Policies" posX="391" posY="92">
+            <Arg name="identityName" value="ref:identityName"/>
+            <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+            <Arg name="project" value="ref:project"/>
+            <Arg name="plan" value="ref:plan"/>
+            <Arg name="approvalSet" value="ref:approvalSet"/>
+            <Arg name="policyScheme" value="ref:policyScheme"/>
+            <Arg name="policiesToCheck" value="ref:policiesToCheck"/>
+            <Arg name="asyncCacheRefresh" value="ref:asyncCacheRefresh"/>
+            <Arg name="workItemPriority" value="ref:workItemPriority"/>
+            <Arg name="optimisticProvisioning" value="ref:optimisticProvisioning"/>
+            <Arg name="flow" value="ref:flow"/>
+            <Arg name="requireViolationReviewComments" value="ref:requireViolationReviewComments"/>
+            <Arg name="allowRequestsWithViolations" value="ref:allowRequestsWithViolations"/>
+            <Return name="policyViolations" to="policyViolations"/>
+            <Return name="project" to="project"/>
+            <Return name="plan" to="plan"/>
+            <Return name="violationReviewDecision" to="violationReviewDecision"/>
+            <Return merge="true" name="workItemComments" to="workItemComments"/>
+            <WorkflowRef>
+              <Reference class="sailpoint.object.Workflow" id="c0a81d898f331ca3818f33fdbb2b0315" name="Identity Request Violation Review"/>
+            </WorkflowRef>
+            <Transition to="end" when="script:(&quot;cancel&quot;.equals(violationReviewDecision))"/>
+            <Transition to="end" when="script:((policyScheme.equals(&quot;fail&quot;) &amp;&amp; (size(policyViolations) > 0 )  ))"/>
+            <Transition to="Rebuild Approval Set"/>
+          </Step>
+          <Step action="call:buildApprovalSet" complete="true" id="506c7cfb7689416abebc5d50ee7b5248" name="Rebuild Approval Set" posX="187" posY="252" resultVariable="approvalSet">
+            <Arg name="plan" value="ref:plan"/>
+            <Return name="approvalSet" to="approvalSet"/>
+            <Transition to="Build Approval Recommendations"/>
+          </Step>
+          <Step action="call:populateRecommendationsInApprovalSet" complete="true" condition="ref:enableApprovalRecommendations" id="b7c082d96b16475b84a93341c8d3b9d5" name="Build Approval Recommendations" posX="322" posY="252" resultVariable="approvalSet">
+            <Arg name="identitySource" value="ref:plan"/>
+            <Return name="approvalSet" to="approvalSet"/>
+            <Transition to="Audit Start"/>
+          </Step>
+          <Step action="call:auditLCMStart" complete="true" icon="Audit" id="c7d3584c552748a78dd88c6401df7330" name="Audit Start" posX="439" posY="252">
+            <Arg name="approvalSet" value="ref:approvalSet"/>
+            <Transition to="Create Identity Request"/>
+          </Step>
+          <Step action="call:createIdentityRequest" complete="true" icon="Task" id="3071a0af531b4669818388e6e2775d63" name="Create Identity Request" posX="577" posY="252" resultVariable="identityRequest">
+            <Arg name="approvalSet" value="ref:approvalSet"/>
+            <Arg name="flow" value="ref:flow"/>
+            <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+            <Arg name="project" value="ref:project"/>
+            <Arg name="workItemPriority" value="ref:workItemPriority"/>
+            <Arg name="source" value="ref:source"/>
+            <Transition to="Do Provisioning Forms Pre-Approval"/>
+          </Step>
+          <Step icon="Task" id="254f74d892274217873a3734cc70722a" name="Do Provisioning Forms Pre-Approval" posX="741" posY="252">
+            <Arg name="identityName" value="ref:identityName"/>
+            <Arg name="approvalSet" value="ref:approvalSet"/>
+            <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+            <Arg name="workItemPriority" value="ref:workItemPriority"/>
+            <Arg name="project" value="ref:project"/>
+            <Arg name="formTemplate" value="ref:formTemplate"/>
+            <Arg name="requiredOwner">
+              <Script>
+                <Source>
+
+          if(sessionOwner.equals("System") || sessionOwner.equals("Scheduler") || sessionOwner.equals("RequestHandler"))
+          {
+          return "spadmin";
+          }
+          else
+          {
+          return sessionOwner;
+          }
+
+        </Source>
+              </Script>
+            </Arg>
+            <Arg name="workItemComments" value="ref:workItemComments"/>
+            <Return name="approvalSet" to="approvalSet"/>
+            <Return name="project" to="project"/>
+            <WorkflowRef>
+              <Reference class="sailpoint.object.Workflow" id="c0a81d898f331ca3818f33fcfeec018c" name="Do Provisioning Forms"/>
+            </WorkflowRef>
+            <Transition to="Assimilate Account Id Changes"/>
+            <WorkflowCase launcher="spadmin" name="Do Provisioning Forms">
+              <Workflow currentStep="135255de5fcd4ee19f7644cdfb069d38" libraries="Identity" name="Do Provisioning Forms" significantModified="1735808081982" type="Subprocess">
+                <Variable input="true" name="identityName" required="true"/>
+                <Variable initializer="script:(identityDisplayName != void) ? identityDisplayName : resolveDisplayName(identityName)" input="true" name="identityDisplayName"/>
+                <Variable input="true" name="project" output="true" required="true"/>
+                <Variable input="true" name="formTemplate" required="true"/>
+                <Variable input="true" name="preferredOwner"/>
+                <Variable input="true" name="workItemPriority"/>
+                <Variable input="true" name="requiredOwner"/>
+                <Variable input="true" name="fallbackOwner"/>
+                <Variable input="true" name="accountSelectionOwner"/>
+                <Variable input="true" name="disableManualAccountSelection"/>
+                <Variable name="workItemForm"/>
+                <Variable name="formOwnerError"/>
+                <Variable name="workItemComments"/>
+                <Variable name="accountSelectionForm"/>
+                <Variable name="calculatedAccountSelectionOwner"/>
+                <Step complete="true" icon="Start" id="b55041793efb44679f6f9a81efec6cde" name="start" posX="33" posY="16">
+                  <Script>
+                    <Source>
+        log.error("-------Do Provisioning Forms WF------");
+      </Source>
+                  </Script>
+                  <Transition to="Get Account Selection Owner"/>
+                </Step>
+                <Step action="call:getAccountSelectionOwner" complete="true" condition="script:project != null &amp;&amp; !isTrue(disableManualAccountSelection) &amp;&amp; (project.hasUnansweredProvisioningTargets() || project.hasUnansweredAccountSelections())" id="b860fe35903644eb98fe99986b366149" name="Get Account Selection Owner" posX="372" posY="12" resultVariable="calculatedAccountSelectionOwner">
+                  <Arg name="accountSelectionOwner" value="ref:accountSelectionOwner"/>
+                  <Arg name="owner" value="ref:requiredOwner"/>
+                  <Arg name="preferredOwner" value="ref:preferredOwner"/>
+                  <Arg name="fallbackOwner" value="ref:fallbackOwner"/>
+                  <Transition to="Build Account Selection Form"/>
+                </Step>
+                <Step action="call:buildAccountSelectionForm" complete="true" condition="script:project != null &amp;&amp; !isTrue(disableManualAccountSelection) &amp;&amp; project.hasUnansweredProvisioningTargets()" id="9a0fd304869549228e18e2c2b92e59bc" name="Build Account Selection Form" posX="561" posY="12" resultVariable="accountSelectionForm">
+                  <Arg name="project" value="ref:project"/>
+                  <Arg name="owner" value="ref:calculatedAccountSelectionOwner"/>
+                  <Transition to="Present Account Selection Form"/>
+                </Step>
+                <Step complete="true" condition="script:!isNull(accountSelectionForm)" id="b295ba944a194ced91a43231b5c47c95" name="Present Account Selection Form" posX="561" posY="12">
+                  <Approval owner="script:accountSelectionForm.getTargetUser()" send="identityName,identityDisplayName,launcher">
+                    <AfterScript>
+                      <Source>
+          import sailpoint.object.Form;
+          import sailpoint.object.ProvisioningTarget;
+          import sailpoint.object.AccountSelection;
+          import sailpoint.object.Field;
+
+          Form accountSelectionForm = item.getForm();
+          
+          Iterator fieldIterator = accountSelectionForm.iterateFields();
+
+          List targets = project.getProvisioningTargets();
+          
+          //apply selected value to matching AccountSelection
+          //if accountSelectionId, then apply to the first unanswered AccountSelection
+          while (fieldIterator.hasNext()) {
+              Field fld = (Field)fieldIterator.next();
+              if (fld == null) 
+                continue;
+
+              Integer targetIndex = (Integer)fld.getAttribute("targetIndex");
+              Integer selectionIndex = (Integer)fld.getAttribute("selectionIndex");
+              
+              if (targetIndex == null || selectionIndex == null) continue;
+                            
+              ProvisioningTarget target = (ProvisioningTarget) targets.get(targetIndex.intValue());
+              
+              List selections = target.getAccountSelections();
+              AccountSelection selection = (AccountSelection) selections.get(selectionIndex.intValue()); 
+                 
+              if (selection.isAnswered()) continue;
+              
+              if (fld.getValue().equals("doCreateOpt")) {
+                selection.setDoCreate(true);
+              }
+              else {
+                selection.setSelection(fld.getValue());
+              }
+          }
+          
+        </Source>
+                    </AfterScript>
+                    <Arg name="workItemType" value="Form"/>
+                    <Arg name="workItemDescription" value="Role Account Selection for $(identityDisplayName)"/>
+                    <Arg name="workItemForm" value="ref:accountSelectionForm"/>
+                    <Arg name="workItemDisableNotification">
+                      <Script>
+                        <Source>
+           
+            // If this is interactive then don't bother sending email notifications.
+            return (null != sessionOwner) &amp;&amp; !sessionOwner.equals("System") &amp;&amp; !sessionOwner.equals("Scheduler");
+            
+          </Source>
+                      </Script>
+                    </Arg>
+                    <Arg name="workItemPriority" value="ref:workItemPriority"/>
+                    <WorkItemConfig escalationStyle="none">
+                      <NotificationEmailTemplateRef>
+                        <Reference class="sailpoint.object.EmailTemplate" id="c0a81d898f331ca3818f33fcfd3f017e" name="Account Selection Notification"/>
+                      </NotificationEmailTemplateRef>
+                    </WorkItemConfig>
+                  </Approval>
+                  <Transition to="Handle Old Account Selections"/>
+                </Step>
+                <Step complete="true" condition="script:project != null &amp;&amp; !isTrue(disableManualAccountSelection) &amp;&amp; project.hasUnansweredAccountSelections()" id="23a54d6581e04d908c804d6c6668fd8e" name="Handle Old Account Selections" posX="561" posY="12">
+                  <Approval owner="ref:calculatedAccountSelectionOwner" renderer="accountSelectionRenderer.xhtml">
+                    <AfterScript>
+                      <Source>
+          import sailpoint.object.Attributes;
+          import sailpoint.api.Provisioner;
+
+          // Set the account selections back on the project.  Later these will
+          // be consulted when the native identities are resolved.
+          List accountSelections = approval.get("accountSelectionsFromWorkItem");
+          project.setAccountSelections(accountSelections);
+
+          // Recompile project so that selected native identities get put into
+          // provisioning plans.
+          Provisioner p = new Provisioner(wfcontext.getSailPointContext());
+          Attributes args = wfcontext.getStepArguments();
+          p.recompile(project, args);
+        </Source>
+                    </AfterScript>
+                    <Arg name="workItemRequester" value="$(launcher)"/>
+                    <Arg name="workItemDescription" value="Account Selection for User: $(identityDisplayName)"/>
+                    <Arg name="workItemDisableNotification">
+                      <Script>
+                        <Source>
+           
+            // If this is interactive then don't bother sending email notifications.
+            return (null != sessionOwner) &amp;&amp; !sessionOwner.equals("System") &amp;&amp; !sessionOwner.equals("Scheduler");
+            
+          </Source>
+                      </Script>
+                    </Arg>
+                    <Arg name="workItemPriority" value="ref:workItemPriority"/>
+                    <Arg name="accounts" value="script:project.getAccountSelections()"/>
+                    <Arg name="expansionItems" value="script:project.getExpansionItems()"/>
+                    <Arg name="identityDisplayName" value="$(identityDisplayName)"/>
+                    <Arg name="identityName" value="$(identityName)"/>
+                    <Return local="true" name="accounts" to="accountSelectionsFromWorkItem"/>
+                    <ValidationScript>
+                      <Source>
+          import sailpoint.object.AccountSelection;
+          import sailpoint.tools.Util;
+
+          // The return has not yet been processed since we're in the validator
+          // script.  Grab the account selections from the work item.
+          List accountSelections = item.getAttribute("accounts");
+
+          // Make sure that all account selections have decisions.
+          for (AccountSelection sel : accountSelections) {
+              if (Util.isEmpty(sel.getSelectedNativeIdentities())) {
+                  return "Please make a selection for each application.";
+              }
+          }
+          return null;
+        </Source>
+                    </ValidationScript>
+                    <WorkItemConfig escalationStyle="none">
+                      <NotificationEmailTemplateRef>
+                        <Reference class="sailpoint.object.EmailTemplate" id="c0a81d898f331ca3818f33fcfd3f017e" name="Account Selection Notification"/>
+                      </NotificationEmailTemplateRef>
+                    </WorkItemConfig>
+                  </Approval>
+                  <Transition to="Recompile Provisioning Project"/>
+                </Step>
+                <Step action="call:recompileProject" complete="true" id="c0e45f9106a547a4b8a22bac37a1c88a" name="Recompile Provisioning Project" posX="99" posY="112" resultVariable="project">
+                  <Arg name="project" value="ref:project"/>
+                  <Transition to="Build Provisioning Form"/>
+                </Step>
+                <Step action="call:buildProvisioningForm" complete="true" id="d68c2410636c4642863e6c8f4337ee76" name="Build Provisioning Form" posX="99" posY="112" resultVariable="workItemForm">
+                  <Arg name="project" value="ref:project"/>
+                  <Arg name="template" value="ref:formTemplate"/>
+                  <Arg name="owner" value="ref:requiredOwner"/>
+                  <Arg name="preferredOwner" value="ref:preferredOwner"/>
+                  <Arg name="fallbackOwner" value="ref:fallbackOwner"/>
+                  <Arg name="workItemComments" value="ref:workItemComments"/>
+                  <Arg name="workItemPriority" value="ref:workItemPriority"/>
+                  <Transition to="Present Provisioning Form"/>
+                </Step>
+                <Step condition="script:!isNull(workItemForm)" id="135255de5fcd4ee19f7644cdfb069d38" name="Present Provisioning Form" posX="99" posY="252">
+                  <Approval originalOwner="script:workItemForm.getTargetUser()" owner="spadmin" return="workItemForm" send="identityName,identityDisplayName,workItemForm,launcher" startDate="1738586162166" started="true" workItemDescription="Complete provisioning form for Mahesh Nattali" workItemId="c0a800fc94cb1e358194cbcf83be2036" workItemType="Form">
+                    <Arg name="workItemType" value="Form"/>
+                    <Arg name="workItemDescription" value="Complete provisioning form for $(identityDisplayName)"/>
+                    <Arg name="workItemDisableNotification">
+                      <Script>
+                        <Source>
+            
+            // 
+            // If this is interactive then don't bother sending email
+            // notifications.
+            // 
+            // There is some subtle logic here. Basically requiredOwner
+            // is null most of the time except in the case of pre-approval
+            // forms. In that case we want to return the forms for the
+            // required owner so they can fill it in during the request
+            // process instead of waiting on a workitem.  
+            //
+            boolean disableEmail = false;
+            String owner = ( requiredOwner != null ) ? requiredOwner : sessionOwner;
+            if ( Util.nullSafeEq(owner, workItemForm.getTargetUser()) ) { 
+                disableEmail = true;
+            }
+            return disableEmail;
+            
+          </Source>
+                      </Script>
+                    </Arg>
+                    <Arg name="workItemPriority" value="ref:workItemPriority"/>
+                    <WorkItemConfig escalationStyle="none">
+                      <NotificationEmailTemplateRef>
+                        <Reference class="sailpoint.object.EmailTemplate" id="c0a81d898f331ca3818f33fcfd33017d" name="Provisioning Form Notification"/>
+                      </NotificationEmailTemplateRef>
+                    </WorkItemConfig>
+                  </Approval>
+                  <Transition to="Assimilate Provisioning Form"/>
+                </Step>
+                <Step action="call:assimilateProvisioningForm" condition="script:!isNull(workItemForm)" id="b620620f75ae470bb8f2bea8aa3df5a0" name="Assimilate Provisioning Form" posX="314" posY="252" resultVariable="project">
+                  <Arg name="project" value="ref:project"/>
+                  <Arg name="form" value="ref:workItemForm"/>
+                  <Transition to="Build Provisioning Form" when="(project != null &amp;&amp; project.hasQuestions()) &amp;&amp; !isNull(workItemForm)"/>
+                  <Transition to="end"/>
+                </Step>
+                <Step icon="Stop" id="0a4b0501181d48cea1dee28b11743d12" name="end" posX="853" posY="12"/>
+                <Attributes>
+                  <Map>
+                    <entry key="accountSelectionForm"/>
+                    <entry key="accountSelectionOwner"/>
+                    <entry key="approvalSet">
+                      <value>
+                        <ApprovalSet>
+                          <ApprovalItem application="ActiveDirectory" assignmentId="409aca356aa6415bbd174c04b2fa2916" displayValue="ESHIAM\AccountsPayable" id="4fb4e92330b74e4a8cb93918b768b666" name="memberOf" operation="Add" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                            <Attributes>
+                              <Map>
+                                <entry key="attachmentConfigList"/>
+                                <entry key="attachments"/>
+                                <entry key="flow" value="AccessRequest"/>
+                                <entry key="id" value="c0a8000d94b21aa28194b31adb3409f3"/>
+                                <entry key="interface" value="LCM"/>
+                                <entry key="operation" value="EntitlementAdd"/>
+                              </Map>
+                            </Attributes>
+                          </ApprovalItem>
+                        </ApprovalSet>
+                      </value>
+                    </entry>
+                    <entry key="calculatedAccountSelectionOwner"/>
+                    <entry key="disableManualAccountSelection"/>
+                    <entry key="fallbackOwner"/>
+                    <entry key="formOwnerError"/>
+                    <entry key="formTemplate" value="Identity Update"/>
+                    <entry key="identityDisplayName" value="Mahesh Nattali"/>
+                    <entry key="identityName" value="Mahesh Nattali"/>
+                    <entry key="launcher" value="spadmin"/>
+                    <entry key="preferredOwner"/>
+                    <entry key="project">
+                      <value>
+                        <ProvisioningProject identity="Mahesh Nattali">
+                          <Attributes>
+                            <Map>
+                              <entry key="disableRetryRequest">
+                                <value>
+                                  <Boolean>true</Boolean>
+                                </value>
+                              </entry>
+                              <entry key="identityRequestId" value="0000000439"/>
+                              <entry key="optimisticProvisioning" value="false"/>
+                              <entry key="requester" value="spadmin"/>
+                              <entry key="source" value="LCM"/>
+                            </Map>
+                          </Attributes>
+                          <MasterPlan>
+                            <ProvisioningPlan>
+                              <AccountRequest application="ActiveDirectory" op="Modify">
+                                <Attributes>
+                                  <Map>
+                                    <entry key="attachmentConfigList"/>
+                                    <entry key="attachments"/>
+                                    <entry key="flow" value="AccessRequest"/>
+                                    <entry key="id" value="c0a8000d94b21aa28194b31adb3409f3"/>
+                                    <entry key="interface" value="LCM"/>
+                                    <entry key="operation" value="EntitlementAdd"/>
+                                  </Map>
+                                </Attributes>
+                                <AttributeRequest assignmentId="409aca356aa6415bbd174c04b2fa2916" displayValue="ESHIAM\AccountsPayable" name="memberOf" op="Add" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                                  <Attributes>
+                                    <Map>
+                                      <entry key="assignment" value="true"/>
+                                    </Map>
+                                  </Attributes>
+                                </AttributeRequest>
+                              </AccountRequest>
+                              <Attributes>
+                                <Map>
+                                  <entry key="identityRequestId" value="0000000439"/>
+                                  <entry key="requester" value="spadmin"/>
+                                  <entry key="source" value="LCM"/>
+                                </Map>
+                              </Attributes>
+                              <ProvisioningTargets>
+                                <ProvisioningTarget application="ActiveDirectory" assignmentId="409aca356aa6415bbd174c04b2fa2916" attribute="memberOf" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                                  <AccountSelection applicationId="c0a8000d94b21aa28194b314cd5205c1" applicationName="ActiveDirectory" implicitCreate="true"/>
+                                </ProvisioningTarget>
+                              </ProvisioningTargets>
+                              <Requesters>
+                                <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+                              </Requesters>
+                            </ProvisioningPlan>
+                          </MasterPlan>
+                          <ProvisioningPlan targetIntegration="LDAPApplication" trackingId="23e04fa68e934990bce380c14158b152">
+                            <Attributes>
+                              <Map>
+                                <entry key="identityRequestId" value="0000000439"/>
+                                <entry key="requester" value="spadmin"/>
+                                <entry key="source" value="LCM"/>
+                              </Map>
+                            </Attributes>
+                            <Requesters>
+                              <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+                            </Requesters>
+                          </ProvisioningPlan>
+                          <ProvisioningPlan targetIntegration="ActiveDirectory" trackingId="e45ce17be8e44bb19d4149918511b682">
+                            <AccountRequest application="ActiveDirectory" op="Create">
+                              <Attributes>
+                                <Map>
+                                  <entry key="attachmentConfigList"/>
+                                  <entry key="attachments"/>
+                                  <entry key="flow" value="AccessRequest"/>
+                                  <entry key="id" value="c0a8000d94b21aa28194b31adb3409f3"/>
+                                  <entry key="interface" value="LCM"/>
+                                  <entry key="operation" value="EntitlementAdd"/>
+                                </Map>
+                              </Attributes>
+                              <AttributeRequest assignmentId="409aca356aa6415bbd174c04b2fa2916" displayValue="ESHIAM\AccountsPayable" name="memberOf" op="Add" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                                <Attributes>
+                                  <Map>
+                                    <entry key="assignment" value="true"/>
+                                  </Map>
+                                </Attributes>
+                              </AttributeRequest>
+                            </AccountRequest>
+                            <Attributes>
+                              <Map>
+                                <entry key="identityRequestId" value="0000000439"/>
+                                <entry key="requester" value="spadmin"/>
+                                <entry key="source" value="LCM"/>
+                              </Map>
+                            </Attributes>
+                            <Requesters>
+                              <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+                            </Requesters>
+                          </ProvisioningPlan>
+                          <ProvisioningTarget application="ActiveDirectory" assignmentId="409aca356aa6415bbd174c04b2fa2916" attribute="memberOf" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                            <AccountSelection applicationId="c0a8000d94b21aa28194b314cd5205c1" applicationName="ActiveDirectory" implicitCreate="true"/>
+                          </ProvisioningTarget>
+                          <Questions>
+                            <Question attributeName="objectType" source="ActiveDirectory" type="Application">
+                              <Field application="ActiveDirectory" displayName="con_prov_policy_ad_objecttype" name="Question:0:objectType" postBack="true" priority="10" reviewRequired="true" template="Account" type="string" value="User">
+                                <AllowedValuesDefinition>
+                                  <Value>
+                                    <List>
+                                      <String>User</String>
+                                      <String>Contact</String>
+                                      <String>msDS-GroupManagedServiceAccount</String>
+                                      <String>msDS-ManagedServiceAccount</String>
+                                    </List>
+                                  </Value>
+                                </AllowedValuesDefinition>
+                                <Attributes>
+                                  <Map>
+                                    <entry key="hidden">
+                                      <value>
+                                        <Script>
+                                          <Source>
+                          Object objType = field.getValue();    
+                           if ("contact".equalsIgnoreCase(objType)) {
+                              if (form.getSection("Dial-in") != null) {
+                                  form.remove(form.getSection("Dial-in"));
+                                  }
+                              if (form.getSection("User Details") != null) {
+                                  form.remove(form.getSection("User Details"));
+                                  }
+                              if (form.getSection("Skype for Business") != null) {
+                                  form.remove(form.getSection("Skype for Business"));
+                                  } 
+                              if (form.getSection("gmsa") != null) {
+                                  form.remove(form.getSection("gmsa"));
+                                  } 
+
+                              if (form.getSection("Exchange") != null &amp;&amp; form.getSection("Exchange").getFields() != null ) {
+                                    for (Object field : form.getSection("Exchange").getFields()) {
+                                         String name = field.getName();
+                                         if (name != null &amp;&amp; name.indexOf(":") > 0 ) {
+                                            String[] nameKeys = name.split(":");
+                                              if (nameKeys.length > 1 &amp;&amp;
+                                                  "homeMDB".equalsIgnoreCase(nameKeys[2])){
+                                                  field.setHidden(true);
+                                                }
+                                            }
+                                        }
+                                 }  
+                                     
+                           } 
+                           else if ("msDS-GroupManagedServiceAccount".equalsIgnoreCase(objType) 
+                                    || "msDS-ManagedServiceAccount".equalsIgnoreCase(objType)) {
+                            if (form.getSection("Dial-in") != null) {
+                                form.remove(form.getSection("Dial-in"));
+                            }
+                            if (form.getSection("Skype for Business") != null) {
+                                form.remove(form.getSection("Skype for Business"));
+                            }
+                            if (form.getSection("Exchange") != null) {
+                                form.remove(form.getSection("Exchange"));
+                            }
+                            if (form.getSection("gmsa") != null) {
+                                form.getSection("gmsa").setLabel("Service Account");
+                            } 
+
+                            if (form.getSection("User Details") != null &amp;&amp; form.getSection("User Details").getFields() != null ) {
+                                for (Object field : form.getSection("User Details").getFields()) {
+                                    String name = field.getName();
+                                    if (name != null &amp;&amp; name.indexOf(":") > 0 ) {
+                                        String[] nameKeys = name.split(":");
+                                        if (nameKeys.length > 1) {
+                                            if("password".equalsIgnoreCase(nameKeys[2])
+                                                    || "pwdLastSet".equalsIgnoreCase(nameKeys[2])
+                                                    || "primaryGroupDN".equalsIgnoreCase(nameKeys[2]) )
+                                            {
+                                                field.setHidden(true);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            Object serviceAccSection = form.getSection("gmsa");
+                            String dnsHostNameFieldName = null;
+                            String pAllowedToRetrievPwdFieldName = null;
+                            String pAllowedToDelegate = null;
+                            String managePasswordInterval = null;
+
+                            for (Object field : serviceAccSection.getFields()) {
+                                String name = field.getName();
+                                if( null != name) {
+                                    if( name.contains(":dNSHostName"))
+                                        dnsHostNameFieldName = name;
+                                    else if( name.contains(":msDS-GroupMSAMembership") )
+                                        pAllowedToRetrievPwdFieldName = name;
+                                    else if( name.contains(":msDS-AllowedToActOnBehalfOfOtherIdentity") )
+                                        pAllowedToDelegate = name;
+                                    else if( name.contains(":msDS-ManagedPasswordInterval") )
+                                        managePasswordInterval = name;
+                                }
+                            }
+                            if ("msDS-GroupManagedServiceAccount".equalsIgnoreCase(objType))
+                            {
+                                if (null != dnsHostNameFieldName) {
+                                    Object dnsHostName =   serviceAccSection.getField(dnsHostNameFieldName);
+                                    dnsHostName.setRequired(true);
+                                }
+                            }
+                            else if ("msDS-ManagedServiceAccount".equalsIgnoreCase(objType))
+                            {
+                                if (null != dnsHostNameFieldName) {
+                                    Object dnsHostName =   serviceAccSection.getField(dnsHostNameFieldName);
+                                    dnsHostName.setHidden(true);
+                                }
+                                if(null != pAllowedToRetrievPwdFieldName){
+                                    Object msDSGroupMSAMembership = serviceAccSection.getField(pAllowedToRetrievPwdFieldName);
+                                    msDSGroupMSAMembership.setHidden(true);
+                                }
+                                if(null != pAllowedToDelegate){
+                                    Object PrincipalsAllowedToDelegate = serviceAccSection.getField(pAllowedToDelegate);
+                                    PrincipalsAllowedToDelegate.setHidden(true);
+                                }
+                                if(null != managePasswordInterval) {
+                                    Object ManageIntervalField = serviceAccSection.getField(managePasswordInterval);
+                                    ManageIntervalField.setHidden(true);
+                                }
+                            }
+                          }
+                           else {
+                                   if (form.getSection("User Details") != null &amp;&amp; form.getSection("User Details").getFields() != null ) {
+                                      for (Object field : form.getSection("User Details").getFields()) {
+                                         String name = field.getName();
+                                         if (name != null &amp;&amp; name.indexOf(":") > 0 ) {
+                                            String[] nameKeys = name.split(":");
+                                              if (nameKeys.length > 1 &amp;&amp;
+                                                  ("sAMAccountName".equalsIgnoreCase(nameKeys[2]) 
+                                                 || "password".equalsIgnoreCase(nameKeys[2]))){
+                                                  field.setRequired(true);
+                                                }
+                                            }
+                                        }
+                                     }
+                                  if (form.getSection("gmsa") != null) {
+                                     form.remove(form.getSection("gmsa"));
+                                   } 
+                               }
+                                  
+                           return false;
+                        </Source>
+                                        </Script>
+                                      </value>
+                                    </entry>
+                                  </Map>
+                                </Attributes>
+                              </Field>
+                            </Question>
+                            <Question attributeName="distinguishedName" source="ActiveDirectory" type="Application">
+                              <Field application="ActiveDirectory" displayName="con_prov_policy_ad_distinguishedName" helpKey="help_con_prov_policy_ad_distinguishedName" name="Question:1:distinguishedName" priority="10" required="true" template="Account" type="string"/>
+                            </Question>
+                            <Question attributeName="sAMAccountName" source="ActiveDirectory" type="Application">
+                              <Field application="ActiveDirectory" displayName="con_prov_policy_ad_sAMAccountName" helpKey="help_con_prov_policy_ad_sAMAccountName" name="Question:2:sAMAccountName" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            </Question>
+                            <Question attributeName="password" source="ActiveDirectory" type="Application">
+                              <Field application="ActiveDirectory" displayName="con_prov_policy_ad_password" helpKey="help_con_prov_policy_ad_password" name="Question:3:password" priority="10" reviewRequired="true" template="Account" type="secret"/>
+                            </Question>
+                            <Question attributeName="pwdLastSet" source="ActiveDirectory" type="Application">
+                              <Field application="ActiveDirectory" displayName="con_prov_policy_ad_pwdLastSet" helpKey="help_con_prov_policy_ad_pwdLastSet" name="Question:4:pwdLastSet" priority="10" reviewRequired="true" template="Account" type="boolean"/>
+                            </Question>
+                            <Question attributeName="IIQDisabled" source="ActiveDirectory" type="Application">
+                              <Field application="ActiveDirectory" displayName="con_prov_policy_ad_IIQDisabled" helpKey="help_con_prov_policy_ad_IIQDisabled" name="Question:5:IIQDisabled" priority="10" reviewRequired="true" template="Account" type="boolean" value="false"/>
+                            </Question>
+                            <Question attributeName="primaryGroupDN" source="ActiveDirectory" type="Application">
+                              <Field application="ActiveDirectory" displayName="con_prov_policy_ad_primaryGroupDN" helpKey="help_con_prov_policy_ad_primaryGroupDN" name="Question:6:primaryGroupDN" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            </Question>
+                            <Question attributeName="givenName" source="ActiveDirectory" type="Application">
+                              <Field application="ActiveDirectory" displayName="con_prov_policy_ad_givenName" helpKey="help_con_prov_policy_ad_givenName" name="Question:7:givenName" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            </Question>
+                            <Question attributeName="sn" source="ActiveDirectory" type="Application">
+                              <Field application="ActiveDirectory" displayName="con_prov_policy_ad_sn" helpKey="help_con_prov_policy_ad_sn" name="Question:8:sn" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            </Question>
+                            <Question attributeName="description" source="ActiveDirectory" type="Application">
+                              <Field application="ActiveDirectory" displayName="con_prov_policy_ad_description" helpKey="help_con_prov_policy_ad_description" name="Question:9:description" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            </Question>
+                            <Question attributeName="msNPAllowDialin" source="ActiveDirectory" type="Application">
+                              <Field application="ActiveDirectory" displayName="con_prov_policy_ad_msNPAllowDialin" helpKey="help_con_prov_policy_ad_msNPAllowDialin" name="Question:10:msNPAllowDialin" priority="10" reviewRequired="true" template="Account" type="string" value="Not Set">
+                                <AllowedValuesDefinition>
+                                  <Value>
+                                    <List>
+                                      <String>Not Set</String>
+                                      <String>true</String>
+                                      <String>false</String>
+                                    </List>
+                                  </Value>
+                                </AllowedValuesDefinition>
+                              </Field>
+                            </Question>
+                            <Question attributeName="msNPCallingStationID" source="ActiveDirectory" type="Application">
+                              <Field application="ActiveDirectory" displayName="con_prov_policy_ad_msNPCallingStationID" helpKey="help_con_prov_policy_ad_msNPCallingStationID" multi="true" name="Question:11:msNPCallingStationID" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            </Question>
+                            <Question attributeName="msRADIUSCallbackNumber" source="ActiveDirectory" type="Application">
+                              <Field application="ActiveDirectory" displayName="con_prov_policy_ad_msRADIUSCallbackNumber" helpKey="help_con_prov_policy_ad_msRADIUSCallbackNumber" name="Question:12:msRADIUSCallbackNumber" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            </Question>
+                            <Question attributeName="msRADIUSFramedRoute" source="ActiveDirectory" type="Application">
+                              <Field application="ActiveDirectory" displayName="con_prov_policy_ad_msRADIUSFramedRoute" helpKey="help_con_prov_policy_ad_msRADIUSFramedRoute" multi="true" name="Question:13:msRADIUSFramedRoute" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            </Question>
+                            <Question attributeName="msRADIUSFramedIPAddress" source="ActiveDirectory" type="Application">
+                              <Field application="ActiveDirectory" displayName="con_prov_policy_ad_msRADIUSFramedIPAddress" helpKey="help_con_prov_policy_ad_msRADIUSFramedIPAddress" name="Question:14:msRADIUSFramedIPAddress" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            </Question>
+                            <Question attributeName="homeMDB" source="ActiveDirectory" type="Application">
+                              <Field application="ActiveDirectory" displayName="con_prov_policy_ad_homeMDB" helpKey="help_con_prov_policy_ad_homeMDB" name="Question:15:homeMDB" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            </Question>
+                            <Question attributeName="mailNickname" source="ActiveDirectory" type="Application">
+                              <Field application="ActiveDirectory" displayName="con_prov_policy_ad_mailNickname" helpKey="help_con_prov_policy_ad_mailNickname" name="Question:16:mailNickname" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            </Question>
+                            <Question attributeName="shadowAccountDN" source="ActiveDirectory" type="Application">
+                              <Field application="ActiveDirectory" displayName="con_prov_policy_ad_shadowAccountDN" helpKey="help_con_prov_policy_ad_shadowAccountDN" name="Question:17:shadowAccountDN" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            </Question>
+                            <Question attributeName="msExchHideFromAddressLists" source="ActiveDirectory" type="Application">
+                              <Field application="ActiveDirectory" displayName="con_prov_policy_ad_msExchHideFromAddressLists" helpKey="help_con_prov_policy_ad_msExchHideFromAddressLists" name="Question:18:msExchHideFromAddressLists" priority="10" reviewRequired="true" template="Account" type="boolean"/>
+                            </Question>
+                            <Question attributeName="externalEmailAddress" source="ActiveDirectory" type="Application">
+                              <Field application="ActiveDirectory" displayName="con_prov_policy_ad_externalEmailAddress" helpKey="help_con_prov_policy_ad_externalEmailAddress" name="Question:19:externalEmailAddress" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            </Question>
+                            <Question attributeName="SipAddress" source="ActiveDirectory" type="Application">
+                              <Field application="ActiveDirectory" displayName="con_prov_policy_ad_SipAddress" helpKey="help_con_prov_policy_ad_SipAddress" name="Question:20:SipAddress" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            </Question>
+                            <Question attributeName="SipDomain" source="ActiveDirectory" type="Application">
+                              <Field application="ActiveDirectory" displayName="con_prov_policy_ad_SipDomain" helpKey="help_con_prov_policy_ad_SipDomain" name="Question:21:SipDomain" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            </Question>
+                            <Question attributeName="SipAddressType" source="ActiveDirectory" type="Application">
+                              <Field application="ActiveDirectory" displayName="con_prov_policy_ad_SipAddressType" helpKey="help_con_prov_policy_ad_SipAddressType" name="Question:22:SipAddressType" priority="10" reviewRequired="true" template="Account" type="string">
+                                <AllowedValuesDefinition>
+                                  <Value>
+                                    <List>
+                                      <String>SamAccountName</String>
+                                      <String>FirstLastName</String>
+                                      <String>EmailAddress</String>
+                                    </List>
+                                  </Value>
+                                </AllowedValuesDefinition>
+                              </Field>
+                            </Question>
+                            <Question attributeName="RegistrarPool" source="ActiveDirectory" type="Application">
+                              <Field application="ActiveDirectory" displayName="con_prov_policy_ad_RegistrarPool" helpKey="help_con_prov_policy_ad_RegistrarPool" name="Question:23:RegistrarPool" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            </Question>
+                            <Question attributeName="dNSHostName" source="ActiveDirectory" type="Application">
+                              <Field application="ActiveDirectory" displayName="con_prov_policy_ad_DNSHostName" helpKey="help_con_prov_policy_ad_DNSHostName" name="Question:24:dNSHostName" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            </Question>
+                            <Question attributeName="msDS-SupportedEncryptionTypes" source="ActiveDirectory" type="Application">
+                              <Field application="ActiveDirectory" displayName="con_prov_policy_ad_msDSSupportedEncryptionTypes" helpKey="help_con_prov_policy_ad_msDSSupportedEncryptionTypes" multi="true" name="Question:25:msDS-SupportedEncryptionTypes" priority="10" reviewRequired="true" template="Account" type="string">
+                                <AllowedValuesDefinition>
+                                  <Value>
+                                    <List>
+                                      <String>DES</String>
+                                      <String>RC4</String>
+                                      <String>AES128</String>
+                                      <String>AES256</String>
+                                    </List>
+                                  </Value>
+                                </AllowedValuesDefinition>
+                              </Field>
+                            </Question>
+                            <Question attributeName="msDS-ManagedPasswordInterval" source="ActiveDirectory" type="Application">
+                              <Field application="ActiveDirectory" displayName="con_prov_policy_ad_msDSManagedPasswordInterval" helpKey="help_con_prov_policy_ad_msDSManagedPasswordInterval" name="Question:26:msDS-ManagedPasswordInterval" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            </Question>
+                            <Question attributeName="msDS-GroupMSAMembership" source="ActiveDirectory" type="Application">
+                              <Field application="ActiveDirectory" displayName="con_prov_policy_ad_msDSGroupMSAMembership" helpKey="help_con_prov_policy_ad_msDSGroupMSAMembership" multi="true" name="Question:27:msDS-GroupMSAMembership" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            </Question>
+                            <Question attributeName="msDS-AllowedToActOnBehalfOfOtherIdentity" source="ActiveDirectory" type="Application">
+                              <Field application="ActiveDirectory" displayName="con_prov_policy_ad_msDSAllowedToActOnBehalfOfOtherIdentity" helpKey="help_con_prov_policy_ad_msDSAllowedToActOnBehalfOfOtherIdentity" multi="true" name="Question:28:msDS-AllowedToActOnBehalfOfOtherIdentity" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            </Question>
+                            <Question attributeName="servicePrincipalName" source="ActiveDirectory" type="Application">
+                              <Field application="ActiveDirectory" displayName="con_prov_policy_ad_ServicePrincipalNames" helpKey="help_con_prov_policy_ad_ServicePrincipalNames" multi="true" name="Question:29:servicePrincipalName" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            </Question>
+                          </Questions>
+                        </ProvisioningProject>
+                      </value>
+                    </entry>
+                    <entry key="requiredOwner" value="spadmin"/>
+                    <entry key="sessionOwner" value="spadmin"/>
+                    <entry key="workItemComments"/>
+                    <entry key="workItemForm">
+                      <value>
+                        <Form name="Identity Update" targetUser="spadmin" type="Workflow">
+                          <Attributes>
+                            <Map>
+                              <entry key="pageTitle" value="provision_identity_update_title"/>
+                              <entry key="pageTitleParam" value="$(identityName)"/>
+                            </Map>
+                          </Attributes>
+                          <Section type="text">
+                            <Field displayName="provision_identity_update_description"/>
+                          </Section>
+                          <Section label="provision_request_information" type="datatable">
+                            <Attributes>
+                              <Map>
+                                <entry key="hideNulls" value="true"/>
+                              </Map>
+                            </Attributes>
+                            <Field displayName="provision_requester">
+                              <Script>
+                                <Source>
+          import sailpoint.object.Identity;
+
+          Identity launchIdentity = context.getObject(Identity.class, launcher);
+
+          return launchIdentity == null ? launcher : launchIdentity.getDisplayableName();
+        </Source>
+                              </Script>
+                            </Field>
+                            <Field displayName="provision_requested_roles" value="ref:newRoles"/>
+                          </Section>
+                          <Section columns="3" label="provision_target_identity" type="datatable">
+                            <Attributes>
+                              <Map>
+                                <entry key="hideNulls" value="true"/>
+                              </Map>
+                            </Attributes>
+                            <Field columnSpan="1" displayName="provision_first_name" value="script:(identity != null) ? identity.getFirstname() : null"/>
+                            <Field columnSpan="1" displayName="provision_last_name" value="script:(identity != null) ? identity.getLastname() : null"/>
+                            <Field columnSpan="1" displayName="provision_account_id" value="script:(identity != null) ? identity.getDisplayableName() : null"/>
+                            <Field columnSpan="3" displayName="provision_assigned_roles">
+                              <Script>
+                                <Source>
+          import java.util.ArrayList;
+          import java.util.List;
+          import sailpoint.object.Bundle;
+          import sailpoint.tools.Util;
+
+          String names = null;
+
+          if (identity != null) {
+              List&lt;String> roleNames = new ArrayList&lt;String>();
+
+              for (Bundle bundle : Util.iterate(identity.getAssignedRoles())) {
+                  roleNames.add(bundle.getDisplayableName());
+              }
+
+              names = Util.listToCsv(roleNames);
+          }
+
+          return names;
+      </Source>
+                              </Script>
+                            </Field>
+                          </Section>
+                          <Button action="next" label="button_ok"/>
+                          <Button action="cancel" label="button_cancel"/>
+                          <Button action="cancel" label="button_return" readOnly="true"/>
+                          <Section label="Account" name="Account">
+                            <Field application="ActiveDirectory" displayName="con_prov_policy_ad_objecttype" name="Question:0:objectType" postBack="true" priority="10" reviewRequired="true" template="Account" type="string" value="User">
+                              <AllowedValuesDefinition>
+                                <Value>
+                                  <List>
+                                    <String>User</String>
+                                    <String>Contact</String>
+                                    <String>msDS-GroupManagedServiceAccount</String>
+                                    <String>msDS-ManagedServiceAccount</String>
+                                  </List>
+                                </Value>
+                              </AllowedValuesDefinition>
+                              <Attributes>
+                                <Map>
+                                  <entry key="hidden">
+                                    <value>
+                                      <Script>
+                                        <Source>
+                          Object objType = field.getValue();    
+                           if ("contact".equalsIgnoreCase(objType)) {
+                              if (form.getSection("Dial-in") != null) {
+                                  form.remove(form.getSection("Dial-in"));
+                                  }
+                              if (form.getSection("User Details") != null) {
+                                  form.remove(form.getSection("User Details"));
+                                  }
+                              if (form.getSection("Skype for Business") != null) {
+                                  form.remove(form.getSection("Skype for Business"));
+                                  } 
+                              if (form.getSection("gmsa") != null) {
+                                  form.remove(form.getSection("gmsa"));
+                                  } 
+
+                              if (form.getSection("Exchange") != null &amp;&amp; form.getSection("Exchange").getFields() != null ) {
+                                    for (Object field : form.getSection("Exchange").getFields()) {
+                                         String name = field.getName();
+                                         if (name != null &amp;&amp; name.indexOf(":") > 0 ) {
+                                            String[] nameKeys = name.split(":");
+                                              if (nameKeys.length > 1 &amp;&amp;
+                                                  "homeMDB".equalsIgnoreCase(nameKeys[2])){
+                                                  field.setHidden(true);
+                                                }
+                                            }
+                                        }
+                                 }  
+                                     
+                           } 
+                           else if ("msDS-GroupManagedServiceAccount".equalsIgnoreCase(objType) 
+                                    || "msDS-ManagedServiceAccount".equalsIgnoreCase(objType)) {
+                            if (form.getSection("Dial-in") != null) {
+                                form.remove(form.getSection("Dial-in"));
+                            }
+                            if (form.getSection("Skype for Business") != null) {
+                                form.remove(form.getSection("Skype for Business"));
+                            }
+                            if (form.getSection("Exchange") != null) {
+                                form.remove(form.getSection("Exchange"));
+                            }
+                            if (form.getSection("gmsa") != null) {
+                                form.getSection("gmsa").setLabel("Service Account");
+                            } 
+
+                            if (form.getSection("User Details") != null &amp;&amp; form.getSection("User Details").getFields() != null ) {
+                                for (Object field : form.getSection("User Details").getFields()) {
+                                    String name = field.getName();
+                                    if (name != null &amp;&amp; name.indexOf(":") > 0 ) {
+                                        String[] nameKeys = name.split(":");
+                                        if (nameKeys.length > 1) {
+                                            if("password".equalsIgnoreCase(nameKeys[2])
+                                                    || "pwdLastSet".equalsIgnoreCase(nameKeys[2])
+                                                    || "primaryGroupDN".equalsIgnoreCase(nameKeys[2]) )
+                                            {
+                                                field.setHidden(true);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            Object serviceAccSection = form.getSection("gmsa");
+                            String dnsHostNameFieldName = null;
+                            String pAllowedToRetrievPwdFieldName = null;
+                            String pAllowedToDelegate = null;
+                            String managePasswordInterval = null;
+
+                            for (Object field : serviceAccSection.getFields()) {
+                                String name = field.getName();
+                                if( null != name) {
+                                    if( name.contains(":dNSHostName"))
+                                        dnsHostNameFieldName = name;
+                                    else if( name.contains(":msDS-GroupMSAMembership") )
+                                        pAllowedToRetrievPwdFieldName = name;
+                                    else if( name.contains(":msDS-AllowedToActOnBehalfOfOtherIdentity") )
+                                        pAllowedToDelegate = name;
+                                    else if( name.contains(":msDS-ManagedPasswordInterval") )
+                                        managePasswordInterval = name;
+                                }
+                            }
+                            if ("msDS-GroupManagedServiceAccount".equalsIgnoreCase(objType))
+                            {
+                                if (null != dnsHostNameFieldName) {
+                                    Object dnsHostName =   serviceAccSection.getField(dnsHostNameFieldName);
+                                    dnsHostName.setRequired(true);
+                                }
+                            }
+                            else if ("msDS-ManagedServiceAccount".equalsIgnoreCase(objType))
+                            {
+                                if (null != dnsHostNameFieldName) {
+                                    Object dnsHostName =   serviceAccSection.getField(dnsHostNameFieldName);
+                                    dnsHostName.setHidden(true);
+                                }
+                                if(null != pAllowedToRetrievPwdFieldName){
+                                    Object msDSGroupMSAMembership = serviceAccSection.getField(pAllowedToRetrievPwdFieldName);
+                                    msDSGroupMSAMembership.setHidden(true);
+                                }
+                                if(null != pAllowedToDelegate){
+                                    Object PrincipalsAllowedToDelegate = serviceAccSection.getField(pAllowedToDelegate);
+                                    PrincipalsAllowedToDelegate.setHidden(true);
+                                }
+                                if(null != managePasswordInterval) {
+                                    Object ManageIntervalField = serviceAccSection.getField(managePasswordInterval);
+                                    ManageIntervalField.setHidden(true);
+                                }
+                            }
+                          }
+                           else {
+                                   if (form.getSection("User Details") != null &amp;&amp; form.getSection("User Details").getFields() != null ) {
+                                      for (Object field : form.getSection("User Details").getFields()) {
+                                         String name = field.getName();
+                                         if (name != null &amp;&amp; name.indexOf(":") > 0 ) {
+                                            String[] nameKeys = name.split(":");
+                                              if (nameKeys.length > 1 &amp;&amp;
+                                                  ("sAMAccountName".equalsIgnoreCase(nameKeys[2]) 
+                                                 || "password".equalsIgnoreCase(nameKeys[2]))){
+                                                  field.setRequired(true);
+                                                }
+                                            }
+                                        }
+                                     }
+                                  if (form.getSection("gmsa") != null) {
+                                     form.remove(form.getSection("gmsa"));
+                                   } 
+                               }
+                                  
+                           return false;
+                        </Source>
+                                      </Script>
+                                    </value>
+                                  </entry>
+                                </Map>
+                              </Attributes>
+                            </Field>
+                            <Field application="ActiveDirectory" displayName="con_prov_policy_ad_distinguishedName" helpKey="help_con_prov_policy_ad_distinguishedName" name="Question:1:distinguishedName" priority="10" required="true" template="Account" type="string"/>
+                          </Section>
+                          <Section label="User Details" name="User Details">
+                            <Field application="ActiveDirectory" displayName="con_prov_policy_ad_sAMAccountName" helpKey="help_con_prov_policy_ad_sAMAccountName" name="Question:2:sAMAccountName" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            <Field application="ActiveDirectory" displayName="con_prov_policy_ad_password" helpKey="help_con_prov_policy_ad_password" name="Question:3:password" priority="10" reviewRequired="true" template="Account" type="secret"/>
+                            <Field application="ActiveDirectory" displayName="con_prov_policy_ad_pwdLastSet" helpKey="help_con_prov_policy_ad_pwdLastSet" name="Question:4:pwdLastSet" priority="10" reviewRequired="true" template="Account" type="boolean"/>
+                            <Field application="ActiveDirectory" displayName="con_prov_policy_ad_IIQDisabled" helpKey="help_con_prov_policy_ad_IIQDisabled" name="Question:5:IIQDisabled" priority="10" reviewRequired="true" template="Account" type="boolean" value="false"/>
+                            <Field application="ActiveDirectory" displayName="con_prov_policy_ad_primaryGroupDN" helpKey="help_con_prov_policy_ad_primaryGroupDN" name="Question:6:primaryGroupDN" priority="10" reviewRequired="true" template="Account" type="string"/>
+                          </Section>
+                          <Section label="General" name="General">
+                            <Field application="ActiveDirectory" displayName="con_prov_policy_ad_givenName" helpKey="help_con_prov_policy_ad_givenName" name="Question:7:givenName" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            <Field application="ActiveDirectory" displayName="con_prov_policy_ad_sn" helpKey="help_con_prov_policy_ad_sn" name="Question:8:sn" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            <Field application="ActiveDirectory" displayName="con_prov_policy_ad_description" helpKey="help_con_prov_policy_ad_description" name="Question:9:description" priority="10" reviewRequired="true" template="Account" type="string"/>
+                          </Section>
+                          <Section label="Dial-in" name="Dial-in">
+                            <Field application="ActiveDirectory" displayName="con_prov_policy_ad_msNPAllowDialin" helpKey="help_con_prov_policy_ad_msNPAllowDialin" name="Question:10:msNPAllowDialin" priority="10" reviewRequired="true" template="Account" type="string" value="Not Set">
+                              <AllowedValuesDefinition>
+                                <Value>
+                                  <List>
+                                    <String>Not Set</String>
+                                    <String>true</String>
+                                    <String>false</String>
+                                  </List>
+                                </Value>
+                              </AllowedValuesDefinition>
+                            </Field>
+                            <Field application="ActiveDirectory" displayName="con_prov_policy_ad_msNPCallingStationID" helpKey="help_con_prov_policy_ad_msNPCallingStationID" multi="true" name="Question:11:msNPCallingStationID" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            <Field application="ActiveDirectory" displayName="con_prov_policy_ad_msRADIUSCallbackNumber" helpKey="help_con_prov_policy_ad_msRADIUSCallbackNumber" name="Question:12:msRADIUSCallbackNumber" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            <Field application="ActiveDirectory" displayName="con_prov_policy_ad_msRADIUSFramedRoute" helpKey="help_con_prov_policy_ad_msRADIUSFramedRoute" multi="true" name="Question:13:msRADIUSFramedRoute" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            <Field application="ActiveDirectory" displayName="con_prov_policy_ad_msRADIUSFramedIPAddress" helpKey="help_con_prov_policy_ad_msRADIUSFramedIPAddress" name="Question:14:msRADIUSFramedIPAddress" priority="10" reviewRequired="true" template="Account" type="string"/>
+                          </Section>
+                          <Section label="Exchange" name="Exchange">
+                            <Field application="ActiveDirectory" displayName="con_prov_policy_ad_homeMDB" helpKey="help_con_prov_policy_ad_homeMDB" name="Question:15:homeMDB" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            <Field application="ActiveDirectory" displayName="con_prov_policy_ad_mailNickname" helpKey="help_con_prov_policy_ad_mailNickname" name="Question:16:mailNickname" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            <Field application="ActiveDirectory" displayName="con_prov_policy_ad_shadowAccountDN" helpKey="help_con_prov_policy_ad_shadowAccountDN" name="Question:17:shadowAccountDN" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            <Field application="ActiveDirectory" displayName="con_prov_policy_ad_msExchHideFromAddressLists" helpKey="help_con_prov_policy_ad_msExchHideFromAddressLists" name="Question:18:msExchHideFromAddressLists" priority="10" reviewRequired="true" template="Account" type="boolean"/>
+                            <Field application="ActiveDirectory" displayName="con_prov_policy_ad_externalEmailAddress" helpKey="help_con_prov_policy_ad_externalEmailAddress" name="Question:19:externalEmailAddress" priority="10" reviewRequired="true" template="Account" type="string"/>
+                          </Section>
+                          <Section label="Skype for Business" name="Skype for Business">
+                            <Field application="ActiveDirectory" displayName="con_prov_policy_ad_SipAddress" helpKey="help_con_prov_policy_ad_SipAddress" name="Question:20:SipAddress" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            <Field application="ActiveDirectory" displayName="con_prov_policy_ad_SipDomain" helpKey="help_con_prov_policy_ad_SipDomain" name="Question:21:SipDomain" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            <Field application="ActiveDirectory" displayName="con_prov_policy_ad_SipAddressType" helpKey="help_con_prov_policy_ad_SipAddressType" name="Question:22:SipAddressType" priority="10" reviewRequired="true" template="Account" type="string">
+                              <AllowedValuesDefinition>
+                                <Value>
+                                  <List>
+                                    <String>SamAccountName</String>
+                                    <String>FirstLastName</String>
+                                    <String>EmailAddress</String>
+                                  </List>
+                                </Value>
+                              </AllowedValuesDefinition>
+                            </Field>
+                            <Field application="ActiveDirectory" displayName="con_prov_policy_ad_RegistrarPool" helpKey="help_con_prov_policy_ad_RegistrarPool" name="Question:23:RegistrarPool" priority="10" reviewRequired="true" template="Account" type="string"/>
+                          </Section>
+                          <Section label="gmsa" name="gmsa">
+                            <Field application="ActiveDirectory" displayName="con_prov_policy_ad_DNSHostName" helpKey="help_con_prov_policy_ad_DNSHostName" name="Question:24:dNSHostName" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            <Field application="ActiveDirectory" displayName="con_prov_policy_ad_msDSSupportedEncryptionTypes" helpKey="help_con_prov_policy_ad_msDSSupportedEncryptionTypes" multi="true" name="Question:25:msDS-SupportedEncryptionTypes" priority="10" reviewRequired="true" template="Account" type="string">
+                              <AllowedValuesDefinition>
+                                <Value>
+                                  <List>
+                                    <String>DES</String>
+                                    <String>RC4</String>
+                                    <String>AES128</String>
+                                    <String>AES256</String>
+                                  </List>
+                                </Value>
+                              </AllowedValuesDefinition>
+                            </Field>
+                            <Field application="ActiveDirectory" displayName="con_prov_policy_ad_msDSManagedPasswordInterval" helpKey="help_con_prov_policy_ad_msDSManagedPasswordInterval" name="Question:26:msDS-ManagedPasswordInterval" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            <Field application="ActiveDirectory" displayName="con_prov_policy_ad_msDSGroupMSAMembership" helpKey="help_con_prov_policy_ad_msDSGroupMSAMembership" multi="true" name="Question:27:msDS-GroupMSAMembership" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            <Field application="ActiveDirectory" displayName="con_prov_policy_ad_msDSAllowedToActOnBehalfOfOtherIdentity" helpKey="help_con_prov_policy_ad_msDSAllowedToActOnBehalfOfOtherIdentity" multi="true" name="Question:28:msDS-AllowedToActOnBehalfOfOtherIdentity" priority="10" reviewRequired="true" template="Account" type="string"/>
+                            <Field application="ActiveDirectory" displayName="con_prov_policy_ad_ServicePrincipalNames" helpKey="help_con_prov_policy_ad_ServicePrincipalNames" multi="true" name="Question:29:servicePrincipalName" priority="10" reviewRequired="true" template="Account" type="string"/>
+                          </Section>
+                        </Form>
+                      </value>
+                    </entry>
+                    <entry key="workItemPriority">
+                      <value>
+                        <WorkItemLevel>Normal</WorkItemLevel>
+                      </value>
+                    </entry>
+                  </Map>
+                </Attributes>
+              </Workflow>
+            </WorkflowCase>
+          </Step>
+          <Step action="call:assimilateAccountIdChanges" icon="Task" id="2685b9f4560e45618ed009ba9e61c61e" name="Assimilate Account Id Changes" posX="740" posY="119" resultVariable="approvalSet">
+            <Arg name="approvalSet" value="ref:approvalSet"/>
+            <Arg name="project" value="ref:project"/>
+            <Arg name="identityRequestId" value="ref:identityRequestId"/>
+            <Transition to="end"/>
+          </Step>
+          <Step icon="Stop" id="37a6cc5dd5f74c19b5cdff4fe7679d15" name="end" posX="740" posY="12"/>
+          <Attributes>
+            <Map>
+              <entry key="allowRequestsWithViolations" value="true"/>
+              <entry key="approvalSet">
+                <value>
+                  <ApprovalSet>
+                    <ApprovalItem application="ActiveDirectory" assignmentId="409aca356aa6415bbd174c04b2fa2916" displayValue="ESHIAM\AccountsPayable" id="4fb4e92330b74e4a8cb93918b768b666" name="memberOf" operation="Add" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                      <Attributes>
+                        <Map>
+                          <entry key="attachmentConfigList"/>
+                          <entry key="attachments"/>
+                          <entry key="flow" value="AccessRequest"/>
+                          <entry key="id" value="c0a8000d94b21aa28194b31adb3409f3"/>
+                          <entry key="interface" value="LCM"/>
+                          <entry key="operation" value="EntitlementAdd"/>
+                        </Map>
+                      </Attributes>
+                    </ApprovalItem>
+                  </ApprovalSet>
+                </value>
+              </entry>
+              <entry key="asyncCacheRefresh"/>
+              <entry key="enableApprovalRecommendations">
+                <value>
+                  <Boolean></Boolean>
+                </value>
+              </entry>
+              <entry key="enableRetryRequest" value="false"/>
+              <entry key="endOnManualWorkItems" value="false"/>
+              <entry key="endOnProvisioningForms" value="false"/>
+              <entry key="flow" value="AccessRequest"/>
+              <entry key="formTemplate" value="Identity Update"/>
+              <entry key="identityDisplayName" value="Mahesh Nattali"/>
+              <entry key="identityName" value="Mahesh Nattali"/>
+              <entry key="identityRequest">
+                <value>
+                  <IdentityRequest created="1738586161879" executionStatus="Executing" id="c0a800fc94cb1e358194cbcf82d62034" name="0000000439" priority="Normal" requesterDisplayName="The Administrator" requesterId="c0a81d898f331ca3818f33fcf64800ff" source="LCM" state="Initialize" targetClass="Identity" targetDisplayName="Mahesh Nattali" targetId="c0a81d898fc9197a8190074e5ccf2bd6" type="AccessRequest">
+                    <Attributes>
+                      <Map>
+                        <entry key="taskResultId" value="c0a800fc94cb1e358194cbcf82592031"/>
+                      </Map>
+                    </Attributes>
+                    <RequestItems>
+                      <IdentityRequestItem application="ActiveDirectory" approvalState="Pending" created="1738586161872" id="c0a800fc94cb1e358194cbcf82d02033" modified="1738586161892" name="memberOf" operation="Add" provisioningState="Pending" significantModified="1738586161892" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                        <Attributes>
+                          <Map>
+                            <entry key="assignmentId" value="409aca356aa6415bbd174c04b2fa2916"/>
+                            <entry key="attachmentConfigList"/>
+                            <entry key="attachments"/>
+                            <entry key="flow" value="AccessRequest"/>
+                            <entry key="id" value="c0a8000d94b21aa28194b31adb3409f3"/>
+                            <entry key="interface" value="LCM"/>
+                            <entry key="managedAttributeType" value="Entitlement"/>
+                            <entry key="operation" value="EntitlementAdd"/>
+                            <entry key="provisioningPlan">
+                              <value>
+                                <ProvisioningPlan trackingId="dee24a18275a47dd990a9c6d3d5de1aa">
+                                  <AccountRequest application="ActiveDirectory" op="Modify">
+                                    <Attributes>
+                                      <Map>
+                                        <entry key="attachmentConfigList"/>
+                                        <entry key="attachments"/>
+                                        <entry key="flow" value="AccessRequest"/>
+                                        <entry key="id" value="c0a8000d94b21aa28194b31adb3409f3"/>
+                                        <entry key="interface" value="LCM"/>
+                                        <entry key="operation" value="EntitlementAdd"/>
+                                      </Map>
+                                    </Attributes>
+                                    <AttributeRequest assignmentId="409aca356aa6415bbd174c04b2fa2916" displayValue="ESHIAM\AccountsPayable" name="memberOf" op="Add" trackingId="dee24a18275a47dd990a9c6d3d5de1aa" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                                      <Attributes>
+                                        <Map>
+                                          <entry key="assignment" value="true"/>
+                                        </Map>
+                                      </Attributes>
+                                    </AttributeRequest>
+                                  </AccountRequest>
+                                  <Attributes>
+                                    <Map>
+                                      <entry key="source" value="LCM"/>
+                                    </Map>
+                                  </Attributes>
+                                </ProvisioningPlan>
+                              </value>
+                            </entry>
+                          </Map>
+                        </Attributes>
+                      </IdentityRequestItem>
+                    </RequestItems>
+                  </IdentityRequest>
+                </value>
+              </entry>
+              <entry key="identityRequestId" value="0000000439"/>
+              <entry key="launcher" value="spadmin"/>
+              <entry key="optimisticProvisioning" value="false"/>
+              <entry key="plan">
+                <value>
+                  <ProvisioningPlan>
+                    <AccountRequest application="ActiveDirectory" op="Modify">
+                      <Attributes>
+                        <Map>
+                          <entry key="attachmentConfigList"/>
+                          <entry key="attachments"/>
+                          <entry key="flow" value="AccessRequest"/>
+                          <entry key="id" value="c0a8000d94b21aa28194b31adb3409f3"/>
+                          <entry key="interface" value="LCM"/>
+                          <entry key="operation" value="EntitlementAdd"/>
+                        </Map>
+                      </Attributes>
+                      <AttributeRequest assignmentId="409aca356aa6415bbd174c04b2fa2916" displayValue="ESHIAM\AccountsPayable" name="memberOf" op="Add" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                        <Attributes>
+                          <Map>
+                            <entry key="assignment" value="true"/>
+                          </Map>
+                        </Attributes>
+                      </AttributeRequest>
+                    </AccountRequest>
+                    <Attributes>
+                      <Map>
+                        <entry key="identityRequestId" value="0000000439"/>
+                        <entry key="requester" value="spadmin"/>
+                        <entry key="source" value="LCM"/>
+                      </Map>
+                    </Attributes>
+                    <ProvisioningTargets>
+                      <ProvisioningTarget application="ActiveDirectory" assignmentId="409aca356aa6415bbd174c04b2fa2916" attribute="memberOf" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                        <AccountSelection applicationId="c0a8000d94b21aa28194b314cd5205c1" applicationName="ActiveDirectory" implicitCreate="true"/>
+                      </ProvisioningTarget>
+                    </ProvisioningTargets>
+                    <Requesters>
+                      <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+                    </Requesters>
+                  </ProvisioningPlan>
+                </value>
+              </entry>
+              <entry key="policiesToCheck"/>
+              <entry key="policyScheme" value="fail"/>
+              <entry key="policyViolations"/>
+              <entry key="project">
+                <value>
+                  <ProvisioningProject identity="Mahesh Nattali">
+                    <Attributes>
+                      <Map>
+                        <entry key="disableRetryRequest">
+                          <value>
+                            <Boolean>true</Boolean>
+                          </value>
+                        </entry>
+                        <entry key="identityRequestId" value="0000000439"/>
+                        <entry key="optimisticProvisioning" value="false"/>
+                        <entry key="requester" value="spadmin"/>
+                        <entry key="source" value="LCM"/>
+                      </Map>
+                    </Attributes>
+                    <MasterPlan>
+                      <ProvisioningPlan>
+                        <AccountRequest application="ActiveDirectory" op="Modify">
+                          <Attributes>
+                            <Map>
+                              <entry key="attachmentConfigList"/>
+                              <entry key="attachments"/>
+                              <entry key="flow" value="AccessRequest"/>
+                              <entry key="id" value="c0a8000d94b21aa28194b31adb3409f3"/>
+                              <entry key="interface" value="LCM"/>
+                              <entry key="operation" value="EntitlementAdd"/>
+                            </Map>
+                          </Attributes>
+                          <AttributeRequest assignmentId="409aca356aa6415bbd174c04b2fa2916" displayValue="ESHIAM\AccountsPayable" name="memberOf" op="Add" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                            <Attributes>
+                              <Map>
+                                <entry key="assignment" value="true"/>
+                              </Map>
+                            </Attributes>
+                          </AttributeRequest>
+                        </AccountRequest>
+                        <Attributes>
+                          <Map>
+                            <entry key="identityRequestId" value="0000000439"/>
+                            <entry key="requester" value="spadmin"/>
+                            <entry key="source" value="LCM"/>
+                          </Map>
+                        </Attributes>
+                        <ProvisioningTargets>
+                          <ProvisioningTarget application="ActiveDirectory" assignmentId="409aca356aa6415bbd174c04b2fa2916" attribute="memberOf" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                            <AccountSelection applicationId="c0a8000d94b21aa28194b314cd5205c1" applicationName="ActiveDirectory" implicitCreate="true"/>
+                          </ProvisioningTarget>
+                        </ProvisioningTargets>
+                        <Requesters>
+                          <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+                        </Requesters>
+                      </ProvisioningPlan>
+                    </MasterPlan>
+                    <ProvisioningPlan targetIntegration="LDAPApplication" trackingId="23e04fa68e934990bce380c14158b152">
+                      <Attributes>
+                        <Map>
+                          <entry key="identityRequestId" value="0000000439"/>
+                          <entry key="requester" value="spadmin"/>
+                          <entry key="source" value="LCM"/>
+                        </Map>
+                      </Attributes>
+                      <Requesters>
+                        <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+                      </Requesters>
+                    </ProvisioningPlan>
+                    <ProvisioningPlan targetIntegration="ActiveDirectory" trackingId="e45ce17be8e44bb19d4149918511b682">
+                      <AccountRequest application="ActiveDirectory" op="Create">
+                        <Attributes>
+                          <Map>
+                            <entry key="attachmentConfigList"/>
+                            <entry key="attachments"/>
+                            <entry key="flow" value="AccessRequest"/>
+                            <entry key="id" value="c0a8000d94b21aa28194b31adb3409f3"/>
+                            <entry key="interface" value="LCM"/>
+                            <entry key="operation" value="EntitlementAdd"/>
+                          </Map>
+                        </Attributes>
+                        <AttributeRequest assignmentId="409aca356aa6415bbd174c04b2fa2916" displayValue="ESHIAM\AccountsPayable" name="memberOf" op="Add" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                          <Attributes>
+                            <Map>
+                              <entry key="assignment" value="true"/>
+                            </Map>
+                          </Attributes>
+                        </AttributeRequest>
+                      </AccountRequest>
+                      <Attributes>
+                        <Map>
+                          <entry key="identityRequestId" value="0000000439"/>
+                          <entry key="requester" value="spadmin"/>
+                          <entry key="source" value="LCM"/>
+                        </Map>
+                      </Attributes>
+                      <Requesters>
+                        <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+                      </Requesters>
+                    </ProvisioningPlan>
+                    <ProvisioningTarget application="ActiveDirectory" assignmentId="409aca356aa6415bbd174c04b2fa2916" attribute="memberOf" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                      <AccountSelection applicationId="c0a8000d94b21aa28194b314cd5205c1" applicationName="ActiveDirectory" implicitCreate="true"/>
+                    </ProvisioningTarget>
+                    <Questions>
+                      <Question attributeName="objectType" source="ActiveDirectory" type="Application">
+                        <Field application="ActiveDirectory" displayName="con_prov_policy_ad_objecttype" name="Question:0:objectType" postBack="true" priority="10" reviewRequired="true" template="Account" type="string" value="User">
+                          <AllowedValuesDefinition>
+                            <Value>
+                              <List>
+                                <String>User</String>
+                                <String>Contact</String>
+                                <String>msDS-GroupManagedServiceAccount</String>
+                                <String>msDS-ManagedServiceAccount</String>
+                              </List>
+                            </Value>
+                          </AllowedValuesDefinition>
+                          <Attributes>
+                            <Map>
+                              <entry key="hidden">
+                                <value>
+                                  <Script>
+                                    <Source>
+                          Object objType = field.getValue();    
+                           if ("contact".equalsIgnoreCase(objType)) {
+                              if (form.getSection("Dial-in") != null) {
+                                  form.remove(form.getSection("Dial-in"));
+                                  }
+                              if (form.getSection("User Details") != null) {
+                                  form.remove(form.getSection("User Details"));
+                                  }
+                              if (form.getSection("Skype for Business") != null) {
+                                  form.remove(form.getSection("Skype for Business"));
+                                  } 
+                              if (form.getSection("gmsa") != null) {
+                                  form.remove(form.getSection("gmsa"));
+                                  } 
+
+                              if (form.getSection("Exchange") != null &amp;&amp; form.getSection("Exchange").getFields() != null ) {
+                                    for (Object field : form.getSection("Exchange").getFields()) {
+                                         String name = field.getName();
+                                         if (name != null &amp;&amp; name.indexOf(":") > 0 ) {
+                                            String[] nameKeys = name.split(":");
+                                              if (nameKeys.length > 1 &amp;&amp;
+                                                  "homeMDB".equalsIgnoreCase(nameKeys[2])){
+                                                  field.setHidden(true);
+                                                }
+                                            }
+                                        }
+                                 }  
+                                     
+                           } 
+                           else if ("msDS-GroupManagedServiceAccount".equalsIgnoreCase(objType) 
+                                    || "msDS-ManagedServiceAccount".equalsIgnoreCase(objType)) {
+                            if (form.getSection("Dial-in") != null) {
+                                form.remove(form.getSection("Dial-in"));
+                            }
+                            if (form.getSection("Skype for Business") != null) {
+                                form.remove(form.getSection("Skype for Business"));
+                            }
+                            if (form.getSection("Exchange") != null) {
+                                form.remove(form.getSection("Exchange"));
+                            }
+                            if (form.getSection("gmsa") != null) {
+                                form.getSection("gmsa").setLabel("Service Account");
+                            } 
+
+                            if (form.getSection("User Details") != null &amp;&amp; form.getSection("User Details").getFields() != null ) {
+                                for (Object field : form.getSection("User Details").getFields()) {
+                                    String name = field.getName();
+                                    if (name != null &amp;&amp; name.indexOf(":") > 0 ) {
+                                        String[] nameKeys = name.split(":");
+                                        if (nameKeys.length > 1) {
+                                            if("password".equalsIgnoreCase(nameKeys[2])
+                                                    || "pwdLastSet".equalsIgnoreCase(nameKeys[2])
+                                                    || "primaryGroupDN".equalsIgnoreCase(nameKeys[2]) )
+                                            {
+                                                field.setHidden(true);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            Object serviceAccSection = form.getSection("gmsa");
+                            String dnsHostNameFieldName = null;
+                            String pAllowedToRetrievPwdFieldName = null;
+                            String pAllowedToDelegate = null;
+                            String managePasswordInterval = null;
+
+                            for (Object field : serviceAccSection.getFields()) {
+                                String name = field.getName();
+                                if( null != name) {
+                                    if( name.contains(":dNSHostName"))
+                                        dnsHostNameFieldName = name;
+                                    else if( name.contains(":msDS-GroupMSAMembership") )
+                                        pAllowedToRetrievPwdFieldName = name;
+                                    else if( name.contains(":msDS-AllowedToActOnBehalfOfOtherIdentity") )
+                                        pAllowedToDelegate = name;
+                                    else if( name.contains(":msDS-ManagedPasswordInterval") )
+                                        managePasswordInterval = name;
+                                }
+                            }
+                            if ("msDS-GroupManagedServiceAccount".equalsIgnoreCase(objType))
+                            {
+                                if (null != dnsHostNameFieldName) {
+                                    Object dnsHostName =   serviceAccSection.getField(dnsHostNameFieldName);
+                                    dnsHostName.setRequired(true);
+                                }
+                            }
+                            else if ("msDS-ManagedServiceAccount".equalsIgnoreCase(objType))
+                            {
+                                if (null != dnsHostNameFieldName) {
+                                    Object dnsHostName =   serviceAccSection.getField(dnsHostNameFieldName);
+                                    dnsHostName.setHidden(true);
+                                }
+                                if(null != pAllowedToRetrievPwdFieldName){
+                                    Object msDSGroupMSAMembership = serviceAccSection.getField(pAllowedToRetrievPwdFieldName);
+                                    msDSGroupMSAMembership.setHidden(true);
+                                }
+                                if(null != pAllowedToDelegate){
+                                    Object PrincipalsAllowedToDelegate = serviceAccSection.getField(pAllowedToDelegate);
+                                    PrincipalsAllowedToDelegate.setHidden(true);
+                                }
+                                if(null != managePasswordInterval) {
+                                    Object ManageIntervalField = serviceAccSection.getField(managePasswordInterval);
+                                    ManageIntervalField.setHidden(true);
+                                }
+                            }
+                          }
+                           else {
+                                   if (form.getSection("User Details") != null &amp;&amp; form.getSection("User Details").getFields() != null ) {
+                                      for (Object field : form.getSection("User Details").getFields()) {
+                                         String name = field.getName();
+                                         if (name != null &amp;&amp; name.indexOf(":") > 0 ) {
+                                            String[] nameKeys = name.split(":");
+                                              if (nameKeys.length > 1 &amp;&amp;
+                                                  ("sAMAccountName".equalsIgnoreCase(nameKeys[2]) 
+                                                 || "password".equalsIgnoreCase(nameKeys[2]))){
+                                                  field.setRequired(true);
+                                                }
+                                            }
+                                        }
+                                     }
+                                  if (form.getSection("gmsa") != null) {
+                                     form.remove(form.getSection("gmsa"));
+                                   } 
+                               }
+                                  
+                           return false;
+                        </Source>
+                                  </Script>
+                                </value>
+                              </entry>
+                            </Map>
+                          </Attributes>
+                        </Field>
+                      </Question>
+                      <Question attributeName="distinguishedName" source="ActiveDirectory" type="Application">
+                        <Field application="ActiveDirectory" displayName="con_prov_policy_ad_distinguishedName" helpKey="help_con_prov_policy_ad_distinguishedName" name="Question:1:distinguishedName" priority="10" required="true" template="Account" type="string"/>
+                      </Question>
+                      <Question attributeName="sAMAccountName" source="ActiveDirectory" type="Application">
+                        <Field application="ActiveDirectory" displayName="con_prov_policy_ad_sAMAccountName" helpKey="help_con_prov_policy_ad_sAMAccountName" name="Question:2:sAMAccountName" priority="10" reviewRequired="true" template="Account" type="string"/>
+                      </Question>
+                      <Question attributeName="password" source="ActiveDirectory" type="Application">
+                        <Field application="ActiveDirectory" displayName="con_prov_policy_ad_password" helpKey="help_con_prov_policy_ad_password" name="Question:3:password" priority="10" reviewRequired="true" template="Account" type="secret"/>
+                      </Question>
+                      <Question attributeName="pwdLastSet" source="ActiveDirectory" type="Application">
+                        <Field application="ActiveDirectory" displayName="con_prov_policy_ad_pwdLastSet" helpKey="help_con_prov_policy_ad_pwdLastSet" name="Question:4:pwdLastSet" priority="10" reviewRequired="true" template="Account" type="boolean"/>
+                      </Question>
+                      <Question attributeName="IIQDisabled" source="ActiveDirectory" type="Application">
+                        <Field application="ActiveDirectory" displayName="con_prov_policy_ad_IIQDisabled" helpKey="help_con_prov_policy_ad_IIQDisabled" name="Question:5:IIQDisabled" priority="10" reviewRequired="true" template="Account" type="boolean" value="false"/>
+                      </Question>
+                      <Question attributeName="primaryGroupDN" source="ActiveDirectory" type="Application">
+                        <Field application="ActiveDirectory" displayName="con_prov_policy_ad_primaryGroupDN" helpKey="help_con_prov_policy_ad_primaryGroupDN" name="Question:6:primaryGroupDN" priority="10" reviewRequired="true" template="Account" type="string"/>
+                      </Question>
+                      <Question attributeName="givenName" source="ActiveDirectory" type="Application">
+                        <Field application="ActiveDirectory" displayName="con_prov_policy_ad_givenName" helpKey="help_con_prov_policy_ad_givenName" name="Question:7:givenName" priority="10" reviewRequired="true" template="Account" type="string"/>
+                      </Question>
+                      <Question attributeName="sn" source="ActiveDirectory" type="Application">
+                        <Field application="ActiveDirectory" displayName="con_prov_policy_ad_sn" helpKey="help_con_prov_policy_ad_sn" name="Question:8:sn" priority="10" reviewRequired="true" template="Account" type="string"/>
+                      </Question>
+                      <Question attributeName="description" source="ActiveDirectory" type="Application">
+                        <Field application="ActiveDirectory" displayName="con_prov_policy_ad_description" helpKey="help_con_prov_policy_ad_description" name="Question:9:description" priority="10" reviewRequired="true" template="Account" type="string"/>
+                      </Question>
+                      <Question attributeName="msNPAllowDialin" source="ActiveDirectory" type="Application">
+                        <Field application="ActiveDirectory" displayName="con_prov_policy_ad_msNPAllowDialin" helpKey="help_con_prov_policy_ad_msNPAllowDialin" name="Question:10:msNPAllowDialin" priority="10" reviewRequired="true" template="Account" type="string" value="Not Set">
+                          <AllowedValuesDefinition>
+                            <Value>
+                              <List>
+                                <String>Not Set</String>
+                                <String>true</String>
+                                <String>false</String>
+                              </List>
+                            </Value>
+                          </AllowedValuesDefinition>
+                        </Field>
+                      </Question>
+                      <Question attributeName="msNPCallingStationID" source="ActiveDirectory" type="Application">
+                        <Field application="ActiveDirectory" displayName="con_prov_policy_ad_msNPCallingStationID" helpKey="help_con_prov_policy_ad_msNPCallingStationID" multi="true" name="Question:11:msNPCallingStationID" priority="10" reviewRequired="true" template="Account" type="string"/>
+                      </Question>
+                      <Question attributeName="msRADIUSCallbackNumber" source="ActiveDirectory" type="Application">
+                        <Field application="ActiveDirectory" displayName="con_prov_policy_ad_msRADIUSCallbackNumber" helpKey="help_con_prov_policy_ad_msRADIUSCallbackNumber" name="Question:12:msRADIUSCallbackNumber" priority="10" reviewRequired="true" template="Account" type="string"/>
+                      </Question>
+                      <Question attributeName="msRADIUSFramedRoute" source="ActiveDirectory" type="Application">
+                        <Field application="ActiveDirectory" displayName="con_prov_policy_ad_msRADIUSFramedRoute" helpKey="help_con_prov_policy_ad_msRADIUSFramedRoute" multi="true" name="Question:13:msRADIUSFramedRoute" priority="10" reviewRequired="true" template="Account" type="string"/>
+                      </Question>
+                      <Question attributeName="msRADIUSFramedIPAddress" source="ActiveDirectory" type="Application">
+                        <Field application="ActiveDirectory" displayName="con_prov_policy_ad_msRADIUSFramedIPAddress" helpKey="help_con_prov_policy_ad_msRADIUSFramedIPAddress" name="Question:14:msRADIUSFramedIPAddress" priority="10" reviewRequired="true" template="Account" type="string"/>
+                      </Question>
+                      <Question attributeName="homeMDB" source="ActiveDirectory" type="Application">
+                        <Field application="ActiveDirectory" displayName="con_prov_policy_ad_homeMDB" helpKey="help_con_prov_policy_ad_homeMDB" name="Question:15:homeMDB" priority="10" reviewRequired="true" template="Account" type="string"/>
+                      </Question>
+                      <Question attributeName="mailNickname" source="ActiveDirectory" type="Application">
+                        <Field application="ActiveDirectory" displayName="con_prov_policy_ad_mailNickname" helpKey="help_con_prov_policy_ad_mailNickname" name="Question:16:mailNickname" priority="10" reviewRequired="true" template="Account" type="string"/>
+                      </Question>
+                      <Question attributeName="shadowAccountDN" source="ActiveDirectory" type="Application">
+                        <Field application="ActiveDirectory" displayName="con_prov_policy_ad_shadowAccountDN" helpKey="help_con_prov_policy_ad_shadowAccountDN" name="Question:17:shadowAccountDN" priority="10" reviewRequired="true" template="Account" type="string"/>
+                      </Question>
+                      <Question attributeName="msExchHideFromAddressLists" source="ActiveDirectory" type="Application">
+                        <Field application="ActiveDirectory" displayName="con_prov_policy_ad_msExchHideFromAddressLists" helpKey="help_con_prov_policy_ad_msExchHideFromAddressLists" name="Question:18:msExchHideFromAddressLists" priority="10" reviewRequired="true" template="Account" type="boolean"/>
+                      </Question>
+                      <Question attributeName="externalEmailAddress" source="ActiveDirectory" type="Application">
+                        <Field application="ActiveDirectory" displayName="con_prov_policy_ad_externalEmailAddress" helpKey="help_con_prov_policy_ad_externalEmailAddress" name="Question:19:externalEmailAddress" priority="10" reviewRequired="true" template="Account" type="string"/>
+                      </Question>
+                      <Question attributeName="SipAddress" source="ActiveDirectory" type="Application">
+                        <Field application="ActiveDirectory" displayName="con_prov_policy_ad_SipAddress" helpKey="help_con_prov_policy_ad_SipAddress" name="Question:20:SipAddress" priority="10" reviewRequired="true" template="Account" type="string"/>
+                      </Question>
+                      <Question attributeName="SipDomain" source="ActiveDirectory" type="Application">
+                        <Field application="ActiveDirectory" displayName="con_prov_policy_ad_SipDomain" helpKey="help_con_prov_policy_ad_SipDomain" name="Question:21:SipDomain" priority="10" reviewRequired="true" template="Account" type="string"/>
+                      </Question>
+                      <Question attributeName="SipAddressType" source="ActiveDirectory" type="Application">
+                        <Field application="ActiveDirectory" displayName="con_prov_policy_ad_SipAddressType" helpKey="help_con_prov_policy_ad_SipAddressType" name="Question:22:SipAddressType" priority="10" reviewRequired="true" template="Account" type="string">
+                          <AllowedValuesDefinition>
+                            <Value>
+                              <List>
+                                <String>SamAccountName</String>
+                                <String>FirstLastName</String>
+                                <String>EmailAddress</String>
+                              </List>
+                            </Value>
+                          </AllowedValuesDefinition>
+                        </Field>
+                      </Question>
+                      <Question attributeName="RegistrarPool" source="ActiveDirectory" type="Application">
+                        <Field application="ActiveDirectory" displayName="con_prov_policy_ad_RegistrarPool" helpKey="help_con_prov_policy_ad_RegistrarPool" name="Question:23:RegistrarPool" priority="10" reviewRequired="true" template="Account" type="string"/>
+                      </Question>
+                      <Question attributeName="dNSHostName" source="ActiveDirectory" type="Application">
+                        <Field application="ActiveDirectory" displayName="con_prov_policy_ad_DNSHostName" helpKey="help_con_prov_policy_ad_DNSHostName" name="Question:24:dNSHostName" priority="10" reviewRequired="true" template="Account" type="string"/>
+                      </Question>
+                      <Question attributeName="msDS-SupportedEncryptionTypes" source="ActiveDirectory" type="Application">
+                        <Field application="ActiveDirectory" displayName="con_prov_policy_ad_msDSSupportedEncryptionTypes" helpKey="help_con_prov_policy_ad_msDSSupportedEncryptionTypes" multi="true" name="Question:25:msDS-SupportedEncryptionTypes" priority="10" reviewRequired="true" template="Account" type="string">
+                          <AllowedValuesDefinition>
+                            <Value>
+                              <List>
+                                <String>DES</String>
+                                <String>RC4</String>
+                                <String>AES128</String>
+                                <String>AES256</String>
+                              </List>
+                            </Value>
+                          </AllowedValuesDefinition>
+                        </Field>
+                      </Question>
+                      <Question attributeName="msDS-ManagedPasswordInterval" source="ActiveDirectory" type="Application">
+                        <Field application="ActiveDirectory" displayName="con_prov_policy_ad_msDSManagedPasswordInterval" helpKey="help_con_prov_policy_ad_msDSManagedPasswordInterval" name="Question:26:msDS-ManagedPasswordInterval" priority="10" reviewRequired="true" template="Account" type="string"/>
+                      </Question>
+                      <Question attributeName="msDS-GroupMSAMembership" source="ActiveDirectory" type="Application">
+                        <Field application="ActiveDirectory" displayName="con_prov_policy_ad_msDSGroupMSAMembership" helpKey="help_con_prov_policy_ad_msDSGroupMSAMembership" multi="true" name="Question:27:msDS-GroupMSAMembership" priority="10" reviewRequired="true" template="Account" type="string"/>
+                      </Question>
+                      <Question attributeName="msDS-AllowedToActOnBehalfOfOtherIdentity" source="ActiveDirectory" type="Application">
+                        <Field application="ActiveDirectory" displayName="con_prov_policy_ad_msDSAllowedToActOnBehalfOfOtherIdentity" helpKey="help_con_prov_policy_ad_msDSAllowedToActOnBehalfOfOtherIdentity" multi="true" name="Question:28:msDS-AllowedToActOnBehalfOfOtherIdentity" priority="10" reviewRequired="true" template="Account" type="string"/>
+                      </Question>
+                      <Question attributeName="servicePrincipalName" source="ActiveDirectory" type="Application">
+                        <Field application="ActiveDirectory" displayName="con_prov_policy_ad_ServicePrincipalNames" helpKey="help_con_prov_policy_ad_ServicePrincipalNames" multi="true" name="Question:29:servicePrincipalName" priority="10" reviewRequired="true" template="Account" type="string"/>
+                      </Question>
+                    </Questions>
+                  </ProvisioningProject>
+                </value>
+              </entry>
+              <entry key="requireViolationReviewComments" value="true"/>
+              <entry key="sessionOwner" value="spadmin"/>
+              <entry key="source" value="LCM"/>
+              <entry key="trace" value="false"/>
+              <entry key="violationReviewDecision"/>
+              <entry key="workItemComments"/>
+              <entry key="workItemPriority">
+                <value>
+                  <WorkItemLevel>Normal</WorkItemLevel>
+                </value>
+              </entry>
+            </Map>
+          </Attributes>
+        </Workflow>
+      </WorkflowCase>
+    </Step>
+    <Step condition="script:(ticketManagementApplication != null)" icon="Task" id="bde0408e05bf4693bef6b059d57d07ac" name="Create Ticket" posX="381" posY="6">
+      <Arg name="action" value="open"/>
+      <Arg name="source" value="ref:source"/>
+      <Arg name="workItemPriority" value="ref:workItemPriority"/>
+      <Arg name="project" value="ref:project"/>
+      <Arg name="ticketManagementApplication" value="ref:ticketManagementApplication"/>
+      <Arg name="identityRequestId" value="ref:identityRequestId"/>
+      <Arg name="ticketDataGenerationRule" value=""/>
+      <Arg name="trace" value="ref:trace"/>
+      <Arg name="ticketId" value="ref:ticketId"/>
+      <Return name="ticketId" to="externalTicketId"/>
+      <Script>
+        <Source>
+      log.error("-------LCM Provisioning create ticket step-----");
+      </Source>
+      </Script>
+      <WorkflowRef>
+        <Reference class="sailpoint.object.Workflow" id="c0a81d898f331ca3818f33fcff4e0191" name="Manage Ticket"/>
+      </WorkflowRef>
+      <Transition to="Pre Split Approve" when="script:(!isNull(approvalSplitPoint) &amp;&amp; csvToList(approvalScheme).contains(approvalSplitPoint))"/>
+      <Transition to="Approve and Provision"/>
+    </Step>
+    <Step condition="script:((flow == null) ||  (!&quot;UnlockAccount&quot;.equals(flow)))" icon="Task" id="b5bdf1d394564f74ae268986b2fd2344" name="Pre Split Approve" posX="518" posY="63">
+      <Arg name="approvalMode" value="ref:approvalMode"/>
+      <Arg name="approvalScheme" value="ref:approvalScheme">
+        <Script>
+          <Source>
+              log.error("-------LCM Provisioning Pre Split Approve step-----");
+              import java.util.List;
+              import java.util.ArrayList;
+              import java.util.Iterator;
+              import sailpoint.tools.Util;
+
+              List schemes = Util.csvToList(approvalScheme);
+              List preSchemes = new ArrayList&lt;String>();
+              for (String s : Util.safeIterable(schemes)) {
+                if (s.equals(approvalSplitPoint)) {
+                    break;
+                } else {
+                    preSchemes.add(s);
+                }
+              }
+              return Util.listToCsv(preSchemes);
+          </Source>
+        </Script>
+      </Arg>
+      <Arg name="requireCommentsForApproval" value="ref:requireCommentsForApproval"/>
+      <Arg name="requireCommentsForDenial" value="ref:requireCommentsForDenial"/>
+      <Arg name="approvalSet" value="ref:approvalSet"/>
+      <Arg name="approvalAssignmentRule"/>
+      <Arg name="approvingIdentities" value="ref:approvingIdentities"/>
+      <Arg name="approvalSplitPoint" value="ref:approvalSplitPoint"/>
+      <Arg name="fallbackApprover" value="ref:fallbackApprover"/>
+      <Arg name="filterRejects" value="ref:filterRejects"/>
+      <Arg name="flow" value="ref:flow"/>
+      <Arg name="identityName" value="ref:identityName"/>
+      <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+      <Arg name="identityElectronicSignature" value="ref:identityElectronicSignature"/>
+      <Arg name="identityEmailTemplate" value="ref:identityEmailTemplate"/>
+      <Arg name="identityRequestId" value="ref:identityRequestId"/>
+      <Arg name="launcher" value="ref:launcher"/>
+      <Arg name="managerEmailTemplate" value="ref:approvalEmailTemplate"/>
+      <Arg name="managerElectronicSignature" value="ref:managerElectronicSignature"/>
+      <Arg name="ownerEmailTemplate" value="ref:approvalEmailTemplate"/>
+      <Arg name="ownerElectronicSignature" value="ref:ownerElectronicSignature"/>
+      <Arg name="project" value="ref:project"/>
+      <Arg name="plan" value="ref:plan"/>
+      <Arg name="policyViolations" value="ref:policyViolations"/>
+      <Arg name="workItemPriority" value="ref:workItemPriority"/>
+      <Arg name="securityOfficerName" value="ref:securityOfficerName"/>
+      <Arg name="securityOfficerEmailTemplate" value="ref:approvalEmailTemplate"/>
+      <Arg name="securityOfficerElectronicSignature" value="ref:securityOfficerElectronicSignature"/>
+      <Arg name="setPreviousApprovalDecisions" value="ref:setPreviousApprovalDecisions"/>
+      <Arg name="trace" value="ref:trace"/>
+      <Arg name="workItemReminderTemplate"/>
+      <Arg name="workItemHoursBetweenReminders"/>
+      <Arg name="workItemMaxReminders"/>
+      <Arg name="workItemEscalationTemplate"/>
+      <Arg name="workItemHoursTillEscalation"/>
+      <Arg name="workItemEscalationRule"/>
+      <Arg name="workItemComments"/>
+      <Return name="approvalSet"/>
+      <Return name="workItemComments"/>
+      <Return name="project"/>
+      <WorkflowRef>
+        <Reference class="sailpoint.object.Workflow" id="c0a81d898f331ca3818f33fd06af01ba" name="Provisioning Approval Subprocess"/>
+      </WorkflowRef>
+      <Transition to="Split Plan"/>
+    </Step>
+    <Step action="call:splitProvisioningPlan" icon="Task" id="d94a5ae678114599ad7ad59fae2a1633" name="Split Plan" posX="618" posY="63" resultVariable="splitPlans">
+      <Arg name="project" value="ref:project"/>
+      <Transition to="Approve and Provision Split"/>
+    </Step>
+    <Step icon="Task" id="d7b7fb79e30648b3bd82b852faf70a48" name="Approve and Provision Split" posX="783" posY="63">
+      <Arg name="approvalMode" value="ref:approvalMode"/>
+      <Arg name="approvalScheme" value="ref:approvalScheme">
+        <Script>
+          <Source>
+          log.error("-------LCM Provisioning Approve and Provision Split step----");
+              import java.util.List;
+              import java.util.Iterator;
+              import sailpoint.tools.Util;
+              List schemes = Util.csvToList(approvalScheme);
+              Iterator it = schemes.iterator();
+              while (it.hasNext()) {
+                String s = it.next();
+                if (!s.equals(approvalSplitPoint)) {
+                    it.remove();
+                } else {
+                    break;
+                }
+              }
+              return Util.listToCsv(schemes);
+            </Source>
+        </Script>
+      </Arg>
+      <Arg name="requireCommentsForApproval" value="ref:requireCommentsForApproval"/>
+      <Arg name="requireCommentsForDenial" value="ref:requireCommentsForDenial"/>
+      <Arg name="approvalEmailTemplate" value="ref:approvalEmailTemplate"/>
+      <Arg name="approvalSet" value="ref:approvalSet"/>
+      <Arg name="approvalSplitPoint" value="ref:approvalSplitPoint"/>
+      <Arg name="approvalAssignmentRule"/>
+      <Arg name="approvingIdentities" value="ref:approvingIdentities"/>
+      <Arg name="batchRequestItemId" value="ref:batchRequestItemId"/>
+      <Arg name="clearApprovalDecisions"/>
+      <Arg name="enableRetryRequest" value="ref:enableRetryRequest"/>
+      <Arg name="endOnManualWorkItems" value="ref:endOnManualWorkItems"/>
+      <Arg name="endOnProvisioningForms" value="ref:endOnProvisioningForms"/>
+      <Arg name="fallbackApprover" value="ref:fallbackApprover"/>
+      <Arg name="foregroundProvisioning" value="ref:foregroundProvisioning"/>
+      <Arg name="formTemplate" value="Identity Update"/>
+      <Arg name="filterRejects" value="ref:filterRejects"/>
+      <Arg name="flow" value="ref:flow"/>
+      <Arg name="identityName" value="ref:identityName"/>
+      <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+      <Arg name="identityElectronicSignature" value="ref:identityElectronicSignature"/>
+      <Arg name="identityEmailTemplate" value="ref:identityEmailTemplate"/>
+      <Arg name="identityName" value="ref:identityName"/>
+      <Arg name="identityRequestId" value="ref:identityRequestId"/>
+      <Arg name="launcher" value="ref:launcher"/>
+      <Arg name="managerEmailTemplate" value="ref:approvalEmailTemplate"/>
+      <Arg name="managerElectronicSignature" value="ref:managerElectronicSignature"/>
+      <Arg name="manualActionsEmailTemplate" value="Pending Manual Changes"/>
+      <Arg name="optimisticProvisioning" value="ref:optimisticProvisioning"/>
+      <Arg name="ownerEmailTemplate" value="ref:approvalEmailTemplate"/>
+      <Arg name="ownerElectronicSignature" value="ref:ownerElectronicSignature"/>
+      <Arg name="project" value="ref:project"/>
+      <Arg name="plan" value="ref:plan"/>
+      <Arg name="policyScheme" value="ref:policyScheme"/>
+      <Arg name="policyViolations" value="ref:policyViolations"/>
+      <Arg name="requesterEmailTemplate" value="ref:requesterEmailTemplate"/>
+      <Arg name="workItemPriority" value="ref:workItemPriority"/>
+      <Arg name="securityOfficerName" value="ref:securityOfficerName"/>
+      <Arg name="securityOfficerEmailTemplate" value="ref:approvalEmailTemplate"/>
+      <Arg name="securityOfficerElectronicSignature" value="ref:securityOfficerElectronicSignature"/>
+      <Arg name="setPreviousApprovalDecisions" value="ref:setPreviousApprovalDecisions"/>
+      <Arg name="splitProvisioning" value="true"/>
+      <Arg name="source" value="ref:source"/>
+      <Arg name="ticketManagementApplication" value="ref:ticketManagementApplication"/>
+      <Arg name="trace" value="ref:trace"/>
+      <Arg name="userEmailTemplate" value="ref:userEmailTemplate"/>
+      <Arg name="workItemReminderTemplate" value="ref:workItemReminderTemplate"/>
+      <Arg name="workItemHoursBetweenReminders" value="ref:workItemHoursBetweenReminders"/>
+      <Arg name="workItemMaxReminders" value="ref:workItemMaxReminders"/>
+      <Arg name="workItemEscalationTemplate" value="ref:workItemEscalationTemplate"/>
+      <Arg name="workItemHoursTillEscalation" value="ref:workItemHoursTillEscalation"/>
+      <Arg name="workItemEscalationRule" value="ref:workItemEscalationRule"/>
+      <Arg name="workItemComments" value="ref:workItemComments"/>
+      <Arg name="saveUnmanagedPlan_WithProjectArgument" value="ref:saveUnmanagedPlan_WithProjectArgument"/>
+      <Replicator arg="plan" items="splitPlans"/>
+      <Return name="project" to="splitProjects"/>
+      <Return name="workItemComments" to="splitWorkItemComments"/>
+      <Return name="approvalSet" to="splitApprovalSet"/>
+      <WorkflowRef>
+        <Reference class="sailpoint.object.Workflow" id="c0a81d898f331ca3818f33fdbc7f031c" name="Approve and Provision Subprocess"/>
+      </WorkflowRef>
+      <Transition to="Assimilate Splits"/>
+    </Step>
+    <Step action="call:joinLCMProvWorkflowSplits" icon="Task" id="c658926ae3ca426b8592bd5071b05768" name="Assimilate Splits" posX="914" posY="63">
+      <Arg name="splitProjects" value="ref:splitProjects"/>
+      <Arg name="splitWorkItemComments" value="ref:splitWorkItemComments"/>
+      <Arg name="splitApprovalSet" value="ref:splitApprovalSet"/>
+      <Script>
+        <Source>
+        log.error("-------LCM Provisioning Assimilate Splits step----");
+      </Source>
+      </Script>
+      <Transition to="Refresh Identity"/>
+    </Step>
+    <Step icon="Task" id="faefa8d756654666aea7451c6ce6b37e" name="Approve and Provision" posX="699" posY="7">
+      <Arg name="approvalEmailTemplate" value="ref:approvalEmailTemplate"/>
+      <Arg name="approvalMode" value="ref:approvalMode"/>
+      <Arg name="approvalScheme" value="ref:approvalScheme"/>
+      <Arg name="requireCommentsForApproval" value="ref:requireCommentsForApproval"/>
+      <Arg name="requireCommentsForDenial" value="ref:requireCommentsForDenial"/>
+      <Arg name="approvalSet" value="ref:approvalSet"/>
+      <Arg name="approvalSplitPoint" value="ref:approvalSplitPoint"/>
+      <Arg name="approvalAssignmentRule"/>
+      <Arg name="approvingIdentities" value="ref:approvingIdentities"/>
+      <Arg name="batchRequestItemId" value="ref:batchRequestItemId"/>
+      <Arg name="clearApprovalDecisions"/>
+      <Arg name="endOnManualWorkItems" value="ref:endOnManualWorkItems"/>
+      <Arg name="endOnProvisioningForms" value="ref:endOnProvisioningForms"/>
+      <Arg name="enableRetryRequest" value="ref:enableRetryRequest"/>
+      <Arg name="fallbackApprover" value="ref:fallbackApprover"/>
+      <Arg name="foregroundProvisioning" value="ref:foregroundProvisioning"/>
+      <Arg name="formTemplate" value="Identity Update"/>
+      <Arg name="filterRejects" value="ref:filterRejects"/>
+      <Arg name="flow" value="ref:flow"/>
+      <Arg name="identityName" value="ref:identityName"/>
+      <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+      <Arg name="identityElectronicSignature" value="ref:identityElectronicSignature"/>
+      <Arg name="identityEmailTemplate" value="ref:identityEmailTemplate"/>
+      <Arg name="identityName" value="ref:identityName"/>
+      <Arg name="identityRequestId" value="ref:identityRequestId"/>
+      <Arg name="launcher" value="ref:launcher"/>
+      <Arg name="managerEmailTemplate" value="ref:approvalEmailTemplate"/>
+      <Arg name="managerElectronicSignature" value="ref:managerElectronicSignature"/>
+      <Arg name="manualActionsEmailTemplate" value="Pending Manual Changes"/>
+      <Arg name="noTriggers" value="ref:noTriggers"/>
+      <Arg name="optimisticProvisioning" value="ref:optimisticProvisioning"/>
+      <Arg name="ownerEmailTemplate" value="ref:approvalEmailTemplate"/>
+      <Arg name="ownerElectronicSignature" value="ref:ownerElectronicSignature"/>
+      <Arg name="project" value="ref:project"/>
+      <Arg name="plan" value="ref:plan"/>
+      <Arg name="policyScheme" value="ref:policyScheme"/>
+      <Arg name="policyViolations" value="ref:policyViolations"/>
+      <Arg name="requesterEmailTemplate" value="ref:requesterEmailTemplate"/>
+      <Arg name="workItemPriority" value="ref:workItemPriority"/>
+      <Arg name="securityOfficerName" value="ref:securityOfficerName"/>
+      <Arg name="securityOfficerEmailTemplate" value="ref:approvalEmailTemplate"/>
+      <Arg name="securityOfficerElectronicSignature" value="ref:securityOfficerElectronicSignature"/>
+      <Arg name="setPreviousApprovalDecisions" value="ref:setPreviousApprovalDecisions"/>
+      <Arg name="source" value="ref:source"/>
+      <Arg name="splitProvisioning" value="false"/>
+      <Arg name="ticketManagementApplication" value="ref:ticketManagementApplication"/>
+      <Arg name="trace" value="ref:trace"/>
+      <Arg name="userEmailTemplate" value="ref:userEmailTemplate"/>
+      <Arg name="workItemReminderTemplate" value="ref:workItemReminderTemplate"/>
+      <Arg name="workItemHoursBetweenReminders" value="ref:workItemHoursBetweenReminders"/>
+      <Arg name="workItemMaxReminders" value="ref:workItemMaxReminders"/>
+      <Arg name="workItemEscalationTemplate" value="ref:workItemEscalationTemplate"/>
+      <Arg name="workItemHoursTillEscalation" value="ref:workItemHoursTillEscalation"/>
+      <Arg name="workItemEscalationRule" value="ref:workItemEscalationRule"/>
+      <Arg name="workItemComments" value="ref:workItemComments"/>
+      <Arg name="saveUnmanagedPlan_WithProjectArgument" value="ref:saveUnmanagedPlan_WithProjectArgument"/>
+      <Return name="project" to="project"/>
+      <Return name="approvalSet" to="approvalSet"/>
+      <Return name="workItemComments" to="workItemComments"/>
+      <WorkflowRef>
+        <Reference class="sailpoint.object.Workflow" id="c0a81d898f331ca3818f33fdbc7f031c" name="Approve and Provision Subprocess"/>
+      </WorkflowRef>
+      <Transition to="Refresh Identity"/>
+    </Step>
+    <Step action="call:refreshIdentity" condition="ref:doRefresh" icon="Task" id="fcbc7009beeb453e8e635468c8f4d771" name="Refresh Identity" posX="1028" posY="7">
+      <Arg name="identityName" value="ref:identityName"/>
+      <Arg name="correlateEntitlements" value="true"/>
+      <Transition to="Notify"/>
+    </Step>
+    <Step icon="Task" id="2ded3b2d73924c889c7d53f40822d1d7" name="Notify" posX="1131" posY="7">
+      <Arg name="approvalScheme" value="ref:approvalScheme"/>
+      <Arg name="approvalSet" value="ref:approvalSet"/>
+      <Arg name="flow" value="ref:flow"/>
+      <Arg name="identityDisplayName" value="ref:identityDisplayName"/>
+      <Arg name="identityName" value="ref:identityName"/>
+      <Arg name="launcher" value="ref:launcher"/>
+      <Arg name="notificationScheme" value="ref:notificationScheme"/>
+      <Arg name="userEmailTemplate" value="ref:userEmailTemplate"/>
+      <Arg name="requesterEmailTemplate" value="ref:requesterEmailTemplate"/>
+      <Arg name="managerEmailTemplate" value="ref:managerEmailTemplate"/>
+      <Arg name="plan" value="ref:plan"/>
+      <Arg name="policyViolations" value="ref:policyViolations"/>
+      <Arg name="workItemPriority" value="ref:workItemPriority"/>
+      <Arg name="securityOfficerEmailTemplate" value="ref:securityOfficerEmailTemplate"/>
+      <Arg name="securityOfficerName" value="ref:securityOfficerName"/>
+      <Arg name="trace" value="ref:trace"/>
+      <Arg name="source" value="ref:source"/>
+      <WorkflowRef>
+        <Reference class="sailpoint.object.Workflow" id="c0a81d898f331ca3818f33fdbbaf0318" name="Identity Request Notify"/>
+      </WorkflowRef>
+      <Transition to="end"/>
+    </Step>
+    <Step action="call:addMessage" id="15531e129ba94635b6036b4bdf8694cd" name="Exit On Policy Violation" posX="201" posY="253">
+      <Arg name="message" value="Failed due to policy violation(s)"/>
+      <Arg name="type" value="Error"/>
+      <Transition to="end"/>
+    </Step>
+    <Step action="call:addMessage" id="75d154e3609a4181bbadc7164ed35689" name="Exit On Manual Work Items" posX="364" posY="107">
+      <Arg name="message" value="Failed due to manual work item(s)"/>
+      <Arg name="type" value="Error"/>
+      <Transition to="end"/>
+    </Step>
+    <Step action="call:addMessage" id="c3d779c2fc5346579c418d6772208550" name="Exit On Provisioning Form" posX="280" posY="178">
+      <Arg name="message" value="Failed due to provisioning form"/>
+      <Arg name="type" value="Error"/>
+      <Transition to="end"/>
+    </Step>
+    <Step catches="complete" icon="Catches" id="cefec27deef946928517d2c5e0d86bb1" name="Finalize" posX="1058" posY="308">
+      <Arg name="approvalSet" value="ref:approvalSet"/>
+      <Arg name="batchRequestItemId" value="ref:batchRequestItemId"/>
+      <Arg name="identityRequestId" value="ref:identityRequestId"/>
+      <Arg name="project" value="ref:project"/>
+      <Arg name="workItemPriority" value="ref:workItemPriority"/>
+      <Arg name="identityName" value="ref:identityName"/>
+      <Arg name="ticketManagementApplication" value="ref:ticketManagementApplication"/>
+      <Arg name="trace" value="ref:trace"/>
+      <Script>
+        <Source>
+        log.error("-------LCM Provisioning Finalize Step---");
+      </Source>
+      </Script>
+      <WorkflowRef>
+        <Reference class="sailpoint.object.Workflow" id="c0a81d898f331ca3818f33fdbbf2031a" name="Identity Request Finalize"/>
+      </WorkflowRef>
+    </Step>
+    <Step icon="Stop" id="a1d4bd5ac9ed4a4991659f7cbcf6d0dc" name="end" posX="1131" posY="253"/>
+    <Attributes>
+      <Map>
+        <entry key="allowRequestsWithViolations" value="true"/>
+        <entry key="approvalEmailTemplate" value="LCM Identity Update Approval"/>
+        <entry key="approvalMode" value="parallel"/>
+        <entry key="approvalScheme" value="owner"/>
+        <entry key="approvalSet"/>
+        <entry key="approvalSplitPoint"/>
+        <entry key="approvingIdentities"/>
+        <entry key="batchRequestItemId"/>
+        <entry key="doRefresh"/>
+        <entry key="enableRetryRequest" value="false"/>
+        <entry key="endOnManualWorkItems" value="false"/>
+        <entry key="endOnProvisioningForms" value="false"/>
+        <entry key="fallbackApprover" value="spadmin"/>
+        <entry key="filterRejects" value="true"/>
+        <entry key="flow" value="AccessRequest"/>
+        <entry key="foregroundProvisioning" value="true"/>
+        <entry key="identityDisplayName" value="Mahesh Nattali"/>
+        <entry key="identityElectronicSignature"/>
+        <entry key="identityEmailTemplate"/>
+        <entry key="identityName" value="Mahesh Nattali"/>
+        <entry key="identityRequestId"/>
+        <entry key="launcher" value="spadmin"/>
+        <entry key="managerElectronicSignature"/>
+        <entry key="managerEmailTemplate" value="LCM Manager Notification"/>
+        <entry key="notificationScheme" value="user,requester"/>
+        <entry key="optimisticProvisioning" value="false"/>
+        <entry key="ownerElectronicSignature"/>
+        <entry key="plan">
+          <value>
+            <ProvisioningPlan>
+              <AccountRequest application="ActiveDirectory" op="Modify">
+                <Attributes>
+                  <Map>
+                    <entry key="attachmentConfigList"/>
+                    <entry key="attachments"/>
+                    <entry key="flow" value="AccessRequest"/>
+                    <entry key="id" value="c0a8000d94b21aa28194b31adb3409f3"/>
+                    <entry key="interface" value="LCM"/>
+                    <entry key="operation" value="EntitlementAdd"/>
+                  </Map>
+                </Attributes>
+                <AttributeRequest assignmentId="409aca356aa6415bbd174c04b2fa2916" displayValue="ESHIAM\AccountsPayable" name="memberOf" op="Add" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                  <Attributes>
+                    <Map>
+                      <entry key="assignment" value="true"/>
+                    </Map>
+                  </Attributes>
+                </AttributeRequest>
+              </AccountRequest>
+              <Attributes>
+                <Map>
+                  <entry key="identityRequestId" value="0000000439"/>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="LCM"/>
+                </Map>
+              </Attributes>
+              <ProvisioningTargets>
+                <ProvisioningTarget application="ActiveDirectory" assignmentId="409aca356aa6415bbd174c04b2fa2916" attribute="memberOf" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+                  <AccountSelection applicationId="c0a8000d94b21aa28194b314cd5205c1" applicationName="ActiveDirectory" implicitCreate="true"/>
+                </ProvisioningTarget>
+              </ProvisioningTargets>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+          </value>
+        </entry>
+        <entry key="policiesToCheck"/>
+        <entry key="policyScheme" value="fail"/>
+        <entry key="policyViolations"/>
+        <entry key="project"/>
+        <entry key="requesterEmailTemplate" value="LCM Requester Notification"/>
+        <entry key="requireCommentsForApproval" value="false"/>
+        <entry key="requireCommentsForDenial" value="false"/>
+        <entry key="requireViolationReviewComments" value="true"/>
+        <entry key="saveUnmanagedPlan_WithProjectArgument" value="false"/>
+        <entry key="securityOfficerElectronicSignature"/>
+        <entry key="securityOfficerEmailTemplate"/>
+        <entry key="securityOfficerName"/>
+        <entry key="sessionOwner" value="spadmin"/>
+        <entry key="setPreviousApprovalDecisions" value="false"/>
+        <entry key="source" value="LCM"/>
+        <entry key="splitApprovalSet"/>
+        <entry key="splitPlans"/>
+        <entry key="splitProjects"/>
+        <entry key="splitWorkItemComments"/>
+        <entry key="taskResultId" value="c0a800fc94cb1e358194cbcf82592031"/>
+        <entry key="ticketId"/>
+        <entry key="ticketManagementApplication"/>
+        <entry key="trace" value="false"/>
+        <entry key="userEmailTemplate" value="LCM User Notification"/>
+        <entry key="violationReviewDecision"/>
+        <entry key="workItemComments"/>
+        <entry key="workItemPriority">
+          <value>
+            <WorkItemLevel>Normal</WorkItemLevel>
+          </value>
+        </entry>
+      </Map>
+    </Attributes>
+  </Workflow>
+</WorkflowCase>

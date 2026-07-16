@@ -1,0 +1,163 @@
+ApprovalScheme=owner(application),manager approvalMode=serial
+-----------------------------------Before Approval from owner/manager -------------------------------------------------------------------------
+
+
+-------------------------Start step------------------------<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan>
+  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Aiden markram,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+    <Attributes>
+      <Map>
+        <entry key="attachmentConfigList"/>
+        <entry key="attachments"/>
+        <entry key="id" value="c0a81d898f3419e3818f3439c822023d"/>
+      </Map>
+    </Attributes>
+    <AttributeRequest assignmentId="50eff5f3224b4a86bdc0eb0659ed8d8d" displayValue="DEV_Projects" name="memberOf" op="Add" value="CN=DEV_Projects,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <Attributes>
+        <Map>
+          <entry key="assignment" value="true"/>
+        </Map>
+      </Attributes>
+    </AttributeRequest>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <ProvisioningTargets>
+    <ProvisioningTarget application="ActiveDirectory" assignmentId="50eff5f3224b4a86bdc0eb0659ed8d8d" attribute="memberOf" value="CN=DEV_Projects,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ActiveDirectory" selection="CN=Aiden markram,OU=People,OU=Demo,DC=Eshiam,DC=com">
+        <AccountInfo displayName="Aiden markram" nativeIdentity="CN=Aiden markram,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+      </AccountSelection>
+    </ProvisioningTarget>
+  </ProvisioningTargets>
+</ProvisioningPlan>
+
+2024-05-20T16:25:34,521  WARN http-nio-8080-exec-10 sailpoint.provisioning.AssignmentExpander:1524 - Stale account target memory: Role IT InheritedRoles, Application LDAPApplication, Identity cn=Albert.Woods,ou=People,dc=my-domain,dc=com
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------After Approval from  app owner ---------------------------------------------------------------------------------------
+-------------------------Start step------------------------<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan>
+  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Aiden markram,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+    <Attributes>
+      <Map>
+        <entry key="attachmentConfigList"/>
+        <entry key="attachments"/>
+        <entry key="id" value="c0a81d898f3419e3818f3439c822023d"/>
+      </Map>
+    </Attributes>
+    <AttributeRequest assignmentId="50eff5f3224b4a86bdc0eb0659ed8d8d" displayValue="DEV_Projects" name="memberOf" op="Add" value="CN=DEV_Projects,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <Attributes>
+        <Map>
+          <entry key="assignment" value="true"/>
+        </Map>
+      </Attributes>
+    </AttributeRequest>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <ProvisioningTargets>
+    <ProvisioningTarget application="ActiveDirectory" assignmentId="50eff5f3224b4a86bdc0eb0659ed8d8d" attribute="memberOf" value="CN=DEV_Projects,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ActiveDirectory" selection="CN=Aiden markram,OU=People,OU=Demo,DC=Eshiam,DC=com">
+        <AccountInfo displayName="Aiden markram" nativeIdentity="CN=Aiden markram,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+      </AccountSelection>
+    </ProvisioningTarget>
+  </ProvisioningTargets>
+</ProvisioningPlan>
+
+2024-05-20T16:25:34,521  WARN http-nio-8080-exec-10 sailpoint.provisioning.AssignmentExpander:1524 - Stale account target memory: Role IT InheritedRoles, Application LDAPApplication, Identity cn=Albert.Woods,ou=People,dc=my-domain,dc=com
+------------BeforeProvisioning----------------------------<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan nativeIdentity="Aiden markram" targetIntegration="ActiveDirectory" trackingId="b04c1b875c514b01aac440bc71c4f81f">
+  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Aiden markram,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+    <Attributes>
+      <Map>
+        <entry key="attachmentConfigList"/>
+        <entry key="attachments"/>
+        <entry key="flow" value="AccessRequest"/>
+        <entry key="id" value="c0a81d898f3419e3818f3439c822023d"/>
+        <entry key="interface" value="LCM"/>
+        <entry key="operation" value="Add"/>
+        <entry key="requester" value="spadmin"/>
+      </Map>
+    </Attributes>
+    <AttributeRequest assignmentId="50eff5f3224b4a86bdc0eb0659ed8d8d" displayValue="DEV_Projects" name="memberOf" op="Add" value="CN=DEV_Projects,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <Attributes>
+        <Map>
+          <entry key="assignment" value="true"/>
+        </Map>
+      </Attributes>
+    </AttributeRequest>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000048"/>
+      <entry key="requester" value="spadmin"/>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <Requesters>
+    <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+  </Requesters>
+</ProvisioningPlan>
+
+--------------------AfterProvisionin--------------------------<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan nativeIdentity="Aiden markram" targetIntegration="ActiveDirectory" trackingId="b04c1b875c514b01aac440bc71c4f81f">
+  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Aiden markram,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+    <Attributes>
+      <Map>
+        <entry key="attachmentConfigList"/>
+        <entry key="attachments"/>
+        <entry key="flow" value="AccessRequest"/>
+        <entry key="id" value="c0a81d898f3419e3818f3439c822023d"/>
+        <entry key="interface" value="LCM"/>
+        <entry key="operation" value="Add"/>
+        <entry key="requester" value="spadmin"/>
+      </Map>
+    </Attributes>
+    <AttributeRequest assignmentId="50eff5f3224b4a86bdc0eb0659ed8d8d" displayValue="DEV_Projects" name="memberOf" op="Add" value="CN=DEV_Projects,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <Attributes>
+        <Map>
+          <entry key="assignment" value="true"/>
+        </Map>
+      </Attributes>
+    </AttributeRequest>
+    <ProvisioningResult status="committed"/>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000048"/>
+      <entry key="requester" value="spadmin"/>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <Requesters>
+    <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+  </Requesters>
+</ProvisioningPlan>
+
+2024-05-20T16:31:47,157  WARN Thread-34 sailpoint.request.RequestHandler:209 - sailpoint.request.RequestPermanentException: Unable to send email notification, a to address was not specified
+	at sailpoint.request.EmailRequestExecutor.execute(EmailRequestExecutor.java:87)
+	at sailpoint.request.RequestHandler.run(RequestHandler.java:163)
+Caused by: sailpoint.tools.GeneralException: Unable to send email notification, a to address was not specified
+	at sailpoint.server.InternalContext$EmailSender.send(InternalContext.java:1157)
+	at sailpoint.server.InternalContext.sendEmailNotification(InternalContext.java:1065)
+	at sailpoint.request.EmailRequestExecutor.execute(EmailRequestExecutor.java:81)
+	... 1 more
+Caused by: sailpoint.tools.EmailException: Unable to send email notification, a to address was not specified
+	at sailpoint.server.SMTPEmailNotifier.createMessageWithHeader(SMTPEmailNotifier.java:310)
+	at sailpoint.server.SMTPEmailNotifier.createMessage(SMTPEmailNotifier.java:247)
+	at sailpoint.server.SMTPEmailNotifier.sendEmailNotification(SMTPEmailNotifier.java:142)
+	at sailpoint.server.RedirectingEmailNotifier.sendEmailNotification(RedirectingEmailNotifier.java:117)
+	at sailpoint.server.InternalContext$EmailSender.sendInternal(InternalContext.java:1174)
+	at sailpoint.server.InternalContext$EmailSender.send(InternalContext.java:1126)
+	... 3 more
+
+

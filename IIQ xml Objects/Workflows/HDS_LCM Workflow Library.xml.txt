@@ -1,0 +1,255 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule created="1714493058978" id="0af4416494691fff8194710edd7934a0" language="beanshell" modified="1757527271860" name="HDS-LCM Workflow Library" significantModified="1757527271860">
+  <Source>
+
+  import sailpoint.api.Provisioner;
+  import sailpoint.api.SailPointFactory;
+  import sailpoint.api.SailPointContext;
+  import sailpoint.object.ApprovalSet;
+  import sailpoint.object.ApprovalItem;
+  import sailpoint.object.AuditEvent;
+  import sailpoint.object.Comment;
+  import sailpoint.object.Field;
+  import sailpoint.object.Form;
+  import sailpoint.object.Filter;
+  import sailpoint.object.Identity;
+  import sailpoint.object.ProvisioningPlan;
+  import sailpoint.object.ProvisioningPlan.AccountRequest;
+  import sailpoint.object.ProvisioningPlan.AttributeRequest;
+  import sailpoint.object.ProvisioningProject;
+  import sailpoint.object.QueryOptions;
+  import sailpoint.object.SignOffHistory;
+  import sailpoint.object.Source;
+  import sailpoint.object.Workflow;
+  import sailpoint.object.Workflow.Approval;
+  import sailpoint.object.WorkItem;
+  import sailpoint.object.WorkItem.OwnerHistory;
+  import sailpoint.server.Auditor;
+  import sailpoint.tools.Util;
+  import sailpoint.workflow.IdentityLibrary;
+  import sailpoint.workflow.WorkflowContext;
+  import java.util.ArrayList;
+  import java.util.HashSet;
+  import java.util.List;
+  import java.util.Map;
+  import java.util.Set;
+  import sailpoint.object.Application;
+  import sailpoint.object.Custom;
+  import sailpoint.api.IdentityService;
+  import sailpoint.api.Provisioner;
+  import sailpoint.api.SailPointContext;
+  import sailpoint.object.AccountSelection;
+  import sailpoint.object.AccountSelection.AccountInfo;
+  import sailpoint.object.Identity;
+  import sailpoint.object.Link;
+  import sailpoint.object.ProvisioningPlan;
+  import sailpoint.object.ProvisioningPlan.AccountRequest;
+  import sailpoint.object.ProvisioningPlan.AttributeRequest;
+  import sailpoint.object.ProvisioningProject;
+  import sailpoint.object.ProvisioningTarget;
+  import sailpoint.object.Workflow;
+  import sailpoint.tools.GeneralException;
+  import sailpoint.tools.xml.XMLObjectFactory;
+  import sailpoint.server.Auditor;
+  import sailpoint.object.Attributes;
+
+
+
+  public createAuditEvent(String source, String action, Attributes attributes){
+    if (Auditor.isEnabled(action)) {
+      AuditEvent event = new AuditEvent(source, action);
+      event.setAttributes(attributes);	
+      event.setTarget(attributes.get("targetUser"));
+      event.setApplication(attributes.get("applicationName"));
+      Auditor.log(event);
+      context.commitTransaction();
+    }
+  }
+
+
+  public void createLogiplexApplication(String applicationName, String identityName, String defaultGroup)
+    throws GeneralException {
+    Identity identity = context.getObjectByName(Identity.class, identityName);
+    Application application = context.getObjectByName(Application.class, applicationName);
+    ProvisioningPlan createPlan = new ProvisioningPlan();
+    createPlan.setIdentity(identity);
+    AccountRequest accReq = new AccountRequest();
+    AttributeRequest attrReq = new AttributeRequest();
+    attrReq.setName("memberOf");
+    attrReq.setValue(defaultGroup);
+    attrReq.setOperation(ProvisioningPlan.Operation.Set);
+    accReq.add(attrReq);
+    accReq.setOperation(ProvisioningPlan.AccountRequest.Operation.Create);
+    accReq.setApplication(applicationName);
+    createPlan.add(accReq);
+    Provisioner p = new Provisioner(context);
+    p.setNoLocking(true);
+    ProvisioningProject project = p.compile(createPlan);
+    p.execute(project);
+  }
+
+  public void  buildPlanForLogiplexCreateOp(String identityName, ProvisioningPlan plan,WorkflowContext wfcontext) throws GeneralException {
+
+    Attributes attributes = new Attributes();
+    attributes.put("targetUser", identityName);
+    attributes.put("planBeforeLogiplex", plan.toXml());
+    boolean isLogiplexAppInPlan = false;
+    List copyOfappsFromPlanUniqueList = null;
+    List appsFromPlanList = new ArrayList();
+    List appsFromPlanUniqueList = null;
+    List existingPTList = plan.getProvisioningTargets();
+    List newPTList = new ArrayList();
+    List appsCreated = new ArrayList();
+    String defaultGroup = "";
+
+    // Iterate Plan and store all the AccountRequest Applications.
+    Identity identity = context.getObjectByName(Identity.class, identityName);
+    List accountRequests = plan.getAccountRequests();
+    if (accountRequests != null &amp;&amp; accountRequests.size() > 0) {
+      for (AccountRequest accountRequest : accountRequests) {
+        appsFromPlanList.add(accountRequest.getApplication());
+      }
+      if (appsFromPlanList.size() > 0) {
+        Set uniqueSet = new HashSet(appsFromPlanList);
+        appsFromPlanUniqueList = new ArrayList(uniqueSet);
+      }
+    }
+    attributes.put("appsFromPlanUniqueList", appsFromPlanUniqueList.toString());
+    // Check if Applications from the PLAN contains any LOGIPLEX application.
+    Custom approvalCustom = context.getObjectByName(Custom.class, "HDS-Custom-Approvals");
+    Map logiplexAppsMap = (Map) approvalCustom.get("LogiplexApplications");
+    List logiPlexAppNamesList = new ArrayList();
+    if (approvalCustom != null) {
+      if (logiplexAppsMap != null &amp;&amp; !logiplexAppsMap.isEmpty()) {
+        logiPlexAppNamesList = (List) new ArrayList(logiplexAppsMap.keySet());
+        if (appsFromPlanUniqueList != null &amp;&amp; appsFromPlanUniqueList.size() > 0
+            &amp;&amp; logiPlexAppNamesList.size() > 0) {
+          copyOfappsFromPlanUniqueList = new ArrayList(appsFromPlanUniqueList);
+          // The copyOfappsFromPlanUniqueList contains common app names from both the
+          // Lists.
+          copyOfappsFromPlanUniqueList.retainAll(logiPlexAppNamesList);
+        }
+      }
+    }
+    attributes.put("copyOfappsFromPlanUniqueList", copyOfappsFromPlanUniqueList.toString());
+
+    // If plan contains LOGIPLEX APP, Check If Identity has that APP.
+    if (copyOfappsFromPlanUniqueList != null &amp;&amp; copyOfappsFromPlanUniqueList.size() > 0) {
+      IdentityService identityService = new IdentityService(context);
+      for (String applicationName : copyOfappsFromPlanUniqueList) {
+        Application application = context.getObjectByName(Application.class, applicationName);
+        List appLinks = identityService.getLinks(identity, application);
+        if (appLinks == null || appLinks.isEmpty()) {
+          // Create the Application as LINK is EMPTY.
+          defaultGroup = (String) logiplexAppsMap.get(applicationName);
+          createLogiplexApplication(applicationName, identity.getName(), defaultGroup);
+          appsCreated.add(applicationName);
+          attributes.put(applicationName + " is Created", "true");				
+          List createdAppLinks = identityService.getLinks(identity, application);
+          if (createdAppLinks != null &amp;&amp; createdAppLinks.size() > 0) {
+            // Application is created, hence modify the ProvTarget
+            String nativeIdentity = ((Link) createdAppLinks.get(0)).getNativeIdentity();
+            for (ProvisioningTarget existingPT : existingPTList) {
+              if (existingPT.getApplication().equals(applicationName)) {
+                ProvisioningTarget newPT = new ProvisioningTarget();
+                newPT.setApplication(existingPT.getApplication());
+                newPT.setAssignmentId(existingPT.getAssignmentId());
+                newPT.setAttribute(existingPT.getAttribute());
+                newPT.setValue(existingPT.getValue());
+                AccountSelection accSelection = new AccountSelection();
+                accSelection.setApplicationId(application.getId());
+                accSelection.setApplicationName(applicationName);
+                accSelection.setSelection(nativeIdentity);
+                AccountInfo newAccInfo = new AccountInfo();
+                newAccInfo.setDisplayName(nativeIdentity);
+                newAccInfo.setNativeIdentity(nativeIdentity);
+                accSelection.addAccountInfo(newAccInfo);
+                newPT.addAccountSelection(accSelection);
+                newPTList.add(newPT);
+              }
+            }
+          }
+        } 
+      }
+    }
+
+    attributes.put("appsCreated" , appsCreated.toString());
+    attributes.put("newPTList" , newPTList.toString());
+
+    // This is for Hybrid if request contains both Create and Modify!
+    if (newPTList != null &amp;&amp; newPTList.size() > 0) {
+      wfcontext.setVariable("appsCreated",appsCreated);
+      for (ProvisioningTarget existingPT : existingPTList) {
+        String existingPTAppName = existingPT.getApplication();
+        if (!appsCreated.contains(existingPTAppName)) {
+          ProvisioningTarget newPTForNotCreatedApps = (ProvisioningTarget) XMLObjectFactory.getInstance().clone(existingPT, context);
+          newPTList.add(newPTForNotCreatedApps);
+        }
+      }
+      plan.setProvisioningTargets(newPTList);
+    }
+    attributes.put("AfterPlan" , plan.toXml());
+    createAuditEvent("Logiplex_Access_Request", "HDS_Access_Request", attributes);
+  }
+
+  // If logiplex apps are created but items are rejected, then remove the default
+  // group which was added in start step.
+  public void processLogiplexRejections(String identityName, ApprovalSet approvalSet, WorkflowContext wfcontext)
+    throws Exception {
+
+    Attributes attributes = new Attributes();
+    attributes.put("targetUser", identityName);
+    attributes.put("approvalSet", approvalSet.toXml());
+    Custom approvalCustom = context.getObjectByName(Custom.class, "HDS-Custom-Approvals");
+    Map logiplexAppsMap = (Map) approvalCustom.get("LogiplexApplications");
+    List rejectedAppCreatedItems = new ArrayList();
+    List appsCreatedItems = new ArrayList();
+    List appsCreated = (List) wfcontext.get("appsCreated");
+    attributes.put("appsCreated", appsCreated.toString());
+
+    if (appsCreated != null &amp;&amp; appsCreated.size() > 0) {
+      for (String applicationName : appsCreated) {
+        int numberOfItemsForThisApp = 0;
+        int numberOfRejectionsForThisApp = 0;
+        // Count the rejected items of this applicationName
+        if (approvalSet != null &amp;&amp; !approvalSet.isEmpty()) {
+          for (ApprovalItem item : approvalSet.getItems()) {
+            if (item.getApplication().equals(applicationName)) {
+              numberOfItemsForThisApp = numberOfItemsForThisApp + 1;
+              if (item.isRejected()) {
+                numberOfRejectionsForThisApp = numberOfRejectionsForThisApp + 1;
+              }
+            }
+          }
+          attributes.put("numberOfItemsForThisApp " +  applicationName, numberOfItemsForThisApp);
+          attributes.put("numberOfRejectionsForThisApp " + applicationName, numberOfRejectionsForThisApp);
+          // If all ITEMs are REJECTED for that APP, then remove its default group.
+          if (numberOfItemsForThisApp == numberOfRejectionsForThisApp) {
+            Identity identity = context.getObjectByName(Identity.class, identityName);
+            Application application = context.getObjectByName(Application.class, applicationName);
+            ProvisioningPlan modifyPlan = new ProvisioningPlan();
+            modifyPlan.setIdentity(identity);
+            AccountRequest accReq = new AccountRequest();
+            AttributeRequest attrReq = new AttributeRequest();
+            attrReq.setName("memberOf");
+            attrReq.setValue(logiplexAppsMap.get(applicationName));
+            attrReq.setOperation(ProvisioningPlan.Operation.Remove);
+            accReq.add(attrReq);
+            accReq.setOperation(ProvisioningPlan.AccountRequest.Operation.Modify);
+            accReq.setApplication(applicationName);
+            modifyPlan.add(accReq);
+            attributes.put(applicationName + " Plan", modifyPlan.toXml());
+            Provisioner p = new Provisioner(context);
+            p.setNoLocking(true);
+            ProvisioningProject project = p.compile(modifyPlan);
+            p.execute(project);
+          }
+        }
+      }
+    }
+    createAuditEvent("Logiplex_Access_Request", "HDS_Access_Request", attributes);
+  }
+
+  </Source>
+</Rule>

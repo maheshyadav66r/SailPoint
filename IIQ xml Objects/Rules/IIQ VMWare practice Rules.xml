@@ -1,0 +1,119 @@
+
+QueryOptions go = new QueryOptions(): go.addFilter(group.getFilter());
+Iterator identities = context.search(Identity.class, go):
+//Find the employee with the lowest employee ID.
+Identity emp = null;
+String empld = null;
+Identity owner = null;
+String ownerEmpld = null;
+while (identities.hasNext()) { emp = identities.next();
+}
+empld = emp.getAttribute("empld");
+if (empld != null && (ownerEmpld == null || empld.compareTo(ownerEmpld) < 0)) { 
+owner = emp:
+}
+ownerEmpld = empld:
+//When all of the employee IDs in the subgroup are null, default to spadmin. if (owner == null) {
+}
+return "spadmin":
+return owner;
+
+
+Description
+A rule used to assign owners to groups generated from a group factory.
+
+---------------------------------------------------------------------------------------------------------
+import java.util.Date; 
+import java.text.DateFormat; 
+import java.text.SimpleDateFormat; 
+DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd 
+HH:mm:ss"); 
+Date date = new Date(); 
+System.out.println("Rule Runner Test... Current Time/Date 
+= " + dateFormat.format(date)); 
+return "Success";
+
+--------------------------------------------------------------------------------------------------------
+import sailpoint.object.Identity;
+import sailpoint.object.QueryOptions;
+import sailpoint.object.Filter;
+
+String firstname = identity.getFirstname();
+String lastname = identity.getLastname();
+
+if((null != firstname) && (null != lastname)) {
+
+String localpart= firstname + "."+ lastname;
+String domain = "@demoexample.com";           
+String genEmail= localpart + domain;
+
+QueryOptions qo = new QueryOptions();
+Filter emailFilter = Filter.ignoreCase(Filter.like("email", localpart, Filter.MatchMode.START));
+qo.addFilter(emailFilter);
+
+int total = context.countObjects(Identity.class, qo);
+
+if(total != 0) 
+{
+	genEmail = localpart + total.toString() + domain;
+}
+return genEmail;
+}
+
+-------------------------------------------------------Email Templates---------------->
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE sailpoint PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<sailpoint>
+
+
+
+<EmailTemplate name="TRNG-RapidSetup-Email-GlobalHeader">
+  <Body>
+    &lt;p&gt;Global Header&lt;/p&gt;		
+  </Body>
+  <Subject>Global Header</Subject>
+</EmailTemplate>
+
+<EmailTemplate name="TRNG-RapidSetup-Email-GlobalFooter">
+  <Body>
+    &lt;p&gt;Global Footer&lt;/p&gt;		
+  </Body>
+  <Subject>Global Footer</Subject>
+</EmailTemplate>
+
+<EmailTemplate name="TRNG-RapidSetup-Email-GlobalStyleSheet">
+  <Body>
+  &lt;style type="text/css"&gt;
+    body { 	
+background: background-color: powderblue;
+}
+p {
+color: red;
+font-family: courier;
+font-size: 160%;
+}
+  table {
+		  border: none;
+		  padding: 20px 40px 20px 40px;
+		  margin: 0 auto;
+		  color: #333333;
+		  width: 100%;
+		  border-collapse: separate !important;
+		}
+	&lt;/style&gt;	   
+  </Body>
+  <Subject>Global Style Sheet</Subject>
+</EmailTemplate>
+
+</sailpoint>
+
+
+
+a. Modify TRNG-RapidSetup-Email-GlobalHeader
+i. Replace: &lt;p&gt;Global Header&lt;/p&gt;
+ii. With: &lt;p&gt;Welcome to SailPoint Training&lt;/p&gt;
+
+a. Modify TRNG-RapidSetup-Email-GlobalFooter
+i. Replace: &lt;p&gt;Global Footer&lt;/p&gt;
+ii. With: &lt;p&gt;TRNG Company Proprietary&lt;/p&gt;
+------------------------------------------------------------------------------------------------

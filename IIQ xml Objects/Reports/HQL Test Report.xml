@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskDefinition PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskDefinition executor="sailpoint.reporting.LiveReportExecutor"name="HQL Test Report" progressMode="Percentage" resultAction="Rename" subType="Custom" template="true" type="LiveReport">
+  <Attributes>
+    <Map>
+      <entry key="report">
+        <value>
+          <LiveReport title="HQL Test Report">
+            <DataSource type="Hql">
+              <Query>from IdentityRequest spr, IdentityRequestItem spri, Identity si1,Identity si2 where spr.id = spri.name and si1.id = spr.requesterId and si2.id = spr.targetId and spri.approvalState = 'Finished' and spr.executionStatus = 'Completed' and spri.name = 'assignedRoles'</Query>
+              <QueryScript>
+                <Source>
+                  import java.util.Objects;
+query = query + " and ( (spri.value) like 'TEST%' or (spri.value) like 'BR%' or (spri.value) like 'BT%') "
+
+
+</Source>
+              </QueryScript>
+            </DataSource>
+            <Columns>
+              <ReportColumnConfig field="rept_requestor_login_col_name" header="requester_login" property="(Select si1.pp_usr_login from IdentityRequest spr, IdentityRequestItem spri, Identity si1,Identity si2 WHERE spr.id = spri.name and si1.id = spr.requesterId and si2.id = spr.targetId and spri.approvalState = &apos;Finished&apos; and spr.executionStatus = &apos;Completed&apos; and spri.name = &apos;assignedRoles&apos; AND ( spri.value LIKE &apos;TEST%&apos; OR spri.value LIKE &apos;BR%&apos; OR spri.value LIKE &apos;BT%&apos;))" width="110"/>
+              <ReportColumnConfig field="rept_beneficiary_login_display_name" header="beneficiary_login" property="(Select si2.pp_usr_login from spt_identity_request spr, spt_identity_request_item spri, spt_identity si1,spt_identity si2 WHERE spr.id = spri.identity_request_id AND si1.id = spr.requester_id AND si2.id = spr.target_id AND spri.approval_state = &apos;Finished&apos; AND spr.execution_status = &apos;Completed&apos; AND spri.name = &apos;assignedRoles&apos; AND ( upper(spri.value) LIKE &apos;TEST%&apos; OR upper(spri.value) LIKE &apos;BR%&apos; OR upper(spri.value) LIKE &apos;BT%&apos;))" width="110"/>
+            </Columns>
+          </LiveReport>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+</TaskDefinition>

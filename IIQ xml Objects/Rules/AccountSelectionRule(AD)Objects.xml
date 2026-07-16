@@ -1,0 +1,384 @@
+ ......................Beginning of  ADAccountSelectorRuleTest----.........
+  source----.........Unknown
+  role----........<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Bundle PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Bundle created="1751364643986" displayName="RoleForACCSelection" id="c0a800fb97c51bbd8197c577ac8900ce" iiqElevatedAccess="true" modified="1751365585477" name="roleForACCSelection" significantModified="1751365585477" type="it">
+  <Attributes>
+    <Map>
+      <entry key="accountSelectorRules">
+        <value>
+          <AccountSelectorRules>
+            <ApplicationAccountSelectorRules>
+              <ApplicationAccountSelectorRule>
+                <ApplicationRef>
+                  <Reference class="sailpoint.object.Application" id="c0a800fc94cb1e358194cc6fcd4826a9" name="ActiveDirectory"/>
+                </ApplicationRef>
+                <RuleRef>
+                  <Reference class="sailpoint.object.Rule" id="c0a800fb97c51bbd8197c57648e300c4" name="ADAccountSelectorRuleTest"/>
+                </RuleRef>
+              </ApplicationAccountSelectorRule>
+            </ApplicationAccountSelectorRules>
+            <AccountSelectorRuleForBundle>
+              <Reference class="sailpoint.object.Rule" id="c0a800fb97c51bbd8197c57426d500c3" name="TestRole_Link1Rule"/>
+            </AccountSelectorRuleForBundle>
+          </AccountSelectorRules>
+        </value>
+      </entry>
+      <entry key="allowDuplicateAccounts" value="false"/>
+      <entry key="allowMultipleAssignments" value="false"/>
+      <entry key="mergeTemplates" value="false"/>
+      <entry key="roleLevel" value="A"/>
+      <entry key="sysDescriptions">
+        <value>
+          <Map>
+            <entry key="en_US"/>
+          </Map>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+  </Owner>
+  <Profiles>
+    <Profile created="1751364643994" id="c0a800fb97c51bbd8197c577ac9a00cf" modified="1751365585479" significantModified="1751365585479">
+      <ApplicationRef>
+        <Reference class="sailpoint.object.Application" id="c0a800fc94cb1e358194cc6fcd4826a9" name="ActiveDirectory"/>
+      </ApplicationRef>
+      <Constraints>
+        <Filter operation="CONTAINS_ALL" property="memberOf">
+          <Value>
+            <List>
+              <String>CN=Compensation,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+            </List>
+          </Value>
+        </Filter>
+      </Constraints>
+    </Profile>
+  </Profiles>
+</Bundle>
+
+  links----.........[sailpoint.object.Link@73c02492[id=a9feffec96f31fd98196f6686e6e031f,application=ActiveDirectory,identity=CN=Alan Bradley-ADM,OU=People,OU=Demo,DC=Eshiam,DC=com], sailpoint.object.Link@77b9d5a7[id=c0a800fc94cb1e358194ccabf46f273f,application=ActiveDirectory,identity=CN=Alan Bradley,OU=People,OU=Demo,DC=Eshiam,DC=com]]
+  project----........<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningProject PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningProject identity="Alan Bradley">
+  <Attributes>
+    <Map>
+      <entry key="lcmQuickLink" value="Request Access"/>
+      <entry key="lcmUser" value="spadmin"/>
+    </Map>
+  </Attributes>
+  <MasterPlan>
+    <ProvisioningPlan>
+      <AccountRequest application="IIQ" op="Modify" trackingId="6c906671e9484fe9a30f6db7f98c8843" type="role">
+        <Attributes>
+          <Map>
+            <entry key="id" value="c0a800fb97c51bbd8197c577ac8900ce"/>
+          </Map>
+        </Attributes>
+        <AttributeRequest assignmentId="2bafc41794bb4b32a9ef1de0df83da6c" name="assignedRoles" op="Add" value="roleForACCSelection"/>
+      </AccountRequest>
+    </ProvisioningPlan>
+  </MasterPlan>
+  <ProvisioningPlan targetIntegration="IIQ" trackingId="db0df3be59964774887d7f8438e4a1b2">
+    <AccountRequest application="IIQ" op="Modify" trackingId="6c906671e9484fe9a30f6db7f98c8843">
+      <Attributes>
+        <Map>
+          <entry key="id" value="c0a800fb97c51bbd8197c577ac8900ce"/>
+        </Map>
+      </Attributes>
+      <AttributeRequest assignmentId="2bafc41794bb4b32a9ef1de0df83da6c" name="assignedRoles" op="Add" value="roleForACCSelection"/>
+    </AccountRequest>
+  </ProvisioningPlan>
+  <ProvisioningPlan targetIntegration="LDAPApplication" trackingId="a21f3e4390254fe4a3115d7c353c8bab">
+    <AccountRequest application="LDAPApplication" nativeIdentity="cn=Alan.Bradley,ou=People,dc=my-domain,dc=com" op="Modify">
+      <AttributeRequest name="groups" op="Retain">
+        <Value>
+          <List>
+            <String>cn=Contractors,ou=Group,dc=my-domain,dc=com</String>
+            <String>cn=WebApplicationAccess,ou=Group,dc=my-domain,dc=com</String>
+            <String>cn=Managers,ou=Group,dc=my-domain,dc=com</String>
+            <String>cn=Employees,ou=Group,dc=my-domain,dc=com</String>
+          </List>
+        </Value>
+      </AttributeRequest>
+    </AccountRequest>
+  </ProvisioningPlan>
+  <ProvisioningPlan targetIntegration="ActiveDirectory" trackingId="1e623b9b80364e8fad8dc749687b4aa1">
+    <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Alan Bradley,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+      <AttributeRequest name="memberOf" op="Retain">
+        <Value>
+          <List>
+            <String>CN=Admins,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+            <String>CN=R&amp;D,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+            <String>CN=IT,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+            <String>CN=HR,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+            <String>CN=Finance,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+            <String>CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+            <String>CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+            <String>CN=All_Users,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+            <String>CN=Buyer,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+            <String>CN=Contractors,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+          </List>
+        </Value>
+      </AttributeRequest>
+    </AccountRequest>
+  </ProvisioningPlan>
+  <ProvisioningTarget assignmentId="2bafc41794bb4b32a9ef1de0df83da6c" role="roleForACCSelection"/>
+  <ProvisioningTarget assignmentId="708a772fd1b2458abf65557f600ce3cc" retain="true" role="IT2ADEngineering"/>
+</ProvisioningProject>
+
+  accountRequest----........<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE AccountRequest PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<AccountRequest application="ActiveDirectory" op="Modify" sourceRole="roleForACCSelection">
+  <Attributes>
+    <Map>
+      <entry key="selectorRuleSource" value="roleForACCSelection"/>
+    </Map>
+  </Attributes>
+  <AttributeRequest name="memberOf" op="Add">
+    <Value>
+      <List>
+        <String>CN=Compensation,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+      </List>
+    </Value>
+  </AttributeRequest>
+</AccountRequest>
+
+  allowCreate----........false
+ ......................End of  ADAccountSelectorRuleTest----.........
+ ......................Beginning of  ADAccountSelectorRuleTest----.........
+  source----.........Unknown
+  role----........<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Bundle PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Bundle created="1751364643986" displayName="RoleForACCSelection" id="c0a800fb97c51bbd8197c577ac8900ce" iiqElevatedAccess="true" modified="1751365585477" name="roleForACCSelection" significantModified="1751365585477" type="it">
+  <Attributes>
+    <Map>
+      <entry key="accountSelectorRules">
+        <value>
+          <AccountSelectorRules>
+            <ApplicationAccountSelectorRules>
+              <ApplicationAccountSelectorRule>
+                <ApplicationRef>
+                  <Reference class="sailpoint.object.Application" id="c0a800fc94cb1e358194cc6fcd4826a9" name="ActiveDirectory"/>
+                </ApplicationRef>
+                <RuleRef>
+                  <Reference class="sailpoint.object.Rule" id="c0a800fb97c51bbd8197c57648e300c4" name="ADAccountSelectorRuleTest"/>
+                </RuleRef>
+              </ApplicationAccountSelectorRule>
+            </ApplicationAccountSelectorRules>
+            <AccountSelectorRuleForBundle>
+              <Reference class="sailpoint.object.Rule" id="c0a800fb97c51bbd8197c57426d500c3" name="TestRole_Link1Rule"/>
+            </AccountSelectorRuleForBundle>
+          </AccountSelectorRules>
+        </value>
+      </entry>
+      <entry key="allowDuplicateAccounts" value="false"/>
+      <entry key="allowMultipleAssignments" value="false"/>
+      <entry key="mergeTemplates" value="false"/>
+      <entry key="roleLevel" value="A"/>
+      <entry key="sysDescriptions">
+        <value>
+          <Map>
+            <entry key="en_US"/>
+          </Map>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+  </Owner>
+  <Profiles>
+    <Profile created="1751364643994" id="c0a800fb97c51bbd8197c577ac9a00cf" modified="1751365585479" significantModified="1751365585479">
+      <ApplicationRef>
+        <Reference class="sailpoint.object.Application" id="c0a800fc94cb1e358194cc6fcd4826a9" name="ActiveDirectory"/>
+      </ApplicationRef>
+      <Constraints>
+        <Filter operation="CONTAINS_ALL" property="memberOf">
+          <Value>
+            <List>
+              <String>CN=Compensation,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+            </List>
+          </Value>
+        </Filter>
+      </Constraints>
+    </Profile>
+  </Profiles>
+</Bundle>
+
+  links----.........[sailpoint.object.Link@2d525829[id=a9feffec96f31fd98196f6686e6e031f,application=ActiveDirectory,identity=CN=Alan Bradley-ADM,OU=People,OU=Demo,DC=Eshiam,DC=com], sailpoint.object.Link@74593bae[id=c0a800fc94cb1e358194ccabf46f273f,application=ActiveDirectory,identity=CN=Alan Bradley,OU=People,OU=Demo,DC=Eshiam,DC=com]]
+  project----........<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningProject PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningProject identity="Alan Bradley">
+  <Attributes>
+    <Map>
+      <entry key="lcmQuickLink" value="Request Access"/>
+      <entry key="lcmUser" value="spadmin"/>
+    </Map>
+  </Attributes>
+  <MasterPlan>
+    <ProvisioningPlan>
+      <AccountRequest application="IIQ" op="Modify">
+        <Attributes>
+          <Map>
+            <entry key="attachmentConfigList"/>
+            <entry key="attachments"/>
+            <entry key="id" value="c0a800fb97c51bbd8197c577ac8900ce"/>
+          </Map>
+        </Attributes>
+        <AttributeRequest assignmentId="4ec7546b31044536a29cc530cc12d516" name="assignedRoles" op="Add" value="roleForACCSelection"/>
+      </AccountRequest>
+    </ProvisioningPlan>
+  </MasterPlan>
+  <ProvisioningPlan targetIntegration="IIQ" trackingId="66879d39a67e4585a99481ea5ee8b7e6">
+    <AccountRequest application="IIQ" op="Modify">
+      <Attributes>
+        <Map>
+          <entry key="attachmentConfigList"/>
+          <entry key="attachments"/>
+          <entry key="id" value="c0a800fb97c51bbd8197c577ac8900ce"/>
+        </Map>
+      </Attributes>
+      <AttributeRequest assignmentId="4ec7546b31044536a29cc530cc12d516" name="assignedRoles" op="Add" value="roleForACCSelection"/>
+    </AccountRequest>
+  </ProvisioningPlan>
+  <ProvisioningPlan targetIntegration="LDAPApplication" trackingId="6ee0a8ed9a884c5aa3c7add9aed1b9bf">
+    <AccountRequest application="LDAPApplication" nativeIdentity="cn=Alan.Bradley,ou=People,dc=my-domain,dc=com" op="Modify">
+      <AttributeRequest name="groups" op="Retain">
+        <Value>
+          <List>
+            <String>cn=Contractors,ou=Group,dc=my-domain,dc=com</String>
+            <String>cn=WebApplicationAccess,ou=Group,dc=my-domain,dc=com</String>
+            <String>cn=Managers,ou=Group,dc=my-domain,dc=com</String>
+            <String>cn=Employees,ou=Group,dc=my-domain,dc=com</String>
+          </List>
+        </Value>
+      </AttributeRequest>
+    </AccountRequest>
+  </ProvisioningPlan>
+  <ProvisioningPlan targetIntegration="ActiveDirectory" trackingId="afcdc3efef214d1289a5cca257bc6f51">
+    <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Alan Bradley,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+      <AttributeRequest name="memberOf" op="Retain">
+        <Value>
+          <List>
+            <String>CN=Admins,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+            <String>CN=R&amp;D,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+            <String>CN=IT,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+            <String>CN=HR,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+            <String>CN=Finance,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+            <String>CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+            <String>CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+            <String>CN=All_Users,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+            <String>CN=Buyer,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+            <String>CN=Contractors,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+          </List>
+        </Value>
+      </AttributeRequest>
+    </AccountRequest>
+  </ProvisioningPlan>
+  <ProvisioningTarget assignmentId="4ec7546b31044536a29cc530cc12d516" role="roleForACCSelection"/>
+  <ProvisioningTarget assignmentId="708a772fd1b2458abf65557f600ce3cc" retain="true" role="IT2ADEngineering"/>
+</ProvisioningProject>
+
+  accountRequest----........<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE AccountRequest PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<AccountRequest application="ActiveDirectory" op="Modify" sourceRole="roleForACCSelection">
+  <Attributes>
+    <Map>
+      <entry key="selectorRuleSource" value="roleForACCSelection"/>
+    </Map>
+  </Attributes>
+  <AttributeRequest name="memberOf" op="Add">
+    <Value>
+      <List>
+        <String>CN=Compensation,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+      </List>
+    </Value>
+  </AttributeRequest>
+</AccountRequest>
+
+  allowCreate----........false
+ ......................End of  ADAccountSelectorRuleTest----.........
+====Eshiam1045 LCM Provisioning is launched from postman scim api  start step------
+ ProvisioningPlan in LCM start step............sailpoint.object.ProvisioningPlan@69046597
+ ProvisioningPlan in LCM plan_check step............<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan>
+  <AccountRequest application="IIQ" op="Modify">
+    <Attributes>
+      <Map>
+        <entry key="attachmentConfigList"/>
+        <entry key="attachments"/>
+        <entry key="id" value="c0a800fb97c51bbd8197c577ac8900ce"/>
+      </Map>
+    </Attributes>
+    <AttributeRequest assignmentId="4ec7546b31044536a29cc530cc12d516" name="assignedRoles" op="Add" value="roleForACCSelection"/>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <ProvisioningTargets>
+    <ProvisioningTarget assignmentId="4ec7546b31044536a29cc530cc12d516" role="roleForACCSelection">
+      <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" roleName="roleForACCSelection" selection="CN=Alan Bradley-ADM,OU=People,OU=Demo,DC=Eshiam,DC=com">
+        <AccountInfo displayName="Alan Bradley-ADM" nativeIdentity="CN=Alan Bradley-ADM,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+      </AccountSelection>
+    </ProvisioningTarget>
+    <ProvisioningTarget assignmentId="708a772fd1b2458abf65557f600ce3cc" retain="true" role="IT2ADEngineering">
+      <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=Alan Bradley,OU=People,OU=Demo,DC=Eshiam,DC=com">
+        <AccountInfo displayName="Alan Bradley" nativeIdentity="CN=Alan Bradley,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+      </AccountSelection>
+    </ProvisioningTarget>
+  </ProvisioningTargets>
+</ProvisioningPlan>
+
+
+---------------BeforeProvisioning Rule----------------------------<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan nativeIdentity="Alan Bradley" targetIntegration="ActiveDirectory" trackingId="7966bb05f1ad4da1a3187d14feb58387">
+  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Alan Bradley-ADM,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify" sourceRole="roleForACCSelection">
+    <Attributes>
+      <Map>
+        <entry key="selectorRuleSource" value="roleForACCSelection"/>
+      </Map>
+    </Attributes>
+    <AttributeRequest name="memberOf" op="Add" value="CN=Compensation,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000754"/>
+      <entry key="requester" value="spadmin"/>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <Requesters>
+    <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+  </Requesters>
+</ProvisioningPlan>
+
+--------------------AfterProvisioning Rule--------------------------<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan nativeIdentity="Alan Bradley" targetIntegration="ActiveDirectory" trackingId="7966bb05f1ad4da1a3187d14feb58387">
+  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Alan Bradley-ADM,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify" sourceRole="roleForACCSelection">
+    <Attributes>
+      <Map>
+        <entry key="selectorRuleSource" value="roleForACCSelection"/>
+      </Map>
+    </Attributes>
+    <AttributeRequest name="memberOf" op="Add" value="CN=Compensation,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+    <ProvisioningResult status="committed"/>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000754"/>
+      <entry key="requester" value="spadmin"/>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <Requesters>
+    <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+  </Requesters>
+</ProvisioningPlan>
+

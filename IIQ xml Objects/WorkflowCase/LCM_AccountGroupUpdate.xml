@@ -1,0 +1,1067 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE WorkflowCase PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<WorkflowCase created="1749313591892" id="c0a8a40197481f2d81974b371a5405b4" launcher="spadmin" modified="1749313592338" name="Update Account Group AccountingGeneral" significantModified="1749313592338" targetClass="ManagedAttribute" targetId="c0a8002394fb1f308194ff6478ff0a83">
+  <Workflow currentStep="2df4cdc908654a5b898d957e3ed77e35" libraries="Group" name="Entitlement Update" type="ManagedAttribute">
+    <Variable initializer="false" name="trace"/>
+    <Variable editable="true" name="optimisticProvisioning"/>
+    <Variable editable="true" initializer="true" name="foregroundProvisioning"/>
+    <Variable editable="true" initializer="false" name="doManualActions"/>
+    <Variable editable="true" initializer="ref:appOwner" name="fallbackApprover"/>
+    <Variable input="true" name="plan" required="true"/>
+    <Variable initializer="ref:owner" input="true" name="approver"/>
+    <Variable input="true" name="pamContainersToAggregate"/>
+    <Variable input="true" name="pamContainerToGroupAggregate"/>
+    <Variable input="true" name="applicationName"/>
+    <Variable name="sessionOwner"/>
+    <Variable name="summaryName"/>
+    <Variable name="project"/>
+    <Variable name="owner"/>
+    <Variable name="appOwner"/>
+    <Variable name="changes"/>
+    <Step complete="true" icon="Start" id="a12ce3665f3b4a7099f19dbdbd861fea" name="start" posX="17" posY="19">
+      <Transition to="Examine Plan"/>
+    </Step>
+    <Step action="getSummaryName" complete="true" id="f1931901f14d41ffa0312a53dcb6e52e" name="Examine Plan" posX="112" posY="19" resultVariable="summaryName">
+      <Transition to="Compile Project"/>
+    </Step>
+    <Step action="compileGroupProject" complete="true" id="1092f4539c1d48cf8054d67ae292e168" name="Compile Project" posX="219" posY="19" resultVariable="project">
+      <Arg name="plan" value="ref:plan"/>
+      <Arg name="requester" value="ref:launcher"/>
+      <Arg name="source" value="GroupManagement"/>
+      <Arg name="optimisticProvisioning" value="ref:optimisticProvisioning"/>
+      <Transition to="Start Approval Process" when="script:approver!=null||fallbackApprover!=null"/>
+      <Transition to="Start Provisioning Process"/>
+    </Step>
+    <Step action="setLaunchMessage" complete="true" icon="Message" id="455ec6cf128c46b288f71a260f0bd9a0" name="Start Approval Process" posX="285" posY="112">
+      <Arg name="message" value="workflow_identity_approval"/>
+      <Arg name="arg1" value="ref:summaryName"/>
+      <Arg name="arg2" value="ref:approver"/>
+      <Transition to="Build Approval Summary"/>
+    </Step>
+    <Step action="buildGroupChangeSummary" complete="true" id="23381ad0f3684c26aaedb91bffd0f99c" name="Build Approval Summary" posX="432" posY="112" resultVariable="changes">
+      <Arg name="plan" value="ref:plan"/>
+      <Transition to="CheckChanges"/>
+    </Step>
+    <Step action="checkChanges" complete="true" id="f8165dae8206477997adab1a964c7750" name="CheckChanges" posX="17" posY="19">
+      <Transition to="Approval"/>
+    </Step>
+    <Step icon="Approval" id="2df4cdc908654a5b898d957e3ed77e35" name="Approval" posX="554" posY="112">
+      <Approval owner="Aaron Nichols" renderer="entitlement.xhtml" send="summaryName,changes" startDate="1749313592262" started="true" workItemDescription="Approve modification of entitlement ActiveDirectory group: CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com" workItemId="c0a8a40197481f2d81974b371b7a05b5" workItemType="Approval">
+        <Arg name="requester" value="ref:launcher"/>
+        <Arg name="workItemDescription">
+          <Script>
+            <Source>
+            String action = "modification";
+            if (changes.delete)
+                action = "deletion";
+            else if (changes.create)
+                action = "creation";
+            return "Approve " + action + " of entitlement " + summaryName;
+          </Source>
+          </Script>
+        </Arg>
+        <OwnerScript>
+          <Source>
+          import sailpoint.object.Identity;
+          Identity approverIdentity = null;
+          if (approver instanceof String) {
+              approverIdentity = wfcontext.getSailPointContext().getObjectByName(Identity.class, approver);
+              if(approverIdentity == null) {
+                  log.info("Invalid approver, fallback approver will be used if available");
+              }
+          }
+          else 
+              approverIdentity = approver;
+          if (approverIdentity != null) {
+              if (approverIdentity.getName().equals(requester))
+                  return null;
+              else
+                  return approver;
+          }
+          else if (fallbackApprover != null) {
+              if (fallbackApprover instanceof String) {
+                  fallbackApproverIdentity = wfcontext.getSailPointContext().getObjectByName(Identity.class, fallbackApprover);
+                  if (fallbackApproverIdentity == null) {
+                      log.info("Invalid fallback approver, please verify fallback approver setting");
+                  }
+              }
+              else
+                  fallbackApproverIdentity = fallbackApprover;
+              if (fallbackApproverIdentity != null) {
+                  if (fallbackApproverIdentity.getName().equals(requester))
+                      return null;
+                  else
+                      return fallbackApprover;
+              }
+          }
+          else
+              return null;
+        </Source>
+        </OwnerScript>
+        <WorkItemConfig escalationStyle="none">
+          <NotificationEmailTemplateRef>
+            <Reference class="sailpoint.object.EmailTemplate" id="c0a81d898f331ca3818f33fcfd820188" name="Entitlement Update Approval"/>
+          </NotificationEmailTemplateRef>
+        </WorkItemConfig>
+      </Approval>
+      <Transition to="end" when="!ref:approved"/>
+      <Transition to="Start Provisioning Process"/>
+    </Step>
+    <Step action="setLaunchMessage" icon="Message" id="804f01a7c412469baee9dc2f564695f0" name="Start Provisioning Process" posX="612" posY="15">
+      <Arg name="message">
+        <Script>
+          <Source>
+          // pick a message with more detail if we're provisioning
+          import sailpoint.object.ProvisioningPlan;
+          String msg = "workflow_identity_saved";
+          boolean otherPlans = false;
+          List plans = project.getPlans();
+          if (plans != null) {
+              for (int i = 0 ; i &lt; plans.size() ; i++) {
+                  ProvisioningPlan plan = (ProvisioningPlan)plans.get(i);
+                  if (!ProvisioningPlan.APP_IIQ.equals(plan.getTargetIntegration())) {
+                     otherPlans = true;
+                     break;
+                  }
+              }
+          }
+
+          if (project.getUnmanagedPlan() != null &amp;&amp; isTrue(doManualActions)) {
+              if (otherPlans)
+                  msg = "workflow_identity_provisioning_manual";
+              else
+                  msg = "workflow_identity_manual";
+          }
+          else if (otherPlans) {
+              // jsl - if there are errors it looks odd to show
+              // a "succesfully requesting provisioning" message
+              // followed by the error message, just leave this out,
+              // we can say something about manual provisioning but if
+              // simply committed the change we dont' need anything more
+              // msg = "workflow_identity_provisioning";
+          }
+          return msg;
+        </Source>
+        </Script>
+      </Arg>
+      <Arg name="arg1" value="ref:summaryName"/>
+      <Transition to="Provision"/>
+    </Step>
+    <Step action="call:provisionGroupProject" icon="Provision" id="32ab164a2de843b4860447c11390dde9" name="Provision" posX="732" posY="15">
+      <Arg name="background" value="!ref:foregroundProvisioning"/>
+      <Arg name="project" value="ref:project"/>
+      <Transition to="Check Provisioning Errors"/>
+    </Step>
+    <Step id="a48def6c51da44a9aab0f03dc1f7b4ae" name="Check Provisioning Errors" posX="851" posY="15">
+      <Script>
+        <Source>
+        import sailpoint.tools.Message;
+        //System.out.println("Checking provisioning errors...");
+        List errors = wfcontext.getWorkflowCase().getErrors();
+        if (errors != null) {
+            for (Message error : errors) {
+                //System.out.println("*** " + error.toString());
+            }
+        }
+      </Source>
+      </Script>
+      <Transition to="Aggregate Specific Targets" when="(pamContainersToAggregate != null) &amp;&amp; (!pamContainersToAggregate.isEmpty())"/>
+      <Transition to="Aggregate Specific Group" when="(pamContainerToGroupAggregate != null)"/>
+      <Transition to="end"/>
+    </Step>
+    <Step action="call:aggregateSpecificTargets" icon="Provision" id="c8aea11f12874fbd91be2fa5ef6720d4" name="Aggregate Specific Targets" posX="732" posY="15">
+      <Arg name="pamContainersToAggregate" value="ref:pamContainersToAggregate"/>
+      <Arg name="applicationName" value="ref:applicationName"/>
+      <Transition to="end"/>
+    </Step>
+    <Step action="call:aggregateSpecificGroup" icon="Provision" id="dd4f01184d06452ba7e72733d43e1dcb" name="Aggregate Specific Group" posX="732" posY="15">
+      <Arg name="pamContainerToGroupAggregate" value="ref:pamContainerToGroupAggregate"/>
+      <Arg name="applicationName" value="ref:applicationName"/>
+      <Transition to="end"/>
+    </Step>
+    <Step icon="Stop" id="8ac34c573c5049de81061dba817bf77b" name="end" posX="977" posY="14"/>
+    <Attributes>
+      <Map>
+        <entry key="appOwner">
+          <value>
+            <Identity created="1714564167241" id="c0a81d898f331ca3818f33fcf64800ff" lastLogin="1749278091045" modified="1749313577903" name="spadmin" password="1:ACP:hsPLZsiFIvdW704t2FQCFqRHgdhyZu5W2mIth5OqZLA=" protected="true" significantModified="1749108215835">
+              <Attributes>
+                <Map>
+                  <entry key="displayName" value="The Administrator"/>
+                  <entry key="firstname" value="The"/>
+                  <entry key="lastname" value="Administrator"/>
+                </Map>
+              </Attributes>
+              <UIPreferencesRef>
+                <Reference class="sailpoint.object.UIPreferences" id="c0a800fc971a158a81971a66de5200d4"/>
+              </UIPreferencesRef>
+              <Capabilities>
+                <Reference class="sailpoint.object.Capability" id="c0a81d898f331ca3818f33fce55f00cb" name="SystemAdministrator"/>
+              </Capabilities>
+            </Identity>
+          </value>
+        </entry>
+        <entry key="applicationName"/>
+        <entry key="approver">
+          <value>
+            <Identity bundleSummary="IT2LDAP-Finance, ITLDAP-Engineering" correlated="true" created="1714564677839" id="c0a81d898f331f7b818f3404c0cf0148" lastRefresh="1743592502449" managerStatus="true" modified="1749132941461" name="Aaron Nichols" needsRefresh="true" significantModified="1748273280664">
+              <Attributes>
+                <Map>
+                  <entry key="costCenter">
+                    <value>
+                      <List>
+                        <String>R02, L04, L05, L06</String>
+                      </List>
+                    </value>
+                  </entry>
+                  <entry key="department" value="Executive Management"/>
+                  <entry key="displayName" value="Aaron Nichols"/>
+                  <entry key="email" value="Aaron.Nichols@eshiam.com"/>
+                  <entry key="employeeId" value="1c"/>
+                  <entry key="firstname" value="Aaron"/>
+                  <entry key="lastname" value="Nichols"/>
+                  <entry key="networkId" value="Aaron.Nichols"/>
+                  <entry key="pendingRefreshWorkflow" value="Refresh identity Aaron Nichols"/>
+                  <entry key="region" value="Asia-Pacific"/>
+                  <entry key="triggerSnapshots">
+                    <value>
+                      <Map>
+                        <entry key="Rule" value="c0a8000d94b21aa28194b2eaea8f00ff"/>
+                      </Map>
+                    </value>
+                  </entry>
+                  <entry key="type" value="employee"/>
+                </Map>
+              </Attributes>
+              <AttributeMetaDatas>
+                <AttributeMetaData attribute="displayName" source="HR-Application:Name"/>
+                <AttributeMetaData attribute="email" source="HR-Application:Email"/>
+                <AttributeMetaData attribute="firstname" source="HR-Application:FirstName"/>
+                <AttributeMetaData attribute="lastname" source="HR-Application:LastName"/>
+                <AttributeMetaData attribute="employeeId" source="HR-Application:EmployeeNo"/>
+                <AttributeMetaData attribute="department" source="HR-Application:Department"/>
+                <AttributeMetaData attribute="networkId" source="HR-Application:NetworkID"/>
+                <AttributeMetaData attribute="costCenter" source="HR Employees TRNG:costcenter"/>
+                <AttributeMetaData attribute="region" source="HR Employees TRNG:region"/>
+                <AttributeMetaData attribute="type" source="HR Employees TRNG:AppRule: TRNG-IdentityAttribute-Employee HR Employees TRNG$TRNG-IdentityAttribute-Employee"/>
+              </AttributeMetaDatas>
+              <Bundles>
+                <Reference class="sailpoint.object.Bundle" id="c0a800fb8f7b1606818f86867c780bc0" name="IT2LDAP-Finance"/>
+                <Reference class="sailpoint.object.Bundle" id="c0a800fb8f7b1606818f866651660b59" name="ITLDAP-Engineering"/>
+              </Bundles>
+              <CertificationLinks>
+                <CertificationLink completed="1748242161084" id="c0a800fc96a415518196becb4ca61d56" identitySnapshotId="c0a800fc96a415518196becb69801d5a" modified="1748242161087" type="Focused">
+                  <Certifiers>
+                    <String>Mahesh Nattali</String>
+                  </Certifiers>
+                </CertificationLink>
+              </CertificationLinks>
+              <Exceptions>
+                <EntitlementGroup created="1741934938866" displayName="Aaron Nichols" id="c0a800fc9593165a81959369caf205d0" nativeIdentity="1c">
+                  <ApplicationRef>
+                    <Reference class="sailpoint.object.Application" id="c0a800fb954110f0819541ab1dfd00b1" name="IntConApplication"/>
+                  </ApplicationRef>
+                  <Attributes>
+                    <Map>
+                      <entry key="GroupId">
+                        <value>
+                          <List>
+                            <String>GIC1</String>
+                            <String>GIC2</String>
+                            <String>GIC3</String>
+                            <String>GIC4</String>
+                          </List>
+                        </value>
+                      </entry>
+                    </Map>
+                  </Attributes>
+                </EntitlementGroup>
+                <EntitlementGroup created="1741934938866" displayName="Aaron Nichols" id="c0a800fc9593165a81959369caf205d1" nativeIdentity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                  <ApplicationRef>
+                    <Reference class="sailpoint.object.Application" id="c0a800fc94cb1e358194cc6fcd4826a9" name="ActiveDirectory"/>
+                  </ApplicationRef>
+                  <Attributes>
+                    <Map>
+                      <entry key="memberOf">
+                        <value>
+                          <List>
+                            <String>CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                            <String>CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                            <String>CN=Admins,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                            <String>CN=All_Users,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                            <String>CN=Buyer,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                            <String>CN=Contractors,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                          </List>
+                        </value>
+                      </entry>
+                    </Map>
+                  </Attributes>
+                </EntitlementGroup>
+              </Exceptions>
+              <Preferences>
+                <Map>
+                  <entry key="attributeAssignments">
+                    <value>
+                      <List>
+                        <AttributeAssignment applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" assigner="spadmin" assignmentId="513b89ff85224e32a0ab64521410d334" name="groups" nativeIdentity="cn=Aaron.Nichols,ou=People,dc=my-domain,dc=com" source="LCM" type="Entitlement" value="cn=Managers,ou=Group,dc=my-domain,dc=com"/>
+                        <AttributeAssignment applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" assigner="spadmin" assignmentId="e7c35d60d0384fb4952583441cd54ced" name="groups" nativeIdentity="cn=Aaron.Nichols,ou=People,dc=my-domain,dc=com" source="LCM" type="Entitlement" value="cn=Employees,ou=Group,dc=my-domain,dc=com"/>
+                        <AttributeAssignment applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" assigner="spadmin" assignmentId="ab007f110084484293168435f39075ef" name="groups" nativeIdentity="cn=Aaron.Nichols,ou=People,dc=my-domain,dc=com" source="LCM" type="Entitlement" value="cn=Contractors,ou=Group,dc=my-domain,dc=com"/>
+                        <AttributeAssignment applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" assigner="spadmin" assignmentId="e3789205903b45ff8ec88704f028b88e" name="groups" nativeIdentity="cn=Aaron.Nichols,ou=People,dc=my-domain,dc=com" source="LCM" type="Entitlement" value="cn=WebApplicationAccess,ou=Group,dc=my-domain,dc=com"/>
+                        <AttributeAssignment applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ActiveDirectory" assigner="spadmin" assignmentId="1ec712d281c44f3d81140105ec09b97a" name="memberOf" nativeIdentity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com" source="LCM" type="Entitlement" value="CN=AuditMgmt,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                        <AttributeAssignment applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ActiveDirectory" assigner="spadmin" assignmentId="46c78fe3356941c290b875e35508ec17" name="memberOf" nativeIdentity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com" source="LCM" type="Entitlement" value="CN=Admins,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                        <AttributeAssignment applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" assigner="spadmin" assignmentId="f2cfb80da686495eacdb5d0a8ae5e06b" name="memberOf" nativeIdentity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com" source="LCM" type="Entitlement" value="CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                        <AttributeAssignment applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" assigner="spadmin" assignmentId="a45e0a6b6d6c425b98875e2b8096f5ed" name="memberOf" nativeIdentity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com" source="LCM" type="Entitlement" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                        <AttributeAssignment applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" assigner="spadmin" assignmentId="46c78fe3356941c290b875e35508ec17" name="memberOf" nativeIdentity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com" source="LCM" type="Entitlement" value="CN=Admins,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                        <AttributeAssignment applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" assigner="spadmin" assignmentId="7bc37d6263cb47e0a6d43500584d0ff8" name="memberOf" nativeIdentity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com" source="LCM" type="Entitlement" value="CN=All_Users,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                        <AttributeAssignment applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" assigner="spadmin" assignmentId="6c8382a2175840b28bb4ce1ba978424b" name="memberOf" nativeIdentity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com" source="LCM" type="Entitlement" value="CN=Buyer,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                        <AttributeAssignment applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" assigner="spadmin" assignmentId="f5cf48b52b7b411c90dcc6f764376148" name="memberOf" nativeIdentity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com" source="LCM" type="Entitlement" value="CN=Contractors,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                        <AttributeAssignment applicationId="c0a800fb954110f0819541ab1dfd00b1" applicationName="IntConApplication" assigner="spadmin" assignmentId="ce9e7c97eb1d46d4a3559803b48af1f8" name="GroupId" nativeIdentity="1c" source="LCM" type="Entitlement" value="GIC3"/>
+                        <AttributeAssignment applicationId="c0a800fb954110f0819541ab1dfd00b1" applicationName="IntConApplication" assigner="spadmin" assignmentId="ae4ccbc9415d4cccaa3beffd2e428af8" name="GroupId" nativeIdentity="1c" source="LCM" type="Entitlement" value="GIC4"/>
+                        <AttributeAssignment applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" assigner="spadmin" assignmentId="1ec712d281c44f3d81140105ec09b97a" name="memberOf" nativeIdentity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com" source="LCM" type="Entitlement" value="CN=AuditMgmt,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                      </List>
+                    </value>
+                  </entry>
+                  <entry key="forward" value="Mahesh Nattali"/>
+                  <entry key="forwardEndDate">
+                    <value>
+                      <Date>1726943399000</Date>
+                    </value>
+                  </entry>
+                  <entry key="forwardStartDate">
+                    <value>
+                      <Date>1726770600000</Date>
+                    </value>
+                  </entry>
+                  <entry key="roleDetections">
+                    <value>
+                      <List>
+                        <RoleDetection date="1725529091763" roleId="c0a800fb8f7b1606818f86867c780bc0" roleName="IT2LDAP-Finance">
+                          <RoleTarget applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" displayName="Aaron.Nichols" nativeIdentity="cn=Aaron.Nichols,ou=People,dc=my-domain,dc=com">
+                            <AccountItem name="groups">
+                              <value>
+                                <Set>
+                                  <String>cn=Contractors,ou=Group,dc=my-domain,dc=com</String>
+                                  <String>cn=WebApplicationAccess,ou=Group,dc=my-domain,dc=com</String>
+                                </Set>
+                              </value>
+                            </AccountItem>
+                          </RoleTarget>
+                        </RoleDetection>
+                        <RoleDetection date="1725529091763" roleId="c0a800fb8f7b1606818f866651660b59" roleName="ITLDAP-Engineering">
+                          <RoleTarget applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" displayName="Aaron.Nichols" nativeIdentity="cn=Aaron.Nichols,ou=People,dc=my-domain,dc=com">
+                            <AccountItem name="groups">
+                              <value>
+                                <Set>
+                                  <String>cn=Employees,ou=Group,dc=my-domain,dc=com</String>
+                                  <String>cn=Managers,ou=Group,dc=my-domain,dc=com</String>
+                                </Set>
+                              </value>
+                            </AccountItem>
+                          </RoleTarget>
+                        </RoleDetection>
+                      </List>
+                    </value>
+                  </entry>
+                </Map>
+              </Preferences>
+              <RoleMetadatas>
+                <Reference class="sailpoint.object.RoleMetadata" id="c0a81d89936d1cc38193b584280e36e2" name="ITLDAP-Engineering"/>
+                <Reference class="sailpoint.object.RoleMetadata" id="c0a81d89936d1cc38193b584280e36e4" name="IT2LDAP-Finance"/>
+              </RoleMetadatas>
+              <Links>
+                <Link created="1747909017092" displayName="Aaron.Nichols-CADM" id="a9feffec96f31fd98196f77efe0406e2" lastRefresh="1748431260345" manuallyCorrelated="true" modified="1748494780967" identity="cn=Aaron.Nichols-CADM,ou=People,dc=my-domain,dc=com" significantModified="1747909017247">
+                  <ApplicationRef>
+                    <Reference class="sailpoint.object.Application" id="c0a81d898f3419e3818f3447ed430270" name="LDAPApplication"/>
+                  </ApplicationRef>
+                  <Attributes>
+                    <Map>
+                      <entry key="IIQDisabled">
+                        <value>
+                          <Boolean></Boolean>
+                        </value>
+                      </entry>
+                      <entry key="cn" value="Aaron.Nichols-CADM"/>
+                      <entry key="dn" value="cn=Aaron.Nichols-CADM,ou=People,dc=my-domain,dc=com"/>
+                      <entry key="objectClass">
+                        <value>
+                          <List>
+                            <String>inetOrgPerson</String>
+                          </List>
+                        </value>
+                      </entry>
+                      <entry key="sn" value="Nichols"/>
+                    </Map>
+                  </Attributes>
+                </Link>
+                <Link created="1714615486258" displayName="Aaron Nichols" id="c0a800208f361ec2818f370c073200c3" lastRefresh="1714615486258" modified="1714615486260" identity="1c" significantModified="1714615486260">
+                  <ApplicationRef>
+                    <Reference class="sailpoint.object.Application" id="c0a800208f361ec2818f370b5c670026" name="HR-ApplicationTarget"/>
+                  </ApplicationRef>
+                  <Attributes>
+                    <Map>
+                      <entry key="Department" value="Executive Management"/>
+                      <entry key="Email" value="Aaron.Nichols@eshiam.com"/>
+                      <entry key="EmployeeNo" value="1c"/>
+                      <entry key="FirstName" value="Aaron"/>
+                      <entry key="LastName" value="Nichols"/>
+                      <entry key="Name" value="Aaron Nichols"/>
+                      <entry key="NetworkID" value="Aaron.Nichols"/>
+                    </Map>
+                  </Attributes>
+                </Link>
+                <Link created="1714616260401" displayName="Aaron Nichols" id="c0a800208f361ec2818f3717d73101d6" lastRefresh="1714616260401" modified="1748494781719" identity="1c" significantModified="1714616260401">
+                  <ApplicationRef>
+                    <Reference class="sailpoint.object.Application" id="c0a800208f361ec2818f371679260131" name="JDBC"/>
+                  </ApplicationRef>
+                  <Attributes>
+                    <Map>
+                      <entry key="Department" value="Executive Management"/>
+                      <entry key="Email" value="Aaron.Nichols@eshiam.com"/>
+                      <entry key="EmployeeNo" value="1c"/>
+                      <entry key="FirstName" value="Aaron"/>
+                      <entry key="LastName" value="Nichols"/>
+                      <entry key="Name" value="Aaron Nichols"/>
+                      <entry key="NetworkID" value="Aaron.Nichols"/>
+                    </Map>
+                  </Attributes>
+                </Link>
+                <Link created="1740563864229" displayName="Aaron Nichols" entitlements="true" id="c0a800fb954110f0819541b0daa500c9" lastRefresh="1743655208316" modified="1741934938867" identity="1c" significantModified="1741934938867">
+                  <ApplicationRef>
+                    <Reference class="sailpoint.object.Application" id="c0a800fb954110f0819541ab1dfd00b1" name="IntConApplication"/>
+                  </ApplicationRef>
+                  <Attributes>
+                    <Map>
+                      <entry key="Department" value="Engineering"/>
+                      <entry key="Email" value="Aaron.Nichols@eshiam.com"/>
+                      <entry key="EmployeeId" value="1c"/>
+                      <entry key="FirstName" value="Aaron"/>
+                      <entry key="GroupId">
+                        <value>
+                          <List>
+                            <String>GIC1</String>
+                            <String>GIC2</String>
+                            <String>GIC3</String>
+                            <String>GIC4</String>
+                          </List>
+                        </value>
+                      </entry>
+                      <entry key="LastName" value="Nichols"/>
+                      <entry key="Name" value="Aaron Nichols"/>
+                      <entry key="manager" value="1045"/>
+                    </Map>
+                  </Attributes>
+                </Link>
+                <Link created="1738600608728" displayName="Aaron Nichols" entitlements="true" id="c0a800fc94cb1e358194ccabf3d8273d" lastRefresh="1748494782060" modified="1748494782072" identity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com" significantModified="1741934938867" uuid="{70fccc42-97e3-451b-974c-cb4a97810388}">
+                  <ApplicationRef>
+                    <Reference class="sailpoint.object.Application" id="c0a800fc94cb1e358194cc6fcd4826a9" name="ActiveDirectory"/>
+                  </ApplicationRef>
+                  <Attributes>
+                    <Map>
+                      <entry key="NetBIOSName"/>
+                      <entry key="accountFlags">
+                        <value>
+                          <List>
+                            <String>Normal User Account</String>
+                          </List>
+                        </value>
+                      </entry>
+                      <entry key="cn" value="Aaron Nichols"/>
+                      <entry key="department" value="Executive Management"/>
+                      <entry key="displayName" value="Nichols, Aaron"/>
+                      <entry key="distinguishedName" value="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+                      <entry key="employeeID" value="1c"/>
+                      <entry key="givenName" value="Aaron"/>
+                      <entry key="mail" value="Aaron.Nichols@eshiam.com"/>
+                      <entry key="memberOf">
+                        <value>
+                          <List>
+                            <String>CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                            <String>CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                            <String>CN=Admins,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                            <String>CN=All_Users,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                            <String>CN=Buyer,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                            <String>CN=Contractors,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                          </List>
+                        </value>
+                      </entry>
+                      <entry key="msDS-PrincipalName" value="ESHIAM\Aaron Nichols"/>
+                      <entry key="msNPAllowDialin" value="Not Set"/>
+                      <entry key="objectClass">
+                        <value>
+                          <List>
+                            <String>top</String>
+                            <String>person</String>
+                            <String>organizationalPerson</String>
+                            <String>user</String>
+                          </List>
+                        </value>
+                      </entry>
+                      <entry key="objectSid" value="S-1-5-21-2678700903-2778472132-3948167259-1321"/>
+                      <entry key="objectType" value="user"/>
+                      <entry key="objectguid" value="{70fccc42-97e3-451b-974c-cb4a97810388}"/>
+                      <entry key="sAMAccountName" value="Aaron Nichols"/>
+                      <entry key="sn" value="Nichols"/>
+                      <entry key="userPrincipalName" value="Aaron Nichols@test.eshiam.com"/>
+                    </Map>
+                  </Attributes>
+                </Link>
+                <Link created="1714564677840" displayName="Aaron Nichols" id="c0a81d898f331f7b818f3404c0d00149" lastRefresh="1714564677840" modified="1714564677841" identity="1c" significantModified="1714564677841">
+                  <ApplicationRef>
+                    <Reference class="sailpoint.object.Application" id="c0a81d898f331f7b818f3403ce94000c" name="HR-Application"/>
+                  </ApplicationRef>
+                  <Attributes>
+                    <Map>
+                      <entry key="Department" value="Executive Management"/>
+                      <entry key="Email" value="Aaron.Nichols@eshiam.com"/>
+                      <entry key="EmployeeNo" value="1c"/>
+                      <entry key="FirstName" value="Aaron"/>
+                      <entry key="LastName" value="Nichols"/>
+                      <entry key="Name" value="Aaron Nichols"/>
+                      <entry key="NetworkID" value="Aaron.Nichols"/>
+                    </Map>
+                  </Attributes>
+                </Link>
+              </Links>
+              <Scorecard certificationScore="1000" compositeScore="250" created="1714614458390" entitlementScore="1" id="c0a81d898f3419e3818f36fc581608d8" rawEntitlementScore="1">
+                <ScoreItem compositePercentage="100" displayName="score_def_certificationAge_name" score="1000" scorePercentage="100" type="score_def_certificationAge_shortname">
+                  <TargetMessage>
+                    <Message key="cert_scorer_target_id_not_certified" type="Info"/>
+                  </TargetMessage>
+                </ScoreItem>
+              </Scorecard>
+            </Identity>
+          </value>
+        </entry>
+        <entry key="changes">
+          <value>
+            <ChangeSummary>
+              <Differences>
+                <Difference attribute="Owner" displayName="Owner" newValue="" oldValue="Aaron Nichols"/>
+              </Differences>
+            </ChangeSummary>
+          </value>
+        </entry>
+        <entry key="doManualActions" value="false"/>
+        <entry key="fallbackApprover">
+          <value>
+            <Identity created="1714564167241" id="c0a81d898f331ca3818f33fcf64800ff" lastLogin="1749278091045" modified="1749313577903" name="spadmin" password="1:ACP:hsPLZsiFIvdW704t2FQCFqRHgdhyZu5W2mIth5OqZLA=" protected="true" significantModified="1749108215835">
+              <Attributes>
+                <Map>
+                  <entry key="displayName" value="The Administrator"/>
+                  <entry key="firstname" value="The"/>
+                  <entry key="lastname" value="Administrator"/>
+                </Map>
+              </Attributes>
+              <UIPreferencesRef>
+                <Reference class="sailpoint.object.UIPreferences" id="c0a800fc971a158a81971a66de5200d4"/>
+              </UIPreferencesRef>
+              <Capabilities>
+                <Reference class="sailpoint.object.Capability" id="c0a81d898f331ca3818f33fce55f00cb" name="SystemAdministrator"/>
+              </Capabilities>
+            </Identity>
+          </value>
+        </entry>
+        <entry key="foregroundProvisioning" value="true"/>
+        <entry key="launcher" value="spadmin"/>
+        <entry key="optimisticProvisioning"/>
+        <entry key="owner">
+          <value>
+            <Identity bundleSummary="IT2LDAP-Finance, ITLDAP-Engineering" correlated="true" created="1714564677839" id="c0a81d898f331f7b818f3404c0cf0148" lastRefresh="1743592502449" managerStatus="true" modified="1749132941461" name="Aaron Nichols" needsRefresh="true" significantModified="1748273280664">
+              <Attributes>
+                <Map>
+                  <entry key="costCenter">
+                    <value>
+                      <List>
+                        <String>R02, L04, L05, L06</String>
+                      </List>
+                    </value>
+                  </entry>
+                  <entry key="department" value="Executive Management"/>
+                  <entry key="displayName" value="Aaron Nichols"/>
+                  <entry key="email" value="Aaron.Nichols@eshiam.com"/>
+                  <entry key="employeeId" value="1c"/>
+                  <entry key="firstname" value="Aaron"/>
+                  <entry key="lastname" value="Nichols"/>
+                  <entry key="networkId" value="Aaron.Nichols"/>
+                  <entry key="pendingRefreshWorkflow" value="Refresh identity Aaron Nichols"/>
+                  <entry key="region" value="Asia-Pacific"/>
+                  <entry key="triggerSnapshots">
+                    <value>
+                      <Map>
+                        <entry key="Rule" value="c0a8000d94b21aa28194b2eaea8f00ff"/>
+                      </Map>
+                    </value>
+                  </entry>
+                  <entry key="type" value="employee"/>
+                </Map>
+              </Attributes>
+              <AttributeMetaDatas>
+                <AttributeMetaData attribute="displayName" source="HR-Application:Name"/>
+                <AttributeMetaData attribute="email" source="HR-Application:Email"/>
+                <AttributeMetaData attribute="firstname" source="HR-Application:FirstName"/>
+                <AttributeMetaData attribute="lastname" source="HR-Application:LastName"/>
+                <AttributeMetaData attribute="employeeId" source="HR-Application:EmployeeNo"/>
+                <AttributeMetaData attribute="department" source="HR-Application:Department"/>
+                <AttributeMetaData attribute="networkId" source="HR-Application:NetworkID"/>
+                <AttributeMetaData attribute="costCenter" source="HR Employees TRNG:costcenter"/>
+                <AttributeMetaData attribute="region" source="HR Employees TRNG:region"/>
+                <AttributeMetaData attribute="type" source="HR Employees TRNG:AppRule: TRNG-IdentityAttribute-Employee HR Employees TRNG$TRNG-IdentityAttribute-Employee"/>
+              </AttributeMetaDatas>
+              <Bundles>
+                <Reference class="sailpoint.object.Bundle" id="c0a800fb8f7b1606818f86867c780bc0" name="IT2LDAP-Finance"/>
+                <Reference class="sailpoint.object.Bundle" id="c0a800fb8f7b1606818f866651660b59" name="ITLDAP-Engineering"/>
+              </Bundles>
+              <CertificationLinks>
+                <CertificationLink completed="1748242161084" id="c0a800fc96a415518196becb4ca61d56" identitySnapshotId="c0a800fc96a415518196becb69801d5a" modified="1748242161087" type="Focused">
+                  <Certifiers>
+                    <String>Mahesh Nattali</String>
+                  </Certifiers>
+                </CertificationLink>
+              </CertificationLinks>
+              <Exceptions>
+                <EntitlementGroup created="1741934938866" displayName="Aaron Nichols" id="c0a800fc9593165a81959369caf205d0" nativeIdentity="1c">
+                  <ApplicationRef>
+                    <Reference class="sailpoint.object.Application" id="c0a800fb954110f0819541ab1dfd00b1" name="IntConApplication"/>
+                  </ApplicationRef>
+                  <Attributes>
+                    <Map>
+                      <entry key="GroupId">
+                        <value>
+                          <List>
+                            <String>GIC1</String>
+                            <String>GIC2</String>
+                            <String>GIC3</String>
+                            <String>GIC4</String>
+                          </List>
+                        </value>
+                      </entry>
+                    </Map>
+                  </Attributes>
+                </EntitlementGroup>
+                <EntitlementGroup created="1741934938866" displayName="Aaron Nichols" id="c0a800fc9593165a81959369caf205d1" nativeIdentity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com">
+                  <ApplicationRef>
+                    <Reference class="sailpoint.object.Application" id="c0a800fc94cb1e358194cc6fcd4826a9" name="ActiveDirectory"/>
+                  </ApplicationRef>
+                  <Attributes>
+                    <Map>
+                      <entry key="memberOf">
+                        <value>
+                          <List>
+                            <String>CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                            <String>CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                            <String>CN=Admins,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                            <String>CN=All_Users,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                            <String>CN=Buyer,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                            <String>CN=Contractors,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                          </List>
+                        </value>
+                      </entry>
+                    </Map>
+                  </Attributes>
+                </EntitlementGroup>
+              </Exceptions>
+              <Preferences>
+                <Map>
+                  <entry key="attributeAssignments">
+                    <value>
+                      <List>
+                        <AttributeAssignment applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" assigner="spadmin" assignmentId="513b89ff85224e32a0ab64521410d334" name="groups" nativeIdentity="cn=Aaron.Nichols,ou=People,dc=my-domain,dc=com" source="LCM" type="Entitlement" value="cn=Managers,ou=Group,dc=my-domain,dc=com"/>
+                        <AttributeAssignment applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" assigner="spadmin" assignmentId="e7c35d60d0384fb4952583441cd54ced" name="groups" nativeIdentity="cn=Aaron.Nichols,ou=People,dc=my-domain,dc=com" source="LCM" type="Entitlement" value="cn=Employees,ou=Group,dc=my-domain,dc=com"/>
+                        <AttributeAssignment applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" assigner="spadmin" assignmentId="ab007f110084484293168435f39075ef" name="groups" nativeIdentity="cn=Aaron.Nichols,ou=People,dc=my-domain,dc=com" source="LCM" type="Entitlement" value="cn=Contractors,ou=Group,dc=my-domain,dc=com"/>
+                        <AttributeAssignment applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" assigner="spadmin" assignmentId="e3789205903b45ff8ec88704f028b88e" name="groups" nativeIdentity="cn=Aaron.Nichols,ou=People,dc=my-domain,dc=com" source="LCM" type="Entitlement" value="cn=WebApplicationAccess,ou=Group,dc=my-domain,dc=com"/>
+                        <AttributeAssignment applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ActiveDirectory" assigner="spadmin" assignmentId="1ec712d281c44f3d81140105ec09b97a" name="memberOf" nativeIdentity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com" source="LCM" type="Entitlement" value="CN=AuditMgmt,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                        <AttributeAssignment applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ActiveDirectory" assigner="spadmin" assignmentId="46c78fe3356941c290b875e35508ec17" name="memberOf" nativeIdentity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com" source="LCM" type="Entitlement" value="CN=Admins,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                        <AttributeAssignment applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" assigner="spadmin" assignmentId="f2cfb80da686495eacdb5d0a8ae5e06b" name="memberOf" nativeIdentity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com" source="LCM" type="Entitlement" value="CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                        <AttributeAssignment applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" assigner="spadmin" assignmentId="a45e0a6b6d6c425b98875e2b8096f5ed" name="memberOf" nativeIdentity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com" source="LCM" type="Entitlement" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                        <AttributeAssignment applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" assigner="spadmin" assignmentId="46c78fe3356941c290b875e35508ec17" name="memberOf" nativeIdentity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com" source="LCM" type="Entitlement" value="CN=Admins,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                        <AttributeAssignment applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" assigner="spadmin" assignmentId="7bc37d6263cb47e0a6d43500584d0ff8" name="memberOf" nativeIdentity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com" source="LCM" type="Entitlement" value="CN=All_Users,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                        <AttributeAssignment applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" assigner="spadmin" assignmentId="6c8382a2175840b28bb4ce1ba978424b" name="memberOf" nativeIdentity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com" source="LCM" type="Entitlement" value="CN=Buyer,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                        <AttributeAssignment applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" assigner="spadmin" assignmentId="f5cf48b52b7b411c90dcc6f764376148" name="memberOf" nativeIdentity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com" source="LCM" type="Entitlement" value="CN=Contractors,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                        <AttributeAssignment applicationId="c0a800fb954110f0819541ab1dfd00b1" applicationName="IntConApplication" assigner="spadmin" assignmentId="ce9e7c97eb1d46d4a3559803b48af1f8" name="GroupId" nativeIdentity="1c" source="LCM" type="Entitlement" value="GIC3"/>
+                        <AttributeAssignment applicationId="c0a800fb954110f0819541ab1dfd00b1" applicationName="IntConApplication" assigner="spadmin" assignmentId="ae4ccbc9415d4cccaa3beffd2e428af8" name="GroupId" nativeIdentity="1c" source="LCM" type="Entitlement" value="GIC4"/>
+                        <AttributeAssignment applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" assigner="spadmin" assignmentId="1ec712d281c44f3d81140105ec09b97a" name="memberOf" nativeIdentity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com" source="LCM" type="Entitlement" value="CN=AuditMgmt,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+                      </List>
+                    </value>
+                  </entry>
+                  <entry key="forward" value="Mahesh Nattali"/>
+                  <entry key="forwardEndDate">
+                    <value>
+                      <Date>1726943399000</Date>
+                    </value>
+                  </entry>
+                  <entry key="forwardStartDate">
+                    <value>
+                      <Date>1726770600000</Date>
+                    </value>
+                  </entry>
+                  <entry key="roleDetections">
+                    <value>
+                      <List>
+                        <RoleDetection date="1725529091763" roleId="c0a800fb8f7b1606818f86867c780bc0" roleName="IT2LDAP-Finance">
+                          <RoleTarget applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" displayName="Aaron.Nichols" nativeIdentity="cn=Aaron.Nichols,ou=People,dc=my-domain,dc=com">
+                            <AccountItem name="groups">
+                              <value>
+                                <Set>
+                                  <String>cn=Contractors,ou=Group,dc=my-domain,dc=com</String>
+                                  <String>cn=WebApplicationAccess,ou=Group,dc=my-domain,dc=com</String>
+                                </Set>
+                              </value>
+                            </AccountItem>
+                          </RoleTarget>
+                        </RoleDetection>
+                        <RoleDetection date="1725529091763" roleId="c0a800fb8f7b1606818f866651660b59" roleName="ITLDAP-Engineering">
+                          <RoleTarget applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" displayName="Aaron.Nichols" nativeIdentity="cn=Aaron.Nichols,ou=People,dc=my-domain,dc=com">
+                            <AccountItem name="groups">
+                              <value>
+                                <Set>
+                                  <String>cn=Employees,ou=Group,dc=my-domain,dc=com</String>
+                                  <String>cn=Managers,ou=Group,dc=my-domain,dc=com</String>
+                                </Set>
+                              </value>
+                            </AccountItem>
+                          </RoleTarget>
+                        </RoleDetection>
+                      </List>
+                    </value>
+                  </entry>
+                </Map>
+              </Preferences>
+              <RoleMetadatas>
+                <Reference class="sailpoint.object.RoleMetadata" id="c0a81d89936d1cc38193b584280e36e2" name="ITLDAP-Engineering"/>
+                <Reference class="sailpoint.object.RoleMetadata" id="c0a81d89936d1cc38193b584280e36e4" name="IT2LDAP-Finance"/>
+              </RoleMetadatas>
+              <Links>
+                <Link created="1747909017092" displayName="Aaron.Nichols-CADM" id="a9feffec96f31fd98196f77efe0406e2" lastRefresh="1748431260345" manuallyCorrelated="true" modified="1748494780967" identity="cn=Aaron.Nichols-CADM,ou=People,dc=my-domain,dc=com" significantModified="1747909017247">
+                  <ApplicationRef>
+                    <Reference class="sailpoint.object.Application" id="c0a81d898f3419e3818f3447ed430270" name="LDAPApplication"/>
+                  </ApplicationRef>
+                  <Attributes>
+                    <Map>
+                      <entry key="IIQDisabled">
+                        <value>
+                          <Boolean></Boolean>
+                        </value>
+                      </entry>
+                      <entry key="cn" value="Aaron.Nichols-CADM"/>
+                      <entry key="dn" value="cn=Aaron.Nichols-CADM,ou=People,dc=my-domain,dc=com"/>
+                      <entry key="objectClass">
+                        <value>
+                          <List>
+                            <String>inetOrgPerson</String>
+                          </List>
+                        </value>
+                      </entry>
+                      <entry key="sn" value="Nichols"/>
+                    </Map>
+                  </Attributes>
+                </Link>
+                <Link created="1714615486258" displayName="Aaron Nichols" id="c0a800208f361ec2818f370c073200c3" lastRefresh="1714615486258" modified="1714615486260" identity="1c" significantModified="1714615486260">
+                  <ApplicationRef>
+                    <Reference class="sailpoint.object.Application" id="c0a800208f361ec2818f370b5c670026" name="HR-ApplicationTarget"/>
+                  </ApplicationRef>
+                  <Attributes>
+                    <Map>
+                      <entry key="Department" value="Executive Management"/>
+                      <entry key="Email" value="Aaron.Nichols@eshiam.com"/>
+                      <entry key="EmployeeNo" value="1c"/>
+                      <entry key="FirstName" value="Aaron"/>
+                      <entry key="LastName" value="Nichols"/>
+                      <entry key="Name" value="Aaron Nichols"/>
+                      <entry key="NetworkID" value="Aaron.Nichols"/>
+                    </Map>
+                  </Attributes>
+                </Link>
+                <Link created="1714616260401" displayName="Aaron Nichols" id="c0a800208f361ec2818f3717d73101d6" lastRefresh="1714616260401" modified="1748494781719" identity="1c" significantModified="1714616260401">
+                  <ApplicationRef>
+                    <Reference class="sailpoint.object.Application" id="c0a800208f361ec2818f371679260131" name="JDBC"/>
+                  </ApplicationRef>
+                  <Attributes>
+                    <Map>
+                      <entry key="Department" value="Executive Management"/>
+                      <entry key="Email" value="Aaron.Nichols@eshiam.com"/>
+                      <entry key="EmployeeNo" value="1c"/>
+                      <entry key="FirstName" value="Aaron"/>
+                      <entry key="LastName" value="Nichols"/>
+                      <entry key="Name" value="Aaron Nichols"/>
+                      <entry key="NetworkID" value="Aaron.Nichols"/>
+                    </Map>
+                  </Attributes>
+                </Link>
+                <Link created="1740563864229" displayName="Aaron Nichols" entitlements="true" id="c0a800fb954110f0819541b0daa500c9" lastRefresh="1743655208316" modified="1741934938867" identity="1c" significantModified="1741934938867">
+                  <ApplicationRef>
+                    <Reference class="sailpoint.object.Application" id="c0a800fb954110f0819541ab1dfd00b1" name="IntConApplication"/>
+                  </ApplicationRef>
+                  <Attributes>
+                    <Map>
+                      <entry key="Department" value="Engineering"/>
+                      <entry key="Email" value="Aaron.Nichols@eshiam.com"/>
+                      <entry key="EmployeeId" value="1c"/>
+                      <entry key="FirstName" value="Aaron"/>
+                      <entry key="GroupId">
+                        <value>
+                          <List>
+                            <String>GIC1</String>
+                            <String>GIC2</String>
+                            <String>GIC3</String>
+                            <String>GIC4</String>
+                          </List>
+                        </value>
+                      </entry>
+                      <entry key="LastName" value="Nichols"/>
+                      <entry key="Name" value="Aaron Nichols"/>
+                      <entry key="manager" value="1045"/>
+                    </Map>
+                  </Attributes>
+                </Link>
+                <Link created="1738600608728" displayName="Aaron Nichols" entitlements="true" id="c0a800fc94cb1e358194ccabf3d8273d" lastRefresh="1748494782060" modified="1748494782072" identity="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com" significantModified="1741934938867" uuid="{70fccc42-97e3-451b-974c-cb4a97810388}">
+                  <ApplicationRef>
+                    <Reference class="sailpoint.object.Application" id="c0a800fc94cb1e358194cc6fcd4826a9" name="ActiveDirectory"/>
+                  </ApplicationRef>
+                  <Attributes>
+                    <Map>
+                      <entry key="NetBIOSName"/>
+                      <entry key="accountFlags">
+                        <value>
+                          <List>
+                            <String>Normal User Account</String>
+                          </List>
+                        </value>
+                      </entry>
+                      <entry key="cn" value="Aaron Nichols"/>
+                      <entry key="department" value="Executive Management"/>
+                      <entry key="displayName" value="Nichols, Aaron"/>
+                      <entry key="distinguishedName" value="CN=Aaron Nichols,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+                      <entry key="employeeID" value="1c"/>
+                      <entry key="givenName" value="Aaron"/>
+                      <entry key="mail" value="Aaron.Nichols@eshiam.com"/>
+                      <entry key="memberOf">
+                        <value>
+                          <List>
+                            <String>CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                            <String>CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                            <String>CN=Admins,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                            <String>CN=All_Users,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                            <String>CN=Buyer,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                            <String>CN=Contractors,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+                          </List>
+                        </value>
+                      </entry>
+                      <entry key="msDS-PrincipalName" value="ESHIAM\Aaron Nichols"/>
+                      <entry key="msNPAllowDialin" value="Not Set"/>
+                      <entry key="objectClass">
+                        <value>
+                          <List>
+                            <String>top</String>
+                            <String>person</String>
+                            <String>organizationalPerson</String>
+                            <String>user</String>
+                          </List>
+                        </value>
+                      </entry>
+                      <entry key="objectSid" value="S-1-5-21-2678700903-2778472132-3948167259-1321"/>
+                      <entry key="objectType" value="user"/>
+                      <entry key="objectguid" value="{70fccc42-97e3-451b-974c-cb4a97810388}"/>
+                      <entry key="sAMAccountName" value="Aaron Nichols"/>
+                      <entry key="sn" value="Nichols"/>
+                      <entry key="userPrincipalName" value="Aaron Nichols@test.eshiam.com"/>
+                    </Map>
+                  </Attributes>
+                </Link>
+                <Link created="1714564677840" displayName="Aaron Nichols" id="c0a81d898f331f7b818f3404c0d00149" lastRefresh="1714564677840" modified="1714564677841" identity="1c" significantModified="1714564677841">
+                  <ApplicationRef>
+                    <Reference class="sailpoint.object.Application" id="c0a81d898f331f7b818f3403ce94000c" name="HR-Application"/>
+                  </ApplicationRef>
+                  <Attributes>
+                    <Map>
+                      <entry key="Department" value="Executive Management"/>
+                      <entry key="Email" value="Aaron.Nichols@eshiam.com"/>
+                      <entry key="EmployeeNo" value="1c"/>
+                      <entry key="FirstName" value="Aaron"/>
+                      <entry key="LastName" value="Nichols"/>
+                      <entry key="Name" value="Aaron Nichols"/>
+                      <entry key="NetworkID" value="Aaron.Nichols"/>
+                    </Map>
+                  </Attributes>
+                </Link>
+              </Links>
+              <Scorecard certificationScore="1000" compositeScore="250" created="1714614458390" entitlementScore="1" id="c0a81d898f3419e3818f36fc581608d8" rawEntitlementScore="1">
+                <ScoreItem compositePercentage="100" displayName="score_def_certificationAge_name" score="1000" scorePercentage="100" type="score_def_certificationAge_shortname">
+                  <TargetMessage>
+                    <Message key="cert_scorer_target_id_not_certified" type="Info"/>
+                  </TargetMessage>
+                </ScoreItem>
+              </Scorecard>
+            </Identity>
+          </value>
+        </entry>
+        <entry key="pamContainerToGroupAggregate"/>
+        <entry key="pamContainersToAggregate"/>
+        <entry key="plan">
+          <value>
+            <ProvisioningPlan>
+              <Attributes>
+                <Map>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="GroupManagement"/>
+                </Map>
+              </Attributes>
+              <ObjectRequest application="ActiveDirectory" nativeIdentity="CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com" op="Modify" type="group">
+                <AttributeRequest name="sysAttribute" op="Set" value="memberOf"/>
+                <AttributeRequest name="sysDisplayName" op="Set" value="AccountingGeneral"/>
+                <AttributeRequest name="sysDescriptions" op="Set">
+                  <Value>
+                    <Map>
+                      <entry key="en_US"/>
+                    </Map>
+                  </Value>
+                </AttributeRequest>
+                <AttributeRequest name="sysOwner" op="Set" value=""/>
+                <AttributeRequest name="sysScope" op="Set"/>
+                <AttributeRequest name="sysRequestable" op="Set">
+                  <Value>
+                    <Boolean>true</Boolean>
+                  </Value>
+                </AttributeRequest>
+                <AttributeRequest name="sysManagedAttributeType" op="Set" value="group"/>
+                <AttributeRequest name="sysClassifications" op="Set"/>
+                <AttributeRequest name="sysIiqElevatedAccess" op="Set">
+                  <Value>
+                    <Boolean></Boolean>
+                  </Value>
+                </AttributeRequest>
+                <AttributeRequest name="GroupType" op="Set" value="Security"/>
+                <AttributeRequest name="GroupScope" op="Set" value="Global"/>
+                <AttributeRequest name="description" op="Set"/>
+                <AttributeRequest name="mailNickname" op="Set"/>
+                <AttributeRequest name="memberOf" op="Set"/>
+              </ObjectRequest>
+              <Requesters>
+                <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+              </Requesters>
+            </ProvisioningPlan>
+          </value>
+        </entry>
+        <entry key="project">
+          <value>
+            <ProvisioningProject>
+              <Attributes>
+                <Map>
+                  <entry key="requester" value="spadmin"/>
+                  <entry key="source" value="GroupManagement"/>
+                </Map>
+              </Attributes>
+              <Filtered>
+                <ObjectRequest application="ActiveDirectory" nativeIdentity="CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com" op="Modify" type="group">
+                  <AttributeRequest name="GroupType" op="Set" value="Security">
+                    <Attributes>
+                      <Map>
+                        <entry key="reason">
+                          <value>
+                            <FilterReason>Exists</FilterReason>
+                          </value>
+                        </entry>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                  <AttributeRequest name="GroupScope" op="Set" value="Global">
+                    <Attributes>
+                      <Map>
+                        <entry key="reason">
+                          <value>
+                            <FilterReason>Exists</FilterReason>
+                          </value>
+                        </entry>
+                      </Map>
+                    </Attributes>
+                  </AttributeRequest>
+                </ObjectRequest>
+              </Filtered>
+              <MasterPlan>
+                <ProvisioningPlan>
+                  <Attributes>
+                    <Map>
+                      <entry key="requester" value="spadmin"/>
+                      <entry key="source" value="GroupManagement"/>
+                    </Map>
+                  </Attributes>
+                  <ObjectRequest application="ActiveDirectory" nativeIdentity="CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com" op="Modify" type="group">
+                    <AttributeRequest name="sysAttribute" op="Set" value="memberOf"/>
+                    <AttributeRequest name="sysDisplayName" op="Set" value="AccountingGeneral"/>
+                    <AttributeRequest name="sysDescriptions" op="Set">
+                      <Value>
+                        <Map>
+                          <entry key="en_US"/>
+                        </Map>
+                      </Value>
+                    </AttributeRequest>
+                    <AttributeRequest name="sysOwner" op="Set" value=""/>
+                    <AttributeRequest name="sysScope" op="Set"/>
+                    <AttributeRequest name="sysRequestable" op="Set">
+                      <Value>
+                        <Boolean>true</Boolean>
+                      </Value>
+                    </AttributeRequest>
+                    <AttributeRequest name="sysManagedAttributeType" op="Set" value="group"/>
+                    <AttributeRequest name="sysClassifications" op="Set"/>
+                    <AttributeRequest name="sysIiqElevatedAccess" op="Set">
+                      <Value>
+                        <Boolean></Boolean>
+                      </Value>
+                    </AttributeRequest>
+                    <AttributeRequest name="GroupType" op="Set" value="Security"/>
+                    <AttributeRequest name="GroupScope" op="Set" value="Global"/>
+                    <AttributeRequest name="description" op="Set"/>
+                    <AttributeRequest name="mailNickname" op="Set"/>
+                    <AttributeRequest name="memberOf" op="Set"/>
+                  </ObjectRequest>
+                  <Requesters>
+                    <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+                  </Requesters>
+                </ProvisioningPlan>
+              </MasterPlan>
+              <ProvisioningPlan targetIntegration="ActiveDirectory" trackingId="900a71e450d14f55a42f515edfed13f2">
+                <Attributes>
+                  <Map>
+                    <entry key="requester" value="spadmin"/>
+                    <entry key="source" value="GroupManagement"/>
+                  </Map>
+                </Attributes>
+                <ObjectRequest application="ActiveDirectory" nativeIdentity="CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com" op="Modify" type="group">
+                  <AttributeRequest name="sysAttribute" op="Set" value="memberOf"/>
+                  <AttributeRequest name="sysDisplayName" op="Set" value="AccountingGeneral"/>
+                  <AttributeRequest name="sysDescriptions" op="Set">
+                    <Value>
+                      <Map>
+                        <entry key="en_US"/>
+                      </Map>
+                    </Value>
+                  </AttributeRequest>
+                  <AttributeRequest name="sysOwner" op="Set" value=""/>
+                  <AttributeRequest name="sysRequestable" op="Set">
+                    <Value>
+                      <Boolean>true</Boolean>
+                    </Value>
+                  </AttributeRequest>
+                  <AttributeRequest name="sysManagedAttributeType" op="Set" value="group"/>
+                  <AttributeRequest name="sysClassifications" op="Set"/>
+                  <AttributeRequest name="sysIiqElevatedAccess" op="Set">
+                    <Value>
+                      <Boolean></Boolean>
+                    </Value>
+                  </AttributeRequest>
+                </ObjectRequest>
+                <Requesters>
+                  <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+                </Requesters>
+              </ProvisioningPlan>
+            </ProvisioningProject>
+          </value>
+        </entry>
+        <entry key="sessionOwner" value="spadmin"/>
+        <entry key="summaryName" value="ActiveDirectory group: CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+        <entry key="taskResultId" value="c0a8a40197481f2d81974b371a3d05b3"/>
+        <entry key="trace" value="false"/>
+      </Map>
+    </Attributes>
+  </Workflow>
+</WorkflowCase>

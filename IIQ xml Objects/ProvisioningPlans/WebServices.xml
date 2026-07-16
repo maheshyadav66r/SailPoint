@@ -1,0 +1,192 @@
+Stale account target memory: Role ad_business_role, Application ADX, Identity CN=Adam Martin,OU=XPeople,OU=Demo,DC=Eshiam,DC=com
+Stale account target memory: Role ad_business_role, Application ADX, Identity CN=Adam Martin,OU=XPeople,OU=Demo,DC=Eshiam,DC=com
+---------------BeforeProvisioning Rule----------------------------<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan nativeIdentity="Adam Martin" targetIntegration="WebServicesTestApplication3" trackingId="33b818060088491eb10197391a1579f5">
+  <AccountRequest application="WebServicesTestApplication3" nativeIdentity="EMP00424" op="Create">
+    <Attributes>
+      <Map>
+        <entry key="attachmentConfigList"/>
+        <entry key="attachments"/>
+        <entry key="flow" value="AccessRequest"/>
+        <entry key="id" value="c0a81d8998df1f3e8198e4ceb73c03e8"/>
+        <entry key="interface" value="LCM"/>
+        <entry key="nativeIdUpdated">
+          <value>
+            <Boolean>true</Boolean>
+          </value>
+        </entry>
+        <entry key="operation" value="EntitlementAdd"/>
+      </Map>
+    </Attributes>
+    <AttributeRequest assignmentId="9c1b632955b843148d6e634faa1edfca" displayValue="WS_GROUP_100" name="groups" op="Add" value="WS_GROUP_100">
+      <Attributes>
+        <Map>
+          <entry key="assignment" value="true"/>
+        </Map>
+      </Attributes>
+    </AttributeRequest>
+    <AttributeRequest assignmentId="5ea450e7854342a280e87fc1d4e9fc21" displayValue="WS_GROUP_101" name="groups" op="Add" value="WS_GROUP_101">
+      <Attributes>
+        <Map>
+          <entry key="assignment" value="true"/>
+        </Map>
+      </Attributes>
+    </AttributeRequest>
+    <AttributeRequest name="user_email" op="Set" value="adam.martin@example.com"/>
+    <AttributeRequest name="manager_id" op="Set" value="1045"/>
+    <AttributeRequest name="location" op="Set" value="India"/>
+    <AttributeRequest name="user_name" op="Set" value="Adam Martin"/>
+    <AttributeRequest name="department" op="Set" value="Admin"/>
+    <AttributeRequest name="user_status" op="Set" value="ACTIVE"/>
+    <AttributeRequest name="job_title" op="Set" value="Engineer"/>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000911"/>
+      <entry key="requester" value="spadmin"/>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <Requesters>
+    <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+  </Requesters>
+</ProvisioningPlan>
+
+isDebugEnabled : true
+Ending Constructor - ESHIAMEmployeePortalPluginService()
+Starting method - createUser()
+ userPayLoad : {user_status=ACTIVE, user_email=adam.martin@example.com, user_id=EMP00424, manager_id=1045, user_name=Adam Martin, location=India, department=Admin}
+Starting method - validateRecord()
+query : SELECT count(*) AS USRCOUNT FROM ep_users WHERE USER_ID =?
+queryParams : [EMP00424]
+result : false
+Ending method - validateRecord()
+Starting method - execueDBQuery()
+query : INSERT INTO ep_users(USER_ID,USER_NAME,USER_EMAIL,MANAGER_ID,LOCATION,DEPARTMENT,JOB_TITLE,USER_STATUS,DESCRIPTION)VALUES(?,?,?,?,?,?,?,?,?)
+***queryParams : [EMP00424, Adam Martin, adam.martin@example.com, 1045, India, Admin, null, ACTIVE, Created on Fri Aug 29 11:21:21 IST 2025]
+Ending method - execueDBQuery()
+Ending method - createUser()
+Starting Constructor - ESHIAMEmployeePortalPluginService()
+isDebugEnabled : true
+Ending Constructor - ESHIAMEmployeePortalPluginService()
+Starting - addGroups()
+userPayLoad : {user_id=EMP00424, groups=[WS_GROUP_100]}
+Starting method - validateRecord()
+query : SELECT count(*) AS USRCOUNT FROM ep_users WHERE USER_ID =?
+queryParams : [EMP00424]
+result : true
+Ending method - validateRecord()
+Starting method - validateRecord()
+query : SELECT count(*) AS USRCOUNT FROM ep_groups WHERE GROUP_ID=?
+queryParams : [WS_GROUP_100]
+result : true
+Ending method - validateRecord()
+Params : [EMP00424, WS_GROUP_100]
+Starting method - validateRecord()
+query : SELECT count(*) AS USRCOUNT FROM ep_users_vs_groups WHERE USER_ID=? AND GROUP_ID=?
+queryParams : [EMP00424, WS_GROUP_100]
+result : false
+Ending method - validateRecord()
+Starting method - execueDBQuery()
+query : INSERT INTO ep_users_vs_groups(USER_ID,GROUP_ID) VALUES(?,?)
+***queryParams : [EMP00424, WS_GROUP_100]
+Ending method - execueDBQuery()
+Ending - addGroups()
+Starting Constructor - ESHIAMEmployeePortalPluginService()
+isDebugEnabled : true
+Ending Constructor - ESHIAMEmployeePortalPluginService()
+Starting - addGroups()
+userPayLoad : {user_id=EMP00424, groups=[WS_GROUP_101]}
+Starting method - validateRecord()
+query : SELECT count(*) AS USRCOUNT FROM ep_users WHERE USER_ID =?
+queryParams : [EMP00424]
+result : true
+Ending method - validateRecord()
+Starting method - validateRecord()
+query : SELECT count(*) AS USRCOUNT FROM ep_groups WHERE GROUP_ID=?
+queryParams : [WS_GROUP_101]
+result : true
+Ending method - validateRecord()
+Params : [EMP00424, WS_GROUP_101]
+Starting method - validateRecord()
+query : SELECT count(*) AS USRCOUNT FROM ep_users_vs_groups WHERE USER_ID=? AND GROUP_ID=?
+queryParams : [EMP00424, WS_GROUP_101]
+result : false
+Ending method - validateRecord()
+Starting method - execueDBQuery()
+query : INSERT INTO ep_users_vs_groups(USER_ID,GROUP_ID) VALUES(?,?)
+***queryParams : [EMP00424, WS_GROUP_101]
+Ending method - execueDBQuery()
+Ending - addGroups()
+Starting Constructor - ESHIAMEmployeePortalPluginService()
+isDebugEnabled : true
+Ending Constructor - ESHIAMEmployeePortalPluginService()
+Starting method - getUserWithUserID(arg1)
+userid : EMP00424
+Starting method - getSingleUser()
+query : SELECT  ep_users.USER_ID,USER_NAME,USER_EMAIL,MANAGER_ID,LOCATION,DEPARTMENT,JOB_TITLE,USER_STATUS,CREATED_TIMESTAMP,UPDATED,DESCRIPTION, group_concat(ep_users_vs_groups.GROUP_ID) AS USER_GROUPS FROM ep_users LEFT JOIN  ep_users_vs_groups ON ep_users.USER_ID = ep_users_vs_groups.USER_ID WHERE ep_users.USER_ID=? group by  ep_users.USER_ID
+query params : [EMP00424]
+Starting method - getUserFromResult()
+user : eshiam.employeeportal.plugin.dto.User@1a3538e
+Ending method - getUserFromResult()
+usersList : [eshiam.employeeportal.plugin.dto.User@1a3538e]
+Ending method - getUsers()
+usersList : [eshiam.employeeportal.plugin.dto.User@1a3538e]
+Ending method - getUserWithUserID()
+--------------------AfterProvisioning Rule--------------------------<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan nativeIdentity="Adam Martin" targetIntegration="WebServicesTestApplication3" trackingId="33b818060088491eb10197391a1579f5">
+  <AccountRequest application="WebServicesTestApplication3" nativeIdentity="EMP00424" op="Create">
+    <Attributes>
+      <Map>
+        <entry key="attachmentConfigList"/>
+        <entry key="attachments"/>
+        <entry key="flow" value="AccessRequest"/>
+        <entry key="id" value="c0a81d8998df1f3e8198e4ceb73c03e8"/>
+        <entry key="interface" value="LCM"/>
+        <entry key="nativeIdUpdated">
+          <value>
+            <Boolean>true</Boolean>
+          </value>
+        </entry>
+        <entry key="operation" value="EntitlementAdd"/>
+      </Map>
+    </Attributes>
+    <AttributeRequest assignmentId="9c1b632955b843148d6e634faa1edfca" displayValue="WS_GROUP_100" name="groups" op="Add" value="WS_GROUP_100">
+      <Attributes>
+        <Map>
+          <entry key="assignment" value="true"/>
+        </Map>
+      </Attributes>
+      <ProvisioningResult status="committed"/>
+    </AttributeRequest>
+    <AttributeRequest assignmentId="5ea450e7854342a280e87fc1d4e9fc21" displayValue="WS_GROUP_101" name="groups" op="Add" value="WS_GROUP_101">
+      <Attributes>
+        <Map>
+          <entry key="assignment" value="true"/>
+        </Map>
+      </Attributes>
+      <ProvisioningResult status="committed"/>
+    </AttributeRequest>
+    <AttributeRequest name="user_email" op="Set" value="adam.martin@example.com"/>
+    <AttributeRequest name="manager_id" op="Set" value="1045"/>
+    <AttributeRequest name="location" op="Set" value="India"/>
+    <AttributeRequest name="user_name" op="Set" value="Adam Martin"/>
+    <AttributeRequest name="department" op="Set" value="Admin"/>
+    <AttributeRequest name="user_status" op="Set" value="ACTIVE"/>
+    <AttributeRequest name="job_title" op="Set" value="Engineer"/>
+    <ProvisioningResult status="committed"/>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000911"/>
+      <entry key="requester" value="spadmin"/>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <Requesters>
+    <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+  </Requesters>
+</ProvisioningPlan>
+

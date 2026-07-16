@@ -1,0 +1,113 @@
+-------LCM Provisioning Start step-----<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan>
+  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=abhishek sharma,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+    <Attributes>
+      <Map>
+        <entry key="attachmentConfigList"/>
+        <entry key="attachments"/>
+        <entry key="id" value="c0a81d898f3419e3818f3439c758022e"/>
+      </Map>
+    </Attributes>
+    <AttributeRequest assignmentId="466923fe0e3145ce884f9d3eb5081021" displayValue="Buyer" name="memberOf" op="Add" value="CN=Buyer,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <Attributes>
+        <Map>
+          <entry key="assignment" value="true"/>
+        </Map>
+      </Attributes>
+    </AttributeRequest>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <ProvisioningTargets>
+    <ProvisioningTarget application="ActiveDirectory" assignmentId="466923fe0e3145ce884f9d3eb5081021" attribute="memberOf" value="CN=Buyer,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ActiveDirectory" selection="CN=abhishek sharma,OU=People,OU=Demo,DC=Eshiam,DC=com">
+        <AccountInfo displayName="Abhishek sharma" nativeIdentity="CN=abhishek sharma,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+      </AccountSelection>
+    </ProvisioningTarget>
+  </ProvisioningTargets>
+</ProvisioningPlan>
+
+-------Identity Request Initialize----
+-------Identity Request violation review WF----
+-------Do Provisioning Forms WF------
+-------Approve and Provision Subprocess workflow----
+-------Provisioning Approval Subprocess Start step----
+-------Identity Request Provision workflow----
+-------Do Provisioning Forms WF------
+------Provision with retries workflow start step----
+---------------BeforeProvisioning Rule----------------------------<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan nativeIdentity="Abhishek sharma" targetIntegration="ActiveDirectory" trackingId="e7c4eb73eb3d4469ab12c64e84c5b8c0">
+  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=abhishek sharma,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+    <Attributes>
+      <Map>
+        <entry key="attachmentConfigList"/>
+        <entry key="attachments"/>
+        <entry key="flow" value="AccessRequest"/>
+        <entry key="id" value="c0a81d898f3419e3818f3439c758022e"/>
+        <entry key="interface" value="LCM"/>
+        <entry key="operation" value="EntitlementAdd"/>
+      </Map>
+    </Attributes>
+    <AttributeRequest assignmentId="466923fe0e3145ce884f9d3eb5081021" displayValue="Buyer" name="memberOf" op="Add" value="CN=Buyer,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <Attributes>
+        <Map>
+          <entry key="assignment" value="true"/>
+        </Map>
+      </Attributes>
+    </AttributeRequest>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000422"/>
+      <entry key="requester" value="Mahesh Nattali"/>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <Requesters>
+    <Reference class="sailpoint.object.Identity" id="c0a81d898fc9197a8190074e5ccf2bd6" name="Mahesh Nattali"/>
+  </Requesters>
+</ProvisioningPlan>
+
+--------------------AfterProvisioning Rule--------------------------<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan nativeIdentity="Abhishek sharma" targetIntegration="ActiveDirectory" trackingId="e7c4eb73eb3d4469ab12c64e84c5b8c0">
+  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=abhishek sharma,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+    <Attributes>
+      <Map>
+        <entry key="attachmentConfigList"/>
+        <entry key="attachments"/>
+        <entry key="flow" value="AccessRequest"/>
+        <entry key="id" value="c0a81d898f3419e3818f3439c758022e"/>
+        <entry key="interface" value="LCM"/>
+        <entry key="operation" value="EntitlementAdd"/>
+      </Map>
+    </Attributes>
+    <AttributeRequest assignmentId="466923fe0e3145ce884f9d3eb5081021" displayValue="Buyer" name="memberOf" op="Add" value="CN=Buyer,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <Attributes>
+        <Map>
+          <entry key="assignment" value="true"/>
+        </Map>
+      </Attributes>
+    </AttributeRequest>
+    <ProvisioningResult status="committed"/>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000422"/>
+      <entry key="requester" value="Mahesh Nattali"/>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <Requesters>
+    <Reference class="sailpoint.object.Identity" id="c0a81d898fc9197a8190074e5ccf2bd6" name="Mahesh Nattali"/>
+  </Requesters>
+</ProvisioningPlan>
+
+------Check Status of queued items workflow----
+-------Identity Request Notify WF----
+-------Identity Request Finalize WF----

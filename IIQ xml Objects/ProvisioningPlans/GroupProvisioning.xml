@@ -1,0 +1,49 @@
+---------------BeforeProvisioning Rule----------------------------<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan targetIntegration="ActiveDirectory" trackingId="984c1fabc59c4317801b985247f4761a">
+  <Attributes>
+    <Map>
+      <entry key="requester" value="spadmin"/>
+      <entry key="source" value="GroupManagement"/>
+    </Map>
+  </Attributes>
+  <ObjectRequest application="ActiveDirectory" nativeIdentity="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com" op="Modify" type="group">
+    <AttributeRequest name="memberOf" op="Set">
+      <Value>
+        <List>
+          <String>CN=Benefits,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+          <String>CN=Buyer,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+        </List>
+      </Value>
+    </AttributeRequest>
+  </ObjectRequest>
+  <Requesters>
+    <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+  </Requesters>
+</ProvisioningPlan>
+
+--------------------AfterProvisioning Rule--------------------------<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan targetIntegration="ActiveDirectory" trackingId="984c1fabc59c4317801b985247f4761a">
+  <Attributes>
+    <Map>
+      <entry key="requester" value="spadmin"/>
+      <entry key="source" value="GroupManagement"/>
+    </Map>
+  </Attributes>
+  <ObjectRequest application="ActiveDirectory" nativeIdentity="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com" op="Modify" type="group">
+    <AttributeRequest name="memberOf" op="Set">
+      <Value>
+        <List>
+          <String>CN=Benefits,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+          <String>CN=Buyer,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+        </List>
+      </Value>
+    </AttributeRequest>
+    <ProvisioningResult status="committed"/>
+  </ObjectRequest>
+  <Requesters>
+    <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+  </Requesters>
+</ProvisioningPlan>
+

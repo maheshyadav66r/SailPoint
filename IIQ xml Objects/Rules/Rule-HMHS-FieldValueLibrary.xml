@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule created="1557857732463" id="8a7b15976ab7897e016ab78e876f005e" language="beanshell" modified="1745858553235" name="HMHS-FieldValueLibrary" significantModified="1745858553235">
+  <Source>
+    
+import sailpoint.object.*;
+import java.sql.*;
+import org.apache.commons.lang.StringUtils;
+
+String getFV_AD_Primary_gidnumber( Map env )
+{
+  return getUidNumber( env );
+}
+
+String getFV_AD_Primary_MSSFU30UIDNUMBER( Map env )
+{
+  return getUidNumber( env );
+}
+
+String getFV_AD_Primary_MSSFU30GIDNUMBER( Map env )
+{
+  return getUidNumber( env );
+}
+
+String getFV_AD_Primary_uidnumber( Map env )
+{
+  return getUidNumber( env );
+}
+
+String getUidNumber( Map env )
+{
+  Identity identity = env.get( "identity" );
+  String uidNumber = identity.getStringAttribute( "unixId" );
+  if ( uidNumber != null &amp;&amp; StringUtils.isNumeric( uidNumber ) ) return uidNumber;
+  
+  Application application = context.getObjectByName( Application.class, "Highmark SAM" );
+  
+  String description = application.getAttributeValue( "sysDescriptions" ).get( "en_US" );
+  String schemaName = "DB2JUP";
+  if ( description.equals( "DB2T" ) ) schemaName += "T";
+  else if ( description.equals( "DB2P" ) ) schemaName += "P";
+  else throw new Exception( "Unknown DB2 Instance" );
+  
+  Class.forName( application.getAttributeValue( "driverClass" ) ); 
+  Connection connection = DriverManager.getConnection( application.getAttributeValue( "url" ), application.getAttributeValue( "user" ), context.decrypt( application.getAttributeValue( "password" ) ) );  
+  Statement statement = connection.createStatement( );  
+  // Table Name DB2JUPP.TECHGLB in prod
+  ResultSet resultSet = statement.executeQuery( "SELECT \"TECHGLB-BINARY1\" FROM " + schemaName + ".TECHGLB WHERE \"TECHGLB-2ND-ID\" = 'UID' AND \"TECHGLB-CONTEXT1\" = 'SAMGLOBAL';" );  
+  resultSet.next( );
+  int binary = resultSet.getInt( 1 );
+  PreparedStatement stmt = connection.prepareStatement( "UPDATE " + schemaName + ".TECHGLB SET \"TECHGLB-BINARY1\" = ? WHERE \"TECHGLB-2ND-ID\" = 'UID' AND \"TECHGLB-CONTEXT1\" = 'SAMGLOBAL';" );  
+  stmt.setInt( 1, binary + 1 );
+  stmt.execute( );
+  
+  identity.setAttribute( "unixId", binary );
+  context.saveObject( identity );
+  context.commitTransaction( );
+
+  if ( log.isTraceEnabled( ) ) log.trace( "next id: " + binary );
+
+  return "" + binary;
+}
+      
+  </Source>
+</Rule>

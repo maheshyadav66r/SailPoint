@@ -1,0 +1,135 @@
+ <?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE sailpoint PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<sailpoint>
+<Form name="Life Cycle Events Form">
+  <Section columns="1" label="Report Filters" name="filterProperties">
+    <Field columnSpan="1" displayName="Select Date Range" name="auditDateRange" type="string" value="ref:auditDateRange">
+      <Attributes>
+        <Map>
+          <entry key="xtype" value="daterange"/>
+        </Map>
+      </Attributes>
+    </Field>
+  </Section>
+</Form>
+
+<TaskDefinition  executor="sailpoint.reporting.LiveReportExecutor" name="Report - Life Cycle Events" progressMode="String" resultAction="Rename" subType="Identity and User Reports" template="true" type="LiveReport">
+  <Attributes>
+    <Map>
+      <entry key="report">
+        <value>
+          <LiveReport disablePreview="true" title="Audit Events Live Report">
+		  <ReportForm>
+		         <Reference class="sailpoint.object.Form"  name="Life Cycle Events Form"/>
+		      </ReportForm>  
+            <DataSource objectType="AuditEvent" type="Filter">     
+				<QueryParameters>
+					<Parameter argument="auditDateRange">
+					  <QueryScript>
+						<Source>   
+							import sailpoint.object.*;   
+							import sailpoint.reporting.*;   
+							import sailpoint.search.ExternalAttributeFilterBuilder;
+							import java.util.*; 
+							List filters = new ArrayList();							
+							if(value !=null){								 
+								 if(null !=value.get("start")){								
+									filters.add(Filter.ge("created", new Date(value.get("start"))));
+								 }
+								
+								if(null !=value.get("end")){
+									filters.add(Filter.le("created", new Date(value.get("end"))));
+								}
+							}
+							filters.add(Filter.eq("action","identityLifecycleEvent"));
+							queryOptions.setFilters(filters);
+							queryOptions.addOrdering("string1", true); 
+							return queryOptions;
+						</Source>
+					  </QueryScript>
+                </Parameter>
+				</QueryParameters>			
+            </DataSource>  
+			
+            <Columns>
+			   <ReportColumnConfig field="target" header="User" property="target" sortable="true" width="110"> 
+			    <RenderScript>
+                  <Source>
+					if(null != value){
+						String user = value.replaceAll("Identity:","");
+						renderCache.put("user", user);
+						return user;
+					}
+				 </Source>
+				</RenderScript>
+				</ReportColumnConfig>
+              <ReportColumnConfig field="created" header="created" property="created" sortable="true" width="110"/>
+              <ReportColumnConfig field="action" header="action" property="action" sortable="true" width="110"/>              
+			  <ReportColumnConfig field="source" header="Source" property="source" sortable="true" width="110"/> 
+			  
+			  <ReportColumnConfig field="firstname" header="First Name"  sortable="true" width="110">
+			  <RenderScript>
+                  <Source>
+					import sailpoint.object.Identity;
+					String user = (String) renderCache.get("user");
+					if(null != user){
+						Identity id = context.getObject(Identity.class,user);
+						if(null != id){
+							return id.getFirstname() ;
+						}
+					}
+					return "";
+				 </Source>
+				</RenderScript>
+			  </ReportColumnConfig>
+			  <ReportColumnConfig field="lastname" header="Last Name" sortable="true" width="110">
+			  <RenderScript>
+                  <Source>
+				  import sailpoint.object.Identity;
+					String user = (String) renderCache.get("user");
+					if(null != user){
+						Identity id = context.getObject(Identity.class,user);
+						if(null != id){
+							return id.getLastname();
+						}
+					}
+					return "";
+				 </Source>
+				</RenderScript>
+			  </ReportColumnConfig>
+			  <ReportColumnConfig field="manager" header="Manager"  sortable="true" width="110">
+			  <RenderScript>
+                  <Source>
+				  import sailpoint.object.Identity;
+					String user = (String) renderCache.get("user");
+					if(null != user){
+						Identity id = context.getObject(Identity.class,user);
+						if(null != id){
+							Identity manager = id.getManager();
+							if(null !=manager){
+								return manager.getDisplayName();
+							}
+						}
+					}
+					return "";
+				 </Source>
+				</RenderScript>
+			  </ReportColumnConfig>
+			  
+			  <ReportColumnConfig field="string1" header="Event" property="string1" sortable="true" width="110"/> 
+			  <ReportColumnConfig field="string4" header="Cause" property="string4" sortable="true" width="110"/> 
+            </Columns>            
+          </LiveReport>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Signature>
+    <Inputs>      
+      <Argument multi="false" name="auditDateRange" type="string">
+        <Description></Description>
+      </Argument>     
+    </Inputs>
+  </Signature>
+</TaskDefinition>
+</sailpoint>

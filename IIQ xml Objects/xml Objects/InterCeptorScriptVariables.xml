@@ -1,0 +1,193 @@
+Enabling transient workflow case for spadmin
+Starting workflow DBOrderCheckWF
+Initializing variable: formModel
+--> null
+Variable initialized with launch input: httpSession = org.apache.catalina.session.StandardSessionFacade@1c7a6807
+Initializing variable: lastApprovalState
+--> null
+Initializing variable: operationSelection
+--> DB_operation_Selction_form
+Initializing variable: createOperationDetailsForm
+--> Create_Operation_Details_Form
+Initializing variable: modifyOperationDetailsForm
+--> ModifyDBValues_Dateils_Form
+Initial case variables:
+???
+Starting step Start
+Step result variable: formModel
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Map PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Map>
+  <entry key="transformerClass" value="sailpoint.transformer.IdentityTransformer"/>
+  <entry key="transformerOptions"/>
+</Map>
+
+Ending step Start
+Starting step Operations
+Starting approval for spadmin
+  variables method : startApproval
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Approval PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Approval name="Operations" originalOwner="$(launcher)" owner="spadmin" return="formModel" send="formModel">
+  <Arg name="workItemFormBasePath" value="formModel"/>
+  <Arg name="workItemType" value="Form"/>
+  <Arg name="workItemForm" value="ref:operationSelection"/>
+  <Arg name="requester" value="ref:launcher"/>
+  <InterceptorScript>
+    <Source>
+
+          log.error("  variables method : "+method);
+          log.error("  variables approval : "+approval!=null?approval.toXml():approval);
+          log.error("  variables item : "+item);
+
+        </Source>
+  </InterceptorScript>
+</Approval>
+
+  variables item : null
+Opening work item: Operations
+  variables method : openWorkItem
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Approval PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Approval name="Operations" originalOwner="$(launcher)" owner="spadmin" return="formModel" send="formModel">
+  <Arg name="workItemFormBasePath" value="formModel"/>
+  <Arg name="workItemType" value="Form"/>
+  <Arg name="workItemForm" value="ref:operationSelection"/>
+  <Arg name="requester" value="ref:launcher"/>
+  <InterceptorScript>
+    <Source>
+
+          log.error("  variables method : "+method);
+          log.error("  variables approval : "+approval!=null?approval.toXml():approval);
+          log.error("  variables item : "+item);
+
+        </Source>
+  </InterceptorScript>
+</Approval>
+
+  variables item : [WorkItem: [name = null], [type = Form], [state = null], [level = Normal], [requester = spadmin], [comments = ], [completionComments = null], [notification = ], [expiration = ], [wakeUpDate = ], [notificationConfig = null], [reminders = 0]]
+  variables method : preAssimilation
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Approval PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Approval name="Operations" originalOwner="$(launcher)" owner="spadmin" return="formModel" send="formModel" startDate="1753873704566" started="true" workItemDescription="Operations" workItemType="Form">
+  <Arg name="workItemFormBasePath" value="formModel"/>
+  <Arg name="workItemType" value="Form"/>
+  <Arg name="workItemForm" value="ref:operationSelection"/>
+  <Arg name="requester" value="ref:launcher"/>
+  <InterceptorScript>
+    <Source>
+
+          log.error("  variables method : "+method);
+          log.error("  variables approval : "+approval!=null?approval.toXml():approval);
+          log.error("  variables item : "+item);
+
+        </Source>
+  </InterceptorScript>
+</Approval>
+
+  variables item : [WorkItem: [name = null], [type = Form], [state = Finished], [level = Normal], [requester = spadmin], [comments = ], [completionComments = null], [notification = ], [expiration = ], [wakeUpDate = ], [notificationConfig = null], [reminders = 0]]
+Assimilating work item: Operations
+  variables method : postAssimilation
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Approval PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Approval assimilated="true" endDate="1753873723028" name="Operations" originalOwner="$(launcher)" owner="spadmin" return="formModel" send="formModel" startDate="1753873704566" started="true" state="Finished" workItemDescription="Operations" workItemType="Form">
+  <Arg name="workItemFormBasePath" value="formModel"/>
+  <Arg name="workItemType" value="Form"/>
+  <Arg name="workItemForm" value="ref:operationSelection"/>
+  <Arg name="requester" value="ref:launcher"/>
+  <InterceptorScript>
+    <Source>
+
+          log.error("  variables method : "+method);
+          log.error("  variables approval : "+approval!=null?approval.toXml():approval);
+          log.error("  variables item : "+item);
+
+        </Source>
+  </InterceptorScript>
+</Approval>
+
+  variables item : [WorkItem: [name = null], [type = Form], [state = Finished], [level = Normal], [requester = spadmin], [comments = ], [completionComments = null], [notification = ], [expiration = ], [wakeUpDate = ], [notificationConfig = null], [reminders = 0]]
+Ending approval for spadmin
+  variables method : endApproval
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Approval PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Approval complete="true" endDate="1753873723028" name="Operations" originalOwner="$(launcher)" owner="spadmin" return="formModel" send="formModel" startDate="1753873704566" started="true" state="Finished" workItemDescription="Operations" workItemType="Form">
+  <Arg name="workItemFormBasePath" value="formModel"/>
+  <Arg name="workItemType" value="Form"/>
+  <Arg name="workItemForm" value="ref:operationSelection"/>
+  <Arg name="requester" value="ref:launcher"/>
+  <InterceptorScript>
+    <Source>
+
+          log.error("  variables method : "+method);
+          log.error("  variables approval : "+approval!=null?approval.toXml():approval);
+          log.error("  variables item : "+item);
+
+        </Source>
+  </InterceptorScript>
+</Approval>
+
+  variables item : [WorkItem: [name = null], [type = Form], [state = Finished], [level = Normal], [requester = spadmin], [comments = ], [completionComments = null], [notification = ], [expiration = ], [wakeUpDate = ], [notificationConfig = null], [reminders = 0]]
+Ending step Operations
+
+
+
+----------------------------------------------------------------------------------------------------------------------
+
+handler
+   quickLink
+   sessionOwner
+   log
+   httpSession
+   trace
+   context
+   formModel
+   lastApprovalState
+   operationSelection
+   item
+   modifyOperationDetailsForm
+   wfcase
+   currentUserName
+   workflow
+   quickLinkIdentityIds
+   method
+   approval
+   workflowSuccess
+   workflowName
+   quickLinkIdentityId
+   bsf
+   transient
+   bsh
+   step
+   createOperationDetailsForm
+   wfcontext
+   launcher
+Opening work item: Operations
+   handler
+   quickLink
+   sessionOwner
+   log
+   httpSession
+   trace
+   context
+   formModel
+   lastApprovalState
+   operationSelection
+   item
+   modifyOperationDetailsForm
+   wfcase
+   currentUserName
+   workflow
+   quickLinkIdentityIds
+   method
+   approval
+   workflowSuccess
+   workflowName
+   quickLinkIdentityId
+   bsf
+   transient
+   bsh
+   step
+   createOperationDetailsForm
+   wfcontext
+   Launcher

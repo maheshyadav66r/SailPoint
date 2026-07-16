@@ -1,0 +1,84 @@
+import sailpoint.api.SailPointContext;
+import sailpoint.object.Identity;
+import sailpoint.object.Link;
+import sailpoint.tools.GeneralException;
+import sailpoint.tools.Util;
+import sailpoint.tools.xml.XMLObjectFactory;
+import sailpoint.tools.xml.XMLObjectParser;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.io.File;
+
+public class IdentityRule extends AbstractRuleExecutor {
+
+    @Override
+    public Object execute(SailPointContext context, Map arguments) throws GeneralException {
+        // Create a filter for department and location
+        Filter departmentFilter = Filter.eq("department", "Engineering");
+        Filter locationFilter = Filter.eq("location", "Hyderabad");
+
+        // Combine the filters using an AND condition
+        Filter combinedFilter = Filter.and(departmentFilter, locationFilter);
+
+        // Search for identities that match the combined filter
+        QueryOptions queryOptions = new QueryOptions();
+        queryOptions.addFilter(combinedFilter);
+
+        // Use the search method to get the identities
+        Iterator<Object[]> results = context.search(Identity.class, queryOptions, "id");
+
+        // Define the file path
+        String filePath = "/tmp/identities.csv";
+
+        // Prepare to write to the file
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+            // Write the header
+            writer.write("First Name,Last Name,Display Name,Application Links");
+            writer.newLine();
+
+            // Iterate through each result and write details to the file
+            while (results.hasNext()) {
+                Object[] row = results.next();
+                Identity identity = (Identity) context.getObjectById(Identity.class, (String) row[0]);
+
+                String firstName = (String) identity.getAttribute("firstName");
+                String lastName = (String) identity.getAttribute("lastName");
+                String displayName = identity.getDisplayName();
+
+                // Get application links
+                Set<Link> links = identity.getLinks();
+                StringBuilder applicationLinks = new StringBuilder();
+                for (Link link : links) {
+                    if (applicationLinks.length() > 0) {
+                        applicationLinks.append(", ");
+                    }
+                    applicationLinks.append(link.getApplicationName());
+                }
+
+                String applicationLinksString = applicationLinks.toString();
+                if (links.size() > 1) {
+                    applicationLinksString = "\"" + applicationLinksString + "\"";
+                }
+
+                // Write the identity details to the file
+                writer.write(String.format("%s,%s,%s,%s",
+                        Util.csvEscape(firstName),
+                        Util.csvEscape(lastName),
+                        Util.csvEscape(displayName),
+                        applicationLinksString));
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            throw new GeneralException("Error writing to file", e);
+        }
+
+        // Return the file path or a link to download the file
+        return filePath;
+    }
+}

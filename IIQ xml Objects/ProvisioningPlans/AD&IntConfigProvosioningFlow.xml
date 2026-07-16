@@ -1,0 +1,132 @@
+-------LCM Provisioning Start step-----<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan>
+  <AccountRequest application="IntConApplication" op="Modify">
+    <Attributes>
+      <Map>
+        <entry key="attachmentConfigList"/>
+        <entry key="attachments"/>
+        <entry key="id" value="c0a800fb95361b21819538addee709f9"/>
+      </Map>
+    </Attributes>
+    <AttributeRequest assignmentId="f42bd46bfb144b3498c8f72f28687499" displayValue="GroupName3" name="GroupId" op="Add" value="GIC3">
+      <Attributes>
+        <Map>
+          <entry key="assignment" value="true"/>
+        </Map>
+      </Attributes>
+    </AttributeRequest>
+  </AccountRequest>
+  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Catherine Simmons,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+    <Attributes>
+      <Map>
+        <entry key="attachmentConfigList"/>
+        <entry key="attachments"/>
+        <entry key="id" value="c0a800fc94cb1e358194ccac8aec282a"/>
+      </Map>
+    </Attributes>
+    <AttributeRequest assignmentId="80a98c34eee348eb93fa577e9b42c331" displayValue="AccountsReceivable" name="memberOf" op="Add" value="CN=AccountsReceivable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <Attributes>
+        <Map>
+          <entry key="assignment" value="true"/>
+        </Map>
+      </Attributes>
+    </AttributeRequest>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <ProvisioningTargets>
+    <ProvisioningTarget application="IntConApplication" assignmentId="f42bd46bfb144b3498c8f72f28687499" attribute="GroupId" value="GIC3">
+      <AccountSelection applicationId="c0a8002394fb1f3081952339b50f2a6d" applicationName="IntConApplication" implicitCreate="true"/>
+    </ProvisioningTarget>
+    <ProvisioningTarget application="ActiveDirectory" assignmentId="80a98c34eee348eb93fa577e9b42c331" attribute="memberOf" value="CN=AccountsReceivable,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <AccountSelection applicationId="c0a800fc94cb1e358194cc6fcd4826a9" applicationName="ActiveDirectory" selection="CN=Catherine Simmons,OU=People,OU=Demo,DC=Eshiam,DC=com">
+        <AccountInfo displayName="Catherine Simmons" nativeIdentity="CN=Catherine Simmons,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+      </AccountSelection>
+    </ProvisioningTarget>
+  </ProvisioningTargets>
+</ProvisioningPlan>
+
+-------Identity Request Initialize----
+-------Identity Request violation review WF----
+-------Do Provisioning Forms WF------
+-------Approve and Provision Subprocess workflow----
+-------Provisioning Approval Subprocess Start step----
+-------Identity Request Provision workflow----
+-------Do Provisioning Forms WF------
+------Provision with retries workflow start step----
+ Start ProvisionIntegrMod - provision()
+plan : <?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan nativeIdentity="Catherine Simmons" targetIntegration="ProvisionIntegrMod" trackingId="1b6a203e964446d2a5f325424423368d">
+  <AccountRequest application="IntConApplication" nativeIdentity="1b2c3d" op="Create">
+    <Attributes>
+      <Map>
+        <entry key="attachmentConfigList"/>
+        <entry key="attachments"/>
+        <entry key="flow" value="AccessRequest"/>
+        <entry key="id" value="c0a800fb95361b21819538addee709f9"/>
+        <entry key="interface" value="LCM"/>
+        <entry key="nativeIdUpdated">
+          <value>
+            <Boolean>true</Boolean>
+          </value>
+        </entry>
+        <entry key="operation" value="EntitlementAdd"/>
+      </Map>
+    </Attributes>
+    <AttributeRequest assignmentId="f42bd46bfb144b3498c8f72f28687499" displayValue="GroupName3" name="GroupId" op="Add" value="GIC3">
+      <Attributes>
+        <Map>
+          <entry key="assignment" value="true"/>
+        </Map>
+      </Attributes>
+    </AttributeRequest>
+    <AttributeRequest name="Name" op="Set" value="Catherine Simmons"/>
+    <AttributeRequest name="FirstName" op="Set" value="Catherine"/>
+    <AttributeRequest name="LastName" op="Set" value="Simmons"/>
+    <AttributeRequest name="Department" op="Set" value="Finance"/>
+    <AttributeRequest name="Email" op="Set" value="Catherine.Simmons@eshiam.com"/>
+    <AttributeRequest name="manager" op="Set" value="Amanda Ross"/>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000558"/>
+      <entry key="requester" value="spadmin"/>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <Requesters>
+    <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+  </Requesters>
+</ProvisioningPlan>
+
+configMap : {ruleName=Rule-IntegrationConfig, operations=Add,Create,Modify,Delete, roleSyncHistory=null}
+strRuleName :Rule-IntegrationConfig
+ruleObject : sailpoint.object.Rule@a2e1397[id=c0a80004952c1cac81952c0d39c40001,name=Rule-IntegrationConfig]
+Line has been written successfully!!
+Line has been written successfully!!
+provResult : sailpoint.object.ProvisioningResult@32b6d58d
+ End ProvisionIntegrMod - provision()
+
+ finallines after  loop---EmployeeId,Name,FirstName,LastName,Department,Email,manager,GroupId
+1a,James Smith,James,Smith,Engineering,James.Smith@eshiam.com,1045,"GIC1,GIC2,GIC3"
+1c,Aaron Nichols,Aaron,Nichols,Engineering,Aaron.Nichols@eshiam.com,1045,"GIC1,GIC2"
+1a2a3c4b,Betty Young,Betty,Young,Engineering,Betty.Young@eshiam.com,1045,"GIC2,GIC3,GIC4"
+sr19, Abdul samad, abdul, samad, InformationTechnology, abdul.samad@sunrisers.com, Mahesh Nattali,"GIC1"
+1c2a3b4c, Bonnie Carroll, Bonnie, Carroll, Information Technology, Bonnie.Carroll@eshiam.com, Rachel Stone,"GIC1,GIC2,GIC4"
+1b2c3a4c, Brandon Mason, Brandon, Mason, Accounting, Brandon.Mason@eshiam.com, Douglas Flores,"GIC1,GIC3,GIC4"
+1a2c3b4a, Brenda Cooper, Brenda, Cooper, Accounting, Brenda.Cooper@eshiam.com, Maria White,"GIC1,GIC3,GIC4"
+1b2c3a4a, Bruce Henry, Bruce, Henry, Accounting, Bruce.Henry@eshiam.com, Douglas Flores,"GIC1,GIC2"
+1c2b3c4e, Bryan Ryan, Bryan, Ryan, Inventory, Bryan.Ryan@eshiam.com, Russell Spencer,""
+1b2a3a4a, Carl Foster, Carl, Foster, Information Technology, Carl.Foster@eshiam.com, Walter Henderson,"GIC1,GIC2"
+1c2b3a, Carlos Perkins, Carlos, Perkins, Human Resources, Carlos.Perkins@eshiam.com, Randy Knight,"GIC1,GIC2"
+1c2c3c4d, Carmen Hansen, Carmen, Hansen, Finance, Carmen.Hansen@eshiam.com, Victor Pierce,"GIC1"
+1b2c3d, Catherine Simmons, Catherine, Simmons, Finance, Catherine.Simmons@eshiam.com, Amanda Ross,"GIC3"
+
+------Check Status of queued items workflow----
+-------Identity Request Notify WF----
+-------Identity Request Finalize WF----

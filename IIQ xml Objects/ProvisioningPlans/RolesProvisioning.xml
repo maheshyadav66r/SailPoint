@@ -1,0 +1,370 @@
+-------------------------Start step------------------------<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan>
+  <AccountRequest application="IIQ" op="Modify">
+    <Attributes>
+      <Map>
+        <entry key="attachmentConfigList"/>
+        <entry key="attachments"/>
+        <entry key="id" value="c0a800fb8f7b1606818f866651660b59"/>
+      </Map>
+    </Attributes>
+    <AttributeRequest assignmentId="89fa3361cb664010abbae04064ff68cb" name="assignedRoles" op="Add" value="ITAccountRoles"/>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <ProvisioningTargets>
+    <ProvisioningTarget assignmentId="89fa3361cb664010abbae04064ff68cb" role="ITAccountRoles">
+      <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ActiveDirectory" selection="CN=Annie Chavez,OU=People,OU=Demo,DC=Eshiam,DC=com">
+        <AccountInfo displayName="Annie Chavez" nativeIdentity="CN=Annie Chavez,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+      </AccountSelection>
+      <AccountSelection applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" selection="cn=Annie.Chavez,ou=People,dc=my-domain,dc=com">
+        <AccountInfo displayName="Annie.Chavez" nativeIdentity="cn=Annie.Chavez,ou=People,dc=my-domain,dc=com"/>
+      </AccountSelection>
+    </ProvisioningTarget>
+  </ProvisioningTargets>
+</ProvisioningPlan>
+
+------------BeforeProvisioning----------------------------<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan nativeIdentity="Annie Chavez" targetIntegration="ActiveDirectory" trackingId="8c1f90b9a3a1481ebc308d5d6759e6d1">
+  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Annie Chavez,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+    <AttributeRequest name="memberOf" op="Add" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000038"/>
+      <entry key="requester" value="spadmin"/>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <Requesters>
+    <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+  </Requesters>
+</ProvisioningPlan>
+
+--------------------AfterProvisionin--------------------------<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan nativeIdentity="Annie Chavez" targetIntegration="ActiveDirectory" trackingId="8c1f90b9a3a1481ebc308d5d6759e6d1">
+  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Annie Chavez,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+    <AttributeRequest name="memberOf" op="Add" value="CN=AccountsPayable,OU=Groups,OU=Demo,DC=Eshiam,DC=com"/>
+    <ProvisioningResult status="committed"/>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000038"/>
+      <entry key="requester" value="spadmin"/>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <Requesters>
+    <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+  </Requesters>
+</ProvisioningPlan>
+
+------------BeforeProvisioning----------------------------<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan nativeIdentity="Annie Chavez" targetIntegration="LDAPApplication" trackingId="aa7c0a74190248dfb4fce44d5ac9f661">
+  <AccountRequest application="LDAPApplication" nativeIdentity="cn=Annie.Chavez,ou=People,dc=my-domain,dc=com" op="Modify">
+    <AttributeRequest name="groups" op="Add" value="cn=Contractors,ou=Group,dc=my-domain,dc=com"/>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000038"/>
+      <entry key="requester" value="spadmin"/>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <Requesters>
+    <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+  </Requesters>
+</ProvisioningPlan>
+
+--------------------AfterProvisionin--------------------------<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan nativeIdentity="Annie Chavez" targetIntegration="LDAPApplication" trackingId="aa7c0a74190248dfb4fce44d5ac9f661">
+  <AccountRequest application="LDAPApplication" nativeIdentity="cn=Annie.Chavez,ou=People,dc=my-domain,dc=com" op="Modify">
+    <AttributeRequest name="groups" op="Add" value="cn=Contractors,ou=Group,dc=my-domain,dc=com">
+      <ProvisioningResult status="committed"/>
+    </AttributeRequest>
+    <ProvisioningResult status="committed"/>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000038"/>
+      <entry key="requester" value="spadmin"/>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <Requesters>
+    <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+  </Requesters>
+  <ProvisioningResult status="committed"/>
+</ProvisioningPlan>
+
+2024-05-17T17:40:49,935  WARN Thread-462 sailpoint.request.RequestHandler:209 - sailpoint.request.RequestPermanentException: Unable to send email notification, a to address was not specified
+	at sailpoint.request.EmailRequestExecutor.execute(EmailRequestExecutor.java:87)
+	at sailpoint.request.RequestHandler.run(RequestHandler.java:163)
+Caused by: sailpoint.tools.GeneralException: Unable to send email notification, a to address was not specified
+	at sailpoint.server.InternalContext$EmailSender.send(InternalContext.java:1157)
+	at sailpoint.server.InternalContext.sendEmailNotification(InternalContext.java:1065)
+	at sailpoint.request.EmailRequestExecutor.execute(EmailRequestExecutor.java:81)
+	... 1 more
+Caused by: sailpoint.tools.EmailException: Unable to send email notification, a to address was not specified
+	at sailpoint.server.SMTPEmailNotifier.createMessageWithHeader(SMTPEmailNotifier.java:310)
+	at sailpoint.server.SMTPEmailNotifier.createMessage(SMTPEmailNotifier.java:247)
+	at sailpoint.server.SMTPEmailNotifier.sendEmailNotification(SMTPEmailNotifier.java:142)
+	at sailpoint.server.RedirectingEmailNotifier.sendEmailNotification(RedirectingEmailNotifier.java:117)
+	at sailpoint.server.InternalContext$EmailSender.sendInternal(InternalContext.java:1174)
+	at sailpoint.server.InternalContext$EmailSender.send(InternalContext.java:1126)
+	... 3 more
+
+
+
+
+
+
+
+EPF  UAN    102016386030
+password     HHAaMI#@&430
+
+=====================================================================================================================================================
+-----------------------------------------------------Roles provisioning------------------------------------------------------------------------------
+=====================================================================================================================================================
+
+-------------------------Start step------------------------<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan>
+  <AccountRequest application="IIQ" op="Modify">
+    <Attributes>
+      <Map>
+        <entry key="attachmentConfigList"/>
+        <entry key="attachments"/>
+        <entry key="id" value="c0a800fb8f7b1606818f868b2f060bd0"/>
+      </Map>
+    </Attributes>
+    <AttributeRequest assignmentId="87260ad56ff64360b8b8d19da75c49b3" name="assignedRoles" op="Add" value="IT InheritedRoles"/>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <ProvisioningTargets>
+    <ProvisioningTarget assignmentId="87260ad56ff64360b8b8d19da75c49b3" role="IT InheritedRoles">
+      <AccountSelection applicationId="c0a81d898f3419e3818f3447ed430270" applicationName="LDAPApplication" selection="cn=Amanda.Ross,ou=People,dc=my-domain,dc=com">
+        <AccountInfo displayName="Amanda.Ross" nativeIdentity="cn=Amanda.Ross,ou=People,dc=my-domain,dc=com"/>
+      </AccountSelection>
+      <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ActiveDirectory" selection="CN=Amanda Ross,OU=People,OU=Demo,DC=Eshiam,DC=com">
+        <AccountInfo displayName="Amanda Ross" nativeIdentity="CN=Amanda Ross,OU=People,OU=Demo,DC=Eshiam,DC=com"/>
+      </AccountSelection>
+    </ProvisioningTarget>
+  </ProvisioningTargets>
+</ProvisioningPlan>
+
+------------BeforeProvisioning Rule----------------------------<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan nativeIdentity="Amanda Ross" targetIntegration="ActiveDirectory" trackingId="085d84e48c79447bb68a6e1c8046aa5d">
+  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amanda Ross,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+    <AttributeRequest name="memberOf" op="Add">
+      <Value>
+        <List>
+          <String>CN=DEV_All,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+          <String>CN=DEV_EastCoast,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+          <String>CN=Compensation,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+          <String>CN=Corporate-VPN,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+        </List>
+      </Value>
+    </AttributeRequest>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000174"/>
+      <entry key="requester" value="spadmin"/>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <Requesters>
+    <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+  </Requesters>
+</ProvisioningPlan>
+
+--------------------AfterProvisioning Rule--------------------------<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan nativeIdentity="Amanda Ross" targetIntegration="ActiveDirectory" trackingId="085d84e48c79447bb68a6e1c8046aa5d">
+  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Amanda Ross,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify">
+    <AttributeRequest name="memberOf" op="Add">
+      <Value>
+        <List>
+          <String>CN=DEV_All,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+          <String>CN=DEV_EastCoast,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+          <String>CN=Compensation,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+          <String>CN=Corporate-VPN,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+        </List>
+      </Value>
+    </AttributeRequest>
+    <ProvisioningResult status="committed"/>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000174"/>
+      <entry key="requester" value="spadmin"/>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <Requesters>
+    <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+  </Requesters>
+</ProvisioningPlan>
+
+------------BeforeProvisioning Rule----------------------------<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan nativeIdentity="Amanda Ross" targetIntegration="LDAPApplication" trackingId="b676e274135b469da5a32bd8cea38ea3">
+  <AccountRequest application="LDAPApplication" nativeIdentity="cn=Amanda.Ross,ou=People,dc=my-domain,dc=com" op="Modify">
+    <AttributeRequest name="groups" op="Add">
+      <Value>
+        <List>
+          <String>cn=WebApplicationAccess,ou=Group,dc=my-domain,dc=com</String>
+          <String>cn=Contractors,ou=Group,dc=my-domain,dc=com</String>
+          <String>cn=Managers,ou=Group,dc=my-domain,dc=com</String>
+        </List>
+      </Value>
+    </AttributeRequest>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000174"/>
+      <entry key="requester" value="spadmin"/>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <Requesters>
+    <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+  </Requesters>
+</ProvisioningPlan>
+
+--------------------AfterProvisioning Rule--------------------------<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan nativeIdentity="Amanda Ross" targetIntegration="LDAPApplication" trackingId="b676e274135b469da5a32bd8cea38ea3">
+  <AccountRequest application="LDAPApplication" nativeIdentity="cn=Amanda.Ross,ou=People,dc=my-domain,dc=com" op="Modify">
+    <AttributeRequest name="groups" op="Add">
+      <ProvisioningResult status="committed"/>
+      <Value>
+        <List>
+          <String>cn=WebApplicationAccess,ou=Group,dc=my-domain,dc=com</String>
+          <String>cn=Contractors,ou=Group,dc=my-domain,dc=com</String>
+          <String>cn=Managers,ou=Group,dc=my-domain,dc=com</String>
+        </List>
+      </Value>
+    </AttributeRequest>
+    <ProvisioningResult status="committed"/>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000174"/>
+      <entry key="requester" value="spadmin"/>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <Requesters>
+    <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+  </Requesters>
+  <ProvisioningResult status="committed"/>
+</ProvisioningPlan>
+
+------------BeforeProvisioning Rule----------------------------<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan nativeIdentity="Aiden markram" targetIntegration="ActiveDirectory">
+  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Aiden markram,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify" targetIntegration="ActiveDirectory">
+    <Attributes>
+      <Map>
+        <entry key="attachmentConfigList"/>
+        <entry key="attachments"/>
+        <entry key="flow" value="AccessRequest"/>
+        <entry key="id" value="c0a81d898f3419e3818f3439c6c10226"/>
+        <entry key="interface" value="LCM"/>
+        <entry key="operation" value="EntitlementRemove"/>
+      </Map>
+    </Attributes>
+    <AttributeRequest name="memberOf" op="Remove" value="CN=AuditMgmt,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <Attributes>
+        <Map>
+          <entry key="assignment" value="true"/>
+        </Map>
+      </Attributes>
+    </AttributeRequest>
+    <AttributeRequest name="memberOf" op="Remove" value="CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <Attributes>
+        <Map>
+          <entry key="assignment" value="true"/>
+        </Map>
+      </Attributes>
+    </AttributeRequest>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000150"/>
+      <entry key="inRetry">
+        <value>
+          <Boolean>true</Boolean>
+        </value>
+      </entry>
+      <entry key="requester" value="spadmin"/>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <Requesters>
+    <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+  </Requesters>
+</ProvisioningPlan>
+
+--------------------AfterProvisioning Rule--------------------------<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan nativeIdentity="Aiden markram" targetIntegration="ActiveDirectory">
+  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Aiden markram,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Modify" targetIntegration="ActiveDirectory">
+    <Attributes>
+      <Map>
+        <entry key="attachmentConfigList"/>
+        <entry key="attachments"/>
+        <entry key="flow" value="AccessRequest"/>
+        <entry key="id" value="c0a81d898f3419e3818f3439c6c10226"/>
+        <entry key="interface" value="LCM"/>
+        <entry key="operation" value="EntitlementRemove"/>
+      </Map>
+    </Attributes>
+    <AttributeRequest name="memberOf" op="Remove" value="CN=AuditMgmt,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <Attributes>
+        <Map>
+          <entry key="assignment" value="true"/>
+        </Map>
+      </Attributes>
+    </AttributeRequest>
+    <AttributeRequest name="memberOf" op="Remove" value="CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <Attributes>
+        <Map>
+          <entry key="assignment" value="true"/>
+        </Map>
+      </Attributes>
+    </AttributeRequest>
+    <ProvisioningResult status="committed"/>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000150"/>
+      <entry key="inRetry">
+        <value>
+          <Boolean>true</Boolean>
+        </value>
+      </entry>
+      <entry key="requester" value="spadmin"/>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <Requesters>
+    <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+  </Requesters>
+</ProvisioningPlan>
+

@@ -1,0 +1,152 @@
+-------------------------Start step------------------------<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan>
+  <AccountRequest application="ActiveDirectory" op="Modify">
+    <Attributes>
+      <Map>
+        <entry key="attachmentConfigList"/>
+        <entry key="attachments"/>
+        <entry key="id" value="c0a81d898f3419e3818f3439c6c10226"/>
+      </Map>
+    </Attributes>
+    <AttributeRequest assignmentId="4e049c3c50f048c48a2b9a5ecd7f11fd" displayValue="AccountingGeneral" name="memberOf" op="Add" value="CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <Attributes>
+        <Map>
+          <entry key="assignment" value="true"/>
+        </Map>
+      </Attributes>
+    </AttributeRequest>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <ProvisioningTargets>
+    <ProvisioningTarget application="ActiveDirectory" assignmentId="4e049c3c50f048c48a2b9a5ecd7f11fd" attribute="memberOf" value="CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <AccountSelection applicationId="c0a81d898f3419e3818f3430348a0119" applicationName="ActiveDirectory" implicitCreate="true"/>
+    </ProvisioningTarget>
+  </ProvisioningTargets>
+</ProvisioningPlan>
+
+------------BeforeProvisioning----------------------------<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan nativeIdentity="Aiden markram" targetIntegration="ActiveDirectory" trackingId="590f88d0f27541608d9eb64302d50a7a">
+  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Aiden markram,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create">
+    <Attributes>
+      <Map>
+        <entry key="attachmentConfigList"/>
+        <entry key="attachments"/>
+        <entry key="flow" value="AccessRequest"/>
+        <entry key="id" value="c0a81d898f3419e3818f3439c6c10226"/>
+        <entry key="interface" value="LCM"/>
+        <entry key="nativeIdUpdated">
+          <value>
+            <Boolean>true</Boolean>
+          </value>
+        </entry>
+        <entry key="operation" value="EntitlementAdd"/>
+      </Map>
+    </Attributes>
+    <AttributeRequest assignmentId="4e049c3c50f048c48a2b9a5ecd7f11fd" displayValue="AccountingGeneral" name="memberOf" op="Add" value="CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <Attributes>
+        <Map>
+          <entry key="assignment" value="true"/>
+        </Map>
+      </Attributes>
+    </AttributeRequest>
+    <AttributeRequest name="sAMAccountName" op="Set" value="Aiden markram"/>
+    <AttributeRequest name="password" op="Set" value="Eshiam@1045"/>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000032"/>
+      <entry key="requester" value="spadmin"/>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <Requesters>
+    <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+  </Requesters>
+</ProvisioningPlan>
+
+--------------------AfterProvisionin--------------------------<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan nativeIdentity="Aiden markram" targetIntegration="ActiveDirectory" trackingId="590f88d0f27541608d9eb64302d50a7a">
+  <AccountRequest application="ActiveDirectory" nativeIdentity="CN=Aiden markram,OU=People,OU=Demo,DC=Eshiam,DC=com" op="Create">
+    <Attributes>
+      <Map>
+        <entry key="attachmentConfigList"/>
+        <entry key="attachments"/>
+        <entry key="flow" value="AccessRequest"/>
+        <entry key="id" value="c0a81d898f3419e3818f3439c6c10226"/>
+        <entry key="interface" value="LCM"/>
+        <entry key="nativeIdUpdated">
+          <value>
+            <Boolean>true</Boolean>
+          </value>
+        </entry>
+        <entry key="operation" value="EntitlementAdd"/>
+      </Map>
+    </Attributes>
+    <AttributeRequest assignmentId="4e049c3c50f048c48a2b9a5ecd7f11fd" displayValue="AccountingGeneral" name="memberOf" op="Add" value="CN=AccountingGeneral,OU=Groups,OU=Demo,DC=Eshiam,DC=com">
+      <Attributes>
+        <Map>
+          <entry key="assignment" value="true"/>
+        </Map>
+      </Attributes>
+    </AttributeRequest>
+    <AttributeRequest name="sAMAccountName" op="Set" value="Aiden markram"/>
+    <AttributeRequest name="password" op="Set" value="Eshiam@1045"/>
+    <ProvisioningResult status="committed"/>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000032"/>
+      <entry key="requester" value="spadmin"/>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <Requesters>
+    <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+  </Requesters>
+</ProvisioningPlan>
+
+2024-05-15T14:57:02,237  WARN Thread-47 sailpoint.request.RequestHandler:209 - sailpoint.request.RequestPermanentException: Unable to send email notification, a to address was not specified
+	at sailpoint.request.EmailRequestExecutor.execute(EmailRequestExecutor.java:87)
+	at sailpoint.request.RequestHandler.run(RequestHandler.java:163)
+Caused by: sailpoint.tools.GeneralException: Unable to send email notification, a to address was not specified
+	at sailpoint.server.InternalContext$EmailSender.send(InternalContext.java:1157)
+	at sailpoint.server.InternalContext.sendEmailNotification(InternalContext.java:1065)
+	at sailpoint.request.EmailRequestExecutor.execute(EmailRequestExecutor.java:81)
+	... 1 more
+Caused by: sailpoint.tools.EmailException: Unable to send email notification, a to address was not specified
+	at sailpoint.server.SMTPEmailNotifier.createMessageWithHeader(SMTPEmailNotifier.java:310)
+	at sailpoint.server.SMTPEmailNotifier.createMessage(SMTPEmailNotifier.java:247)
+	at sailpoint.server.SMTPEmailNotifier.sendEmailNotification(SMTPEmailNotifier.java:142)
+	at sailpoint.server.InternalContext$EmailSender.sendInternal(InternalContext.java:1174)
+	at sailpoint.server.InternalContext$EmailSender.send(InternalContext.java:1126)
+	... 3 more
+
+2024-05-15T14:57:02,249  WARN Thread-48 sailpoint.request.RequestHandler:209 - sailpoint.request.RequestPermanentException: Unable to send email notification, a to address was not specified
+	at sailpoint.request.EmailRequestExecutor.execute(EmailRequestExecutor.java:87)
+	at sailpoint.request.RequestHandler.run(RequestHandler.java:163)
+Caused by: sailpoint.tools.GeneralException: Unable to send email notification, a to address was not specified
+	at sailpoint.server.InternalContext$EmailSender.send(InternalContext.java:1157)
+	at sailpoint.server.InternalContext.sendEmailNotification(InternalContext.java:1065)
+	at sailpoint.request.EmailRequestExecutor.execute(EmailRequestExecutor.java:81)
+	... 1 more
+Caused by: sailpoint.tools.EmailException: Unable to send email notification, a to address was not specified
+	at sailpoint.server.SMTPEmailNotifier.createMessageWithHeader(SMTPEmailNotifier.java:310)
+	at sailpoint.server.SMTPEmailNotifier.createMessage(SMTPEmailNotifier.java:247)
+	at sailpoint.server.SMTPEmailNotifier.sendEmailNotification(SMTPEmailNotifier.java:142)
+	at sailpoint.server.InternalContext$EmailSender.sendInternal(InternalContext.java:1174)
+	at sailpoint.server.InternalContext$EmailSender.send(InternalContext.java:1126)
+	... 3 more
+
+
+
+
+ /* Attributes attrs=new Attributes();
+        attrs.put("assignment",true);
+        attReq.add(attrs);*/

@@ -1,0 +1,61 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE RoleChangeEvent PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<RoleChangeEvent bundleId="c0a81d89912c1c5a8191451747cc1707" bundleName="AccountingITRoleHTask" created="1723442227195" id="c0a81d89912c1c5a8191452967fb1821" status="Pending">
+  <ProvisioningPlan>
+    <AccountRequest application="ActiveDirectory">
+      <AttributeRequest name="memberOf" op="Remove">
+        <Value>
+          <List>
+            <String>CN=DEV_Internal,OU=Groups,OU=Demo,DC=Eshiam,DC=com</String>
+          </List>
+        </Value>
+      </AttributeRequest>
+    </AccountRequest>
+    <AccountRequest application="IIQ" op="Modify">
+      <AttributeRequest name="assignedRoles" op="Add" value="AccountingITRoleHTask"/>
+    </AccountRequest>
+    <Attributes>
+      <Map>
+        <entry key="source" value="RoleChangePropagation"/>
+      </Map>
+    </Attributes>
+  </ProvisioningPlan>
+</RoleChangeEvent>
+-------------------------------------------------------------------------------------------------------------------------------------
+                                      After adding new entitlements(2) in IT role through UI
+----------------------------------------------------------------------------------------------------------------------------------
+								1)IT Role rolechangeevent object
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE RoleChangeEvent PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<RoleChangeEvent bundleId="c0a81d89912c1c5a8191451747cc1707" bundleName="AccountingITRoleHTask" created="1723457628181" id="c0a81d89912c1c5a81914614681519d9" status="Pending">
+  <ProvisioningPlan>
+    <AccountRequest application="ActiveDirectory"/>
+    <AccountRequest application="IIQ" op="Modify">
+      <AttributeRequest name="assignedRoles" op="Add" value="AccountingITRoleHTask"/>
+    </AccountRequest>
+    <Attributes>
+      <Map>
+        <entry key="source" value="RoleChangePropagation"/>
+      </Map>
+    </Attributes>
+  </ProvisioningPlan>
+</RoleChangeEvent>
+
+
+   2) Business Role   RoleChangeEvent object                        
+   
+   <?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE RoleChangeEvent PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<RoleChangeEvent bundleId="c0a81d89912c1c5a8191451c465a1717" bundleName="BusinessRoleAccountingHtask" created="1723457628181" id="c0a81d89912c1c5a81914614681519da" status="Pending">
+  <ProvisioningPlan>
+    <AccountRequest application="ActiveDirectory"/>
+    <AccountRequest application="IIQ" op="Modify">
+      <AttributeRequest name="assignedRoles" op="Add" value="BusinessRoleAccountingHtask"/>
+    </AccountRequest>
+    <Attributes>
+      <Map>
+        <entry key="source" value="RoleChangePropagation"/>
+      </Map>
+    </Attributes>
+  </ProvisioningPlan>
+</RoleChangeEvent>

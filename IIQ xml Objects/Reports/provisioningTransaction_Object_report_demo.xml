@@ -1,0 +1,526 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE sailpoint PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<sailpoint>
+<Custom name="Task-HoursMintues">
+  <Attributes>
+    <Map>
+      <entry key="hours">
+        <value>
+          <List>
+            <String>0</String>
+            <String>1</String>
+            <String>2</String>
+            <String>3</String>
+            <String>4</String>
+            <String>5</String>
+            <String>6</String>
+            <String>7</String>
+            <String>8</String>
+            <String>9</String>
+            <String>10</String>
+            <String>11</String>
+            <String>12</String>
+            <String>13</String>
+            <String>14</String>
+            <String>15</String>
+            <String>16</String>
+            <String>17</String>
+            <String>18</String>
+            <String>19</String>
+            <String>20</String>
+            <String>21</String>
+            <String>22</String>
+            <String>23</String>
+          </List>
+        </value>
+      </entry>
+      <entry key="mintues">
+        <value>
+          <List>
+            <String>0</String>
+            <String>1</String>
+            <String>2</String>
+            <String>3</String>
+            <String>4</String>
+            <String>5</String>
+            <String>6</String>
+            <String>7</String>
+            <String>8</String>
+            <String>9</String>
+            <String>10</String>
+            <String>11</String>
+            <String>12</String>
+            <String>13</String>
+            <String>14</String>
+            <String>15</String>
+            <String>16</String>
+            <String>17</String>
+            <String>18</String>
+            <String>19</String>
+            <String>20</String>
+            <String>21</String>
+            <String>22</String>
+            <String>23</String>
+            <String>24</String>
+            <String>25</String>
+            <String>26</String>
+            <String>27</String>
+            <String>28</String>
+            <String>29</String>
+            <String>30</String>
+            <String>31</String>
+            <String>32</String>
+            <String>33</String>
+            <String>34</String>
+            <String>35</String>
+            <String>36</String>
+            <String>37</String>
+            <String>38</String>
+            <String>39</String>
+            <String>40</String>
+            <String>41</String>
+            <String>42</String>
+            <String>43</String>
+            <String>44</String>
+            <String>45</String>
+            <String>46</String>
+            <String>47</String>
+            <String>48</String>
+            <String>49</String>
+            <String>50</String>
+            <String>51</String>
+            <String>52</String>
+            <String>53</String>
+            <String>54</String>
+            <String>55</String>
+            <String>56</String>
+            <String>57</String>
+            <String>58</String>
+            <String>59</String>
+          </List>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+</Custom>
+<Form name="TASK-Provisioning Transaction Report Form" type="Report">
+  <Section columns="3" label="report_provisioning_transaction_form" name="customProperties">
+    <Field displayName="report_provisioning_application" helpKey="help_report_provisioning_application" multi="true" name="applications" type="ProvisioningTransaction" value="ref:applications">
+      <Attributes>
+        <Map>
+          <entry key="objectColumn" value="applicationName"/>
+        </Map>
+      </Attributes>
+    </Field>
+    <Field displayName="report_provisioning_identity" helpKey="help_report_provisioning_identity" multi="true" name="identities" type="Identity" value="ref:identities">
+      <Attributes>
+        <Map>
+          <entry key="valueProperty" value="name"/>
+        </Map>
+      </Attributes>
+    </Field>
+    <Field displayName="report_provisioning_integration" helpKey="help_report_provisioning_integration" multi="true" name="integration" type="ProvisioningTransaction" value="ref:integration">
+      <Attributes>
+        <Map>
+          <entry key="objectColumn" value="integration"/>
+        </Map>
+      </Attributes>
+    </Field>
+    <Field displayName="report_provisioning_native_identity" helpKey="help_report_provisioning_account_display_name" name="accountDisplayName" type="string" value="ref:accountDisplayName"/>
+    <Field displayName="report_provisioning_operation" helpKey="help_report_provisioning_operation" multi="true" name="operation" type="string" value="ref:operation">
+      <AllowedValuesDefinition>
+        <Script>
+          <Source>
+            String[] operations = {
+            "Create",
+            "Delete",
+            "Disable",
+            "Enable",
+            "Lock",
+            "Modify",
+            "Unlock"
+            };
+
+            List values = new ArrayList();
+            for (String operation : operations) {
+            List value = new ArrayList();
+            value.add(operation);
+            value.add(operation);
+
+            values.add(value);
+            }
+
+            return values;
+          </Source>
+        </Script>
+      </AllowedValuesDefinition>
+    </Field>
+    <Field displayName="report_provisioning_source" helpKey="help_report_provisioning_source" multi="true" name="source" type="string" value="ref:source">
+      <AllowedValuesDefinition>
+        <Script>
+          <Source>
+            String[] sources = {
+            "Batch",
+            "Certification",
+            "GroupManagement",
+            "IdentityRefresh",
+            "LCM",
+            "PAM",
+            "PolicyViolation",
+            "RapidSetup",
+            "RoleChangePropagation",
+            "Rule",
+            "UI",
+            "Unknown",
+            "WebService",
+            "Workflow"
+            };
+
+            List values = new ArrayList();
+            for (String source : sources) {
+            List value = new ArrayList();
+            value.add(source);
+            value.add(source);
+
+            values.add(value);
+            }
+
+            return values;
+          </Source>
+        </Script>
+      </AllowedValuesDefinition>
+    </Field>
+    <Field displayName="report_provisioning_status" helpKey="help_report_provisioning_status" multi="true" name="status" type="string" value="ref:status">
+      <AllowedValuesDefinition>
+        <Script>
+          <Source>
+            import sailpoint.object.*;
+            List enums = new ArrayList();
+            for(ProvisioningTransaction.Status enumItem : ProvisioningTransaction.Status.values()) {
+            List item = new ArrayList();
+            item.add(enumItem.toString());
+            item.add(enumItem.getLocalizedMessage());
+            enums.add(item);
+            }
+            return enums;
+          </Source>
+        </Script>
+      </AllowedValuesDefinition>
+    </Field>
+    <Field displayName="report_provisioning_type" helpKey="help_report_provisioning_type" multi="true" name="type" type="string" value="ref:type">
+      <AllowedValuesDefinition>
+        <Script>
+          <Source>
+            import sailpoint.object.*;
+            List enums = new ArrayList();
+            for(ProvisioningTransaction.Type enumItem : ProvisioningTransaction.Type.values()) {
+            List item = new ArrayList();
+            item.add(enumItem.toString());
+            item.add(enumItem.getLocalizedMessage());
+            enums.add(item);
+            }
+            return enums;
+          </Source>
+        </Script>
+      </AllowedValuesDefinition>
+    </Field>
+    <Field columnSpan="1" displayName="report_provisioning_forced" helpKey="help_report_provisioning_forced" name="forced" type="boolean" value="ref:forced"/>
+    <Field displayName="Start Date" name="startDate" type="date" value="ref:startDate">
+      <Attributes>
+        <Map>
+          <entry key="height" value="50"/>
+          <entry key="width" value="100"/>
+        </Map>
+      </Attributes>
+    </Field>
+    <Field displayName="Hour" name="startHours" type="string" value="ref:startHours">
+      <AllowedValuesDefinition>
+        <Script>
+          <Source>
+            import sailpoint.object.Custom;
+            
+            Custom customObj = context.getObject(Custom.class,"Task-HoursMintues");
+            List customObjList = customObj.getList("hours");
+            return customObjList;
+          </Source>
+        </Script>
+      </AllowedValuesDefinition>
+      <Attributes>
+        <Map>
+          <entry key="height" value="50"/>
+          <entry key="width" value="75"/>
+        </Map>
+      </Attributes>
+    </Field>
+    <Field displayName="Mintues" name="startMintues" type="string" value="ref:startMintues">
+      <AllowedValuesDefinition>
+        <Script>
+          <Source>
+            import sailpoint.object.Custom;
+            
+            Custom customObj = context.getObject(Custom.class,"Task-HoursMintues");
+            List customObjList = customObj.getList("mintues");
+            return customObjList;
+          </Source>
+        </Script>
+      </AllowedValuesDefinition>
+      <Attributes>
+        <Map>
+          <entry key="height" value="50"/>
+          <entry key="width" value="75"/>
+        </Map>
+      </Attributes>
+    </Field>
+    <Field displayName="End Date" name="endDate" type="date" value="ref:endDate">
+      <Attributes>
+        <Map>
+          <entry key="height" value="50"/>
+          <entry key="width" value="100"/>
+        </Map>
+      </Attributes>
+    </Field>
+    <Field displayName="Hour" name="endHours" type="string" value="ref:endHours">
+      <AllowedValuesDefinition>
+        <Script>
+          <Source>
+            import sailpoint.object.Custom;
+            
+            Custom customObj = context.getObject(Custom.class,"Task-HoursMintues");
+            List customObjList = customObj.getList("hours");
+            return customObjList;
+          </Source>
+        </Script>
+      </AllowedValuesDefinition>
+      <Attributes>
+        <Map>
+          <entry key="height" value="50"/>
+          <entry key="width" value="75"/>
+        </Map>
+      </Attributes>
+    </Field>
+    <Field displayName="Mintues" name="endMintues" type="string" value="ref:endMintues">
+      <AllowedValuesDefinition>
+        <Script>
+          <Source>
+            import sailpoint.object.Custom;
+            
+            Custom customObj = context.getObject(Custom.class,"Task-HoursMintues");
+            List customObjList = customObj.getList("mintues");
+            return customObjList;
+          </Source>
+        </Script>
+      </AllowedValuesDefinition>
+      <Attributes>
+        <Map>
+          <entry key="height" value="50"/>
+          <entry key="width" value="75"/>
+        </Map>
+      </Attributes>
+    </Field>
+  </Section>
+</Form>
+<TaskDefinition executor="sailpoint.reporting.LiveReportExecutor" name="TASK-Detailed Provisioning Transaction Object Report" progressMode="Percentage" resultAction="Rename" subType="Administration Reports" template="true" type="LiveReport">
+  <Attributes>
+    <Map>
+      <entry key="report">
+        <value>
+          <LiveReport disablePreview="true" title="Detailed Provisioning Transaction Object Report">
+            <DataSource dataSourceClass="sailpoint.reporting.datasource.ProvisioningTransactionObjectDataSource" type="Java">
+              <QueryParameters>
+                <Parameter argument="identities" property="identityName"/>
+                <Parameter argument="applications" property="applicationName"/>
+                <Parameter argument="integration" property="integration">
+                  <QueryScript>
+                    <Source>
+
+                      import sailpoint.object.*;
+                      import java.util.*;
+
+                      if (value != null &amp;&amp; !value.isEmpty()){
+                      queryOptions.addFilter(Filter.ignoreCase(Filter.like("integration", value, Filter.MatchMode.START)));
+                      }
+
+                      return queryOptions;
+
+                    </Source>
+                  </QueryScript>
+                </Parameter>
+                <Parameter argument="accountDisplayName" property="accountDisplayName">
+                  <QueryScript>
+                    <Source>
+
+                      import sailpoint.object.*;
+                      import java.util.*;
+
+                      log.error("args :"+args);
+
+                      if (value != null &amp;&amp; !value.isEmpty()){
+                      queryOptions.addFilter(Filter.ignoreCase(Filter.like("accountDisplayName", value, Filter.MatchMode.START)));
+                      }
+
+                      return queryOptions;
+
+                    </Source>
+                  </QueryScript>
+                </Parameter>
+                <Parameter argument="status" property="status"/>
+                <Parameter argument="type" property="type"/>
+                <Parameter argument="operation" property="operation"/>
+                <Parameter argument="source" property="source"/>
+                <Parameter argument="startDate">
+                  <QueryScript>
+                    <Source>
+                      import sailpoint.object.QueryOptions;
+                      import sailpoint.object.Filter;
+
+                      // The second step is to build the startDate filter
+                      // Use the 'arguments' global variable to get values from the form
+                      Date startDate = arguments.getDate("startDate");
+                      String startHour = arguments.getString("startHours");
+                      String startMinutes = arguments.getString("startMintues");
+
+                      Calendar calendar = Calendar.getInstance();
+                      calendar.setTime(startDate);
+                      if (startHour != null)
+                      {
+                      calendar.add(Calendar.HOUR_OF_DAY, Integer.parseInt(startHour));
+                      }
+                      if (startMinutes != null)
+                      {
+                      calendar.add(Calendar.MINUTE, Integer.parseInt(startMinutes));
+                      }
+                      Date finalStartDate = calendar.getTime();
+                      log.error("finalStartDate :"+finalStartDate);
+                      queryOptions.addFilter(Filter.ge("created", finalStartDate));
+
+                      // The third step is to build the endDate filter
+                      // Use the 'arguments' global variable to get values from the form
+                      Date endDate = arguments.getDate("endDate");
+                      String endHour = arguments.getString("endHours");
+                      String endMinutes = arguments.getString("endMintues");
+
+                      Calendar calendar = Calendar.getInstance();
+                      calendar.setTime(endDate);
+                      if (endHour != null)
+                      {
+                      calendar.add(Calendar.HOUR_OF_DAY, Integer.parseInt(endHour));
+                      }
+                      if (endMinutes != null)
+                      {
+                      calendar.add(Calendar.MINUTE, Integer.parseInt(endMinutes));
+                      }
+                      Date finalEndDate = calendar.getTime();
+                      log.error("finalEndDate :"+finalEndDate);
+                      queryOptions.addFilter(Filter.le("created", finalEndDate));
+
+                      return queryOptions;
+                    </Source>
+                  </QueryScript>
+                </Parameter>
+                <Parameter argument="forced" property="forced">
+                  <QueryScript>
+                    <Source>
+
+                      import sailpoint.object.*;
+                      import java.util.*;
+
+                      if (value == true){
+                      queryOptions.addFilter(Filter.eq("forced", true));
+                      }
+
+                      return queryOptions;
+
+                    </Source>
+                  </QueryScript>
+                </Parameter>
+              </QueryParameters>
+            </DataSource>
+            <ReportForm>
+              <Reference class="sailpoint.object.Form" name="TASK-Provisioning Transaction Report Form"/>
+            </ReportForm>
+            <Columns>
+              <ReportColumnConfig field="name" header="report_provisioning_id" property="name" sortable="true" width="110"/>
+              <ReportColumnConfig field="applicationName" header="report_provisioning_application" property="applicationName" sortable="true" width="110"/>
+              <ReportColumnConfig field="identityName" header="report_provisioning_identity" property="identityName" sortable="true" width="110"/>
+              <ReportColumnConfig field="identityDisplayName" header="report_provisioning_identity_display" property="identityDisplayName" sortable="true" width="110"/>
+              <ReportColumnConfig field="integration" header="report_provisioning_integration" property="integration" sortable="true" width="110"/>
+              <ReportColumnConfig field="nativeIdentity" header="report_provisioning_native_identity" property="nativeIdentity" sortable="true" width="110"/>
+              <ReportColumnConfig field="accountDisplayName" header="report_provisioning_account_display" property="accountDisplayName" sortable="true" width="110"/>
+              <ReportColumnConfig field="status" header="report_provisioning_status" property="status" sortable="true" width="110"/>
+              <ReportColumnConfig field="type" header="report_provisioning_type" property="type" sortable="true" width="110"/>
+              <ReportColumnConfig field="operation" header="report_provisioning_operation" property="operation" sortable="true" width="110"/>
+              <ReportColumnConfig field="source" header="report_provisioning_source" property="source" sortable="true" width="110"/>
+              <ReportColumnConfig field="created" header="report_provisioning_date" property="created" sortable="true" width="110"/>
+              <ReportColumnConfig field="forced" header="report_provisioning_forced" property="forced" sortable="true" width="110"/>
+              <ReportColumnConfig field="retryCount" header="report_provisioning_retry_count" width="110"/>
+              <ReportColumnConfig field="manualWorkItem" header="report_provisioning_work_item" width="110"/>
+              <ReportColumnConfig field="ticketId" header="report_provisioning_ticket_id" width="110"/>
+              <ReportColumnConfig field="timedOut" header="report_provisioning_timed_out" width="110"/>
+              <ReportColumnConfig field="certificationId" header="report_provisioning_certification_id" property="certificationId" sortable="true" width="110"/>
+              <ReportColumnConfig field="certificationName" header="report_provisioning_certification_name" width="110"/>
+              <ReportColumnConfig field="errorMessages" header="report_provisioning_errors" width="110"/>
+              <ReportColumnConfig field="requestOperation" header="report_provisioning_request_operation" width="110"/>
+              <ReportColumnConfig field="requestName" header="report_provisioning_request_name" width="110"/>
+              <ReportColumnConfig field="requestValue" header="report_provisioning_request_value" width="110"/>
+              <ReportColumnConfig field="requestResult" header="report_provisioning_request_result" width="110"/>
+            </Columns>
+          </LiveReport>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Description>Displays all information from provisioning transactions.</Description>
+  <RequiredRights>
+    <Reference class="sailpoint.object.SPRight" name="FullAccessProvisioningTransactionDetailedReport"/>
+  </RequiredRights>
+  <Signature>
+    <Inputs>
+      <Argument multi="true" name="applications" type="Application">
+        <Description>help_report_provisioning_application</Description>
+      </Argument>
+      <Argument multi="true" name="identities" type="Identity">
+        <Description>help_report_provisioning_identity</Description>
+      </Argument>
+      <Argument name="integration" type="string">
+        <Description>help_report_provisioning_integration</Description>
+      </Argument>
+      <Argument name="accountDisplayName" type="string">
+        <Description>help_report_provisioning_account_display_name</Description>
+      </Argument>
+      <Argument name="operation" type="string">
+        <Description>help_report_provisioning_operation</Description>
+      </Argument>
+      <Argument name="source" type="string">
+        <Description>help_report_provisioning_source</Description>
+      </Argument>
+      <Argument name="status" type="string">
+        <Description>help_report_provisioning_status</Description>
+      </Argument>
+      <Argument name="type" type="string">
+        <Description>help_report_provisioning_type</Description>
+      </Argument>
+      <Argument name="forced" type="boolean">
+        <Description>help_report_provisioning_forced</Description>
+      </Argument>
+      <Argument name="startDate" type="string">
+        <Description>help_report_provisioning_date</Description>
+      </Argument>
+      <Argument name="startHours" type="integer">
+        <Description>help_report_provisioning_forced</Description>
+      </Argument>
+      <Argument name="startMintues" type="string">
+        <Description>help_report_provisioning_date</Description>
+      </Argument>
+      <Argument name="endDate" type="string">
+        <Description>help_report_provisioning_forced</Description>
+      </Argument>
+      <Argument name="endHours" type="string">
+        <Description>help_report_provisioning_date</Description>
+      </Argument>
+      <Argument name="endMintues" type="string">
+        <Description>help_report_provisioning_forced</Description>
+      </Argument>
+    </Inputs>
+  </Signature>
+</TaskDefinition>
+</sailpoint>

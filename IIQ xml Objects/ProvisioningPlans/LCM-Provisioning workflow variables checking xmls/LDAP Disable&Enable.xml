@@ -1,0 +1,151 @@
+-------------------------Start step------------------------<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan>
+  <AccountRequest application="LDAPApplication" nativeIdentity="cn=Amanda.Ross,ou=People,dc=my-domain,dc=com" op="Disable">
+    <Attributes>
+      <Map>
+        <entry key="operation">
+          <value>
+            <AccountOperation>Disable</AccountOperation>
+          </value>
+        </entry>
+      </Map>
+    </Attributes>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+</ProvisioningPlan>
+
+------------BeforeProvisioning Rule----------------------------<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan nativeIdentity="Amanda Ross" targetIntegration="LDAPApplication" trackingId="c8cd281e82d84f8dad92ef8cc7ba5d86">
+  <AccountRequest application="LDAPApplication" nativeIdentity="cn=Amanda.Ross,ou=People,dc=my-domain,dc=com" op="Disable">
+    <Attributes>
+      <Map>
+        <entry key="flow" value="AccountsRequest"/>
+        <entry key="interface" value="LCM"/>
+        <entry key="operation" value="Disable"/>
+      </Map>
+    </Attributes>
+    <AttributeRequest name="BusinessCategory" op="Add" value="Inactive"/>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000159"/>
+      <entry key="requester" value="spadmin"/>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <Requesters>
+    <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+  </Requesters>
+</ProvisioningPlan>
+
+--------------------AfterProvisioning Rule--------------------------<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan nativeIdentity="Amanda Ross" targetIntegration="LDAPApplication" trackingId="c8cd281e82d84f8dad92ef8cc7ba5d86">
+  <AccountRequest application="LDAPApplication" nativeIdentity="cn=Amanda.Ross,ou=People,dc=my-domain,dc=com" op="Disable">
+    <Attributes>
+      <Map>
+        <entry key="flow" value="AccountsRequest"/>
+        <entry key="interface" value="LCM"/>
+        <entry key="operation" value="Disable"/>
+      </Map>
+    </Attributes>
+    <AttributeRequest name="BusinessCategory" op="Add" value="Inactive"/>
+    <AttributeRequest name="businessCategory" op="Set" value="Inactive"/>
+    <ProvisioningResult status="committed"/>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000159"/>
+      <entry key="requester" value="spadmin"/>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>   
+  <Requesters>
+    <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+  </Requesters>
+  <ProvisioningResult status="committed"/>
+</ProvisioningPlan>
+
+=====================================================================================================================================================
+----------------------------------------------------ENABLE ------------------------------------------------------------------------------------------
+
+-------------------------Start step------------------------<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan>
+  <AccountRequest application="LDAPApplication" nativeIdentity="cn=Amanda.Ross,ou=People,dc=my-domain,dc=com" op="Enable">
+    <Attributes>
+      <Map>
+        <entry key="operation">
+          <value>
+            <AccountOperation>Enable</AccountOperation>
+          </value>
+        </entry>
+      </Map>
+    </Attributes>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+</ProvisioningPlan>
+
+------------BeforeProvisioning Rule----------------------------<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan nativeIdentity="Amanda Ross" targetIntegration="LDAPApplication" trackingId="a9bbdaf47a3741d59cf5779979c4d3d9">
+  <AccountRequest application="LDAPApplication" nativeIdentity="cn=Amanda.Ross,ou=People,dc=my-domain,dc=com" op="Enable">
+    <Attributes>
+      <Map>
+        <entry key="flow" value="AccountsRequest"/>
+        <entry key="interface" value="LCM"/>
+        <entry key="operation" value="Enable"/>
+      </Map>
+    </Attributes>
+    <AttributeRequest name="businessCategory" op="Set" value="Active"/>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000160"/>
+      <entry key="requester" value="spadmin"/>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <Requesters>
+    <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+  </Requesters>
+</ProvisioningPlan>
+
+--------------------AfterProvisioning Rule--------------------------<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE ProvisioningPlan PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<ProvisioningPlan nativeIdentity="Amanda Ross" targetIntegration="LDAPApplication" trackingId="a9bbdaf47a3741d59cf5779979c4d3d9">
+  <AccountRequest application="LDAPApplication" nativeIdentity="cn=Amanda.Ross,ou=People,dc=my-domain,dc=com" op="Enable">
+    <Attributes>
+      <Map>
+        <entry key="flow" value="AccountsRequest"/>
+        <entry key="interface" value="LCM"/>
+        <entry key="operation" value="Enable"/>
+      </Map>
+    </Attributes>
+    <AttributeRequest name="businessCategory" op="Set" value="Active"/>
+    <AttributeRequest name="businessCategory" op="Remove" value="Active"/>
+    <ProvisioningResult status="committed"/>
+  </AccountRequest>
+  <Attributes>
+    <Map>
+      <entry key="identityRequestId" value="0000000160"/>
+      <entry key="requester" value="spadmin"/>
+      <entry key="source" value="LCM"/>
+    </Map>
+  </Attributes>
+  <Requesters>
+    <Reference class="sailpoint.object.Identity" id="c0a81d898f331ca3818f33fcf64800ff" name="spadmin"/>
+  </Requesters>
+  <ProvisioningResult status="committed"/>
+</ProvisioningPlan>
+

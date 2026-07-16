@@ -1,0 +1,105 @@
+In Apache Log4j 2, variables and methods are used to configure logging and manage log outputs. Here’s a breakdown of key variables and methods, along with the general order in which they are typically applied or configured:
+
+### 1. **Configuration**  
+   - **ConfigurationSource**: The source from which Log4j 2 loads its configuration, like `log4j2.xml`, `log4j2.json`, `log4j2.yaml`, or programmatic configuration.
+   - **ConfigurationFactory**: Log4j 2 uses a factory method to determine the configuration source.
+   - **Configurator**: This is used to configure the logging system programmatically if not using an XML, JSON, or YAML configuration file.
+
+### 2. **Loggers**  
+   Loggers are responsible for handling the logging messages. They are typically created using `LogManager` and are identified by a name.
+   
+   - **LogManager.getLogger()**: Retrieves or creates a logger instance by name.
+   - **Logger**: The logger object is the core of Log4j 2’s logging mechanism. It provides methods like:
+     - **trace()**
+     - **debug()**
+     - **info()**
+     - **warn()**
+     - **error()**
+     - **fatal()**
+     These methods log messages at different levels.
+   - **Logger.setLevel()**: Sets the logging level for the logger.
+   - **Logger.addAppender()**: Adds an appender to the logger, which sends log events to different destinations (e.g., console, file, etc.).
+
+### 3. **Appenders**  
+   Appenders are responsible for sending the log messages to their destinations. Common appenders include:
+   
+   - **ConsoleAppender**: Writes logs to the console.
+   - **FileAppender**: Writes logs to a file.
+   - **RollingFileAppender**: Similar to `FileAppender`, but it supports rolling over log files when they reach a certain size.
+   - **SocketAppender**: Sends logs over a socket.
+   - **AsyncAppender**: Sends logs asynchronously to a set of other appenders.
+
+   Appenders are typically configured in the `log4j2.xml` or another configuration file, or programmatically using methods like `logger.addAppender()`.
+
+### 4. **Layouts**  
+   Layouts define the format of the log messages. Common layouts include:
+   
+   - **PatternLayout**: Provides a customizable pattern for log messages.
+   - **JSONLayout**: Outputs logs in JSON format.
+   - **XMLLayout**: Outputs logs in XML format.
+   
+   Layouts are set on appenders, typically using the `<Layout>` tag in the configuration.
+
+### 5. **Filters**  
+   Filters allow filtering of log messages based on certain conditions, such as level or message content. Filters can be applied to loggers or appenders.
+
+   - **ThresholdFilter**: Filters log events based on a level threshold.
+   - **RegexFilter**: Filters messages based on regular expressions.
+   - **CompositeFilter**: Combines multiple filters with logical operations.
+
+### 6. **Levels**  
+   Log levels determine the severity of the log message and whether or not it is logged based on the logger's configuration. The order of levels in decreasing severity is:
+   
+   - **TRACE** (lowest level)
+   - **DEBUG**
+   - **INFO**
+   - **WARN**
+   - **ERROR**
+   - **FATAL** (highest level)
+
+   The log message will only be logged if the logger’s level is set to that level or lower (i.e., a more severe level).
+
+### 7. **MDC/NDC (Mapped Diagnostic Context/ Nested Diagnostic Context)**  
+   These provide additional context for logging.
+   
+   - **MDC.put()**: Adds a key-value pair to the MDC.
+   - **MDC.get()**: Retrieves a value from the MDC.
+   - **NDC.push()**: Adds a value to the NDC stack.
+   - **NDC.pop()**: Removes the top value from the NDC stack.
+
+   These contexts can be included in the log pattern layout for enriched log messages (e.g., to include a session ID or request ID).
+
+### 8. **Log4j2 API Methods**  
+   Key methods within the Log4j 2 API:
+   
+   - **LogManager.getLogger()**: Retrieves a logger instance.
+   - **LogManager.shutdown()**: Shuts down the Log4j 2 logging system (flushes and closes all appenders).
+   - **ThreadContext.put()**: Adds context data to the current thread’s context map.
+   - **ThreadContext.get()**: Retrieves context data from the current thread’s context map.
+
+### Typical Order of Configuration:
+1. **Set up configuration**:
+   - Define the source for Log4j 2 configuration (`log4j2.xml`, programmatic configuration).
+   
+2. **Create Logger**:
+   - Get or create the logger instance via `LogManager.getLogger()`.
+
+3. **Set Logger Level**:
+   - Optionally set the logger’s logging level using `logger.setLevel()`.
+
+4. **Add Appender**:
+   - Add one or more appenders to the logger.
+
+5. **Configure Layout**:
+   - Set the layout for each appender (PatternLayout, JSONLayout, etc.).
+
+6. **Apply Filters (if necessary)**:
+   - Add filters to loggers or appenders if needed.
+
+7. **Log Messages**:
+   - Use logger methods like `info()`, `debug()`, etc., to log messages.
+
+8. **Shutdown (optional)**:
+   - Call `LogManager.shutdown()` to properly clean up Log4j 2 resources.
+
+By following this sequence, you can configure logging in a way that suits your application's needs.

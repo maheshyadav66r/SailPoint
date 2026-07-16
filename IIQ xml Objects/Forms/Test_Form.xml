@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Form hidden="true" name="Test_Form">
+  <Attributes>
+    <Map>
+      <entry key="includeHiddenFields" value="true"/>
+      <entry key="pageTitle" value="Manage XXXAccounts"/>
+      <entry key="title"/>
+    </Map>
+  </Attributes>
+  <Button action="next" label="Update"/>
+  <Button action="cancel" label="Exit"/>
+  <Section>
+    <Field displayName="Select Application" name="appName" postBack="true" type="application">
+      <Attributes>
+        <Map>
+          <entry key="id" value="appName"/>
+          <entry key="valueProperty" value="name"/>
+        </Map>
+      </Attributes>
+      <ValidationScript>
+        <Source><![CDATA[
+    						if(value ==null)
+    						return "Application must be selected";
+    						form.getField("finalwlaccounts").setHidden(false);
+    						form.getField("finalwlaccounts").setValue(form.getField("finalwlaccounts").getAttribute("previousValue"));
+    						return null;	
+    ]]></Source>
+      </ValidationScript>
+    </Field>
+    <Field dynamic="true">
+      <Attributes>
+        <Map>
+          <entry key="xtype" value="displayfield"/>
+        </Map>
+      </Attributes>
+      <Script>
+        <Source><![CDATA[
+
+					
+					import sailpoint.object.Application;
+					import sailpoint.object.Filter;
+					import sailpoint.object.QueryOptions;
+					import sailpoint.object.Link;
+					import sailpoint.object.Custom;
+					Custom whitelistMap = context.getObjectByName(Custom.class,"Custom - XXXAccounts");
+					String appName = form.getField("appName").getValue();
+					form.getField("finalwlaccounts").setAttribute("previousValue",form.getField("finalwlaccounts").getValue());
+					form.getField("finalwlaccounts").setValue(null);
+					String existingDataList = "";
+					if(appName != null && whitelistMap !=  null)
+					{
+								List existingAccounts = whitelistMap.getList(appName);
+								if(existingAccounts != null && !existingAccounts.isEmpty())
+								{
+									String existingValues = "";
+									for(String existingAccount : existingAccounts)
+									{
+										existingDataList+="<option value=\"" + existingAccount  +"\">" + existingAccount + "</option>";
+										if("".equals(existingValues))
+										existingValues = existingAccount;
+										else
+										existingValues = existingValues + "|" + existingAccount;
+									}
+									form.getField("finalwlaccounts").setValue(existingValues);
+									
+								}
+						}
+					String htmlCode = "<STYLE TYPE=\"text/css\"><!-- TD{font-family: Arial; font-size: 12px; font-weight: bold;} ---></STYLE><table><tr></tr><tr><td colspan=\"6\" >Enter XXXAccount:<input type=\"text\" id=\"wlacnt\"/><input type=\"button\" value=\"Add\" onclick=\"var wlacnt = document.getElementById('wlacnt').value;if(wlacnt == null || wlacnt == '')alert('Please enter Valid Account to Add');else{var selwleles =document.getElementById('selectwlaccnts');var options = selwleles.options;for(var i=options.length-1;i>=0;i--){		if(options[i].value == wlacnt)		{alert('Account Already exists,unable to Process Add');return;}}selwleles.add(new Option(wlacnt,wlacnt),null);var finalValues='';var options = selwleles.options;  for(var i=options.length-1;i>=0;i--){if(finalValues == '')finalValues=options[i].value;else {finalValues=finalValues + '|';finalValues=finalValues + options[i].value;}}document.getElementById('finalwlaccounts-inputEl').value=finalValues;}\"><input type=\"button\" value=\"Remove\" onclick=\"var wlacnt = document.getElementById('wlacnt').value;if(wlacnt == null || wlacnt == ''){var selwleles = document.getElementById('selectwlaccnts');var count=0;for(var j=selwleles.options.length-1;j>=0;j--){if(selwleles.options[j].selected){selwleles.remove(j);count++;}}alert('Total ' + count + ' Item(s) removed from Whitelist');}else{selwleles = document.getElementById('selectwlaccnts');var isRemoved = false; var options = selwleles.options;for(var i=options.length-1;i>=0;i--){if(options[i].value == wlacnt){selwleles.remove(i);isRemoved=true;break;}}if(isRemoved){alert('Account removed from Whitelist');}else alert('Account not Exist in Whitelist');} var finalValues='';var options = selwleles.options;  for(var i=options.length-1;i>=0;i--){if(finalValues == '')finalValues=options[i].value;else {finalValues=finalValues + '|';finalValues=finalValues + options[i].value;}}document.getElementById('finalwlaccounts-inputEl').value=finalValues;\" ><input type=\"button\" value=\"Clear\" onclick=\"document.getElementById('selectwlaccnts').innerHTML ='';document.getElementById('finalwlaccounts-inputEl').value='';\" ></td></tr><tr><td ><input id=\"acountFile\" type=\"file\" onchange=\"var selwleles = document.getElementById('selectwlaccnts'); var file=this.files[0];var reader = new FileReader();reader.readAsText(file);reader.onloadend = function (e){var results = e.target.result;var elems = results.split(/\\s+/);var addCount = 0;var removeCount=0;var removEles=new Array();var optionslength = document.getElementById('selectwlaccnts').options.length;if(optionslength>0){var cd=confirm('Do you want to Clear existing XXXaccounts?\\nPress OK to Continue otherwise Press Cancel');if(cd){document.getElementById('selectwlaccnts').innerHTML ='';document.getElementById('finalwlaccounts-inputEl').value='';}}for(i=0;i<elems.length;i++){var record = elems[i].split('|');if(record.length !=2){continue;}if(record[0].toUpperCase() == 'REMOVE'){removEles[removeCount++]=record[1];}if(record[0].toUpperCase() == 'ADD'){selwleles.add(new Option(record[1],record[1]),null);addCount++;}}alert('Total Accounts added:'+addCount+'\\nTotal Accounts Removed:'+removeCount);if(removeCount>=0){for(var j=selwleles.options.length-1;j>=0;j--){for(var i=removEles.length-1;i>=0;i--)if(selwleles.options[j].value == removEles[i])selwleles.remove(j);}}var finalValues='';var options = selwleles.options; for(var i=options.length-1;i>=0;i--){if(finalValues == '')finalValues=options[i].value;else finalValues=finalValues + '|' + options[i].value;}document.getElementById('finalwlaccounts-inputEl').value=finalValues;};\"/></td></tr><tr><td colSpan=\"3\" >XXX Accounts</td></tr><tr><td rowspan=\"6\" colSpan=\"3\" ><select style=\"width:300px\" multiple  id=\"selectwlaccnts\" size=\"16\">:wacntOptions</select><td></tr><tr/><tr/><tr><td/></tr></table>";
+					htmlCode = htmlCode.replaceAll(":wacntOptions",existingDataList);
+					return htmlCode;
+					]]></Source>
+      </Script>
+    </Field>
+    <Field displayName="All XXX Accounts" hidden="true" name="finalwlaccounts">
+      <Attributes>
+        <Map>
+          <entry key="id" value="finalwlaccounts"/>
+        </Map>
+      </Attributes>
+    </Field>
+  </Section>
+</Form>
