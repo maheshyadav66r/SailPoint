@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Validation_Rule_NonGroupObject_Requestable" type="Validation">
+  <Source><![CDATA[
+  import sailpoint.object.QueryOptions;
+  import sailpoint.object.Filter;
+  import sailpoint.object.Identity;
+  import sailpoint.object.Application;
+  import sailpoint.object.ManagedAttribute;
+  import sailpoint.tools.Util;
+
+
+
+  List appList = Util.csvToList("LDAPApplication");
+  QueryOptions options = new QueryOptions();
+  Iterator iterator = null;
+
+  try{
+    for(String appName : appList){                                          //eq
+      Filter filter = Filter.eq("application.name",appName);  // We can Add whatever the type and as amny as filters for type   ,Filter.ne("type","memberuser"),,Filter.ne("type","other")
+      options.addFilter(filter);
+      //return context.countObjects(ManagedAttribute.class,options);
+
+      iterator = context.search(ManagedAttribute.class,options);
+      int count = 0;
+      while(iterator.hasNext()){
+        ManagedAttribute entitlement = (ManagedAttribute) iterator.next();    // not equal to 
+        if(entitlement != null){
+          entitlement.setRequestable(false);
+          count++;
+
+        }
+        if(count % 500 == 0){
+          context.saveObject(entitlement);
+          context.commitTransaction();
+          context.decache();
+
+        }
+      }
+    }
+  }catch(Exception e){
+    log.error("Exception Occured During requestable changing : "+e.getMessages());
+  }finally{
+    Util.flushIterator(iterator);
+    context.decache();
+  }
+
+  return "requestable has been changed";
+  ]]></Source>
+</Rule>

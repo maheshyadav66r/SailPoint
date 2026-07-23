@@ -8,6 +8,38 @@
   import sailpoint.object.ProvisioningPlan.AccountRequest;
 
 
+
+  import sailpoint.api.SailPointContext;
+  import sailpoint.connector.Connector;
+  import sailpoint.connector.ConnectorFactory;
+  import sailpoint.object.Application;
+  import sailpoint.tools.GeneralException;
+  import sailpoint.object.Identity;
+  import java.util.Iterator;
+  import sailpoint.object.Filter;
+  import sailpoint.object.QueryOptions;
+  import sailpoint.tools.*;
+  import sailpoint.api.ObjectUtil;
+  import sailpoint.object.Link;
+
+  Identity identity = context.getObjectByName(Identity.class,"Abdul samad");
+  QueryOptions qo=new QueryOptions();
+  Filter f1=Filter.and(Filter.eq("application.name","SCIMApp"),Filter.eq("identity.id",identity.getId()));
+  qo.add(f1);
+
+  List linkNames = new ArrayList();
+  //List links = context.getObjects(Link.class,qo);
+  
+  List links = context.getObjects(Application.class);
+
+  if(links!=null){
+    linkNames =ObjectUtil.getObjectNames(links);
+     log.error("linkNames : "+linkNames);
+  }
+
+  log.error("linkNames : "+linkNames);
+  return linkNames;
+
   Identity identity=context.getObjectByName(Identity.class,"Pat cummins");
 
   ProvisioningPlan plan=new ProvisioningPlan();
@@ -21,7 +53,7 @@
 
 
 
-//ProvisioningProject
+  //ProvisioningProject
 
 
 

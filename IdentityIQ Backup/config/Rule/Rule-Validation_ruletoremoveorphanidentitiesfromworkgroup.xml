@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Validation_RuleToRemoveOrphanIdentitiesFromWorkGroup" type="Validation">
+  <Source><![CDATA[
+  import sailpoint.object.QueryOptions;
+  import sailpoint.object.Filter;
+  import sailpoint.object.Identity;
+
+return context.decrypt("1:ACP:TFu5EHjY0zDZ+nt1GuUZxtJE79ilV6k/lADjmBKQ8HY=");
+  
+  
+  QueryOptions options = new QueryOptions();
+  QueryOptions woptions = new QueryOptions();
+  Filter filter = Filter.and(Filter.eq("workgroup",false),Filter.isempty("links"));
+  options.addFilter(filter);
+  woptions.addFilter(Filter.eq("workgroup",true));
+
+  List identities = context.getObjects(Identity.class,options);
+  List workGroups = context.getObjects(Identity.class,woptions);
+
+  try{
+    if(identities!=null && workGroups!=null){
+      for (Identity identityObj : identities){
+        for(Identity workGroup : workGroups){
+          boolean isMember=identityObj.isInWorkGroup(workGroup);
+          if(isMember){
+            identityObj.remove(workGroup);
+          }
+        }
+      }
+    }
+  }catch(Exception e){
+    log.error("An exception occurred in rule To Remove Orphan Identities From WorkGroup : "+e.getMessage());
+  }finally{
+    context.commitTransaction();
+  }
+  return identities.size()+" NoLinks Identities have been removed from "+workGroups.size()+ " Workgroups";
+  ]]></Source>
+</Rule>

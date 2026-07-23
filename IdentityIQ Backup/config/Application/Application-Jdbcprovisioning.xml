@@ -6,15 +6,15 @@
   </AccountCorrelationConfig>
   <Attributes>
     <Map>
-      <entry key="SQL" value="SELECT  Name, FirstName, LastName, Department, EmployeeID, EmailAddress, NetworkID, managerID , GroupName from jdbc_user_data a, jdbc_groups_data b , jdbc_user_groups_data c   where a.id=c.usersid and b.gid = c.groupid order by Name;&#13;&#10;"/>
+      <entry key="SQL" value="SELECT Name,FirstName,LastName,Department,EmployeeID,EmailAddress,NetworkID,managerID, GROUP_CONCAT(GroupName) AS GroupName&#13;&#10;FROM jdbc_user_data a JOIN jdbc_user_groups_data c ON a.id = c.usersid&#13;&#10;JOIN jdbc_groups_data b ON b.gid = c.groupid&#13;&#10;GROUP BY Name,&#13;&#10;FirstName,LastName,Department,EmployeeID,EmailAddress,NetworkID,managerID;"/>
       <entry key="acctAggregationEnd">
         <value>
-          <Date>1742973134645</Date>
+          <Date>1784786188142</Date>
         </value>
       </entry>
       <entry key="acctAggregationStart">
         <value>
-          <Date>1742973132062</Date>
+          <Date>1784786185733</Date>
         </value>
       </entry>
       <entry key="afterProvisioningRule" value="AfterProvisioningRule"/>
@@ -124,7 +124,7 @@
         </value>
       </entry>
       <entry key="partitionStatements"/>
-      <entry key="password" value="1:ACP:EA4/t17URGasn/ysJSyfUMDZ7hppp35NWV3tZlNPitI="/>
+      <entry key="password" value="1:ACP:VpvNVwgnfmzCiL88pGjb6op4N8XY1TDghqhJA8GgaOY="/>
       <entry key="provisionRule" value="globalRule"/>
       <entry key="sysDescriptions">
         <value>

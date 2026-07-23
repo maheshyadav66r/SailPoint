@@ -1,0 +1,72 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="SailPoint IIQ Role Request Rule">
+  <Source><![CDATA[
+    
+
+  import java.util.List;
+
+  import sailpoint.api.SailPointContext;
+  import sailpoint.api.Provisioner;
+  import sailpoint.object.Identity;
+  import sailpoint.object.ProvisioningPlan;
+  import sailpoint.object.ProvisioningProject;
+  import sailpoint.tools.GeneralException;
+
+  
+  public ProvisioningPlan prepareRolePlan(String identityName, List roles, String operation) {
+    System.out.println("Entering method prepareRolePlan");
+    ProvisioningPlan plan = new ProvisioningPlan();
+
+    try {
+      Identity identity = context.getObjectByName(Identity.class, identityName);
+      if(null != identity) {
+        plan.setIdentity(identity);
+      }
+
+      if("addRole".equalsIgnoreCase(operation)) {
+        plan.add(ProvisioningPlan.APP_IIQ, identityName, "assignedRoles", ProvisioningPlan.Operation.Add, roles);
+      }else if("removeRole".equalsIgnoreCase(operation)){
+        plan.add(ProvisioningPlan.APP_IIQ, identityName, "assignedRoles", ProvisioningPlan.Operation.Remove, roles);
+      }
+
+      plan.setSource("LCM");
+
+    } catch (GeneralException e) {
+      System.out.println("Exception occured while creating plan " + e.getMessage());
+    }
+
+
+    System.out.println("Exiting method prepareRolePlan");
+    return plan;
+  }
+
+ 
+  public void processPlan(String identityName, String operation, List roles) {
+    System.out.println("Entering method processPlan");
+    ProvisioningPlan plan = null;
+    ProvisioningProject proj = null;
+
+    try {
+      Identity iden = context.getObjectByName(Identity.class, identityName);
+      if(null != iden) {
+        Provisioner provisioner = new Provisioner(context);
+        plan = prepareRolePlan(identityName, roles, operation);
+        proj = provisioner.compile(plan);
+        provisioner.execute(proj);
+      }else {
+        System.out.println(" Identity is Missing ");
+      }
+    }catch(Exception exp) {
+      System.out.println(" Error occure dwhile processing plan "+ exp.getMessage());
+    }
+
+    System.out.println("Entering method processPlan");
+  }
+  
+  List roles = new ArrayList();
+  roles.add("SuperUser-Access");
+  return processPlan("ms2612", "removeRole", roles);
+
+  ]]></Source>
+</Rule>

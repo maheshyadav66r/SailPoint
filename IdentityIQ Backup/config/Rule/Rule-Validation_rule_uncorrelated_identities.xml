@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Validation_Rule_Uncorrelated_Identities" type="Validation">
+  <Source><![CDATA[
+  import sailpoint.object.QueryOptions;
+  import sailpoint.object.Filter;
+  import sailpoint.object.Identity;
+  import sailpoint.object.Application;
+
+
+  QueryOptions options = new QueryOptions();
+  // Filter filter = Filter.and(Filter.eq("correlated",false),Filter.isempty("links"));
+  // Filter filter = Filter.eq("correlated",false);
+  // Filter filter = Filter.eq("authoritative",true);
+
+  Filter filter = Filter.eq("links.application.name","HR-Application");
+  options.addFilter(filter);
+
+  //int count = context.countObjects(Identity.class,options);
+  List identities = context.getObjects(Identity.class,options);
+
+  for(Identity identityObj : identities){
+    if(identityObj.getLinks().size()==1){
+
+      log.error(" Identities : "+identityObj.getName());
+    }
+  }
+
+
+  return identities.size();
+  ]]></Source>
+</Rule>

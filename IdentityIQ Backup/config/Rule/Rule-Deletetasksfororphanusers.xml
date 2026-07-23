@@ -1,0 +1,92 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="DeleteTasksForOrphanUsers" type="Validation">
+  <Source><![CDATA[
+  import sailpoint.object.QueryOptions;
+  import sailpoint.object.Filter;
+  import sailpoint.object.Identity;
+  import sailpoint.object.TaskResult;
+  import sailpoint.tools.Util;
+  import sailpoint.api.Terminator;
+
+  import sailpoint.object.QueryOptions;
+  import sailpoint.object.Filter;
+  import sailpoint.object.Link;
+  import sailpoint.tools.Util;
+  import sailpoint.api.ObjectUtil;
+
+
+
+  Calendar cal = Calendar.getInstance();
+  cal.add(Calendar.DATE, -10);
+  Date createdDate = cal.getTime();
+  String msg;
+  int count = 5;
+  ArrayList resultMsgList = new ArrayList();
+  List linkNames = new ArrayList();
+
+
+
+
+  Filter filter = Filter.or(Filter.isempty("links"),Filter.collectionCondition("links",Filter.and(Filter.ne("application.name", "HR-Application"),Filter.ne("application.name", "HR2"))));
+ // Filter filter = Filter.collectionCondition("links", Filter.and(Filter.not(Filter.in("application.name", Util.csvToList("HR-Application,HR2")))));
+
+
+  QueryOptions identityoptions = new QueryOptions();
+  identityoptions.addFilter(filter);
+  identityoptions.setDistinct(true);
+  int identitiess = context.countObjects(Identity.class,identityoptions);
+
+  return identitiess;
+  Iterator ite = context.search(Identity.class, identityoptions,"name,id");
+  while (ite.hasNext()) {
+    Object[] obj = ite.next();
+    String identityName = (String) obj[0];
+    String identityId = (String) obj[1];
+
+   // log.error("name and id : "+identityName+"    "+identityId);
+
+    QueryOptions linkOptions = new QueryOptions();
+    linkOptions.addFilter(Filter.or(Filter.eq("identity.id", identityId),Filter.eq("identity.name", identityName)));
+   // Iterator  linksIterator = context.getObjects(Link.class, linkOptions);
+    //log.error("links List : "+linksIterator);
+    //List linkNames = ObjectUtil.getObjectNames(links);
+    Iterator linksIterator = context.search(Link.class, linkOptions,"displayName");
+    int linksCount=0;
+  while (linksIterator.hasNext()) {
+    
+    linkNames.add(linksIterator.next()[0]);
+    linksCount++;
+  }
+
+    log.error("linksNames List : "+linkNames+"   linksCount  : "+linksCount+"  linksCount fro linksNames list :"+linkNames.size());
+    linkNames.clear();
+    
+     log.error("linksNames List after clear  : "+linkNames);
+  }
+
+  return identitiess;
+
+  if(identities!=null){
+    for(Identity identityObj:identities){
+      QueryOptions qo = new QueryOptions();
+      Filter taskFilter = Filter.and(Filter.le("created",createdDate),Filter.eq("launcher",identityObj.getName(),Filter.isnull("completionStatus")));
+      qo.add(taskFilter);
+      qo.setResultLimit(count);
+      Terminator terminator = new Terminator(context);
+      msg=context.countObjects(TaskResult.class, qo) + " taskResult found";
+      resultMsgList.add(msg);
+
+      try {
+        terminator.deleteObjects(TaskResult.class, qo);
+        msg+=count+" Objects are deleted ";
+      } catch (Exception e) {
+        log.error("Exception in managedAttribute attribute Logical Business attribute Criteria assignment Rule : "+e.getMessage());
+      }finally{
+        context.commitTransaction();
+      }
+    }
+  }
+  return "RESULT: \n" + String.join("\n", resultMsgList);
+  ]]></Source>
+</Rule>

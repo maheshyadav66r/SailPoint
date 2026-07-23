@@ -1,0 +1,81 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Pre-iteraotor HR Data Archiving" type="PreIterate">
+  <Description>This rule is called before the connector processes the data in a file.</Description>
+  <Signature returnType="void">
+    <Inputs>
+      <Argument name="log" type="org.apache.commons.logging.Log">
+        <Description>
+          The log object associated with the SailPointContext.
+        </Description>
+      </Argument>
+      <Argument name="context" type="sailpoint.api.SailPointContext">
+        <Description>
+          A sailpoint.api.SailPointContext object that can be used to query the database if necessary.
+        </Description>
+      </Argument>
+      <Argument name="application">
+        <Description>
+          Application being iterated.
+        </Description>
+      </Argument>
+      <Argument name="schema">
+        <Description>
+          Schema representing the data being iterated.
+        </Description>
+      </Argument>
+      <Argument name="stats">
+        <Description>
+          A map passed by the connector of the stats for the file about to be iterated.
+          Contains keys:
+          fileName : (String) filename of the file about to be processed
+          absolutePath : (String) absolute filename
+          length : (Long) length in bytes
+          lastModified : (Long) last time the file was updated Java GMT
+        </Description>
+      </Argument>
+    </Inputs>
+  </Signature>
+  <Source><![CDATA[
+  import java.io.File;
+  import java.nio.file.Files;
+  import java.nio.file.Paths;
+  import java.text.SimpleDateFormat;
+  import java.util.Date;
+  import java.nio.file.StandardCopyOption;
+  import sailpoint.tools.GeneralException;
+  import java.nio.file.Path;
+  import sailpoint.object.CustomGlobal; 
+
+  String filePath = stats.get("absolutePath");
+  File source = new File(filePath);
+
+  if (!source.exists()) {
+    source.createNewFile();
+  }
+
+
+log.error(" Pre-iteraotor HR Data Archiving : ");
+
+
+  HashMap myHashMap = new HashMap(); 
+
+  myHashMap.put("length",stats.get("length")); 
+  myHashMap.put("lastModified",stats.get("lastModified")); 
+  myHashMap.put("launchedBy","Nattali.Mahesh");
+
+  CustomGlobal.put("FileStatMap",myHashMap); 
+
+  return null;
+
+  String currentDate = new SimpleDateFormat("EEEE_ddMMMMyyyy_a").format(new Date());
+  Path archivePath = Paths.get("D:\\SailPoint\\csv files\\Test"+"\\EmployeesCF_"+currentDate+".csv"); 
+  //File.copy(filePath,archivePath,StandardCopyOption.REPLACE_EXISTING);
+  Files.copy(source.toPath(),archivePath,StandardCopyOption.REPLACE_EXISTING);
+
+
+  log.info("Employee.zip extracted successfully.");
+
+
+  ]]></Source>
+</Rule>

@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Validation_SCIM_Provisioning" type="Validation">
+  <Source><![CDATA[
+  import sailpoint.object.*;
+  import sailpoint.api.*;
+  import sailpoint.object.ProvisioningPlan.AttributeRequest;
+  import sailpoint.object.ProvisioningPlan.AccountRequest;
+
+
+  String identityName = "Abdul samad";
+  String firstName ="Abdul";
+  String lastName ="samad";
+  
+  String email = firstName+"."+lastName+"@gmail.com";
+  Identity identity = context.getObjectByName(Identity.class, identityName);
+
+  ProvisioningPlan plan = new ProvisioningPlan();
+  plan.setIdentity(identity);
+
+  AccountRequest accountRequest =new AccountRequest();
+  accountRequest.setOp(ProvisioningPlan.ObjectOperation.Create);
+  accountRequest.setApplication("SCIMApp");
+  accountRequest.setNativeIdentity(identity.getId());
+
+ accountRequest.add(new AttributeRequest("userName", ProvisioningPlan.Operation.Add, identity.getName()+"-WCADM11"));
+ // accountRequest.add(new AttributeRequest("name.givenName", ProvisioningPlan.Operation.Set,firstName));
+ // accountRequest.add(new AttributeRequest("name.familyName", ProvisioningPlan.Operation.Set,lastName));
+  //accountRequest.add(new AttributeRequest("displayName", ProvisioningPlan.Operation.Set, identity.getName()));
+ // accountRequest.add(new AttributeRequest("emails.work.primary.value", ProvisioningPlan.Operation.Set,email));
+ // accountRequest.add(new AttributeRequest("active", ProvisioningPlan.Operation.Set,true));
+ // accountRequest.add(new AttributeRequest("costCenter", ProvisioningPlan.Operation.Set,"Engineering"));
+ // accountRequest.add(new AttributeRequest("division", ProvisioningPlan.Operation.Set,"Hyderabd"));
+  //accountRequest.add(new AttributeRequest("department", ProvisioningPlan.Operation.Set,"Engineering"));
+ //accountRequest.add(new AttributeRequest("IIQDisabled", ProvisioningPlan.Operation.Set,false));
+ // accountRequest.add(new AttributeRequest("isManager", ProvisioningPlan.Operation.Set,false));
+ // accountRequest.add(new AttributeRequest("manager", ProvisioningPlan.Operation.Set,context.getObjectByName(Identity.class,"Aaron Nichols")));
+
+  plan.add(accountRequest);
+
+  //log.error(" ProvisioningPlan in validation : "+plan.toXml());
+  Provisioner provisioner = new Provisioner(context);
+  // ProvisioningProject proj = provisioner.compile(plan);
+  provisioner.execute(plan);
+
+
+
+  return plan;
+  ]]></Source>
+</Rule>

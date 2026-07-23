@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE Application PUBLIC "sailpoint.dtd" "sailpoint.dtd">
-<Application connector="sailpoint.connector.OpenConnectorAdapter" featuresString="DISCOVER_SCHEMA, PROVISIONING, SYNC_PROVISIONING, ENABLE, PASSWORD" icon="internetIcon" name="SCIMApp" profileClass="" type="SCIM 2.0">
+<Application connector="sailpoint.connector.OpenConnectorAdapter" featuresString="DISCOVER_SCHEMA, PROVISIONING, SYNC_PROVISIONING, ENABLE, PASSWORD, ACCOUNT_ONLY_REQUEST" icon="internetIcon" name="SCIMApp" profileClass="" type="SCIM 2.0">
   <AccountCorrelationConfig>
     <Reference class="sailpoint.object.CorrelationConfig" name="SCIMCorrelation"/>
   </AccountCorrelationConfig>
@@ -60,9 +60,9 @@
       </entry>
       <entry key="nativeChangeDetectionOperations"/>
       <entry key="oAuthJwtHeader"/>
-      <entry key="oauth2password" value="1:ACP:5Ros0iSHyvL0Rke9vFgGHrsES8aW9x2eG2J7bV9+4Qw="/>
+      <entry key="oauth2password" value="1:ACP:Rb58h1O+T8bMZZl8jfphqdGZdP2z57faPV7ZSV7r+0w="/>
       <entry key="oauth2username"/>
-      <entry key="password" value="1:ACP:vVhgqrXe3lXTbx+OR4YBMG9HH+8l1iiGrDG9OJR3od4="/>
+      <entry key="password" value="1:ACP:8Jw02+Kty+NMaiKdwcOafKonIDOfpiC07fNlzAWKa6g="/>
       <entry key="private_key_to_update"/>
       <entry key="relaxConfiguration">
         <value>
@@ -257,6 +257,27 @@
   <Owner>
     <Reference class="sailpoint.object.Identity" name="Mahesh Nattali"/>
   </Owner>
+  <ProvisioningForms>
+    <Form name="SCIM Create" objectType="account" type="Create">
+      <Attributes>
+        <Map>
+          <entry key="pageTitle" value="SCIM Create"/>
+        </Map>
+      </Attributes>
+      <Section name="Section 1">
+        <Field displayName="ID" name="id" required="true" type="string">
+          <Script>
+            <Source><![CDATA[return identity.getId();]]></Source>
+          </Script>
+        </Field>
+        <Field displayName="User Name" name="userName" required="true" type="string">
+          <RuleRef>
+            <Reference class="sailpoint.object.Rule" name="SCIM UserName FieldValue Rule"/>
+          </RuleRef>
+        </Field>
+      </Section>
+    </Form>
+  </ProvisioningForms>
   <Schemas>
     <Schema displayAttribute="userName" identityAttribute="id" instanceAttribute="" nativeObjectType="User" objectType="account">
       <AttributeDefinition name="id" type="string">
