@@ -1,0 +1,577 @@
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script
+    src="#{plugins.requestContextPath}/plugin/ViewOrphanIdentities/ui/js/viewOrphan.js"></script>
+<title>Orphan Identities</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    padding: 16px;
+}
+h2 {
+    margin-top: 0;
+}
+.table-container {
+    border: 1px solid #c0c0c0;
+    border-radius: 4px;
+    margin-bottom: 28px;
+    overflow: hidden;
+}
+.table-header {
+    background: #f7f7f7;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.table-header input[type="text"] {
+    height: 30px;
+    padding: 0 8px;
+    border: 1px solid #b0b0b0;
+    border-radius: 2px;
+    width: 220px;
+}
+.table-header button {
+    height: 32px;
+    padding: 0 10px;
+    border: 1px solid #c0c0c0;
+    background: #f0f0f0;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.table-header button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.table-scroll-wrap {
+    overflow-x: auto;
+}
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+.data-table th, .data-table td {
+    border-top: 1px solid #d0d0d0;
+    padding: 8px 10px;
+    text-align: left;
+    max-width: 260px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.data-table td.links-cell {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+}
+.data-table thead th {
+    background: #f1f1f1;
+    font-weight: 600;
+}
+.data-table thead th.col-name       { width: 18%; }
+.data-table thead th.col-count      { width: 10%; }
+.data-table thead th.col-linknames  { width: 27%; }
+.data-table thead th.col-links      { width: 45%; }
+.link-badge {
+    display: inline-block;
+    color: #2b6cb0;
+    text-decoration: underline;
+    cursor: pointer;
+    margin: 2px 8px 2px 0;
+    white-space: nowrap;
+}
+.link-badge:hover {
+    color: #1a4a80;
+}
+.link-badge.disabled-link {
+    color: #a33;
+}
+.pager {
+    background: #f7f7f7;
+    border-top: 1px solid #d0d0d0;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+.pager-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+.pager-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+.pager-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.pager-row input[type="number"] {
+    width: 46px;
+    text-align: center;
+    padding: 4px 6px;
+    border: 1px solid #c0c0c0;
+    border-radius: 2px;
+}
+.pager-row select {
+    height: 30px;
+    border: 1px solid #c0c0c0;
+    border-radius: 2px;
+}
+.hidden {
+    display: none !important;
+}
+#page-loading-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(255, 255, 255, 0.85);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+}
+#page-loading-overlay .spinner {
+    width: 48px;
+    height: 48px;
+    border: 5px solid #d0d0d0;
+    border-top-color: #2b6cb0;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+#page-loading-overlay .loading-text {
+    font-size: 15px;
+    color: #444;
+}
+.modal-backdrop-custom {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.link-modal {
+    background: #fff;
+    border-radius: 4px;
+    width: 480px;
+    max-width: 90%;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.25);
+}
+.link-modal-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.link-modal-header h3 {
+    margin: 0;
+    font-size: 16px;
+}
+.link-modal-header .close-btn {
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-size: 18px;
+    line-height: 1;
+    color: #666;
+}
+.link-modal-body {
+    padding: 16px;
+    overflow-y: auto;
+}
+.link-modal-body dl {
+    margin: 0;
+}
+.link-modal-body dt {
+    font-weight: 600;
+    color: #555;
+    font-size: 12px;
+    text-transform: uppercase;
+    margin-top: 10px;
+}
+.link-modal-body dt:first-child {
+    margin-top: 0;
+}
+.link-modal-body dd {
+    margin: 2px 0 0 0;
+    font-size: 14px;
+    word-break: break-all;
+}
+.status-pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+}
+.status-pill.enabled {
+    background: #e3f6e8;
+    color: #1e7e34;
+}
+.status-pill.disabled {
+    background: #fdecea;
+    color: #a33;
+}
+.attributes-heading {
+    margin: 16px 0 8px 0;
+    padding-top: 12px;
+    border-top: 1px solid #eee;
+    font-size: 12px;
+    font-weight: 600;
+    color: #555;
+    text-transform: uppercase;
+}
+.attributes-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+.attributes-table td {
+    padding: 5px 0;
+    vertical-align: top;
+    border-top: 1px solid #f2f2f2;
+}
+.attributes-table tr:first-child td {
+    border-top: none;
+}
+.attributes-table .attr-key {
+    width: 38%;
+    font-weight: 600;
+    color: #555;
+    padding-right: 10px;
+    word-break: break-word;
+}
+.attributes-table .attr-value {
+    color: #222;
+    word-break: break-word;
+}
+.no-attributes {
+    color: #888;
+    font-size: 13px;
+    padding-top: 4px;
+}
+.widget-card {
+    background: #fff;
+    border: 1px solid #d7d7d7;
+    border-radius: 4px;
+    margin-bottom: 24px;
+    overflow: hidden;
+}
+.widget-card .widget-header {
+    background: #f7f7f7;
+    padding: 12px 16px;
+    font-size: 16px;
+    font-weight: 600;
+    border-bottom: 1px solid #e0e0e0;
+}
+.endpoint-buttons-bar {
+    padding: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.endpoint-btn {
+    padding: 10px 18px;
+    border: 1px solid #2b6cb0;
+    background: #fff;
+    color: #2b6cb0;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+.endpoint-btn:hover {
+    background: #eaf3fb;
+}
+.endpoint-btn.active {
+    background: #2b6cb0;
+    color: #fff;
+}
+.total-records {
+    color: #444;
+    font-size: 13px;
+    font-weight: 600;
+    margin-left: auto;
+    white-space: nowrap;
+}
+</style>
+</head>
+<body ng-app="viewOrphanIdentities" ng-controller="AppCtrl">
+
+<div id="page-loading-overlay" ng-if="isPageLoading">
+    <div class="spinner"></div>
+    <span class="loading-text">Loading, please wait…</span>
+</div>
+
+<!-- ======================================================= -->
+<!-- API ENDPOINTS WIDGET                                     -->
+<!-- ======================================================= -->
+<section class="widget-card">
+    <div class="widget-header">API Endpoints</div>
+    <div class="endpoint-buttons-bar">
+        <button type="button"
+                class="endpoint-btn"
+                ng-repeat="ep in endpoints track by ep.key"
+                ng-class="{active: activeEndpoint == ep.key}"
+                ng-click="selectEndpoint(ep.key)"
+                ng-attr-title="{{ep.description}}">{{ep.label}}</button>
+    </div>
+</section>
+
+<!-- ======================================================= -->
+<!-- ORPHAN IDENTITIES (ACCOUNTS)                             -->
+<!-- ======================================================= -->
+<section class="table-container" ng-if="activeEndpoint == 'accounts'">
+<h3>Orphan Identities</h3>
+<div ng-controller="OrphanAccountsTableCtrl">
+
+    <div class="table-header">
+        <div style="display:flex;align-items:center;gap:8px;">
+            <input type="text"
+                   ng-model="userName"
+                   placeholder="Filter by identity name" />
+            <button type="button">🔍</button>
+        </div>
+        <span class="total-records">Total Records: {{totalCount}}</span>
+    </div>
+
+    <div ng-if="loading" style="padding:20px;text-align:center;">
+        Loading orphan identities...
+    </div>
+    <div ng-if="error" style="padding:20px;color:red;text-align:center;">
+        {{error}}
+    </div>
+
+    <div class="table-scroll-wrap" ng-if="!loading &amp;&amp; !error">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th class="col-name">Name</th>
+                    <th class="col-count">Links Count</th>
+                    <th class="col-linknames">Link Names</th>
+                    <th class="col-links">Links</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="user in pagedUsers track by $index">
+                    <td>{{user.name}}</td>
+                    <td>{{user.linksCount}}</td>
+                    <td ng-attr-title="{{user.linkNamesDisplay}}">{{user.linkNamesDisplay}}</td>
+                    <td class="links-cell">
+                        <a href="javascript:void(0)"
+                           class="link-badge"
+                           ng-class="{'disabled-link': link.disabled}"
+                           ng-repeat="link in user.links track by $index"
+                           ng-click="showLinkModal(link)"
+                           ng-attr-title="{{link.application}}">{{link.application || link.displayName || link.nativeIdentity}}</a>
+                        <span ng-if="!user.links || user.links.length == 0" style="color:#999;">—</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div ng-if="!loading &amp;&amp; !error &amp;&amp; totalCount == 0"
+         style="padding:12px;color:#555;">
+        No orphan identities found.
+    </div>
+
+    <div class="pager" ng-show="!loading &amp;&amp; !error &amp;&amp; totalCount &gt; 0">
+        <div class="pager-left">
+            <button type="button"
+                    ng-click="goFirst()"
+                    ng-disabled="currentPage == 1">⏮</button>
+            <button type="button"
+                    ng-click="prevPage()"
+                    ng-disabled="currentPage == 1">◀</button>
+            <span class="pager-row">
+                Page
+                <input type="number"
+                       title="Current page"
+                       ng-model="currentPage"
+                       min="1"
+                       max="{{totalPages}}"
+                       ng-change="onPageInputChange()" />
+                of
+                <span>{{totalPages}}</span>
+            </span>
+            <button type="button"
+                    ng-click="nextPage()"
+                    ng-disabled="currentPage >= totalPages">▶</button>
+            <button type="button"
+                    ng-click="goLast()"
+                    ng-disabled="currentPage >= totalPages">⏭</button>
+        </div>
+        <div class="pager-right">
+            <button type="button" ng-click="resetPaging()">⟳</button>
+            <span>Show</span>
+            <select ng-model="pageSize"
+                    title="Items per page"
+                    ng-options="size for size in pageSizeOptions">
+            </select>
+            <span>items</span>
+            <span class="total-records">
+                Total Records: {{totalCount}} &#160;|&#160; Displaying {{startRecord}} - {{endRecord}}
+            </span>
+        </div>
+    </div>
+
+    <!-- Link detail modal -->
+    <div class="modal-backdrop-custom" ng-if="selectedLink" ng-click="closeLinkModal()">
+        <div class="link-modal" ng-click="$event.stopPropagation()">
+            <div class="link-modal-header">
+                <h3>Account Link Details</h3>
+                <button type="button" class="close-btn" ng-click="closeLinkModal()">✕</button>
+            </div>
+            <div class="link-modal-body">
+                <dl>
+                    <dt>Application</dt>
+                    <dd>{{selectedLink.application}}</dd>
+                    <dt>Display Name</dt>
+                    <dd>{{selectedLink.displayName}}</dd>
+                    <dt>Native Identity</dt>
+                    <dd>{{selectedLink.nativeIdentity}}</dd>
+                    <dt>Identity Name</dt>
+                    <dd>{{selectedLink.identityName}}</dd>
+                    <dt>Status</dt>
+                    <dd>
+                        <span class="status-pill"
+                              ng-class="selectedLink.disabled ? 'disabled' : 'enabled'">
+                            {{selectedLink.disabled ? 'Disabled' : 'Enabled'}}
+                        </span>
+                    </dd>
+                    <dt>Link Id</dt>
+                    <dd>{{selectedLink.id}}</dd>
+                </dl>
+
+                <div class="attributes-heading">Attributes</div>
+                <table class="attributes-table" ng-if="hasAttributes()">
+                    <tbody>
+                        <tr ng-repeat="(attrKey, attrValue) in selectedLink.attributes">
+                            <td class="attr-key">{{attrKey}}</td>
+                            <td class="attr-value">{{attrValue}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="no-attributes" ng-if="!hasAttributes()">
+                    No additional attributes available.
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</section>
+
+<!-- ======================================================= -->
+<!-- ORPHAN IDENTITIES (SUMMARY)                              -->
+<!-- ======================================================= -->
+<section class="table-container" ng-if="activeEndpoint == 'summary'">
+<h3>Uncorrelated Identities</h3>
+<div ng-controller="OrphanSummaryTableCtrl">
+
+    <div class="table-header">
+        <div style="display:flex;align-items:center;gap:8px;">
+            <input type="text"
+                   ng-model="userName"
+                   placeholder="Filter by identity name" />
+            <button type="button">🔍</button>
+        </div>
+        <span class="total-records">Total Records: {{totalCount}}</span>
+    </div>
+
+    <div ng-if="loading" style="padding:20px;text-align:center;">
+        Loading orphan identities...
+    </div>
+    <div ng-if="error" style="padding:20px;color:red;text-align:center;">
+        {{error}}
+    </div>
+
+    <div class="table-scroll-wrap" ng-if="!loading &amp;&amp; !error">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th class="col-name">Name</th>
+                    <th class="col-count">Links Count</th>
+                    <th>Link Names</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="user in pagedUsers track by $index">
+                    <td>{{user.name}}</td>
+                    <td>{{user.linksCount}}</td>
+                    <td ng-attr-title="{{user.linksNames}}">{{user.linksNames}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div ng-if="!loading &amp;&amp; !error &amp;&amp; totalCount == 0"
+         style="padding:12px;color:#555;">
+        No orphan identities found.
+    </div>
+
+    <div class="pager" ng-show="!loading &amp;&amp; !error &amp;&amp; totalCount &gt; 0">
+        <div class="pager-left">
+            <button type="button"
+                    ng-click="goFirst()"
+                    ng-disabled="currentPage == 1">⏮</button>
+            <button type="button"
+                    ng-click="prevPage()"
+                    ng-disabled="currentPage == 1">◀</button>
+            <span class="pager-row">
+                Page
+                <input type="number"
+                       title="Current page"
+                       ng-model="currentPage"
+                       min="1"
+                       max="{{totalPages}}"
+                       ng-change="onPageInputChange()" />
+                of
+                <span>{{totalPages}}</span>
+            </span>
+            <button type="button"
+                    ng-click="nextPage()"
+                    ng-disabled="currentPage >= totalPages">▶</button>
+            <button type="button"
+                    ng-click="goLast()"
+                    ng-disabled="currentPage >= totalPages">⏭</button>
+        </div>
+        <div class="pager-right">
+            <button type="button" ng-click="resetPaging()">⟳</button>
+            <span>Show</span>
+            <select ng-model="pageSize"
+                    title="Items per page"
+                    ng-options="size for size in pageSizeOptions">
+            </select>
+            <span>items</span>
+            <span class="total-records">
+                Total Records: {{totalCount}} &#160;|&#160; Displaying {{startRecord}} - {{endRecord}}
+            </span>
+        </div>
+    </div>
+
+</div>
+</section>
+</body>
+</html>

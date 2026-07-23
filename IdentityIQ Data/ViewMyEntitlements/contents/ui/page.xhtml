@@ -1,0 +1,374 @@
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script
+    src="#{plugins.requestContextPath}/plugin/ViewMyEntitlements/ui/js/viewIdentityEntitlementsPlugin.js"></script>
+<title>Document</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    padding: 16px;
+}
+h2 {
+    margin-top: 0;
+}
+.table-container {
+    border: 1px solid #c0c0c0;
+    border-radius: 4px;
+    margin-bottom: 28px;
+    overflow: hidden;
+}
+.table-header {
+    background: #f7f7f7;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.table-header input[type="text"] {
+    height: 30px;
+    padding: 0 8px;
+    border: 1px solid #b0b0b0;
+    border-radius: 2px;
+    width: 220px;
+}
+.table-header button {
+    height: 32px;
+    padding: 0 10px;
+    border: 1px solid #c0c0c0;
+    background: #f0f0f0;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.table-header button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.pending-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
+    white-space: nowrap;
+    user-select: none;
+}
+.pending-checkbox-label input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+    accent-color: #2b6cb0;
+}
+.table-scroll-wrap {
+    overflow-x: auto;
+}
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+.data-table th, .data-table td {
+    border-top: 1px solid #d0d0d0;
+    padding: 8px 10px;
+    text-align: left;
+    max-width: 180px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.data-table thead th {
+    background: #f1f1f1;
+    font-weight: 600;
+}
+.pager {
+    background: #f7f7f7;
+    border-top: 1px solid #d0d0d0;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+.pager-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+.pager-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+.pager-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.pager-row input[type="number"] {
+    width: 46px;
+    text-align: center;
+    padding: 4px 6px;
+    border: 1px solid #c0c0c0;
+    border-radius: 2px;
+}
+.pager-row select {
+    height: 30px;
+    border: 1px solid #c0c0c0;
+    border-radius: 2px;
+}
+.hidden {
+    display: none !important;
+}
+#page-loading-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(255, 255, 255, 0.85);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+}
+#page-loading-overlay .spinner {
+    width: 48px;
+    height: 48px;
+    border: 5px solid #d0d0d0;
+    border-top-color: #2b6cb0;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+#page-loading-overlay .loading-text {
+    font-size: 15px;
+    color: #444;
+}
+</style>
+</head>
+<body ng-app="viewMyEntitlements" ng-controller="AppCtrl">
+
+<div id="page-loading-overlay" ng-if="isPageLoading">
+    <div class="spinner"></div>
+    <span class="loading-text">Loading, please wait…</span>
+</div>
+
+<!-- ======================================================= -->
+<!-- ROLES                                                    -->
+<!-- ======================================================= -->
+<section class="table-container">
+<h2>Roles</h2>
+<div ng-controller="RolesTableCtrl">
+
+    <div class="table-header">
+        <div style="display:flex;align-items:center;gap:8px;">
+            <input type="text"
+                   ng-model="roleName"
+                   placeholder="Filter by role name" />
+            <button type="button">🔍</button>
+        </div>
+        <label class="pending-checkbox-label">
+            <input type="checkbox" ng-model="pendingRoles" />
+            Pending Roles
+        </label>
+    </div>
+
+    <div ng-if="loading" style="padding:20px;text-align:center;">
+        Loading roles...
+    </div>
+    <div ng-if="error" style="padding:20px;color:red;text-align:center;">
+        {{error}}
+    </div>
+
+    <div class="table-scroll-wrap" ng-if="!loading &amp;&amp; !error">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Criticality</th>
+                    <th>Assigned By</th>
+                    <th>Acquired</th>
+                    <th>Status</th>
+                    <th>Application</th>
+                    <th>Account Name</th>
+                    <th>Identity Request ID</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="role in roles track by $index">
+                    <td>{{role.roleName}}</td>
+                    <td>{{role.description}}</td>
+                    <td>{{role.roleCriticality}}</td>
+                    <td>{{role.assignedBy}}</td>
+                    <td>{{role.acquired}}</td>
+                    <td>{{role.status}}</td>
+                    <td>{{role.applicationName}}</td>
+                    <td>{{role.accountName}}</td>
+                    <td>{{role.identityRequestId}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div ng-if="!loading &amp;&amp; !error &amp;&amp; totalCount == 0"
+         style="padding:12px;color:#555;">
+        No roles found.
+    </div>
+
+    <div class="pager" ng-show="!loading &amp;&amp; !error">
+        <div class="pager-left">
+            <button type="button"
+                    ng-click="goFirst()"
+                    ng-disabled="currentPage == 1">⏮</button>
+            <button type="button"
+                    ng-click="prevPage()"
+                    ng-disabled="currentPage == 1">◀</button>
+            <span class="pager-row">
+                Page
+                <input type="number"
+                       ng-model="currentPage"
+                       min="1"
+                       max="{{totalPages}}"
+                       ng-change="onPageInputChange()" />
+                of
+                <span>{{totalPages}}</span>
+            </span>
+            <button type="button"
+                    ng-click="nextPage()"
+                    ng-disabled="currentPage >= totalPages">▶</button>
+            <button type="button"
+                    ng-click="goLast()"
+                    ng-disabled="currentPage >= totalPages">⏭</button>
+        </div>
+        <div class="pager-right">
+            <button type="button" ng-click="resetPaging()">⟳</button>
+            <span>Show</span>
+            <select ng-model="pageSize"
+                    ng-options="size for size in pageSizeOptions">
+            </select>
+            <span>items</span>
+            <span style="margin-left:auto;color:#666;">
+                Displaying {{startRecord}} - {{endRecord}} of {{totalCount}}
+            </span>
+        </div>
+    </div>
+
+</div>
+</section>
+
+<!-- ======================================================= -->
+<!-- ENTITLEMENTS                                             -->
+<!-- ======================================================= -->
+<section class="table-container">
+<h2>Entitlements</h2>
+<div ng-controller="EntitlementsTableCtrl">
+
+    <div class="table-header">
+        <div style="display:flex;align-items:center;gap:8px;">
+            <input type="text"
+                   ng-model="entitlementName"
+                   placeholder="Filter by name" />
+            <button type="button">🔍</button>
+            <input type="text"
+                   ng-model="application"
+                   placeholder="Filter by application" />
+            <button type="button">🔍</button>
+        </div>
+        <label class="pending-checkbox-label">
+            <input type="checkbox" ng-model="pendingEntitlements" />
+            Pending Entitlements
+        </label>
+    </div>
+
+    <div ng-if="entLoading" style="padding:20px;text-align:center;">
+        Loading entitlements...
+    </div>
+    <div ng-if="entError" style="padding:20px;color:red;text-align:center;">
+        {{entError}}
+    </div>
+
+    <div class="table-scroll-wrap" ng-if="!entLoading &amp;&amp; !entError">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Attribute</th>
+                    <th>Entitlement Display Name</th>
+                    <th>Entitlement Value</th>
+                    <th>Criticality</th>
+                    <th>Application</th>
+                    <th>Status</th>
+                    <th>Account Name</th>
+                    <th>Identity Request ID</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="ent in entitlements track by $index">
+                    <td>{{ent.attribute}}</td>
+                    <td>{{ent.entitlementDisplayName}}</td>
+                    <td ng-attr-title="{{ent.entitlementValue}}">{{ent.entitlementValue}}</td>
+                    <td>{{ent.roleCriticality}}</td>
+                    <td>{{ent.applicationName}}</td>
+                    <td>{{ent.status}}</td>
+                    <td>{{ent.accountName}}</td>
+                    <td>{{ent.identityRequestId}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div ng-if="!entLoading &amp;&amp; !entError &amp;&amp; totalCount == 0"
+         style="padding:12px;color:#555;">
+        No entitlements found.
+    </div>
+
+    <div class="pager" ng-show="!entLoading &amp;&amp; !entError">
+        <div class="pager-left">
+            <button type="button"
+                    ng-click="goFirst()"
+                    ng-disabled="currentPage == 1">⏮</button>
+            <button type="button"
+                    ng-click="prevPage()"
+                    ng-disabled="currentPage == 1">◀</button>
+            <span class="pager-row">
+                Page
+                <input type="number"
+                       ng-model="currentPage"
+                       min="1"
+                       max="{{totalPages}}"
+                       ng-change="onPageInputChange()" />
+                of
+                <span>{{totalPages}}</span>
+            </span>
+            <button type="button"
+                    ng-click="nextPage()"
+                    ng-disabled="currentPage >= totalPages">▶</button>
+            <button type="button"
+                    ng-click="goLast()"
+                    ng-disabled="currentPage >= totalPages">⏭</button>
+        </div>
+        <div class="pager-right">
+            <button type="button" ng-click="resetPaging()">⟳</button>
+            <span>Show</span>
+            <select ng-model="pageSize"
+                    ng-options="size for size in pageSizeOptions">
+            </select>
+            <span>items</span>
+            <span style="margin-left:auto;color:#666;">
+                Displaying {{startRecord}} - {{endRecord}} of {{totalCount}}
+            </span>
+        </div>
+    </div>
+
+</div>
+</section>
+
+</body>
+</html>

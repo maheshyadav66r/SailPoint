@@ -1,0 +1,519 @@
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script
+    src="#{plugins.requestContextPath}/plugin/ViewMyEntitlements/ui/js/viewIdentityEntitlementsPlugin.js"></script>
+<script>
+function getCookie(name) {
+  var value = "; " + document.cookie;
+  var parts = value.split("; " + name + "=");
+  if (parts.length == 2) {
+    var result = parts.pop().split(";").shift();
+    console.log('Retrieved cookie ' + name + ':', result);
+    return result;
+  }
+  console.log('Cookie ' + name + ' not found');
+  return null;
+}
+
+function getCSRFToken() {
+  var token = getCookie('XSRF-TOKEN');
+  if (token) {
+    console.log('CSRF token from cookie:', token);
+    return token;
+  }
+  if (window.SailPoint &amp;&amp; window.SailPoint.CSRF_TOKEN) {
+    console.log('CSRF token from SailPoint:', window.SailPoint.CSRF_TOKEN);
+    return window.SailPoint.CSRF_TOKEN;
+  }
+  if (window.PluginHelper &amp;&amp; typeof window.PluginHelper.getCsrfToken === 'function') {
+    var helperToken = window.PluginHelper.getCsrfToken();
+    console.log('CSRF token from PluginHelper:', helperToken);
+    return helperToken;
+  }
+  console.warn('No CSRF token found. Using empty string.');
+  return '';
+}
+
+function debounce(func, wait) {
+  var timeout;
+  return function executedFunction() {
+    var args = Array.prototype.slice.call(arguments);
+    var later = function() {
+      clearTimeout(timeout);
+      func.apply(this, args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+angular.module('myApp', [])
+  .controller('RolesTableCtrl', ['$scope', '$filter', '$http', function ($scope, $filter, $http) {
+    $scope.roles = [];
+    $scope.loading = true;
+    $scope.error = null;
+    $scope.roleSearch = {};
+
+    var rolesEndpoint = window.ROLES_ENDPOINT || PluginHelper.getPluginRestUrl('viewMyEntitlements/getUserRoles');
+    var xsrfToken = getCSRFToken();
+    var headers = {};
+    if (xsrfToken) {
+      headers['X-XSRF-TOKEN'] = xsrfToken;
+      console.log('Headers for roles request:', headers);
+    } else {
+      console.warn('Warning: No CSRF token available for roles request');
+    }
+
+    $scope.fetchRoles = function (searchKeyword) {
+      $scope.loading = true;
+      $scope.error = null;
+      var url = rolesEndpoint;
+      if (searchKeyword) {
+        url += '?roleName=' + encodeURIComponent(searchKeyword);
+      }
+      console.log('Fetching roles from URL:', url);
+
+      $http.get(url, {
+        withCredentials: true,
+        headers: headers,
+        xsrfCookieName: 'XSRF-TOKEN',
+        xsrfHeaderName: 'X-XSRF-TOKEN'
+      })
+      .then(function (response) {
+        console.log('Roles loaded:', response.data);
+        if (response.data &amp;&amp; response.data.objects) {
+          $scope.roles = response.data.objects.map(function (item) {
+            return {
+              roleName: item.roleName || item.name || '',
+              description: item.description || '',
+              classification: item.classification || '',
+              assignedBy: item.assignedBy || '',
+              status: item.status || '',
+              acquired: item.acquired || '',
+              applicationName: item.applicationName || '',
+              accountName: item.accountName || ''
+            };
+          });
+        } else {
+          $scope.error = 'Unexpected response format';
+        }
+        $scope.loading = false;
+      })
+      .catch(function (error) {
+        console.error('Roles API Error:', error);
+        $scope.error = 'Failed to load roles: ' + (error.statusText || 'Unknown error');
+        $scope.loading = false;
+      });
+    };
+
+    $scope.fetchRoles();
+    var debouncedFetchRoles = debounce(function (searchKeyword) {
+      $scope.fetchRoles(searchKeyword);
+    }, 300);
+
+    $scope.$watchGroup(['roleSearch.roleName', 'roleSearch.name'], function (newVals) {
+      var query = newVals[0] || newVals[1] || '';
+      debouncedFetchRoles(query);
+    });
+
+    setupPaging($scope, $filter, function () { return $scope.roles; }, null);
+  }])
+  
+  .controller('EntitlementsTableCtrl', ['$scope', '$filter', '$http', function ($scope, $filter, $http) {
+    $scope.entitlements = [];
+    $scope.entLoading = true;
+    $scope.entError = null;
+    $scope.entSearch = {};
+
+    var entitlementsEndpoint = window.ENTITLEMENTS_ENDPOINT || PluginHelper.getPluginRestUrl('viewMyEntitlements/getUserEntitlements');
+    var xsrfToken = getCSRFToken();
+    var headers = {};
+    if (xsrfToken) {
+      headers['X-XSRF-TOKEN'] = xsrfToken;
+      console.log('Headers for entitlements request:', headers);
+    } else {
+      console.warn('Warning: No CSRF token available for entitlements request');
+    }
+
+    $scope.fetchEntitlements = function (attributeKeyword, applicationKeyword) {
+      $scope.entLoading = true;
+      $scope.entError = null;
+      var url = entitlementsEndpoint;
+      var params = [];
+      if (attributeKeyword) {
+        params.push('attribute=' + encodeURIComponent(attributeKeyword));
+      }
+      if (applicationKeyword) {
+        params.push('application=' + encodeURIComponent(applicationKeyword));
+      }
+      if (params.length > 0) {
+        url += '?' + params.join('&amp;');
+      }
+      console.log('Fetching entitlements from URL:', url);
+
+      $http.get(url, {
+        withCredentials: true,
+        headers: headers,
+        xsrfCookieName: 'XSRF-TOKEN',
+        xsrfHeaderName: 'X-XSRF-TOKEN'
+      })
+      .then(function (response) {
+        console.log('Entitlements loaded:', response.data);
+        if (response.data &amp;&amp; response.data.objects) {
+          $scope.entitlements = response.data.objects.map(function (item) {
+            return {
+              attribute: item.attribute,
+              entitlement: item.entitlement,
+              classifications: item.classification,
+              application: item.applicationName,
+              status: item.status || '',
+              accountName: item.accountName,
+              additional: item.additional
+            };
+          });
+        } else {
+          $scope.entError = 'Unexpected response format';
+        }
+        $scope.entLoading = false;
+      })
+      .catch(function (error) {
+        console.error('Entitlements API Error:', error);
+        $scope.entError = 'Failed to load entitlements: ' + (error.statusText || 'Unknown error');
+        $scope.entLoading = false;
+      });
+    };
+
+    $scope.fetchEntitlements();
+    var debouncedFetchEntitlements = debounce(function (attributeKeyword, applicationKeyword) {
+      $scope.fetchEntitlements(attributeKeyword, applicationKeyword);
+    }, 300);
+
+    $scope.$watchGroup(['entSearch.attribute', 'entSearch.application'], function (newVals) {
+      debouncedFetchEntitlements(newVals[0], newVals[1]);
+    });
+
+    setupPaging($scope, $filter, function () { return $scope.entitlements; }, null);
+  }]);
+
+function setupPaging($scope, $filter, getItemsFn, getFilterModel, additionalFilterFn) {
+  $scope.pageSizeOptions = [5, 10, 25, 50, 100];
+  $scope.pageSize = 10;
+  $scope.currentPage = 0;
+  $scope.pageNumber = 1;
+
+  $scope.getFilteredItems = function () {
+    var items = getItemsFn();
+    var additionalFilter = additionalFilterFn &amp;&amp; additionalFilterFn();
+    if (additionalFilter) {
+      items = items.filter(additionalFilter);
+    }
+    return items;
+  };
+
+  $scope.pageCount = function () {
+    var total = $scope.getFilteredItems().length;
+    return Math.max(1, Math.ceil(total / $scope.pageSize));
+  };
+
+  $scope.getPageItems = function () {
+    var filtered = $scope.getFilteredItems();
+    var start = $scope.currentPage * $scope.pageSize;
+    return filtered.slice(start, start + $scope.pageSize);
+  };
+
+  $scope.goFirst = function () {
+    $scope.currentPage = 0;
+  };
+
+  $scope.goLast = function () {
+    $scope.currentPage = Math.max(0, $scope.pageCount() - 1);
+  };
+
+  $scope.prevPage = function () {
+    if ($scope.currentPage > 0) $scope.currentPage--;
+  };
+
+  $scope.nextPage = function () {
+    if ($scope.currentPage &lt; $scope.pageCount() - 1) $scope.currentPage++;
+  };
+
+  $scope.resetPaging = function () {
+    $scope.currentPage = 0;
+    $scope.pageNumber = 1;
+  };
+
+  $scope.$watch('currentPage', function (newPage) {
+    $scope.pageNumber = newPage + 1;
+  });
+
+  $scope.$watch('pageNumber', function (newPageNum) {
+    var num = Number(newPageNum) - 1;
+    if (!isNaN(num) &amp;&amp; num >= 0 &amp;&amp; num &lt; $scope.pageCount()) {
+      $scope.currentPage = Math.floor(num);
+    }
+  });
+
+  $scope.$watch('pageSize', function (newSize, oldSize) {
+    if (newSize !== oldSize) {
+      $scope.pageSize = parseInt(newSize, 10) || 10;
+      $scope.currentPage = 0;
+      $scope.pageNumber = 1;
+    }
+  });
+}
+</script>
+<title>Document</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    padding: 16px;
+}
+
+h2 {
+    margin-top: 0;
+}
+
+.table-container {
+    border: 1px solid #c0c0c0;
+    border-radius: 4px;
+    margin-bottom: 28px;
+    overflow: hidden;
+}
+
+.table-header {
+    background: #f7f7f7;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.table-header input[type="text"] {
+    height: 30px;
+    padding: 0 8px;
+    border: 1px solid #b0b0b0;
+    border-radius: 2px;
+    width: 220px;
+}
+
+.table-header button {
+    height: 32px;
+    padding: 0 10px;
+    border: 1px solid #c0c0c0;
+    background: #f0f0f0;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.table-header button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th, .data-table td {
+    border-top: 1px solid #d0d0d0;
+    padding: 8px 10px;
+    text-align: left;
+}
+
+.data-table thead th {
+    background: #f1f1f1;
+    font-weight: 600;
+}
+
+.pager {
+    background: #f7f7f7;
+    border-top: 1px solid #d0d0d0;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.pager-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.pager-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.pager-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.pager-row input[type="number"] {
+    width: 46px;
+    text-align: center;
+    padding: 4px 6px;
+    border: 1px solid #c0c0c0;
+    border-radius: 2px;
+}
+
+.pager-row select {
+    height: 30px;
+    border: 1px solid #c0c0c0;
+    border-radius: 2px;
+}
+
+.hidden {
+    display: none !important;
+}
+</style>
+</head>
+<body ng-app="myApp">
+    <section class="table-container">
+        <h2>Roles</h2>
+        <div ng-controller="RolesTableCtrl">
+            <div class="table-header">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <input type="text" ng-model="roleSearch.roleName"
+                        placeholder="Filter by role name" />
+                    <button type="button">🔍</button>
+                </div>
+            </div>
+            <div ng-if="loading" style="padding: 20px; text-align: center;">Loading
+                roles...</div>
+            <div ng-if="error"
+                style="padding: 20px; color: red; text-align: center;">{{error}}</div>
+            <table class="data-table" ng-if="!loading &amp;&amp; !error">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Classifications</th>
+                        <th>Assigned By</th>
+                        <th>Allowed By</th>
+                        <th>Status</th>
+                        <th>Acquired</th>
+                        <th>Application</th>
+                        <th>Account Name</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="role in getPageItems()">
+                        <td>{{role.roleName}}</td>
+                        <td>{{role.description}}</td>
+                        <td>{{role.classification}}</td>
+                        <td>{{role.assignedBy}}</td>
+                        <td />
+                        <td>{{role.status}}</td>
+                        <td>{{role.acquired}}</td>
+                        <td>{{role.applicationName}}</td>
+                        <td />
+                    </tr>
+                </tbody>
+            </table>
+            <div ng-if="!loading &amp;&amp; !error &amp;&amp; getFilteredItems().length === 0" style="padding: 12px; color: #555;">No roles found.</div>
+            <div class="pager">
+                <div class="pager-left">
+                    <button type="button" ng-click="goFirst()"
+                        ng-disabled="currentPage === 0">⏮</button>
+                    <button type="button" ng-click="prevPage()"
+                        ng-disabled="currentPage === 0">◀</button>
+                    <span
+                        style="display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">
+                        Page <input type="number" ng-model="pageNumber" min="1"
+                        max="{{pageCount()}}" style="width: 46px;" /> <span>of</span> <span>{{pageCount()}}</span>
+                    </span>
+                    <button type="button" ng-click="nextPage()"
+                        ng-disabled="currentPage >= pageCount()-1">▶</button>
+                    <button type="button" ng-click="goLast()"
+                        ng-disabled="currentPage >= pageCount()-1">⏭</button>
+                </div>
+                <div class="pager-right">
+                    <button type="button" ng-click="resetPaging()">⟳</button>
+                    <span>Show</span>
+                    <select ng-model="pageSize" ng-options="size for size in pageSizeOptions"></select>
+                    <span>items</span>
+                    <span style="margin-left: auto; color: #666;"> Displaying
+                        {{currentPage * pageSize + 1}} - {{(currentPage + 1) * pageSize >
+                        getFilteredItems().length ? getFilteredItems().length :
+                        (currentPage + 1) * pageSize}} of {{getFilteredItems().length}} </span>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="table-container">
+        <h2>Entitlements</h2>
+        <div ng-controller="EntitlementsTableCtrl">
+            <div class="table-header">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <input type="text" ng-model="entSearch.attribute"
+                        placeholder="Filter by name" />
+                    <button type="button">🔍</button>
+                    <input type="text" ng-model="entSearch.application"
+                        placeholder="Filter by application" style="margin-left: 12px;" />
+                    <button type="button">🔍</button>
+                </div>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Attribute</th>
+                        <th>Entitlement</th>
+                        <th>Classifications</th>
+                        <th>Application</th>
+                        <th>Status</th>
+                        <th>Account Name</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="ent in getPageItems()">
+                        <td>{{ent.attribute}}</td>
+                        <td>{{ent.entitlement}}</td>
+                        <td>{{ent.classifications}}</td>
+                        <td>{{ent.application}}</td>
+                        <td>{{ent.status}}</td>
+                        <td>{{ent.accountName}}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="pager">
+                <div class="pager-left">
+                    <button type="button" ng-click="goFirst()"
+                        ng-disabled="currentPage === 0">⏮</button>
+                    <button type="button" ng-click="prevPage()"
+                        ng-disabled="currentPage === 0">◀</button>
+                    <span
+                        style="display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">
+                        Page <input type="number" ng-model="pageNumber" min="1"
+                        max="{{pageCount()}}" /> <span>of</span> <span>{{pageCount()}}</span>
+                    </span>
+                    <button type="button" ng-click="nextPage()"
+                        ng-disabled="currentPage >= pageCount()-1">▶</button>
+                    <button type="button" ng-click="goLast()"
+                        ng-disabled="currentPage >= pageCount()-1">⏭</button>
+                </div>
+                <div class="pager-right">
+                    <button type="button" ng-click="resetPaging()">⟳</button>
+                    <span>Show</span>
+                    <select ng-model="pageSize" ng-options="size for size in pageSizeOptions"></select>
+                    <span>items</span>
+                    <span style="margin-left: auto; color: #666;"> Displaying
+                        {{currentPage * pageSize + 1}} - {{(currentPage + 1) * pageSize >
+                        getFilteredItems().length ? getFilteredItems().length :
+                        (currentPage + 1) * pageSize}} of {{getFilteredItems().length}} </span>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!--  AngularJS is provided by the host application; do not load it twice.  -->
+</body>
+</html>

@@ -1,0 +1,96 @@
+import java.util.*;
+  import java.text.*;
+  import java.nio.charset.StandardCharsets;
+  import java.nio.file.Paths;
+  import java.nio.file.Files;
+  import sailpoint.tools.Util;
+  import java.util.stream.*;
+
+   
+  String output;
+  boolean header = true;
+  Map globalMap = new HashMap();
+
+  String fileName = application.getAttributes().get("file");
+
+System.out.println("fileNmae"+fileName);
+
+System.out.println("Pre-Iterate Rule");
+ 
+  List lines = Files.readAllLines(Paths.get(fileName), StandardCharsets.UTF_8);
+
+  if (null != lines && !lines.isEmpty()) {
+    for (String line : lines) {
+     
+      if(header)
+      {
+        header=false;
+        continue;
+      }
+     
+      String[] str = line.split(";");
+     List columns = Arrays.asList(str);
+
+System.out.println("columns"+columns);
+
+        String personnalID = columns.get(5);
+
+        if (globalMap.get(personnalID) == null) {
+          SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+          Date date = sdf.parse(columns.get(4));
+          Map valueMap = new HashMap();
+          valueMap.put("line",line);
+          valueMap.put("endDate", date);
+          globalMap.put(personnalID, valueMap);
+        } else {
+          Set keys = globalMap.keySet();
+          List listKeys = keys.stream().collect(Collectors.toList());
+          if(listKeys.contains(personnalID)){
+            Map map = globalMap.get(personnalID);
+            Date endD = map.get("endDate");
+            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+            Date date = sdf.parse(columns.get(4));
+            if(Util.isDateAfter(date,endD)){
+              map.put("endDate", date);
+              map.put("line", line);
+              globalMap.put(personnalID,map);
+            }
+          }
+
+        }
+     
+
+    }  
+
+  }
+ 
+  output = "First Name;Last Name;Workorder_External candidate e-mail address;Object Start Date;Object End Date;Personnel ID;Object Owner Username;Worker_Contract Type";
+  for(String key :globalMap.keySet()){
+   
+    output = output + "\n" +globalMap.get(key).get("line");
+  }
+
+
+  return  new ByteArrayInputStream(output.getBytes());
+  
+  
+  
+  '<Attributes>
+  <Map>
+    <entry key="Department" value="Regional Operations"/>
+    <entry key="Email" value="Mary.Johnson@eshiam.com"/>
+    <entry key="EmployeeNo" value="1a2a"/>
+    <entry key="FirstName" value="Mary1"/>
+    <entry key="LastName" value="Johnson"/>
+    <entry key="Name" value="Mary Johnson"/>
+    <entry key="NetworkID" value="Mary.Johnson"/>
+    <entry key="manager" value="1a"/>
+  </Map>
+</Attributes>
+'
+  
+  
+  
+  
+  
+  
